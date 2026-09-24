@@ -31,3 +31,5 @@ captures/
 # Keystores
 *.jks
 *.keystore
+# Claude Code
+CLAUDE.md
