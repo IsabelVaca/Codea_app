@@ -14,10 +14,11 @@ Los archivos son autocontenidos (funcionan sin internet): ábrelos en el navegad
 
 | Tab | Pantalla en el prototipo | Estado |
 | --- | --- | --- |
-| Mi día | Reporte con foto · paso 2 («Realizar reporte») | Hecha, con datos fijos |
-| Mi sala | Chatear con los papás · paso 1 | Archivo creado, vacía |
+| Mi día | Reporte con foto · paso 2 («Realizar reporte») | Hecha, con datos fijos. El botón de arriba a la derecha cambia a «Aún el día no comienza» (no está en el prototipo) |
+| Mi sala | Chatear con los papás · paso 1 | Archivo creado, vacía. |
 | Chats | No hay pantalla propia en el prototipo | Archivo creado, vacía |
-| Menú | Registrar entrada · paso 1 | Archivo creado, vacía |
+| Menú | Registrar entrada · paso 1 | Solo la card del checador |
+| Menú → Checador | Registrar entrada · paso 2 | Archivo creado, vacía |
 
 ## Licencias
 

@@ -6,12 +6,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import mx.tec.codea.navigation.CodeaNavHost
-import mx.tec.codea.navigation.TopLevelDestination
+import mx.tec.codea.navigation.navigateToTopLevel
+import mx.tec.codea.navigation.reselectTopLevel
 import mx.tec.codea.navigation.toTopLevelDestination
 import mx.tec.codea.ui.components.CodeaBottomBar
 
@@ -36,7 +35,12 @@ fun CodeaApp(modifier: Modifier = Modifier) {
             CodeaBottomBar(
                 currentDestination = currentDestination,
                 onDestinationClick = { destination ->
-                    navController.navigateToTopLevel(destination)
+                    // tapping the tab that is already open has its own behavior.
+                    if (destination == currentDestination) {
+                        navController.reselectTopLevel(destination)
+                    } else {
+                        navController.navigateToTopLevel(destination)
+                    }
                 },
             )
         },
@@ -47,22 +51,5 @@ fun CodeaApp(modifier: Modifier = Modifier) {
             navController = navController,
             modifier = Modifier.padding(innerPadding),
         )
-    }
-}
-
-// this is the recommended way to change tabs. it is an extension function:
-// it adds a new ability to NavHostController without changing its class.
-private fun NavHostController.navigateToTopLevel(destination: TopLevelDestination) {
-    navigate(destination.route) {
-        // we remove the screens above the start screen, so the back button
-        // does not go through every tab the user visited.
-        // saveState remembers the state of the tab we are leaving.
-        popUpTo(graph.findStartDestination().id) {
-            saveState = true
-        }
-        // if the user taps the same tab again, we do not open a second copy.
-        launchSingleTop = true
-        // when the user comes back to a tab, we give back its saved state.
-        restoreState = true
     }
 }

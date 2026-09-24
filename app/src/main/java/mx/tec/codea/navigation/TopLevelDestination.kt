@@ -16,7 +16,8 @@ import mx.tec.codea.R
 // we keep all the tab information in one enum, so the bottom bar and the
 // navigation graph read from the same place. if you add a tab, you only add it here.
 enum class TopLevelDestination(
-    // the route that opens when the user taps this tab.
+    // the route that opens when the user taps this tab. it can be one screen
+    // or a graph, when the tab has more than one screen inside.
     val route: Any,
     // the icon we draw inside the tab.
     val icon: ImageVector,
@@ -28,7 +29,7 @@ enum class TopLevelDestination(
 ) {
     // the order here is the order of the tabs, the same as in the prototype.
     MY_DAY(
-        route = MyDayRoute,
+        route = MyDayGraph,
         icon = Icons.Filled.DateRange,
         labelRes = R.string.nav_my_day,
         isLocked = false,
@@ -48,7 +49,7 @@ enum class TopLevelDestination(
         isLocked = false,
     ),
     MENU(
-        route = MenuRoute,
+        route = MenuGraph,
         icon = Icons.Filled.Menu,
         labelRes = R.string.nav_menu,
         isLocked = false,

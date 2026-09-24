@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import mx.tec.codea.R
 import mx.tec.codea.ui.components.ScreenHeader
+import mx.tec.codea.ui.components.ScreenSwitchButton
 import mx.tec.codea.ui.theme.CodeaTheme
 import mx.tec.codea.ui.theme.Sun
 
@@ -47,13 +48,38 @@ fun MyDayScreen(
     routine: Routine = MyDaySampleData.routine,
     onMakeReportClick: (Subprocess) -> Unit = {},
     onConfirmSubprocessClick: (Subprocess) -> Unit = {},
+    // opens the "day not started" version of this tab.
+    onSwitchClick: () -> Unit = {},
+) {
+    // a box lets us put the switch button in the corner, on top of the list.
+    Box(modifier = modifier.fillMaxSize()) {
+        RoutineList(
+            routine = routine,
+            onMakeReportClick = onMakeReportClick,
+            onConfirmSubprocessClick = onConfirmSubprocessClick,
+        )
+        ScreenSwitchButton(
+            onClick = onSwitchClick,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(16.dp),
+        )
+    }
+}
+
+// the header, the progress card and every subprocess of the routine, in a list that scrolls.
+@Composable
+private fun RoutineList(
+    routine: Routine,
+    onMakeReportClick: (Subprocess) -> Unit,
+    onConfirmSubprocessClick: (Subprocess) -> Unit,
 ) {
     // we count the done steps plus the active one, like the "4 de 9" of the prototype.
     val currentStep = routine.subprocesses.count { it.status != SubprocessStatus.PENDING }
 
     // a lazy column only draws the rows that fit on the screen, and it can scroll.
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 22.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(11.dp),
     ) {
