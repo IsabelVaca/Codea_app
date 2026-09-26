@@ -1,3 +1,37 @@
 <resources>
     <string name="app_name">Codea</string>
+
+    <!-- bottom navigation labels -->
+    <string name="nav_my_day">Mi día</string>
+    <string name="nav_my_room">Mi sala</string>
+    <string name="nav_chats">Chats</string>
+    <string name="nav_menu">Menú</string>
+    <string name="nav_locked_description">Sección bloqueada</string>
+
+    <!-- my day screen -->
+    <string name="my_day_title">Mi día</string>
+    <string name="my_day_routine_steps">Subprocesos de la rutina</string>
+    <string name="my_day_progress">%1$d de %2$d</string>
+    <string name="my_day_done_description">Terminado</string>
+    <string name="my_day_active_step">Subproceso %1$d · en curso</string>
+    <string name="my_day_active_since">Desde %1$s</string>
+    <string name="my_day_make_report">Realizar reporte</string>
+    <string name="my_day_confirm_step">Confirmar subproceso</string>
+
+    <!-- shared components -->
+    <string name="screen_switch_description">Cambiar pantalla</string>
+
+    <!-- day not started screen (inside mi sala) -->
+    <string name="day_not_started_greeting">Buen día, %1$s</string>
+    <string name="day_not_started_title">Aún el día no comienza</string>
+    <string name="day_not_started_body">Ve al checador a registrar tu entrada cuando estés en la estancia.</string>
+    <string name="day_not_started_checker_button">Checador</string>
+
+    <!-- menu screen -->
+    <string name="menu_checker_title">Checador</string>
+    <string name="menu_checker_subtitle">Entrada y salida del turno</string>
+
+    <!-- coming soon screen -->
+    <string name="coming_soon_title">Muy pronto</string>
+    <string name="coming_soon_subtitle">Esta sección todavía está en construcción.</string>
 </resources>
