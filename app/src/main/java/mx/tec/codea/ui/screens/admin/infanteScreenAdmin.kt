@@ -1,4 +1,4 @@
-package mx.tec.codea.ui.screens
+package mx.tec.codea.ui.screens.admin
 
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -33,16 +33,16 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import mx.tec.codea.data.fakeDocentes
-import mx.tec.codea.model.Docente
+import mx.tec.codea.data.fakeInfantes
+import mx.tec.codea.model.Infante
 import androidx.compose.ui.draw.shadow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DocenteScreen(){
+fun InfanteScreen(){
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Docentes") })
+            TopAppBar(title = { Text("Infantes inscritos") })
         },
         content = { paddingValues ->
             Column(
@@ -57,7 +57,7 @@ fun DocenteScreen(){
                 ){
                     Column {
                         Text(
-                            text = "${fakeDocentes.size}",
+                            text = "${fakeInfantes.size}",
                             modifier = Modifier.padding(
                                 horizontal = 14.dp,
                                 vertical = 5.dp
@@ -69,7 +69,7 @@ fun DocenteScreen(){
                         )
 
                         Text(
-                            text = "Docentes activos en las 3 salas",
+                            text = "Niños inscritos en las 3 salas",
                             modifier = Modifier.padding(
                                 horizontal = 14.dp,
                                 vertical = 2.dp
@@ -86,7 +86,7 @@ fun DocenteScreen(){
 
                 }
 
-                Text(text = "DOCENTES ACTIVOS",
+                Text(text = "INFANTES INSCRITOS",
                     modifier = Modifier.padding(
                         horizontal = 19.dp,
                         vertical = 2.dp
@@ -99,12 +99,12 @@ fun DocenteScreen(){
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    items(fakeDocentes) { docente ->
-                        DocenteCard(docente = docente)
+                    items(fakeInfantes) { infante ->
+                        InfanteCard(infante = infante)
                     }
 
                     item {
-                        DarDeAltaAsistenteButton(
+                        InscribirInfanteButton(
                             onClick = { },
                             modifier = Modifier.padding(horizontal = 15.dp, vertical = 8.dp)
                         )
@@ -117,7 +117,7 @@ fun DocenteScreen(){
 }
 
 @Composable
-fun DocenteCard(docente: Docente) {
+fun InfanteCard(infante: Infante) {
     Surface(modifier = Modifier.fillMaxWidth(1f).padding(vertical = 5.dp, horizontal = 15.dp).shadow(
             elevation = 20.dp,
         shape = RoundedCornerShape(18.dp),
@@ -141,7 +141,7 @@ fun DocenteCard(docente: Docente) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = docente.iniciales,
+                    text = infante.iniciales,
                     color = Color(0xFF6D28D9),
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp
@@ -154,7 +154,7 @@ fun DocenteCard(docente: Docente) {
             ) {
 
                 Text(
-                    text = docente.nombre,
+                    text = infante.nombre,
                     modifier = Modifier.padding(top = 10.dp),
                     color = Color(red = 1, green = 1, blue = 1),
                     fontSize = 17.sp,
@@ -165,9 +165,9 @@ fun DocenteCard(docente: Docente) {
                     modifier = Modifier.padding(top = 3.dp, bottom = 7.dp),
                     verticalArrangement = Arrangement.spacedBy(1.dp)
                 ) {
-                    //sala
+                    //edad
                     Text(
-                        text = docente.sala + " • ",
+                        text = "${infante.edad} años" + " • ",
                         modifier = Modifier,
                         color = Color(red = 138, green = 128, blue = 165),
                         fontSize = 13.sp,
@@ -175,9 +175,19 @@ fun DocenteCard(docente: Docente) {
                         fontFamily = Poppins,
                         fontWeight = FontWeight.SemiBold
                     )
-                    //cantidad de niños en la sala
+                    //tutor
                     Text(
-                        text = "${docente.ninosEnSala} niños",
+                        text = infante.tutor + " • ",
+                        modifier = Modifier,
+                        color = Color(red = 138, green = 128, blue = 165),
+                        fontSize = 13.sp,
+                        lineHeight = 13.sp,
+                        fontFamily = Poppins,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    //titulo
+                    Text(
+                        text = infante.tituloTutor,
                         modifier = Modifier,
                         color = Color(red = 138, green = 128, blue = 165),
                         fontSize = 13.sp,
@@ -196,7 +206,7 @@ fun DocenteCard(docente: Docente) {
                 shape = RoundedCornerShape(percent = 50)
             ) {
                 Text(
-                    text = "Checó ${docente.horaChecada}",
+                    text = infante.sala,
                     modifier = Modifier.padding(horizontal = 9.dp, vertical = 3.dp),
                     color = Color(0xFF6D28D9),
                     fontWeight = FontWeight.ExtraBold,
@@ -210,7 +220,7 @@ fun DocenteCard(docente: Docente) {
 }
 
 @Composable
-fun DarDeAltaAsistenteButton(
+fun InscribirInfanteButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -228,7 +238,7 @@ fun DarDeAltaAsistenteButton(
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
     ) {
         Text(
-            text = "+ Dar de alta a una asistente",
+            text = "+ Inscribir a un infante",
             fontSize = 15.sp,
             fontFamily = Poppins,
             fontWeight = FontWeight.Bold
@@ -238,8 +248,8 @@ fun DarDeAltaAsistenteButton(
 
 @Preview(showBackground = true)
 @Composable
-fun DocenteScreenPreview() {
+fun InfanteScreenPreview() {
     CodeaTheme {
-        DocenteScreen()
+        InfanteScreen()
     }
 }

@@ -20,13 +20,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import mx.tec.codea.R
+import mx.tec.codea.navigation.Role
 import mx.tec.codea.navigation.TopLevelDestination
 import mx.tec.codea.ui.theme.CodeaTheme
 
-// this bar does not know about navigation. it only receives data and reports clicks.
+// this bar does not know about navigation, and it does not know about roles either.
+// CodeaApp already filtered "destinations" to the ones the current role can see,
+// the same way the "avisos" app checks sesion.puedePublicar before drawing its
+// button: the role decides what exists, this bar only draws what it is given.
 // we call this a "stateless" component: it is easier to test, reuse and preview.
 @Composable
 fun CodeaBottomBar(
+    // the tabs to draw, already filtered by role.
+    destinations: List<TopLevelDestination>,
     // the tab that is selected now, so we can highlight it.
     currentDestination: TopLevelDestination?,
     // we tell the parent which tab was tapped, and the parent decides what to do.
@@ -47,8 +53,8 @@ fun CodeaBottomBar(
                 unselectedTextColor = MaterialTheme.colorScheme.outline,
             )
 
-            // we create one item for each value of the enum, in the same order.
-            TopLevelDestination.entries.forEach { destination ->
+            // we create one item for each destination the caller gave us, in the same order.
+            destinations.forEach { destination ->
                 val selected = destination == currentDestination
                 NavigationBarItem(
                     selected = selected,
@@ -103,6 +109,7 @@ private fun DestinationIcon(destination: TopLevelDestination) {
 private fun CodeaBottomBarPreview() {
     CodeaTheme {
         CodeaBottomBar(
+            destinations = TopLevelDestination.entries.filter { Role.TEACHER in it.roles },
             currentDestination = TopLevelDestination.MY_DAY,
             onDestinationClick = {},
         )

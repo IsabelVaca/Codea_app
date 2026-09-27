@@ -8,6 +8,11 @@
     <string name="nav_menu">Menú</string>
     <string name="nav_locked_description">Sección bloqueada</string>
 
+    <!-- bottom navigation labels (admin) -->
+    <string name="nav_admin_centro">Centro</string>
+    <string name="nav_admin_docentes">Docentes</string>
+    <string name="nav_admin_infantes">Infantes</string>
+
     <!-- my day screen -->
     <string name="my_day_title">Mi día</string>
     <string name="my_day_routine_steps">Subprocesos de la rutina</string>

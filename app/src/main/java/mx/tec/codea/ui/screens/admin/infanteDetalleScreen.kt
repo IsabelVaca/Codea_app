@@ -1,4 +1,4 @@
-package mx.tec.codea.ui.screens
+package mx.tec.codea.ui.screens.admin
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

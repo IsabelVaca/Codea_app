@@ -24,7 +24,12 @@ fun NavHostController.reselectTopLevel(destination: TopLevelDestination) {
         TopLevelDestination.MY_DAY -> popBackStack<MyDayRoute>(inclusive = false)
         TopLevelDestination.MENU -> popBackStack<MenuRoute>(inclusive = false)
         // the other tabs have only one screen, so there is nothing to do.
-        TopLevelDestination.MY_ROOM, TopLevelDestination.CHATS -> Unit
+        TopLevelDestination.MY_ROOM,
+        TopLevelDestination.CHATS,
+        TopLevelDestination.CENTRO,
+        TopLevelDestination.DOCENTES,
+        TopLevelDestination.INFANTES,
+        -> Unit
     }
 }
 

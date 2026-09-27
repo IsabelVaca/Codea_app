@@ -41,3 +41,14 @@ data class MenuRoute(val openChecker: Boolean = false)
 // the check-in screen, where the teacher registers the start of the shift.
 @Serializable
 data object CheckerRoute
+
+// the admin tabs. each one is its own top level destination (see
+// TopLevelDestination), not a graph, because for now they are a single screen.
+@Serializable
+data object AdminCentroRoute
+
+@Serializable
+data object AdminDocentesRoute
+
+@Serializable
+data object AdminInfantesRoute

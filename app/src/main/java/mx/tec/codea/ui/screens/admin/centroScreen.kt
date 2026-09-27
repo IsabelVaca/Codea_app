@@ -1,4 +1,4 @@
-package mx.tec.codea.ui.screens
+package mx.tec.codea.ui.screens.admin
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
