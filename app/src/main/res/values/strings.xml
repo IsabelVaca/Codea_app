@@ -27,6 +27,26 @@
     <string name="day_not_started_body">Ve al checador a registrar tu entrada cuando estés en la estancia.</string>
     <string name="day_not_started_checker_button">Checador</string>
 
+    <!-- my room screen -->
+    <string name="my_room_overline">Estancia La Oruga</string>
+    <string name="my_room_title">Sala · Preescolar 2</string>
+    <string name="my_room_present_count">presentes</string>
+    <string name="my_room_unread_count">chats sin leer</string>
+    <string name="my_room_present">Presente</string>
+    <string name="my_room_absent">Falta</string>
+    <string name="my_room_chat">Chat</string>
+
+    <!-- chats screen -->
+    <string name="chats_empty_instruction">Ve a la sección "Mi sala" para abrir el chat deseado.</string>
+    <string name="chats_family_of">Familia de %1$s</string>
+    <string name="chats_title">Chat con la familia</string>
+    <string name="chats_no_messages">Aún no hay mensajes en esta conversación.</string>
+    <string name="chats_message_hint">Escribe un mensaje…</string>
+    <string name="chats_message_read">%1$s · leído</string>
+    <string name="chats_back">Volver a Mi sala</string>
+    <string name="chats_attach">Adjuntar archivo</string>
+    <string name="chats_send">Enviar mensaje</string>
+
     <!-- menu screen -->
     <string name="menu_checker_title">Checador</string>
     <string name="menu_checker_subtitle">Entrada y salida del turno</string>

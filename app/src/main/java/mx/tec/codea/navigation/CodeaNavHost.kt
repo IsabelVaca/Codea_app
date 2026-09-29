@@ -10,12 +10,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.toRoute
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import mx.tec.codea.ui.screens.chats.ChatsScreen
 import mx.tec.codea.ui.screens.checker.CheckerScreen
 import mx.tec.codea.ui.screens.menu.MenuScreen
 import mx.tec.codea.ui.screens.myday.DayNotStartedScreen
 import mx.tec.codea.ui.screens.myday.MyDayScreen
 import mx.tec.codea.ui.screens.myroom.MyRoomScreen
+import mx.tec.codea.ui.screens.myroom.MyRoomSampleData
 
 // the nav host is like a map of the app: it connects each route to its screen.
 // the nav controller moves the user from one screen to another.
@@ -24,6 +29,9 @@ fun CodeaNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
 ) {
+    var lastOpenedChatChildId by rememberSaveable {
+        mutableStateOf<String?>(null)
+    }
     NavHost(
         navController = navController,
         // this is the first tab we show when the app starts.
@@ -55,11 +63,25 @@ fun CodeaNavHost(
         }
 
         composable<MyRoomRoute> {
-            MyRoomScreen()
+            MyRoomScreen(
+                onChatClick = { child ->
+                    lastOpenedChatChildId = child.id
+                    navController.navigateToTopLevel(TopLevelDestination.CHATS)
+                },
+            )
         }
 
         composable<ChatsRoute> {
-            ChatsScreen()
+            val selectedChild = MyRoomSampleData.children.firstOrNull { child ->
+                child.id == lastOpenedChatChildId
+            }
+
+            ChatsScreen(
+                selectedChild = selectedChild,
+                onBackClick = {
+                    navController.navigateToTopLevel(TopLevelDestination.MY_ROOM)
+                },
+            )
         }
 
         navigation<MenuGraph>(startDestination = MenuRoute()) {
