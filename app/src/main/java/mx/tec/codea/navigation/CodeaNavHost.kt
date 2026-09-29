@@ -61,6 +61,10 @@ import mx.tec.codea.ui.screens.report.report.ReportScreen
 import mx.tec.codea.ui.screens.report.report.ReportViewModel
 import mx.tec.codea.ui.screens.report.students.SelectStudentsScreen
 import mx.tec.codea.ui.screens.report.students.SelectStudentsViewModel
+import mx.tec.codea.ui.screens.parent.calendar.ParentCalendarScreen
+import mx.tec.codea.ui.screens.parent.documents.ParentDocumentsScreen
+import mx.tec.codea.ui.screens.parent.photos.ParentPhotosScreen
+import mx.tec.codea.ui.screens.parent.today.ParentTodayScreen
 
 // the nav host is like a map of the app: it connects each route to its screen.
 // the nav controller moves the user from one screen to another.
@@ -488,6 +492,23 @@ fun CodeaNavHost(
                     onBack = { navController.popBackStack() },
                 )
             }
+        }
+
+        // parent tabs. each is only one screen for now.
+        composable<ParentTodayRoute> {
+            ParentTodayScreen()
+        }
+
+        composable<ParentCalendarRoute> {
+            ParentCalendarScreen()
+        }
+
+        composable<ParentPhotosRoute> {
+            ParentPhotosScreen()
+        }
+
+        composable<ParentDocumentsRoute> {
+            ParentDocumentsScreen()
         }
     }
 }

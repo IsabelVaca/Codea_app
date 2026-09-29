@@ -1,13 +1,10 @@
 package mx.tec.codea
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -15,9 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import mx.tec.codea.navigation.AdminCentroGraph
@@ -30,6 +25,7 @@ import mx.tec.codea.navigation.reselectTopLevel
 import mx.tec.codea.navigation.toTopLevelDestination
 import mx.tec.codea.ui.components.CodeaBottomBar
 import mx.tec.codea.ui.screens.roleselection.RoleSelectionScreen
+import mx.tec.codea.navigation.ParentTodayRoute
 
 // the root of the whole interface. it joins three parts:
 // the scaffold (the frame), the bottom bar (the tabs) and the nav host (the screens).
@@ -49,13 +45,6 @@ fun CodeaApp(
             onRoleSelected = { selectedRole = it },
             modifier = modifier,
         )
-        return
-    }
-
-    // We have not created the parent's navigation destinations yet.
-    // This branch disappears in the next step when those tabs are added.
-    if (role == Role.PARENT) {
-        ParentSetupPlaceholder(modifier)
         return
     }
 
@@ -84,9 +73,7 @@ private fun RoleApp(
         when (role) {
             Role.TEACHER -> MyDayGraph
             Role.ADMIN -> AdminCentroGraph
-
-            // RoleApp is not called for PARENT until its routes exist.
-            Role.PARENT -> error("Parent navigation is not configured yet.")
+            Role.PARENT -> ParentTodayRoute
         }
     }
 
@@ -122,22 +109,6 @@ private fun RoleApp(
             startDestination = startDestination,
             snackbarHostState = snackbarHostState,
             modifier = Modifier.padding(innerPadding),
-        )
-    }
-}
-
-@Composable
-private fun ParentSetupPlaceholder(
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = stringResource(R.string.parent_setup_pending),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
