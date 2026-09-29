@@ -9,6 +9,9 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.School
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -88,6 +91,36 @@ enum class TopLevelDestination(
         labelRes = R.string.nav_admin_infantes,
         isLocked = false,
         roles = setOf(Role.ADMIN),
+    ),
+
+    // parent tabs.
+    PARENT_TODAY(
+        route = ParentTodayRoute,
+        icon = Icons.Filled.Home,
+        labelRes = R.string.nav_parent_today,
+        isLocked = false,
+        roles = setOf(Role.PARENT),
+    ),
+    PARENT_CALENDAR(
+        route = ParentCalendarRoute,
+        icon = Icons.Filled.CalendarMonth,
+        labelRes = R.string.nav_parent_calendar,
+        isLocked = false,
+        roles = setOf(Role.PARENT),
+    ),
+    PARENT_PHOTOS(
+        route = ParentPhotosRoute,
+        icon = Icons.Filled.PhotoLibrary,
+        labelRes = R.string.nav_parent_photos,
+        isLocked = false,
+        roles = setOf(Role.PARENT),
+    ),
+    PARENT_DOCUMENTS(
+        route = ParentDocumentsRoute,
+        icon = Icons.Filled.Description,
+        labelRes = R.string.nav_parent_documents,
+        isLocked = false,
+        roles = setOf(Role.PARENT),
     ),
 }
 

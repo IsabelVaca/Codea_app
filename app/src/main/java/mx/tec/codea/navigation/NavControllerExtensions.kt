@@ -31,8 +31,12 @@ fun NavHostController.reselectTopLevel(destination: TopLevelDestination) {
         // the other tabs have only one screen, so there is nothing to do.
         TopLevelDestination.MY_ROOM,
         TopLevelDestination.CHATS,
-
         -> Unit
+
+        TopLevelDestination.PARENT_TODAY,
+        TopLevelDestination.PARENT_CALENDAR,
+        TopLevelDestination.PARENT_PHOTOS,
+        TopLevelDestination.PARENT_DOCUMENTS -> Unit
     }
 }
 
