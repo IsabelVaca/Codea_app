@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name">Codea</string>
 
+    <!-- shared -->
+    <string name="common_back">Regresar</string>
+    <string name="common_cancel">Cancelar</string>
+
     <!-- bottom navigation labels -->
     <string name="nav_my_day">Mi día</string>
     <string name="nav_my_room">Mi sala</string>
@@ -13,19 +17,98 @@
     <string name="my_day_routine_steps">Subprocesos de la rutina</string>
     <string name="my_day_progress">%1$d de %2$d</string>
     <string name="my_day_done_description">Terminado</string>
-    <string name="my_day_active_step">Subproceso %1$d · en curso</string>
+    <string name="my_day_step_active">Subproceso %1$d · en curso</string>
+    <string name="my_day_step_done">Subproceso %1$d · terminado</string>
+    <string name="my_day_step_pending">Subproceso %1$d · pendiente</string>
     <string name="my_day_active_since">Desde %1$s</string>
+    <string name="my_day_done_at">Terminó %1$s</string>
+    <string name="my_day_no_reports">Sin reportes en este momento.</string>
+    <string name="my_day_not_started_yet">Todavía no empieza. Podrás reportar cuando esté en curso.</string>
+    <plurals name="my_day_reports_here">
+        <item quantity="one">%1$d reporte en este momento.</item>
+        <item quantity="other">%1$d reportes en este momento.</item>
+    </plurals>
+    <plurals name="my_day_report_count">
+        <item quantity="one">%1$d reporte</item>
+        <item quantity="other">%1$d reportes</item>
+    </plurals>
     <string name="my_day_make_report">Realizar reporte</string>
     <string name="my_day_confirm_step">Confirmar subproceso</string>
 
-    <!-- shared components -->
-    <string name="screen_switch_description">Cambiar pantalla</string>
-
-    <!-- day not started screen (inside mi sala) -->
+    <!-- day not started screen (inside mi día) -->
     <string name="day_not_started_greeting">Buen día, %1$s</string>
     <string name="day_not_started_title">Aún el día no comienza</string>
     <string name="day_not_started_body">Ve al checador a registrar tu entrada cuando estés en la estancia.</string>
     <string name="day_not_started_checker_button">Checador</string>
+
+    <!-- report flow -->
+    <string name="report_overline">Subproceso %1$d · %2$s</string>
+    <string name="report_new_title">Nuevo reporte</string>
+    <string name="report_written_title">Reporte escrito</string>
+    <string name="report_method_question">¿Cómo lo quieres levantar?</string>
+    <string name="report_method_explanation">Las tres formas guardan lo mismo: elige la que te quede a mano en la actividad.</string>
+    <string name="report_method_written">Escrito</string>
+    <string name="report_method_written_subtitle">Teclea la nota · 30 s</string>
+    <string name="report_method_dictation">Dictado</string>
+    <string name="report_method_dictation_subtitle">Habla y la app redacta · 10 s</string>
+    <string name="report_method_photo">Con foto</string>
+    <string name="report_method_photo_subtitle">Toma la foto y luego describes</string>
+    <string name="report_method_can_change">Se puede cambiar después</string>
+    <string name="report_method_can_change_body">Aunque empieces con foto, puedes dictar el texto en el paso siguiente.</string>
+    <string name="report_photo_attached">Foto adjunta · %1$s</string>
+    <string name="report_photo_taken_during">Tomada durante «%1$s»</string>
+    <string name="report_photo_description">Foto del reporte</string>
+    <string name="report_change_photo">Cambiar foto</string>
+    <string name="report_no_photo">Sin foto · solo texto</string>
+    <string name="report_attach_photo">Adjuntar foto</string>
+    <string name="report_dictation_title">Presiona para dictar</string>
+    <string name="report_dictation_body">Tu voz se convierte en texto.</string>
+    <string name="report_type_label">Tipo de reporte</string>
+    <string name="report_type_incident">Incidencia</string>
+    <string name="report_type_achievement">Logro</string>
+    <string name="report_type_health">Salud</string>
+    <string name="report_type_behavior">Conducta</string>
+    <string name="report_what_happened">¿Qué pasó?</string>
+    <string name="report_description_hint">Escribe aquí lo que pasó…</string>
+    <string name="report_characters_needed">%1$d de %2$d caracteres</string>
+    <string name="report_characters">%1$d caracteres</string>
+    <string name="report_dictate_instead">Dictar en vez de escribir</string>
+    <string name="report_next_step">Siguiente paso</string>
+    <string name="report_next_step_body">Falta elegir a qué niño o niños les pasó para poder guardar.</string>
+    <string name="report_continue">Continuar · elegir niños</string>
+    <string name="report_continue_blocked">Continuar · bloqueado</string>
+    <string name="report_continue_hint">Escribe al menos %1$d caracteres para continuar.</string>
+    <plurals name="report_saved">
+        <item quantity="one">Reporte guardado para %1$d niño</item>
+        <item quantity="other">Reporte guardado para %1$d niños</item>
+    </plurals>
+    <string name="students_overline">Reporte · %1$s</string>
+    <string name="students_title">¿A quién le pasó?</string>
+    <plurals name="students_selected">
+        <item quantity="one">%1$d niño seleccionado</item>
+        <item quantity="other">%1$d niños seleccionados</item>
+    </plurals>
+    <string name="students_families_notified">Se avisa a sus familias.</string>
+    <string name="students_none_title">No elegiste a ningún niño</string>
+    <string name="students_none_body">Sin niño no sabemos a qué familia avisar. Marca al menos uno de la sala.</string>
+    <string name="students_who_sees">Quién lo verá</string>
+    <string name="students_who_sees_none">Selecciona al menos un niño para avisar a su familia.</string>
+    <plurals name="students_who_sees_families">
+        <item quantity="one">Familia de %1$s · coordinación de la estancia. El grupo no lo ve.</item>
+        <item quantity="other">Familias de %1$s · coordinación de la estancia. El grupo no lo ve.</item>
+    </plurals>
+    <string name="students_names_and">%1$s y %2$s</string>
+    <plurals name="students_save">
+        <item quantity="one">Guardar reporte · %1$d niño</item>
+        <item quantity="other">Guardar reporte · %1$d niños</item>
+    </plurals>
+    <string name="students_save_hint">Selecciona al menos un niño para poder guardar.</string>
+
+    <!-- camera and dictation -->
+    <string name="camera_permission_needed">Se requiere permiso de cámara para tomar la foto</string>
+    <string name="dictation_prompt">Dicta el reporte…</string>
+    <string name="dictation_permission_needed">Se requiere permiso de micrófono para dictar</string>
+    <string name="dictation_unavailable">Servicio de voz no disponible en este dispositivo</string>
 
     <!-- my room screen -->
     <string name="my_room_overline">Estancia La Oruga</string>
@@ -37,19 +120,89 @@
     <string name="my_room_chat">Chat</string>
 
     <!-- chats screen -->
-    <string name="chats_empty_instruction">Ve a la sección "Mi sala" para abrir el chat deseado.</string>
+    <string name="chats_empty_instruction">Ve a la sección «Mi sala» para abrir el chat deseado.</string>
     <string name="chats_family_of">Familia de %1$s</string>
     <string name="chats_title">Chat con la familia</string>
     <string name="chats_no_messages">Aún no hay mensajes en esta conversación.</string>
     <string name="chats_message_hint">Escribe un mensaje…</string>
     <string name="chats_message_read">%1$s · leído</string>
-    <string name="chats_back">Volver a Mi sala</string>
     <string name="chats_attach">Adjuntar archivo</string>
     <string name="chats_send">Enviar mensaje</string>
 
     <!-- menu screen -->
+    <string name="menu_title">Menú</string>
+    <string name="menu_teacher_name">Miss %1$s</string>
+    <string name="menu_teacher_shift">%1$s · turno %2$s a %3$s</string>
+    <string name="menu_no_check_in">Aún no registras tu entrada de hoy</string>
+    <string name="menu_checked_in">Entrada registrada a las %1$s</string>
+    <string name="menu_checked_in_late">Entrada con retardo a las %1$s</string>
     <string name="menu_checker_title">Checador</string>
     <string name="menu_checker_subtitle">Entrada y salida del turno</string>
+    <string name="menu_checker_subtitle_done">Entrada %1$s · la salida se registra sola</string>
+    <string name="menu_documents_title">Mis documentos</string>
+    <string name="menu_documents_subtitle">Contrato, constancias</string>
+    <string name="menu_profile_title">Mi perfil</string>
+    <string name="menu_profile_subtitle">Datos y foto</string>
+    <string name="menu_notices_title">Avisos de la fundación</string>
+    <string name="menu_notices_subtitle">2 nuevos</string>
+    <string name="menu_logout">Cerrar sesión</string>
+    <string name="menu_logout_dialog_title">¿Cerrar sesión?</string>
+    <string name="menu_logout_dialog_body">En este prototipo se borran la entrada y los reportes de hoy, y el día empieza de nuevo.</string>
+
+    <!-- checker screen (inside menú) -->
+    <string name="checker_overline">Menú · Checador</string>
+    <string name="checker_title">Registrar entrada</string>
+    <plurals name="checker_minutes_early">
+        <item quantity="one">Llegas %1$d minuto antes</item>
+        <item quantity="other">Llegas %1$d minutos antes</item>
+    </plurals>
+    <string name="checker_on_time">Llegas justo a tiempo</string>
+    <string name="checker_late_note">Tu turno empezaba %1$s · %2$d min de retardo</string>
+    <string name="checker_shift_starts">Tu turno empieza a las %1$s</string>
+    <string name="checker_place_distance">%1$s · %2$s</string>
+    <string name="checker_you_are_at">Estás a %1$s</string>
+    <string name="checker_location_verified">Ubicación verificada</string>
+    <string name="checker_out_of_schedule">Fuera de horario</string>
+    <string name="checker_out_of_range">Fuera del perímetro</string>
+    <string name="checker_check_in">Registrar mi entrada</string>
+    <string name="checker_check_in_late">Registrar con retardo</string>
+    <string name="checker_check_in_blocked">Bloqueado hasta que llegues</string>
+    <string name="checker_late_title">Llegaste después de tu hora</string>
+    <string name="checker_late_body">Se registra igual, pero queda marcado como retardo y coordinación lo verá.</string>
+    <string name="checker_write_late_reason">+ Escribir el motivo del retardo (opcional)</string>
+    <string name="checker_late_reason_label">Motivo del retardo</string>
+    <string name="checker_out_title">Todavía no estás en la estancia</string>
+    <string name="checker_out_body">Tu entrada solo se puede registrar dentro de La Oruga. Acércate y vuelve a intentar.</string>
+    <string name="checker_retry">Volver a intentar</string>
+    <string name="checker_notify_coordination">Avisar a coordinación</string>
+    <string name="checker_coordination_notified">Aviso enviado</string>
+    <string name="checker_already_registered">Ya registraste tu entrada a las %1$s</string>
+    <string name="checker_already_registered_late">Ya registraste tu entrada con retardo a las %1$s</string>
+    <string name="checker_exit_is_automatic">La salida se registra sola al cerrar el día.</string>
+    <string name="checker_simulate">Simular llegada (prototipo)</string>
+    <string name="checker_scenario_on_time">A tiempo</string>
+    <string name="checker_scenario_late">Tarde</string>
+    <string name="checker_scenario_out">Lejos</string>
+
+    <!-- check-in done screen (inside menú) -->
+    <string name="checker_done_overline">Checador</string>
+    <string name="checker_done_title">Entrada registrada</string>
+    <string name="checker_done_title_late">Entrada con retardo</string>
+    <string name="checker_done_headline">¡Entrada registrada!</string>
+    <string name="checker_done_headline_late">Entrada registrada con retardo</string>
+    <string name="checker_done_time_place">%1$s · Estancia %2$s</string>
+    <string name="checker_done_greeting">Buen turno, %1$s.</string>
+    <plurals name="checker_done_minutes_late">
+        <item quantity="one">%1$d minuto después de tu hora.</item>
+        <item quantity="other">%1$d minutos después de tu hora.</item>
+    </plurals>
+    <string name="checker_done_location">Ubicación verificada en la estancia</string>
+    <string name="checker_done_no_paper">Sin papel ni firma · queda en tu expediente</string>
+    <string name="checker_done_coordination">Coordinación recibe el aviso de retardo</string>
+    <string name="checker_done_exit">La salida se registra sola al cerrar el día</string>
+    <string name="checker_done_day_starts">El día arranca igual, sin perder momentos</string>
+    <string name="checker_done_go_to_my_day">Ir a Mi día</string>
+    <string name="checker_done_auto">La app te lleva sola en 2 segundos</string>
 
     <!-- coming soon screen -->
     <string name="coming_soon_title">Muy pronto</string>

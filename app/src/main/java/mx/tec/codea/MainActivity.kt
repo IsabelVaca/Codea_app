@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import mx.tec.codea.ui.navigation.CodeaApp
 import mx.tec.codea.ui.theme.CodeaTheme
 
 // the activity is the door into the app. we keep it very small:

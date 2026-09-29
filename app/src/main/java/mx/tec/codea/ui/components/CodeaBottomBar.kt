@@ -20,7 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import mx.tec.codea.R
-import mx.tec.codea.navigation.TopLevelDestination
+import mx.tec.codea.ui.navigation.TopLevelDestination
 import mx.tec.codea.ui.theme.CodeaTheme
 
 // this bar does not know about navigation. it only receives data and reports clicks.
