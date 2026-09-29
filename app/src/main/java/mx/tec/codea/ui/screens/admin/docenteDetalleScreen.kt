@@ -3,6 +3,7 @@ package mx.tec.codea.ui.screens.admin
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.Arrangement
@@ -16,6 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -29,20 +32,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import mx.tec.codea.model.Docente
+import mx.tec.codea.domain.Docente
+import mx.tec.codea.ui.theme.AvatarBg
+import mx.tec.codea.ui.theme.AvatarFg
 import mx.tec.codea.ui.theme.CodeaTheme
-
-data class AccionItem(
-    val texto: String,
-    val bg: Color,
-    val fg: Color,
-    val onClick: () -> Unit
-)
 
 @Composable
 fun DocenteDetalleScreen(
     docente: Docente,
-    acciones: List<AccionItem>,
+    salas: List<String>,
+    onSalaSeleccionada: (String) -> Unit,
+    onDarDeBaja: () -> Unit,
     onBack: () -> Unit
 ) {
     Column(
@@ -96,23 +96,55 @@ fun DocenteDetalleScreen(
                     modifier = Modifier
                         .size(52.dp)
                         .clip(RoundedCornerShape(18.dp))
-                        .background(docente.avatarBg),
+                        .background(AvatarBg),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(docente.iniciales, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = docente.avatarFg)
+                    Text(docente.iniciales, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AvatarFg)
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(docente.nombre, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
                     Text("${docente.sala} · Checó ${docente.horaChecada}", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF5B4B8A))
                 }
-            }
-
-            SeccionLabel("Permisos y asignación")
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                acciones.forEach { accion ->
-                    AccionButton(accion.texto, accion.bg, accion.fg, accion.onClick)
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(if (docente.baja) Color(0xFFFFEDE7) else Color(0xFFE8FBF6))
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = if (docente.baja) "Baja" else "Activa",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (docente.baja) Color(0xFFC4432A) else Color(0xFF0F7A6C)
+                    )
                 }
             }
+
+            SeccionLabel("Cambiar de sala")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                salas.forEach { nombre ->
+                    val activo = nombre == docente.sala
+                    Button(
+                        onClick = { onSalaSeleccionada(nombre) },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (activo) Color(0xFF6C4BF6) else Color(0xFFF4F1FB),
+                            contentColor = if (activo) Color(0xFFFFFDFA) else Color(0xFF6B6183)
+                        ),
+                        shape = RoundedCornerShape(999.dp),
+                        elevation = ButtonDefaults.buttonElevation(0.dp)
+                    ) {
+                        Text(nombre, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+
+            SeccionLabel("Acciones")
+            AccionButton(
+                texto = if (docente.baja) "Reactivar a la docente" else "Dar de baja a la docente",
+                bg = if (docente.baja) Color(0xFFE8FBF6) else Color(0xFFFFEDE7),
+                fg = if (docente.baja) Color(0xFF0F7A6C) else Color(0xFFC4432A),
+                onClick = onDarDeBaja
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
         }
@@ -125,17 +157,15 @@ fun DocenteDetalleScreenPreview() {
     CodeaTheme {
         DocenteDetalleScreen(
             docente = Docente(
+                id = "docente-1",
                 nombre = "Paola Sánchez",
                 iniciales = "PS",
                 sala = "Preescolar 2",
-                ninosEnSala = 12,
                 horaChecada = "7:52"
             ),
-            acciones = listOf(
-                AccionItem("Cambiar de sala", Color(0xFFF4F1FB), Color(0xFF4A4066), {}),
-                AccionItem("Dar de baja", Color(0xFFFFEDE7), Color(0xFFC4432A), {}),
-                AccionItem("Ver expediente", Color(0xFFEFE9FF), Color(0xFF5B3FE0), {})
-            ),
+            salas = listOf("Maternal", "Preescolar 1", "Preescolar 2"),
+            onSalaSeleccionada = {},
+            onDarDeBaja = {},
             onBack = {}
         )
     }

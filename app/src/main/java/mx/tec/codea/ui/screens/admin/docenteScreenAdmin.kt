@@ -28,21 +28,30 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import mx.tec.codea.data.fakeDocentes
-import mx.tec.codea.model.Docente
+import mx.tec.codea.data.DocenteRepository
+import mx.tec.codea.data.InfanteRepository
+import mx.tec.codea.domain.Docente
+import mx.tec.codea.domain.Infante
 import androidx.compose.ui.draw.shadow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DocenteScreen(){
+fun DocenteScreen(
+    docentes: List<Docente>,
+    infantes: List<Infante>,
+    totalSalas: Int,
+    onDocenteClick: (Docente) -> Unit = {},
+    onDarDeAltaAsistente: () -> Unit = {}
+){
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Docentes") })
+            TopAppBar(title = { Text("Docentes", fontWeight = FontWeight.Bold) })
         },
         content = { paddingValues ->
             Column(
@@ -57,7 +66,7 @@ fun DocenteScreen(){
                 ){
                     Column {
                         Text(
-                            text = "${fakeDocentes.size}",
+                            text = "${docentes.size}",
                             modifier = Modifier.padding(
                                 horizontal = 14.dp,
                                 vertical = 5.dp
@@ -69,7 +78,7 @@ fun DocenteScreen(){
                         )
 
                         Text(
-                            text = "Docentes activos en las 3 salas",
+                            text = "Docentes activos en $totalSalas salas",
                             modifier = Modifier.padding(
                                 horizontal = 14.dp,
                                 vertical = 2.dp
@@ -99,13 +108,14 @@ fun DocenteScreen(){
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    items(fakeDocentes) { docente ->
-                        DocenteCard(docente = docente)
+                    items(docentes) { docente ->
+                        val ninosDelDocente = infantes.count { it.sala == docente.sala }
+                        DocenteCard(docente = docente, ninosEnSala = ninosDelDocente, onClick = { onDocenteClick(docente) })
                     }
 
                     item {
                         DarDeAltaAsistenteButton(
-                            onClick = { },
+                            onClick = onDarDeAltaAsistente,
                             modifier = Modifier.padding(horizontal = 15.dp, vertical = 8.dp)
                         )
                     }
@@ -117,13 +127,13 @@ fun DocenteScreen(){
 }
 
 @Composable
-fun DocenteCard(docente: Docente) {
+fun DocenteCard(docente: Docente, ninosEnSala: Int, onClick: () -> Unit = {}) {
     Surface(modifier = Modifier.fillMaxWidth(1f).padding(vertical = 5.dp, horizontal = 15.dp).shadow(
             elevation = 20.dp,
         shape = RoundedCornerShape(18.dp),
         ambientColor = Color.Black.copy(alpha = 0.70f),
         spotColor = Color.Black.copy(alpha = 0.30f)
-    ),
+    ).clickable(onClick = onClick),
         color = Color(red = 255, green = 255, blue = 255),
         shape = RoundedCornerShape(18.dp))
     {
@@ -177,7 +187,7 @@ fun DocenteCard(docente: Docente) {
                     )
                     //cantidad de niños en la sala
                     Text(
-                        text = "${docente.ninosEnSala} niños",
+                        text = "$ninosEnSala niños",
                         modifier = Modifier,
                         color = Color(red = 138, green = 128, blue = 165),
                         fontSize = 13.sp,
@@ -240,6 +250,6 @@ fun DarDeAltaAsistenteButton(
 @Composable
 fun DocenteScreenPreview() {
     CodeaTheme {
-        DocenteScreen()
+        DocenteScreen(docentes = DocenteRepository().getAll(), infantes = InfanteRepository().getAll(), totalSalas = 3)
     }
 }

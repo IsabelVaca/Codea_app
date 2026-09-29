@@ -1,3 +1,5 @@
+
+
 package mx.tec.codea.navigation
 
 import kotlinx.serialization.Serializable
@@ -42,13 +44,46 @@ data class MenuRoute(val openChecker: Boolean = false)
 @Serializable
 data object CheckerRoute
 
-// the admin tabs. each one is its own top level destination (see
-// TopLevelDestination), not a graph, because for now they are a single screen.
+// the "centro" tab has two screens, so it is a graph like MyDayGraph: the
+// bottom bar keeps "centro" selected while "crear sala" is open on top of it.
+@Serializable
+data object AdminCentroGraph
+
 @Serializable
 data object AdminCentroRoute
 
 @Serializable
+data object AdminCrearSalaRoute
+
+// detalle de una sala: viaja el id, no el objeto.
+@Serializable
+data class AdminSalaDetalleRoute(val salaId: String)
+
+// "docentes" is still a single screen.
+@Serializable
 data object AdminDocentesRoute
+
+
+@Serializable
+data object AdminDocentesGraph
+
+@Serializable
+data object AdminAltaAsistenteRoute
+
+// detalle de un docente: viaja el id, no el objeto.
+@Serializable
+data class AdminDocenteDetalleRoute(val docenteId: String)
+// "infantes" is a graph too, for the same reason as "centro": "inscribir
+// infante" opens on top of it and the bottom bar stays on "infantes".
+@Serializable
+data object AdminInfantesGraph
 
 @Serializable
 data object AdminInfantesRoute
+
+@Serializable
+data object AdminInscribirInfanteRoute
+
+// detalle de un infante: mismo patrón que sala y docente.
+@Serializable
+data class AdminInfanteDetalleRoute(val infanteId: String)

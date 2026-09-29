@@ -69,21 +69,21 @@ enum class TopLevelDestination(
 
     // the admin tabs. each is a single screen for now, so its route is not a graph.
     CENTRO(
-        route = AdminCentroRoute,
+        route = AdminCentroGraph,
         icon = Icons.Filled.Home,
         labelRes = R.string.nav_admin_centro,
         isLocked = false,
         roles = setOf(Role.ADMIN),
     ),
     DOCENTES(
-        route = AdminDocentesRoute,
+        route = AdminDocentesGraph,
         icon = Icons.Filled.School,
         labelRes = R.string.nav_admin_docentes,
         isLocked = false,
         roles = setOf(Role.ADMIN),
     ),
     INFANTES(
-        route = AdminInfantesRoute,
+        route = AdminInfantesGraph,
         icon = Icons.Filled.Groups,
         labelRes = R.string.nav_admin_infantes,
         isLocked = false,

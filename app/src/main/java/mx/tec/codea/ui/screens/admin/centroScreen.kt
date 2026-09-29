@@ -2,6 +2,7 @@ package mx.tec.codea.ui.screens.admin
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,23 +35,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import mx.tec.codea.data.fakeSalas
-import mx.tec.codea.model.Sala
+import mx.tec.codea.data.InfanteRepository
+import mx.tec.codea.data.SalaRepository
+import mx.tec.codea.domain.Infante
+import mx.tec.codea.domain.Sala
 import mx.tec.codea.ui.theme.CodeaTheme
 import mx.tec.codea.ui.theme.Poppins
+import mx.tec.codea.ui.theme.salaColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CentroScreen(
     salas: List<Sala>,
+    infantes: List<Infante>,
+    onSalaClick: (Sala) -> Unit = {},
     avisoTexto: String,
     onAvisoTextoChange: (String) -> Unit,
     onPublicarAviso: () -> Unit,
-    onCrearSala: () -> Unit
+    onCrearSala: () -> Unit,
+    canPublicarAviso: Boolean
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Centro") })
+            TopAppBar(title = { Text("Centro", fontWeight = FontWeight.Bold) })
         },
         content = { paddingValues ->
     Column(
@@ -68,6 +75,8 @@ fun CentroScreen(
             SeccionLabel("Ocupación de salas")
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 salas.forEach { sala ->
+                    val ninosActuales = infantes.count { it.sala == sala.nombre }
+                    val ocupacion = if (sala.cupoMaximo > 0) ninosActuales / sala.cupoMaximo.toFloat() else 0f
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -79,6 +88,7 @@ fun CentroScreen(
                             )
                             .clip(RoundedCornerShape(22.dp))
                             .background(Color.White)
+                            .clickable { onSalaClick(sala) }
                             .padding(14.dp),
                         verticalArrangement = Arrangement.spacedBy(9.dp)
                     ) {
@@ -87,7 +97,7 @@ fun CentroScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(sala.nombre, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
-                            Text(sala.cupoTexto, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF5B3FE0))
+                            Text("$ninosActuales/${sala.cupoMaximo} niños", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF5B3FE0))
                         }
                         Box(
                             modifier = Modifier
@@ -98,10 +108,10 @@ fun CentroScreen(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .fillMaxWidth(sala.ocupacion)
+                                    .fillMaxWidth(ocupacion)
                                     .fillMaxHeight()
                                     .clip(RoundedCornerShape(999.dp))
-                                    .background(sala.color)
+                                    .background(salaColor(sala.id))
                             )
                         }
                         Text(sala.asistente, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFFA79BBF))
@@ -134,6 +144,7 @@ fun CentroScreen(
                 )
                 Button(
                     onClick = onPublicarAviso,
+                    enabled = canPublicarAviso,
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEFE9FF), contentColor = Color(0xFF5B3FE0)),
                     shape = RoundedCornerShape(16.dp),
@@ -182,11 +193,13 @@ fun CrearSalaButton(
 fun CentroScreenPreview() {
     CodeaTheme {
         CentroScreen(
-            salas = fakeSalas,
+            salas = SalaRepository().getAll(),
+            infantes = InfanteRepository().getAll(),
             avisoTexto = "",
             onAvisoTextoChange = {},
             onPublicarAviso = {},
-            onCrearSala = {}
+            onCrearSala = {},
+            canPublicarAviso = true
         )
     }
 }

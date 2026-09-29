@@ -32,7 +32,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import mx.tec.codea.model.Infante
+import mx.tec.codea.domain.Infante
+import mx.tec.codea.ui.theme.AvatarBg
+import mx.tec.codea.ui.theme.AvatarFg
 import mx.tec.codea.ui.theme.CodeaTheme
 
 @Composable
@@ -41,8 +43,6 @@ fun InfanteDetalleScreen(
     salas: List<String>,
     onSalaSeleccionada: (String) -> Unit,
     onDarBaja: () -> Unit,
-    onVerExpediente: () -> Unit,
-    onContactarTutor: () -> Unit,
     onBack: () -> Unit
 ) {
     Column(
@@ -97,10 +97,10 @@ fun InfanteDetalleScreen(
                     modifier = Modifier
                         .size(52.dp)
                         .clip(RoundedCornerShape(18.dp))
-                        .background(infante.avatarBg),
+                        .background(AvatarBg),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(infante.iniciales, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = infante.avatarFg)
+                    Text(infante.iniciales, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AvatarFg)
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(infante.nombre, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
@@ -151,8 +151,8 @@ fun InfanteDetalleScreen(
                     fg = if (infante.baja) Color(0xFF0F7A6C) else Color(0xFFC4432A),
                     onClick = onDarBaja
                 )
-                AccionButton("Ver expediente completo", Color(0xFFF4F1FB), Color(0xFF4A4066), onVerExpediente)
-                AccionButton("Contactar al tutor", Color(0xFFEFE9FF), Color(0xFF5B3FE0), onContactarTutor)
+
+
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -210,6 +210,7 @@ fun InfanteDetalleScreenPreview() {
     CodeaTheme {
         InfanteDetalleScreen(
             infante = Infante(
+                id = "infante-1",
                 nombre = "Mateo Iglesias",
                 iniciales = "MI",
                 edad = 4,
@@ -220,8 +221,6 @@ fun InfanteDetalleScreenPreview() {
             salas = listOf("Maternal", "Preescolar 1", "Preescolar 2"),
             onSalaSeleccionada = {},
             onDarBaja = {},
-            onVerExpediente = {},
-            onContactarTutor = {},
             onBack = {}
         )
     }

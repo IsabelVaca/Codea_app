@@ -23,12 +23,15 @@ fun NavHostController.reselectTopLevel(destination: TopLevelDestination) {
         // like "aún el día no comienza" -> "mi día" or "checador" -> "menú".
         TopLevelDestination.MY_DAY -> popBackStack<MyDayRoute>(inclusive = false)
         TopLevelDestination.MENU -> popBackStack<MenuRoute>(inclusive = false)
+        // "centro" -> "crear sala" and "infantes" -> "inscribir infante" work
+        // the same way: a second tap closes the inner screen.
+        TopLevelDestination.CENTRO -> popBackStack<AdminCentroRoute>(inclusive = false)
+        TopLevelDestination.INFANTES -> popBackStack<AdminInfantesRoute>(inclusive = false)
+        TopLevelDestination.DOCENTES -> popBackStack<AdminDocentesRoute>(inclusive = false)
         // the other tabs have only one screen, so there is nothing to do.
         TopLevelDestination.MY_ROOM,
         TopLevelDestination.CHATS,
-        TopLevelDestination.CENTRO,
-        TopLevelDestination.DOCENTES,
-        TopLevelDestination.INFANTES,
+
         -> Unit
     }
 }

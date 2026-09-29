@@ -28,21 +28,27 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import mx.tec.codea.data.fakeInfantes
-import mx.tec.codea.model.Infante
+import mx.tec.codea.data.InfanteRepository
+import mx.tec.codea.domain.Infante
 import androidx.compose.ui.draw.shadow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InfanteScreen(){
+fun InfanteScreen(
+    infantes: List<Infante>,
+    onInfanteClick: (Infante) -> Unit = {},
+    onInscribirInfante: () -> Unit = {},
+    totalSalas: Int
+){
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Infantes inscritos") })
+            TopAppBar(title = { Text("Infantes inscritos", fontWeight = FontWeight.Bold) })
         },
         content = { paddingValues ->
             Column(
@@ -57,7 +63,7 @@ fun InfanteScreen(){
                 ){
                     Column {
                         Text(
-                            text = "${fakeInfantes.size}",
+                            text = "${infantes.size}",
                             modifier = Modifier.padding(
                                 horizontal = 14.dp,
                                 vertical = 5.dp
@@ -69,7 +75,7 @@ fun InfanteScreen(){
                         )
 
                         Text(
-                            text = "Niños inscritos en las 3 salas",
+                            text = "Niños inscritos en $totalSalas salas",
                             modifier = Modifier.padding(
                                 horizontal = 14.dp,
                                 vertical = 2.dp
@@ -99,13 +105,13 @@ fun InfanteScreen(){
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    items(fakeInfantes) { infante ->
-                        InfanteCard(infante = infante)
+                    items(infantes) { infante ->
+                        InfanteCard(infante = infante, onClick = { onInfanteClick(infante) })
                     }
 
                     item {
                         InscribirInfanteButton(
-                            onClick = { },
+                            onClick = onInscribirInfante,
                             modifier = Modifier.padding(horizontal = 15.dp, vertical = 8.dp)
                         )
                     }
@@ -117,13 +123,13 @@ fun InfanteScreen(){
 }
 
 @Composable
-fun InfanteCard(infante: Infante) {
+fun InfanteCard(infante: Infante, onClick: () -> Unit = {}) {
     Surface(modifier = Modifier.fillMaxWidth(1f).padding(vertical = 5.dp, horizontal = 15.dp).shadow(
             elevation = 20.dp,
         shape = RoundedCornerShape(18.dp),
         ambientColor = Color.Black.copy(alpha = 0.70f),
         spotColor = Color.Black.copy(alpha = 0.30f)
-    ),
+    ).clickable(onClick = onClick),
         color = Color(red = 255, green = 255, blue = 255),
         shape = RoundedCornerShape(18.dp))
     {
@@ -250,6 +256,6 @@ fun InscribirInfanteButton(
 @Composable
 fun InfanteScreenPreview() {
     CodeaTheme {
-        InfanteScreen()
+        InfanteScreen(infantes = InfanteRepository().getAll(), totalSalas = 3)
     }
 }
