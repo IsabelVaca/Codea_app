@@ -8,4 +8,5 @@ package mx.tec.codea.navigation
 enum class Role {
     TEACHER,
     ADMIN,
+    PARENT,
 }

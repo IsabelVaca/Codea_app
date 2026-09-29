@@ -97,3 +97,18 @@ data object AdminInscribirInfanteRoute
 // detalle de un infante: mismo patrón que sala y docente.
 @Serializable
 data class AdminInfanteDetalleRoute(val infanteId: String)
+
+// parent tabs. for now each tab has a single screen.
+// if one later gains inner screens, it can be converted into a graph
+// without changing the role-based bottom navigation idea.
+@Serializable
+data object ParentTodayRoute
+
+@Serializable
+data object ParentCalendarRoute
+
+@Serializable
+data object ParentPhotosRoute
+
+@Serializable
+data object ParentDocumentsRoute
