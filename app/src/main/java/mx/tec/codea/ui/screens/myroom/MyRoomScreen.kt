@@ -58,7 +58,7 @@ fun MyRoomScreen(
             ?.let(AttendanceStatus::valueOf)
             ?: child.initialAttendance
 
-    // Keep the prototype's initial "14 presentes", but make the number react
+    // Keep the prototype's initial "4 presentes", but make the number react
     // correctly if one of the visible sample children changes attendance.
     val presentDelta = children.sumOf { child ->
         val current = attendanceOf(child)
