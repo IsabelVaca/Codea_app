@@ -16,6 +16,16 @@ data object MyDayGraph
 @Serializable
 data object MyDayRoute
 
+// the report sub-flow routes inside "mi día".
+@Serializable
+data class SelectReportMethodRoute(val subprocessName: String = "PATIO Y JUEGO LIBRE")
+
+@Serializable
+data class ReportRoute(val subprocessName: String = "PATIO Y JUEGO LIBRE")
+
+@Serializable
+data class SelectStudentsRoute(val reportTypeLabel: String = "INCIDENCIA")
+
 // the message we show when the teacher has not checked in yet.
 @Serializable
 data object DayNotStartedRoute
