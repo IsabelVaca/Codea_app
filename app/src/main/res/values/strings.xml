@@ -68,6 +68,14 @@
     <string name="menu_checker_title">Checador</string>
     <string name="menu_checker_subtitle">Entrada y salida del turno</string>
 
+    <!-- parent documents screen -->
+    <string name="parent_documents_overline">Estancia La Oruga · Familia</string>
+    <string name="parent_documents_title">Documentos de %1$s</string>
+    <string name="parent_documents_current">Vigente</string>
+    <string name="parent_documents_missing">Faltante</string>
+    <string name="parent_documents_authorized_section">Autorizados para recoger</string>
+    <string name="parent_documents_remove_authorized">(eliminar)</string>
+
     <!-- coming soon screen -->
     <string name="coming_soon_title">Muy pronto</string>
     <string name="coming_soon_subtitle">Esta sección todavía está en construcción.</string>
