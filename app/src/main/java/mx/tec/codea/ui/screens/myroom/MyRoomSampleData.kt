@@ -22,13 +22,13 @@ object MyRoomSampleData {
             id = "sofia-marquez",
             name = "Sofía Márquez",
             initialAttendance = AttendanceStatus.PRESENT,
-            hasUnreadChat = true,
+            hasUnreadChat = false,
         ),
         Child(
             id = "mateo-torres",
             name = "Mateo Torres",
             initialAttendance = AttendanceStatus.PRESENT,
-            hasUnreadChat = true,
+            hasUnreadChat = false,
         ),
         Child(
             id = "lucia-ramirez",
@@ -40,7 +40,7 @@ object MyRoomSampleData {
             id = "diego-alvarez",
             name = "Diego Álvarez",
             initialAttendance = AttendanceStatus.ABSENT,
-            hasUnreadChat = true,
+            hasUnreadChat = false,
         ),
         Child(
             id = "renata-nunez",
