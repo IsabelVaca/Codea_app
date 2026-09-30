@@ -46,35 +46,18 @@ fun MyRoomScreen(
 ) {
     // The map only exists for this demo. Later this will come from actual attendance data.
     var attendanceByChild by rememberSaveable {
-        mutableStateOf(
-            children.associate { child ->
-                child.id to child.initialAttendance.name
-            },
-        )
+        mutableStateOf<Map<String, String>>(emptyMap())
     }
 
-    fun attendanceOf(child: Child): AttendanceStatus =
+    fun attendanceOf(child: Child): AttendanceStatus? =
         attendanceByChild[child.id]
             ?.let(AttendanceStatus::valueOf)
-            ?: child.initialAttendance
 
     // Keep the prototype's initial "4 presentes", but make the number react
     // correctly if one of the visible sample children changes attendance.
-    val presentDelta = children.sumOf { child ->
-        val current = attendanceOf(child)
-
-        when {
-            child.initialAttendance == AttendanceStatus.PRESENT &&
-                    current == AttendanceStatus.ABSENT -> -1
-
-            child.initialAttendance == AttendanceStatus.ABSENT &&
-                    current == AttendanceStatus.PRESENT -> 1
-
-            else -> 0
-        }
+    val presentCount = children.count { child ->
+        attendanceOf(child) == AttendanceStatus.PRESENT
     }
-
-    val presentCount = MyRoomSampleData.initialPresentCount + presentDelta
     val unreadCount = children.count { it.hasUnreadChat }
 
     LazyColumn(
@@ -173,7 +156,7 @@ private fun SummaryCard(
 @Composable
 private fun ChildCard(
     child: Child,
-    attendance: AttendanceStatus,
+    attendance: AttendanceStatus?,
     onAttendanceSelected: (AttendanceStatus) -> Unit,
     onChatClick: () -> Unit,
 ) {
