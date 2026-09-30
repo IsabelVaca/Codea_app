@@ -20,24 +20,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import mx.tec.codea.R
-import mx.tec.codea.navigation.Role
 import mx.tec.codea.navigation.TopLevelDestination
 import mx.tec.codea.ui.theme.CodeaTheme
 
-// this bar does not know about navigation, and it does not know about roles either.
-// CodeaApp already filtered "destinations" to the ones the current role can see,
-// the same way the "avisos" app checks sesion.puedePublicar before drawing its
-// button: the role decides what exists, this bar only draws what it is given.
+// this bar does not know about navigation. it only receives data and reports clicks.
 // we call this a "stateless" component: it is easier to test, reuse and preview.
 @Composable
 fun CodeaBottomBar(
-    // the tabs to draw, already filtered by role.
-    destinations: List<TopLevelDestination>,
     // the tab that is selected now, so we can highlight it.
     currentDestination: TopLevelDestination?,
     // we tell the parent which tab was tapped, and the parent decides what to do.
     onDestinationClick: (TopLevelDestination) -> Unit,
     modifier: Modifier = Modifier,
+    // the list of tabs visible for the active role.
+    destinations: List<TopLevelDestination> = TopLevelDestination.entries,
 ) {
     // the prototype draws the bar with the same color as the screen,
     // and only a thin line on top separates them.
@@ -53,7 +49,7 @@ fun CodeaBottomBar(
                 unselectedTextColor = MaterialTheme.colorScheme.outline,
             )
 
-            // we create one item for each destination the caller gave us, in the same order.
+            // we create one item for each destination in the provided list.
             destinations.forEach { destination ->
                 val selected = destination == currentDestination
                 NavigationBarItem(
@@ -109,7 +105,6 @@ private fun DestinationIcon(destination: TopLevelDestination) {
 private fun CodeaBottomBarPreview() {
     CodeaTheme {
         CodeaBottomBar(
-            destinations = TopLevelDestination.entries.filter { Role.TEACHER in it.roles },
             currentDestination = TopLevelDestination.MY_DAY,
             onDestinationClick = {},
         )

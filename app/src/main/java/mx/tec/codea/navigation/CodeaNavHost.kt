@@ -496,11 +496,23 @@ fun CodeaNavHost(
 
         // parent tabs. each is only one screen for now.
         composable<ParentTodayRoute> {
-            ParentTodayScreen()
+            val context = LocalContext.current
+            ParentTodayScreen(
+                onNavigateToCalendar = {
+                    navController.navigateToTopLevel(TopLevelDestination.PARENT_CALENDAR)
+                },
+                onSendNote = { _ ->
+                    Toast.makeText(context, "Nota enviada a la asistente", Toast.LENGTH_SHORT).show()
+                },
+            )
         }
 
         composable<ParentCalendarRoute> {
-            ParentCalendarScreen()
+            ParentCalendarScreen(
+                onDaySelected = { _ ->
+                    navController.navigateToTopLevel(TopLevelDestination.PARENT_TODAY)
+                },
+            )
         }
 
         composable<ParentPhotosRoute> {

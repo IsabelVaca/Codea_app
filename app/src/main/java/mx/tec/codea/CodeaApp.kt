@@ -1,5 +1,6 @@
 package mx.tec.codea
 
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -108,7 +109,9 @@ private fun RoleApp(
             navController = navController,
             startDestination = startDestination,
             snackbarHostState = snackbarHostState,
-            modifier = Modifier.padding(innerPadding),
+            modifier = Modifier
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding),
         )
     }
 }
