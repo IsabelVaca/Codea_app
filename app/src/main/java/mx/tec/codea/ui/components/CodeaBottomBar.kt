@@ -32,6 +32,8 @@ fun CodeaBottomBar(
     // we tell the parent which tab was tapped, and the parent decides what to do.
     onDestinationClick: (TopLevelDestination) -> Unit,
     modifier: Modifier = Modifier,
+    // the list of tabs visible for the active role.
+    destinations: List<TopLevelDestination> = TopLevelDestination.entries,
 ) {
     // the prototype draws the bar with the same color as the screen,
     // and only a thin line on top separates them.
@@ -47,8 +49,8 @@ fun CodeaBottomBar(
                 unselectedTextColor = MaterialTheme.colorScheme.outline,
             )
 
-            // we create one item for each value of the enum, in the same order.
-            TopLevelDestination.entries.forEach { destination ->
+            // we create one item for each destination in the provided list.
+            destinations.forEach { destination ->
                 val selected = destination == currentDestination
                 NavigationBarItem(
                     selected = selected,

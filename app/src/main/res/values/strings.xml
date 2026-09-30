@@ -5,12 +5,29 @@
     <string name="common_back">Regresar</string>
     <string name="common_cancel">Cancelar</string>
 
-    <!-- bottom navigation labels -->
+    <!-- temporary role selection before login exists -->
+    <string name="role_selection_title">¿Qué tipo de usuario eres?</string>
+    <string name="role_teacher">Maestro</string>
+    <string name="role_admin">Administrador</string>
+    <string name="role_parent">Padre de familia</string>
+
+    <!-- teacher bottom navigation labels -->
     <string name="nav_my_day">Mi día</string>
     <string name="nav_my_room">Mi sala</string>
     <string name="nav_chats">Chats</string>
     <string name="nav_menu">Menú</string>
     <string name="nav_locked_description">Sección bloqueada</string>
+
+    <!-- admin bottom navigation labels -->
+    <string name="nav_admin_centro">Centro</string>
+    <string name="nav_admin_docentes">Docentes</string>
+    <string name="nav_admin_infantes">Infantes</string>
+
+    <!-- parent bottom navigation labels -->
+    <string name="nav_parent_today">Hoy</string>
+    <string name="nav_parent_calendar">Calendario</string>
+    <string name="nav_parent_photos">Fotos</string>
+    <string name="nav_parent_documents">Documento</string>
 
     <!-- my day screen -->
     <string name="my_day_title">Mi día</string>
@@ -203,6 +220,14 @@
     <string name="checker_done_day_starts">El día arranca igual, sin perder momentos</string>
     <string name="checker_done_go_to_my_day">Ir a Mi día</string>
     <string name="checker_done_auto">La app te lleva sola en 2 segundos</string>
+
+    <!-- parent documents screen -->
+    <string name="parent_documents_overline">Estancia La Oruga · Familia</string>
+    <string name="parent_documents_title">Documentos de %1$s</string>
+    <string name="parent_documents_current">Vigente</string>
+    <string name="parent_documents_missing">Faltante</string>
+    <string name="parent_documents_authorized_section">Autorizados para recoger</string>
+    <string name="parent_documents_remove_authorized">(eliminar)</string>
 
     <!-- coming soon screen -->
     <string name="coming_soon_title">Muy pronto</string>
