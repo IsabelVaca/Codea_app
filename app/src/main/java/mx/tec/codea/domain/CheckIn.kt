@@ -9,10 +9,6 @@ data class CheckInAttempt(
     val placeName: String,
     val distanceMeters: Int,
     val allowedRadiusMeters: Int,
-    val schoolLatitude: Double,
-    val schoolLongitude: Double,
-    val teacherLatitude: Double,
-    val teacherLongitude: Double,
 )
 
 // the three answers the check-in can give.

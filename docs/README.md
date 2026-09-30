@@ -26,16 +26,6 @@ Los archivos son autocontenidos (funcionan sin internet): ábrelos en el navegad
 
 Sigue la de las prácticas del curso: `domain/` (reglas en Kotlin puro), `data/` (repositorios en memoria), `ui/state/` (ViewModels), `ui/screens/` (pantallas que solo dibujan), `ui/components/` y `ui/navigation/`. Las reglas del dominio tienen pruebas en `app/src/test/java/mx/tec/codea/domain/` (`./gradlew test`).
 
-## Google Maps
-
-El checador usa un mapa de Google. Para que se vea, agrega tu API key (Maps SDK for Android) en `local.properties`, que no se sube a git:
-
-```
-MAPS_API_KEY=tu_key_aquí
-```
-
-Sin la key la app compila, pero el mapa sale vacío.
-
 ## Licencias
 
 - La fuente **Poppins** (`app/src/main/res/font/poppins_*.ttf`) se usa bajo la SIL Open Font License 1.1: [`licencias/OFL-Poppins.txt`](licencias/OFL-Poppins.txt).

@@ -1,14 +1,21 @@
 package mx.tec.codea.ui.screens
 
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -20,25 +27,21 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.Circle
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberUpdatedMarkerState
+import java.util.Locale
 import mx.tec.codea.R
 import mx.tec.codea.data.CheckInRepository
 import mx.tec.codea.data.CheckInScenario
@@ -50,9 +53,8 @@ import mx.tec.codea.ui.components.BackHeader
 import mx.tec.codea.ui.components.InfoBox
 import mx.tec.codea.ui.state.CheckerUiState
 import mx.tec.codea.ui.theme.CodeaTheme
-import java.util.Locale
 
-// the "checador" screen: the hour, a map that shows where the teacher is,
+// the "checador" screen: the hour, a small map that shows where the teacher is,
 // and the button to register the start of the shift.
 // it follows screen 2 and the error cases e1 and e2 of "registrar entrada" in the prototype.
 // when the check-in is already saved (registeredCheckIn), it only shows that.
@@ -158,74 +160,157 @@ private fun CurrentTime(uiState: CheckerUiState) {
     }
 }
 
-// a real google map with the school area (a circle) and a pin where the teacher is.
+// a small drawing of the place, like the one in the prototype: two streets, two
+// buildings, the area of the school (a circle) and a pin where the teacher is.
 @Composable
 private fun LocationMap(attempt: CheckInAttempt, status: CheckInStatus) {
-    val teacherLocation = LatLng(attempt.teacherLatitude, attempt.teacherLongitude)
-    val cameraPositionState = rememberCameraPositionState { position = cameraFor(attempt) }
-    // when the situation changes, the camera moves to show the school and the teacher.
-    LaunchedEffect(attempt) {
-        cameraPositionState.animate(CameraUpdateFactory.newCameraPosition(cameraFor(attempt)))
-    }
-    val areaColor = MaterialTheme.colorScheme.tertiary
+    val isInside = status != CheckInStatus.OUT_OF_RANGE
+    val areaColor = if (isInside) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.error
+    val streetColor = MaterialTheme.colorScheme.surface
 
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        GoogleMap(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(250.dp)
-                .clip(RoundedCornerShape(16.dp)),
-            cameraPositionState = cameraPositionState,
-            // the map only shows the place. we turn off the gestures, because
-            // dragging the map would fight with the scroll of the screen.
-            uiSettings = MapUiSettings(
-                zoomControlsEnabled = false,
-                mapToolbarEnabled = false,
-                scrollGesturesEnabled = false,
-                zoomGesturesEnabled = false,
-                rotationGesturesEnabled = false,
-                tiltGesturesEnabled = false,
-            ),
-        ) {
-            // the area where the check-in is allowed.
-            Circle(
-                center = LatLng(attempt.schoolLatitude, attempt.schoolLongitude),
-                radius = attempt.allowedRadiusMeters.toDouble(),
-                fillColor = areaColor.copy(alpha = 0.15f),
-                strokeColor = areaColor,
-                strokeWidth = 3f,
-            )
-            Marker(state = rememberUpdatedMarkerState(position = teacherLocation))
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(250.dp)
+            .clip(RoundedCornerShape(26.dp))
+            .background(areaColor.copy(alpha = 0.08f)),
+    ) {
+        // the streets are white stripes that repeat across the drawing.
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val stripe = 12.dp.toPx()
+            var x = 40.dp.toPx()
+            while (x < size.width) {
+                drawRect(streetColor, topLeft = Offset(x, 0f), size = Size(stripe, size.height))
+                x += 140.dp.toPx()
+            }
+            var y = 60.dp.toPx()
+            while (y < size.height) {
+                drawRect(streetColor, topLeft = Offset(0f, y), size = Size(size.width, stripe))
+                y += 120.dp.toPx()
+            }
         }
+        // two buildings, only to make it look like a map.
+        Box(
+            Modifier
+                .padding(start = 26.dp, top = 150.dp)
+                .size(96.dp, 70.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(areaColor.copy(alpha = 0.14f)),
+        )
+        Box(
+            Modifier
+                .align(Alignment.TopEnd)
+                .padding(end = 24.dp, top = 34.dp)
+                .size(78.dp, 58.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(areaColor.copy(alpha = 0.14f)),
+        )
+
+        if (isInside) {
+            // the teacher is inside the area: one pin in the middle of the circle.
+            Box(
+                Modifier
+                    .align(Alignment.Center)
+                    .size(140.dp)
+                    .clip(CircleShape)
+                    .background(areaColor.copy(alpha = 0.16f))
+                    .border(2.dp, areaColor.copy(alpha = 0.45f), CircleShape),
+            )
+            MapPin(
+                color = MaterialTheme.colorScheme.error,
+                size = 26.dp,
+                modifier = Modifier.align(Alignment.Center).offset(y = (-18).dp),
+            )
+        } else {
+            // the teacher is far: a grey pin marks the school, and hers is outside.
+            Box(
+                Modifier
+                    .align(Alignment.Center)
+                    .offset(x = (-10).dp, y = (-13).dp)
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .background(areaColor.copy(alpha = 0.10f))
+                    .border(2.dp, areaColor.copy(alpha = 0.5f), CircleShape),
+            )
+            MapPin(
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                size = 22.dp,
+                modifier = Modifier.align(Alignment.Center).offset(x = (-10).dp, y = (-28).dp),
+            )
+            MapPin(
+                color = areaColor,
+                size = 26.dp,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 34.dp, bottom = 74.dp),
+            )
+        }
+
+        // the two labels at the bottom: how far she is, and the result.
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .padding(14.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text(
-                text = if (status == CheckInStatus.OUT_OF_RANGE) {
-                    stringResource(R.string.checker_you_are_at, formatDistance(attempt.distanceMeters))
-                } else {
-                    stringResource(R.string.checker_place_distance, attempt.placeName, formatDistance(attempt.distanceMeters))
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            val (label, color) = when (status) {
-                CheckInStatus.ON_TIME ->
-                    stringResource(R.string.checker_location_verified) to MaterialTheme.colorScheme.onTertiaryContainer
-                CheckInStatus.LATE ->
-                    stringResource(R.string.checker_out_of_schedule) to MaterialTheme.colorScheme.secondary
-                CheckInStatus.OUT_OF_RANGE ->
-                    stringResource(R.string.checker_out_of_range) to MaterialTheme.colorScheme.error
+            val distanceText = if (isInside) {
+                stringResource(R.string.checker_place_distance, attempt.placeName, formatDistance(attempt.distanceMeters))
+            } else {
+                stringResource(R.string.checker_you_are_at, formatDistance(attempt.distanceMeters))
             }
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.SemiBold,
-                color = color,
+            MapLabel(
+                text = distanceText,
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = if (isInside) MaterialTheme.colorScheme.onTertiaryContainer else areaColor,
             )
+            when (status) {
+                CheckInStatus.ON_TIME -> MapLabel(
+                    text = stringResource(R.string.checker_location_verified),
+                    containerColor = MaterialTheme.colorScheme.tertiary,
+                    contentColor = MaterialTheme.colorScheme.onTertiary,
+                )
+                CheckInStatus.LATE -> MapLabel(
+                    text = stringResource(R.string.checker_out_of_schedule),
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = MaterialTheme.colorScheme.onSecondary,
+                )
+                CheckInStatus.OUT_OF_RANGE -> MapLabel(
+                    text = stringResource(R.string.checker_out_of_range),
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError,
+                )
+            }
         }
     }
+}
+
+// a map pin: a square with three round corners, turned so the sharp corner points down.
+@Composable
+private fun MapPin(color: Color, size: Dp, modifier: Modifier = Modifier) {
+    Box(
+        modifier
+            .size(size)
+            .rotate(-45f)
+            .clip(RoundedCornerShape(topStartPercent = 50, topEndPercent = 50, bottomEndPercent = 50, bottomStartPercent = 0))
+            .background(color),
+    )
+}
+
+// a small pill with text, used for the labels on the map.
+@Composable
+private fun MapLabel(text: String, containerColor: Color, contentColor: Color) {
+    Text(
+        text = text,
+        fontSize = 11.sp,
+        fontWeight = FontWeight.ExtraBold,
+        color = contentColor,
+        maxLines = 1,
+        modifier = Modifier
+            .clip(RoundedCornerShape(50))
+            .background(containerColor)
+            .padding(horizontal = 12.dp, vertical = 9.dp),
+    )
 }
 
 // e2: the teacher arrived after her hour. she can check in, but it shows as late.
@@ -372,25 +457,10 @@ private fun CheckInScenario.labelRes(): Int = when (this) {
     CheckInScenario.OUT_OF_RANGE -> R.string.checker_scenario_out
 }
 
-// close to the school when she is inside; farther away when she is not, so both points fit.
-private fun cameraFor(attempt: CheckInAttempt): CameraPosition {
-    val isFar = attempt.distanceMeters > attempt.allowedRadiusMeters
-    val center = if (isFar) {
-        LatLng(
-            (attempt.schoolLatitude + attempt.teacherLatitude) / 2,
-            (attempt.schoolLongitude + attempt.teacherLongitude) / 2,
-        )
-    } else {
-        LatLng(attempt.schoolLatitude, attempt.schoolLongitude)
-    }
-    return CameraPosition.fromLatLngZoom(center, if (isFar) 13.5f else 17f)
-}
-
 // 12 -> "12 m", 1400 -> "1.4 km".
 private fun formatDistance(meters: Int): String =
     if (meters < 1000) "$meters m" else String.format(Locale.getDefault(), "%.1f km", meters / 1000.0)
 
-// the map does not draw in the preview, only in the app.
 @Preview(showBackground = true, heightDp = 900)
 @Composable
 private fun CheckerScreenLatePreview() {
