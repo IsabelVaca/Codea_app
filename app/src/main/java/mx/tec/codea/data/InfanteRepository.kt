@@ -12,6 +12,7 @@ class InfanteRepository {
             edad = 4,
             tutor = "Laura Iglesias",
             tituloTutor = "mamá",
+            correoTutor = "laura.iglesias@correo.com",
             sala = "Preescolar 2"
         ),
         Infante(
@@ -21,6 +22,7 @@ class InfanteRepository {
             edad = 3,
             tutor = "Carlos Gómez",
             tituloTutor = "papá",
+            correoTutor = "carlos.gomez@correo.com",
             sala = "Maternal"
         ),
         Infante(
@@ -30,6 +32,7 @@ class InfanteRepository {
             edad = 5,
             tutor = "Andrea Torres",
             tituloTutor = "mamá",
+            correoTutor = "andrea.torres@correo.com",
             sala = "Preescolar 1"
         ),
         Infante(
@@ -39,6 +42,7 @@ class InfanteRepository {
             edad = 4,
             tutor = "Sofía Ruiz",
             tituloTutor = "tía",
+            correoTutor = "sofia.ruiz@correo.com",
             sala = "Preescolar 2"
         ),
         Infante(
@@ -48,6 +52,7 @@ class InfanteRepository {
             edad = 2,
             tutor = "Marisol Hernández",
             tituloTutor = "mamá",
+            correoTutor = "marisol.hernandez@correo.com",
             sala = "Maternal"
         ),
         Infante(
@@ -57,6 +62,7 @@ class InfanteRepository {
             edad = 5,
             tutor = "Jorge Flores",
             tituloTutor = "abuelo",
+            correoTutor = "jorge.flores@correo.com",
             sala = "Preescolar 1"
         )
     )

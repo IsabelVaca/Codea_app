@@ -5,6 +5,7 @@ sealed interface InfanteError {
     data object EdadInvalida : InfanteError
     data object TutorVacio : InfanteError
     data object TelefonoInvalido : InfanteError
+    data object CorreoInvalido : InfanteError
 }
 
 object InfanteValidator {
@@ -22,9 +23,13 @@ object InfanteValidator {
     fun validateTelefono(telefono: String): InfanteError? =
         if (telefono.trim().length < 10) InfanteError.TelefonoInvalido else null
 
-    fun isValid(nombre: String, edad: String, tutor: String, telefono: String): Boolean =
+    fun validateCorreo(correo: String): InfanteError? =
+        if (!correo.contains("@") || !correo.contains(".")) InfanteError.CorreoInvalido else null
+
+    fun isValid(nombre: String, edad: String, tutor: String, telefono: String, correo: String): Boolean =
         validateNombre(nombre) == null &&
             validateEdad(edad) == null &&
             validateTutor(tutor) == null &&
-            validateTelefono(telefono) == null
+            validateTelefono(telefono) == null &&
+            validateCorreo(correo) == null
 }

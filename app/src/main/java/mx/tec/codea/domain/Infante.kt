@@ -7,6 +7,7 @@ data class Infante(
     val edad: Int,
     val tutor: String,
     val tituloTutor: String,
+    val correoTutor: String,
     val sala: String,
     val baja: Boolean = false
 )

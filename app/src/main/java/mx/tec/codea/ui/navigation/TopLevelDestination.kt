@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavDestination
@@ -89,6 +90,14 @@ enum class TopLevelDestination(
         route = AdminInfantesGraph,
         icon = Icons.Filled.Groups,
         labelRes = R.string.nav_admin_infantes,
+        isLocked = false,
+        roles = setOf(Role.ADMIN),
+    ),
+
+    PADRES(
+        route = PadresAdminGraph,
+        icon = Icons.Filled.Person,
+        labelRes = R.string.nav_padres,
         isLocked = false,
         roles = setOf(Role.ADMIN),
     ),

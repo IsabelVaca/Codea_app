@@ -11,7 +11,7 @@ class InfantesAdminViewModel : ViewModel() {
 
     private val repository = InfanteRepository()
 
-    private val _infantes = MutableStateFlow(repository.getAll())
+    private val _infantes = MutableStateFlow(repository.getAll().sortedBy { it.nombre })
     val infantes: StateFlow<List<Infante>> = _infantes.asStateFlow()
 
     // busca en el estado actual, no en el repository fijo.
@@ -29,7 +29,7 @@ class InfantesAdminViewModel : ViewModel() {
         }
     }
 
-    fun inscribirInfante(nombre: String, edad: Int, tutor: String, tituloTutor: String, sala: String) {
+    fun inscribirInfante(nombre: String, edad: Int, tutor: String, tituloTutor: String, correoTutor: String, sala: String) {
         val iniciales = nombre.trim()
             .split(" ")
             .filter { it.isNotBlank() }
@@ -43,8 +43,9 @@ class InfantesAdminViewModel : ViewModel() {
             edad = edad,
             tutor = tutor,
             tituloTutor = tituloTutor,
+            correoTutor = correoTutor,
             sala = sala
         )
-        _infantes.value = _infantes.value + nuevo
+        _infantes.value = (_infantes.value + nuevo).sortedBy { it.nombre }
     }
 }

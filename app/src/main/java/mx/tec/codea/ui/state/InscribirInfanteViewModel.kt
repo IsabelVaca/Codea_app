@@ -14,6 +14,7 @@ data class InscribirInfanteUiState(
     val tutor: String = "",
     val tituloTutor: String = "",
     val telefono: String = "",
+    val correo: String = "",
     val salaElegida: String? = null
 ) {
     val nombreError: InfanteError?
@@ -28,8 +29,11 @@ data class InscribirInfanteUiState(
     val telefonoError: InfanteError?
         get() = if (telefono.isEmpty()) null else InfanteValidator.validateTelefono(telefono)
 
+    val correoError: InfanteError?
+        get() = if (correo.isEmpty()) null else InfanteValidator.validateCorreo(correo)
+
     val canGuardar: Boolean
-        get() = InfanteValidator.isValid(nombre, edad, tutor, telefono)
+        get() = InfanteValidator.isValid(nombre, edad, tutor, telefono, correo)
             && tituloTutor.isNotBlank()
             && salaElegida != null
 }
@@ -46,6 +50,7 @@ class InscribirInfanteViewModel : ViewModel() {
     fun onTutorChange(v: String) { uiState = uiState.copy(tutor = v) }
     fun onTituloTutorChange(v: String) { uiState = uiState.copy(tituloTutor = v) }
     fun onTelefonoChange(v: String) { uiState = uiState.copy(telefono = v) }
+    fun onCorreoChange(v: String) { uiState = uiState.copy(correo = v) }
 
     fun onElegirSala(nombre: String) {
         uiState = uiState.copy(salaElegida = if (uiState.salaElegida == nombre) null else nombre)

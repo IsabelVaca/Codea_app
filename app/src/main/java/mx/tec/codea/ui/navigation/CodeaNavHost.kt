@@ -47,6 +47,9 @@ import mx.tec.codea.ui.screens.admin.InfanteDetalleScreen
 import mx.tec.codea.ui.screens.admin.InfanteScreen
 import mx.tec.codea.ui.screens.admin.InscribirInfanteScreen
 import mx.tec.codea.ui.screens.admin.OpcionChip
+import mx.tec.codea.ui.screens.admin.InscribirPadreScreen
+import mx.tec.codea.ui.screens.admin.PadreDetalleScreen
+import mx.tec.codea.ui.screens.admin.PadresScreen
 import mx.tec.codea.ui.screens.admin.SalaAdminDetalleScreen
 import mx.tec.codea.ui.screens.admin.SalaOpcion
 import mx.tec.codea.ui.screens.parent.calendar.ParentCalendarScreen
@@ -61,6 +64,8 @@ import mx.tec.codea.ui.state.CrearSalaViewModel
 import mx.tec.codea.ui.state.DocentesAdminViewModel
 import mx.tec.codea.ui.state.InfantesAdminViewModel
 import mx.tec.codea.ui.state.InscribirInfanteViewModel
+import mx.tec.codea.ui.state.InscribirPadreViewModel
+import mx.tec.codea.ui.state.PadresAdminViewModel
 import mx.tec.codea.ui.state.ReportFormViewModel
 import mx.tec.codea.ui.state.SalasAdminViewModel
 
@@ -81,6 +86,7 @@ fun CodeaNavHost(
     val docentesViewModel: DocentesAdminViewModel = viewModel()
     val salasViewModel: SalasAdminViewModel = viewModel()
     val infantesViewModel: InfantesAdminViewModel = viewModel()
+    val padresViewModel: PadresAdminViewModel = viewModel()
 
     // showSnackbar is a suspend function, so it needs a scope.
     val coroutineScope = rememberCoroutineScope()
@@ -487,6 +493,9 @@ fun CodeaNavHost(
                     telefono = uiState.telefono,
                     onTelefonoChange = inscribirInfanteViewModel::onTelefonoChange,
                     telefonoError = uiState.telefonoError,
+                    correo = uiState.correo,
+                    onCorreoChange = inscribirInfanteViewModel::onCorreoChange,
+                    correoError = uiState.correoError,
                     salas = salas,
                     onElegirSala = inscribirInfanteViewModel::onElegirSala,
                     canGuardar = uiState.canGuardar,
@@ -496,6 +505,7 @@ fun CodeaNavHost(
                             edad = uiState.edad.toInt(),
                             tutor = uiState.tutor,
                             tituloTutor = uiState.tituloTutor,
+                            correoTutor = uiState.correo,
                             sala = uiState.salaElegida ?: ""
                         )
                         coroutineScope.launch {
@@ -535,6 +545,72 @@ fun CodeaNavHost(
 
         composable<ParentDocumentsRoute> {
             ParentDocumentsScreen()
+        }
+
+
+        navigation<PadresAdminGraph>(startDestination = PadresAdminRoute) {
+            composable<PadresAdminRoute> {
+                val padres by padresViewModel.padres.collectAsState()
+                PadresScreen(
+                    totalPadres = padres.size,
+                    padres = padres,
+                    onAbrirPadre = { i -> navController.navigate(PadresAdminDetalleRoute(padres[i].id)) },
+                    onInscribirPadre = { navController.navigate(PadresAdminInscribirRoute) },
+                )
+            }
+            composable<PadresAdminDetalleRoute> { backStackEntry ->
+                val route = backStackEntry.toRoute<PadresAdminDetalleRoute>()
+                val padres by padresViewModel.padres.collectAsState()
+                val padre = padres.firstOrNull { it.id == route.padreId }
+                    ?: return@composable
+                PadreDetalleScreen(
+                    padre = padre,
+                    onToggleAcceso = { padresViewModel.toggleAcceso(padre.id) },
+                    onReenviarInvitacion = {
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar("Invitación reenviada a \"${padre.nombre}\"")
+                        }
+                    },
+                    onAbrirChat = { navController.navigateToTopLevel(TopLevelDestination.CHATS) },
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable<PadresAdminInscribirRoute> {
+                val inscribirPadreViewModel: InscribirPadreViewModel = viewModel()
+                val uiState = inscribirPadreViewModel.uiState
+                val infantesDisponibles by infantesViewModel.infantes.collectAsState()
+                InscribirPadreScreen(
+                    nombre = uiState.nombre,
+                    onNombreChange = inscribirPadreViewModel::onNombreChange,
+                    nombreError = uiState.nombreError,
+                    telefono = uiState.telefono,
+                    onTelefonoChange = inscribirPadreViewModel::onTelefonoChange,
+                    telefonoError = uiState.telefonoError,
+                    correo = uiState.correo,
+                    onCorreoChange = inscribirPadreViewModel::onCorreoChange,
+                    correoError = uiState.correoError,
+                    parentesco = uiState.parentesco,
+                    onElegirParentesco = inscribirPadreViewModel::onElegirParentesco,
+                    hijosDisponibles = infantesDisponibles.map { it.nombre },
+                    hijosSeleccionados = uiState.hijosSeleccionados,
+                    onToggleHijo = inscribirPadreViewModel::onToggleHijo,
+                    canGuardar = uiState.canGuardar,
+                    onGuardar = {
+                        padresViewModel.inscribirPadre(
+                            nombre = uiState.nombre,
+                            telefono = uiState.telefono,
+                            correo = uiState.correo,
+                            parentesco = uiState.parentesco ?: "",
+                            hijos = uiState.hijosSeleccionados
+                        )
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar("\"${uiState.nombre}\" inscrito")
+                        }
+                        navController.popBackStack()
+                    },
+                    onBack = { navController.popBackStack() },
+                )
+            }
         }
     }
 }

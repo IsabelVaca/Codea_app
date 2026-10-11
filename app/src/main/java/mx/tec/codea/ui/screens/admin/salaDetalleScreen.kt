@@ -3,7 +3,6 @@ package mx.tec.codea.ui.screens.admin
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.Arrangement
@@ -45,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import mx.tec.codea.domain.Infante
 import mx.tec.codea.domain.Sala
 import mx.tec.codea.domain.SalaValidator
+import mx.tec.codea.ui.components.PersonaDropdown
 import mx.tec.codea.ui.theme.AvatarBg
 import mx.tec.codea.ui.theme.AvatarFg
 import mx.tec.codea.ui.theme.CodeaTheme
@@ -216,40 +216,23 @@ fun SalaAdminDetalleScreen(
                     color = Color(0xFF8C7FA8)
                 )
             } else {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    infantesDisponibles.forEach { infante ->
-                        Button(
-                            onClick = { onAgregarInfante(infante) },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFF4F1FB),
-                                contentColor = Color(0xFF6B6183)
-                            ),
-                            shape = RoundedCornerShape(999.dp),
-                            elevation = ButtonDefaults.buttonElevation(0.dp)
-                        ) {
-                            Text(infante.nombre, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                        }
-                    }
-                }
+                PersonaDropdown(
+                    opciones = infantesDisponibles.map { it.nombre },
+                    seleccionado = null,
+                    onSeleccionar = { nombre ->
+                        infantesDisponibles.firstOrNull { it.nombre == nombre }?.let(onAgregarInfante)
+                    },
+                    placeholder = "Elige un infante para agregar"
+                )
             }
 
             SeccionLabel("Cambiar asistente asignada")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                asistentes.forEach { nombreAsist ->
-                    val activo = sala.asistente.startsWith(nombreAsist)
-                    Button(
-                        onClick = { onAsistenteSeleccionada(nombreAsist) },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (activo) Color(0xFF12A594) else Color(0xFFF4F1FB),
-                            contentColor = if (activo) Color(0xFFFFFDFA) else Color(0xFF6B6183)
-                        ),
-                        shape = RoundedCornerShape(999.dp),
-                        elevation = ButtonDefaults.buttonElevation(0.dp)
-                    ) {
-                        Text(nombreAsist, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
-            }
+            PersonaDropdown(
+                opciones = asistentes,
+                seleccionado = asistentes.firstOrNull { sala.asistente.startsWith(it) },
+                onSeleccionar = onAsistenteSeleccionada,
+                placeholder = "Elige una asistente"
+            )
 
             SeccionLabel("Acciones")
             AccionButton("Eliminar esta sala", Color(0xFFFFEDE7), Color(0xFFC4432A), onEliminar)
@@ -278,6 +261,7 @@ fun SalaAdminDetalleScreenPreview() {
                     edad = 4,
                     tutor = "Laura Iglesias",
                     tituloTutor = "mamá",
+                    correoTutor = "laura.iglesias@correo.com",
                     sala = "Preescolar 2"
                 ),
                 Infante(
@@ -287,6 +271,7 @@ fun SalaAdminDetalleScreenPreview() {
                     edad = 4,
                     tutor = "Sofía Ruiz",
                     tituloTutor = "tía",
+                    correoTutor = "sofia.ruiz@correo.com",
                     sala = "Preescolar 2"
                 )
             ),
@@ -298,6 +283,7 @@ fun SalaAdminDetalleScreenPreview() {
                     edad = 3,
                     tutor = "Carlos Gómez",
                     tituloTutor = "papá",
+                    correoTutor = "carlos.gomez@correo.com",
                     sala = "Maternal"
                 )
             ),

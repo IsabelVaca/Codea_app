@@ -11,7 +11,7 @@ class DocentesAdminViewModel : ViewModel() {
 
     private val repository = DocenteRepository()
 
-    private val _docentes = MutableStateFlow(repository.getAll())
+    private val _docentes = MutableStateFlow(repository.getAll().sortedBy { it.nombre })
     val docentes: StateFlow<List<Docente>> = _docentes.asStateFlow()
 
     // busca en el estado actual, no en el repository fijo.
@@ -31,7 +31,7 @@ class DocentesAdminViewModel : ViewModel() {
             sala = sala,
             horaChecada = "--:--"
         )
-        _docentes.value = _docentes.value + nueva
+        _docentes.value = (_docentes.value + nueva).sortedBy { it.nombre }
     }
 
     fun cambiarSala(docenteId: String, nuevaSala: String) {

@@ -28,6 +28,7 @@ fun NavHostController.reselectTopLevel(destination: TopLevelDestination) {
         TopLevelDestination.CENTRO -> popBackStack<AdminCentroRoute>(inclusive = false)
         TopLevelDestination.INFANTES -> popBackStack<AdminInfantesRoute>(inclusive = false)
         TopLevelDestination.DOCENTES -> popBackStack<AdminDocentesRoute>(inclusive = false)
+        TopLevelDestination.PADRES -> popBackStack<PadresAdminRoute>(inclusive = false)
         // the other tabs have only one screen, so there is nothing to do.
         TopLevelDestination.MY_ROOM,
         TopLevelDestination.CHATS,

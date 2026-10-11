@@ -1,3 +1,5 @@
+
+
 package mx.tec.codea.ui.navigation
 
 import kotlinx.serialization.Serializable
@@ -116,3 +118,16 @@ data object ParentPhotosRoute
 
 @Serializable
 data object ParentDocumentsRoute
+
+
+@Serializable
+data object PadresAdminGraph
+
+@Serializable
+data object PadresAdminRoute
+
+@Serializable
+data class PadresAdminDetalleRoute(val padreId: String)
+
+@Serializable
+data object PadresAdminInscribirRoute

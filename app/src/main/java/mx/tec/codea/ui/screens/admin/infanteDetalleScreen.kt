@@ -216,6 +216,7 @@ fun InfanteDetalleScreenPreview() {
                 edad = 4,
                 tutor = "Laura Iglesias",
                 tituloTutor = "mamá",
+                correoTutor = "laura.iglesias@correo.com",
                 sala = "Preescolar 2"
             ),
             salas = listOf("Maternal", "Preescolar 1", "Preescolar 2"),

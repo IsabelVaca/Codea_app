@@ -51,6 +51,8 @@ fun InscribirInfanteScreen(
     tituloTutor: String, onElegirTituloTutor: (String) -> Unit,
     telefono: String, onTelefonoChange: (String) -> Unit,
     telefonoError: InfanteError?,
+    correo: String, onCorreoChange: (String) -> Unit,
+    correoError: InfanteError?,
     salas: List<SalaOpcion>,
     onElegirSala: (String) -> Unit,
     canGuardar: Boolean,
@@ -118,6 +120,7 @@ fun InscribirInfanteScreen(
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             CampoTexto(tutor, onTutorChange, "Nombre del tutor o tutora", error = tutorError)
             CampoTexto(telefono, onTelefonoChange, "Teléfono de contacto", KeyboardType.Phone, error = telefonoError)
+            CampoTexto(correo, onCorreoChange, "Correo del padre o tutor", KeyboardType.Email, error = correoError)
         }
 
         SeccionLabel("PARENTESCO")
@@ -209,6 +212,7 @@ private fun InfanteError.message(): String = when (this) {
     InfanteError.EdadInvalida -> "La edad debe ser un número entre 0 y 12"
     InfanteError.TutorVacio -> "Escribe el nombre del tutor"
     InfanteError.TelefonoInvalido -> "El teléfono debe tener al menos 10 dígitos"
+    InfanteError.CorreoInvalido -> "Escribe un correo electrónico válido"
 }
 
 @Preview(showBackground = true)
@@ -226,6 +230,8 @@ private fun InscribirInfanteScreenPreview() {
             tituloTutor = "Mamá", onElegirTituloTutor = {},
             telefono = "", onTelefonoChange = {},
             telefonoError = null,
+            correo = "", onCorreoChange = {},
+            correoError = null,
             salas = listOf(
                 SalaOpcion("Maternal", activo = true),
                 SalaOpcion("Preescolar 1", activo = false),
