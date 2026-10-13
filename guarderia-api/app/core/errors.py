@@ -13,11 +13,13 @@ class ApiError(Exception):
     Ejemplo: raise ApiError(422, "CAPACITY_INVALID", "El cupo debe ser mayor que 0")
     """
 
-    def __init__(self, status: int, code: str, title: str, detail: str | None = None):
+    def __init__(self, status: int, code: str, title: str, detail: str | None = None, **extra):
         self.status = status
         self.code = code
         self.title = title
         self.detail = detail
+        # datos extra que la app puede usar, p. ej. distance_m en OUT_OF_RANGE.
+        self.extra = extra
 
 
 def _problem(status: int, code: str, title: str, detail: str | None = None, **extra) -> JSONResponse:
@@ -33,7 +35,7 @@ def install(app: FastAPI) -> None:
 
     @app.exception_handler(ApiError)
     async def api_error(_: Request, e: ApiError) -> JSONResponse:
-        return _problem(e.status, e.code, e.title, e.detail)
+        return _problem(e.status, e.code, e.title, e.detail, **e.extra)
 
     @app.exception_handler(RequestValidationError)
     async def validation_error(_: Request, e: RequestValidationError) -> JSONResponse:
