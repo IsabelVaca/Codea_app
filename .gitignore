@@ -33,3 +33,6 @@ captures/
 *.keystore
 # Claude Code
 CLAUDE.md
+
+guarderia-api/.env
+__pycache__/
