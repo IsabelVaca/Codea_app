@@ -15,14 +15,19 @@ class Base(DeclarativeBase):
     """Todas las tablas heredan de aquí. Alembic lee Base.metadata para saber qué tablas existen."""
 
 
-class IdMixin:
-    """Columnas que llevan todas las tablas: id, created_at y updated_at."""
+class TimestampMixin:
+    """Agrega created_at y updated_at. Lo usan las tablas cuya llave NO es un id int."""
 
-    id: Mapped[int] = mapped_column(primary_key=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+
+
+class IdMixin(TimestampMixin):
+    """Agrega id (int) + created_at + updated_at. Lo usan las tablas con PK id int."""
+
+    id: Mapped[int] = mapped_column(primary_key=True)
 
 
 async def get_db() -> AsyncIterator[AsyncSession]:

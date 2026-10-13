@@ -1,6 +1,8 @@
 # Alembic importa este archivo para conocer las tablas de los módulos
 # Si agregas un modulo nuevo, agrega aquí su línea
 from app.modules.auth import models as _auth  # noqa: F401
+from app.modules.admins import models as _admins  # noqa: F401
+from app.modules.parents import models as _parents
 from app.modules.teachers import models as _teachers  # noqa: F401
 from app.modules.classrooms import models as _classrooms  # noqa: F401
 from app.modules.children import models as _children  # noqa: F401
