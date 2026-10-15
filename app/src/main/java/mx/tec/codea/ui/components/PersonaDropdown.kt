@@ -86,17 +86,20 @@ fun PersonaDropdown(
 }
 
 // el menú no se cierra al marcar una opción, solo al tocar fuera.
+// opciones es (id, nombre a mostrar); seleccionados y onToggle trabajan con ids.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonasMultiDropdown(
-    opciones: List<String>,
+    opciones: List<Pair<String, String>>,
     seleccionados: List<String>,
     onToggle: (String) -> Unit,
     placeholder: String,
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val textoMostrado = if (seleccionados.isEmpty()) "" else seleccionados.joinToString(", ")
+    val textoMostrado = opciones
+        .filter { (id, _) -> id in seleccionados }
+        .joinToString(", ") { (_, nombre) -> nombre }
 
     ExposedDropdownMenuBox(
         expanded = expanded,
@@ -121,13 +124,13 @@ fun PersonasMultiDropdown(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            opciones.forEach { opcion ->
+            opciones.forEach { (id, nombre) ->
                 DropdownMenuItem(
-                    text = { Text(opcion, fontFamily = Poppins) },
+                    text = { Text(nombre, fontFamily = Poppins) },
                     leadingIcon = {
-                        Checkbox(checked = opcion in seleccionados, onCheckedChange = { onToggle(opcion) })
+                        Checkbox(checked = id in seleccionados, onCheckedChange = { onToggle(id) })
                     },
-                    onClick = { onToggle(opcion) }
+                    onClick = { onToggle(id) }
                 )
             }
         }

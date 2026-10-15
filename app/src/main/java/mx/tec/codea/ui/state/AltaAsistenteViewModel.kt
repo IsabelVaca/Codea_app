@@ -9,6 +9,7 @@ import mx.tec.codea.domain.DocenteValidator
 
 data class AltaAsistenteUiState(
     val nombre: String = "",
+    val apellido: String = "",
     val telefono: String = "",
     val correo: String = "",
     val salaElegida: String? = null,
@@ -25,6 +26,7 @@ data class AltaAsistenteUiState(
 
     val canGuardar: Boolean
         get() = DocenteValidator.isValid(nombre, telefono, correo)
+            && apellido.isNotBlank()
             && salaElegida != null
             && turno.isNotBlank()
 }
@@ -36,6 +38,7 @@ class AltaAsistenteViewModel : ViewModel() {
         private set
 
     fun onNombreChange(v: String) { uiState = uiState.copy(nombre = v) }
+    fun onApellidoChange(v: String) { uiState = uiState.copy(apellido = v) }
     fun onTelefonoChange(v: String) { uiState = uiState.copy(telefono = v) }
     fun onCorreoChange(v: String) { uiState = uiState.copy(correo = v) }
 

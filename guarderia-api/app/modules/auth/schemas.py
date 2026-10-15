@@ -1,4 +1,6 @@
 import uuid
+from datetime import datetime
+from enum import StrEnum
 
 from pydantic import BaseModel
 
@@ -47,3 +49,33 @@ class MeOut(BaseModel):
     admin: MeAdmin | None
     teacher: MeTeacher | None
     parent: MeParent | None
+
+
+class InvitationStatus(StrEnum):
+    PENDING = "PENDING"
+    ACCEPTED = "ACCEPTED"
+    EXPIRED = "EXPIRED"
+
+
+class InvitationCreate(BaseModel):
+    """Invita a una persona nueva con el rol que se le dé."""
+
+    name: str
+    surname: str = ""
+    phone: str
+    email: str
+    role: Role
+
+
+class InvitationOut(BaseModel):
+    id: int
+    user_id: uuid.UUID
+    name: str
+    surname: str
+    full_name: str
+    email: str
+    role: Role
+    status: InvitationStatus
+    expires_at: datetime
+    accepted_at: datetime | None
+    created_at: datetime

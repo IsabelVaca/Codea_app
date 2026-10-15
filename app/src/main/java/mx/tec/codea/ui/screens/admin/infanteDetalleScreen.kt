@@ -33,6 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import mx.tec.codea.domain.Infante
+import mx.tec.codea.domain.Padre
 import mx.tec.codea.ui.theme.AvatarBg
 import mx.tec.codea.ui.theme.AvatarFg
 import mx.tec.codea.ui.theme.CodeaTheme
@@ -41,6 +42,8 @@ import mx.tec.codea.ui.theme.CodeaTheme
 fun InfanteDetalleScreen(
     infante: Infante,
     salas: List<String>,
+    padresVinculados: List<Padre>,
+    onAbrirPadre: (String) -> Unit,
     onSalaSeleccionada: (String) -> Unit,
     onDarBaja: () -> Unit,
     onBack: () -> Unit
@@ -122,8 +125,18 @@ fun InfanteDetalleScreen(
             }
 
             SeccionLabel("Información")
-            InfoCard(titulo = "Padre / tutor", valor = "${infante.tutor} (${infante.tituloTutor})")
             InfoCard(titulo = "Sala actual", valor = infante.sala)
+
+            SeccionLabel("Padre / tutor")
+            if (padresVinculados.isEmpty()) {
+                InfoCard(titulo = "Padre / tutor", valor = "Sin vincular todavía")
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    padresVinculados.forEach { padre ->
+                        PadreVinculadoRow(padre = padre, onConsultar = { onAbrirPadre(padre.id) })
+                    }
+                }
+            }
 
             SeccionLabel("Cambiar de sala")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -172,6 +185,37 @@ fun SeccionLabel(texto: String) {
 }
 
 @Composable
+fun PadreVinculadoRow(padre: Padre, onConsultar: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 6.dp,
+                shape = RoundedCornerShape(22.dp),
+                ambientColor = Color.Black.copy(alpha = 0.12f),
+                spotColor = Color.Black.copy(alpha = 0.12f)
+            )
+            .clip(RoundedCornerShape(22.dp))
+            .background(Color.White)
+            .padding(14.dp)
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(padre.nombre, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
+            Text(padre.parentesco, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF5B4B8A))
+        }
+        Button(
+            onClick = onConsultar,
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF4F1FB), contentColor = Color(0xFF4A4066)),
+            shape = RoundedCornerShape(999.dp),
+            elevation = ButtonDefaults.buttonElevation(0.dp)
+        ) {
+            Text("Consultar info", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
 fun InfoCard(titulo: String, valor: String) {
     Column(
         modifier = Modifier
@@ -214,12 +258,21 @@ fun InfanteDetalleScreenPreview() {
                 nombre = "Mateo Iglesias",
                 iniciales = "MI",
                 edad = 4,
-                tutor = "Laura Iglesias",
-                tituloTutor = "mamá",
-                correoTutor = "laura.iglesias@correo.com",
                 sala = "Preescolar 2"
             ),
             salas = listOf("Maternal", "Preescolar 1", "Preescolar 2"),
+            padresVinculados = listOf(
+                Padre(
+                    id = "padre-1",
+                    nombre = "Laura Iglesias",
+                    iniciales = "LI",
+                    parentesco = "Mamá",
+                    hijoIds = listOf("infante-1"),
+                    telefono = "55 1234 5678",
+                    correo = "laura.iglesias@correo.com"
+                )
+            ),
+            onAbrirPadre = {},
             onSalaSeleccionada = {},
             onDarBaja = {},
             onBack = {}

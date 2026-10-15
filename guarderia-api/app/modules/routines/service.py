@@ -1,18 +1,28 @@
 from datetime import date
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core import clock
+from app.core import rules
 from app.core.errors import ApiError
+from app.core.schemas import ClassroomRef
 from app.core.security import CurrentUser, ensure_classroom_access
 from app.modules.classrooms.centers import center_today, get_active_classroom
 from app.modules.classrooms.models import Classroom
 from app.modules.reports.models import Report
 
 from .models import MomentStatus, RoutineMoment, RoutineTemplate, RoutineTemplateMoment
-from .schemas import MomentOut, RoutineOut
+from .schemas import (
+    MomentOut,
+    RoutineOut,
+    TemplateAssign,
+    TemplateAssignOut,
+    TemplateIn,
+    TemplateMomentOut,
+    TemplateOut,
+)
 
 
 async def _template_for(db: AsyncSession, classroom: Classroom) -> RoutineTemplate | None:
@@ -159,3 +169,101 @@ async def confirm(db: AsyncSession, current: CurrentUser, moment_id: int) -> Rou
         following.started_at = now
     await db.commit()
     return await routine_out(db, moment.classroom_id, moment.date)
+
+
+# --- plantillas de rutina (administrador) ---
+# Cambiar una plantilla no toca los días ya empezados: cada día guarda su propia copia de los momentos.
+
+
+async def _templates_out(db: AsyncSession, template_id: int | None = None) -> list[TemplateOut]:
+    query = select(RoutineTemplate).order_by(RoutineTemplate.is_default.desc(), RoutineTemplate.name)
+    if template_id is not None:
+        query = query.where(RoutineTemplate.id == template_id)
+    templates = (await db.scalars(query)).all()
+    ids = [template.id for template in templates]
+    moments = (
+        await db.scalars(
+            select(RoutineTemplateMoment)
+            .where(RoutineTemplateMoment.template_id.in_(ids))
+            .order_by(RoutineTemplateMoment.template_id, RoutineTemplateMoment.number)
+        )
+    ).all()
+    classrooms = (
+        await db.scalars(
+            select(Classroom)
+            .where(Classroom.routine_template_id.in_(ids), Classroom.deleted_at.is_(None))
+            .order_by(Classroom.name)
+        )
+    ).all()
+    return [
+        TemplateOut(
+            id=template.id,
+            name=template.name,
+            is_default=template.is_default,
+            moments=[TemplateMomentOut(number=m.number, name=m.name, category=m.category) for m in moments if m.template_id == template.id],
+            classrooms=[ClassroomRef.model_validate(c) for c in classrooms if c.routine_template_id == template.id],
+        )
+        for template in templates
+    ]
+
+
+def _check_template(data: TemplateIn) -> str:
+    name = rules.require_name(data.name)
+    if not data.moments:
+        raise ApiError(422, "MOMENTS_REQUIRED", "La plantilla necesita al menos un momento")
+    if any(not moment.name.strip() for moment in data.moments):
+        raise ApiError(422, "NAME_REQUIRED", "Cada momento necesita un nombre")
+    return name
+
+
+async def _set_moments(db: AsyncSession, template_id: int, data: TemplateIn) -> None:
+    await db.execute(delete(RoutineTemplateMoment).where(RoutineTemplateMoment.template_id == template_id))
+    db.add_all(
+        RoutineTemplateMoment(template_id=template_id, number=number, name=moment.name.strip(), category=moment.category)
+        for number, moment in enumerate(data.moments, start=1)
+    )
+
+
+async def _only_default(db: AsyncSession, template_id: int) -> None:
+    await db.execute(update(RoutineTemplate).where(RoutineTemplate.id != template_id).values(is_default=False))
+
+
+async def list_templates(db: AsyncSession) -> list[TemplateOut]:
+    return await _templates_out(db)
+
+
+async def create_template(db: AsyncSession, data: TemplateIn) -> TemplateOut:
+    name = _check_template(data)
+    template = RoutineTemplate(name=name, is_default=data.is_default)
+    db.add(template)
+    await db.flush()
+    await _set_moments(db, template.id, data)
+    if data.is_default:
+        await _only_default(db, template.id)
+    await db.commit()
+    return (await _templates_out(db, template.id))[0]
+
+
+async def update_template(db: AsyncSession, template_id: int, data: TemplateIn) -> TemplateOut:
+    template = await db.get(RoutineTemplate, template_id)
+    if template is None:
+        raise ApiError(404, "TEMPLATE_NOT_FOUND", "No existe esa plantilla")
+    template.name = _check_template(data)
+    # la default no se puede quitar editándola: otra plantilla tiene que tomar su lugar.
+    if data.is_default:
+        await _only_default(db, template.id)
+        template.is_default = True
+    elif template.is_default:
+        raise ApiError(409, "DEFAULT_REQUIRED", "Marca otra plantilla como la default para quitarle esta")
+    await _set_moments(db, template.id, data)
+    await db.commit()
+    return (await _templates_out(db, template.id))[0]
+
+
+async def assign_template(db: AsyncSession, classroom_id: int, data: TemplateAssign) -> TemplateAssignOut:
+    classroom = await get_active_classroom(db, classroom_id)
+    if data.template_id is not None and await db.get(RoutineTemplate, data.template_id) is None:
+        raise ApiError(404, "TEMPLATE_NOT_FOUND", "No existe esa plantilla")
+    classroom.routine_template_id = data.template_id
+    await db.commit()
+    return TemplateAssignOut(classroom=ClassroomRef.model_validate(classroom), template_id=classroom.routine_template_id)

@@ -135,7 +135,8 @@ private fun PadreFila(p: Padre, avatarBg: Color, avatarFg: Color, onClick: () ->
         }
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(p.nombre, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text("${p.parentesco} de ${p.hijo}", fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = Color(0xFF8C7FA8), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            val hijosTexto = if (p.hijoIds.size == 1) "1 hijo vinculado" else "${p.hijoIds.size} hijos vinculados"
+            Text("${p.parentesco} · $hijosTexto", fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = Color(0xFF8C7FA8), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         Text(
             text = if (p.conAcceso) "Con acceso" else "Sin acceso",

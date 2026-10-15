@@ -5,7 +5,7 @@ data class Padre(
     val nombre: String,
     val iniciales: String,
     val parentesco: String,
-    val hijo: String,
+    val hijoIds: List<String>,
     val telefono: String,
     val correo: String,
     val conAcceso: Boolean = true

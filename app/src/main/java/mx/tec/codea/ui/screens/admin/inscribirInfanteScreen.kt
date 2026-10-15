@@ -43,16 +43,10 @@ data class SalaOpcion(val nombre: String, val activo: Boolean)
 fun InscribirInfanteScreen(
     nombre: String, onNombreChange: (String) -> Unit,
     nombreError: InfanteError?,
+    apellido: String = "", onApellidoChange: (String) -> Unit = {},
     edad: String, onEdadChange: (String) -> Unit,
     edadError: InfanteError?,
     alergias: String, onAlergiasChange: (String) -> Unit,
-    tutor: String, onTutorChange: (String) -> Unit,
-    tutorError: InfanteError?,
-    tituloTutor: String, onElegirTituloTutor: (String) -> Unit,
-    telefono: String, onTelefonoChange: (String) -> Unit,
-    telefonoError: InfanteError?,
-    correo: String, onCorreoChange: (String) -> Unit,
-    correoError: InfanteError?,
     salas: List<SalaOpcion>,
     onElegirSala: (String) -> Unit,
     canGuardar: Boolean,
@@ -104,39 +98,17 @@ fun InscribirInfanteScreen(
 
             Text("Nueva inscripción", fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF4A3A80))
             Text(
-                "Completa los datos del niño y su familia. Al guardar, queda inscrito y aparece en su sala.",
+                "Completa los datos del niño. Al guardar, queda inscrito y aparece en su sala.",
                 fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, color = Color(0xFF5B4B8A)
             )
         }
 
         SeccionLabel("DATOS DEL NIÑO")
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            CampoTexto(nombre, onNombreChange, "Nombre completo", error = nombreError)
+            CampoTexto(nombre, onNombreChange, "Nombre(s)", error = nombreError)
+            CampoTexto(apellido, onApellidoChange, "Apellido(s) (opcional)")
             CampoTexto(edad, onEdadChange, "Edad en años (ej. 3)", KeyboardType.Number, error = edadError)
             CampoTexto(alergias, onAlergiasChange, "Alergias o notas médicas (opcional)")
-        }
-
-        SeccionLabel("TUTOR RESPONSABLE")
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            CampoTexto(tutor, onTutorChange, "Nombre del tutor o tutora", error = tutorError)
-            CampoTexto(telefono, onTelefonoChange, "Teléfono de contacto", KeyboardType.Phone, error = telefonoError)
-            CampoTexto(correo, onCorreoChange, "Correo del padre o tutor", KeyboardType.Email, error = correoError)
-        }
-
-        SeccionLabel("PARENTESCO")
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf("Mamá", "Papá", "Tutor legal").forEach { t ->
-                val bg = if (tituloTutor == t) Color(0xFF6C4BF6) else Color(0xFFF4F1FB)
-                val fg = if (tituloTutor == t) Color.White else Color(0xFF6B6183)
-                Button(
-                    onClick = { onElegirTituloTutor(t) },
-                    colors = ButtonDefaults.buttonColors(containerColor = bg, contentColor = fg),
-                    shape = RoundedCornerShape(999.dp),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 11.dp)
-                ) {
-                    Text(t, fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                }
-            }
         }
 
         SeccionLabel("SALA ASIGNADA")
@@ -169,7 +141,7 @@ fun InscribirInfanteScreen(
             Text(textoGuardar, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
         }
         Text(
-            "Se crea su expediente y el acceso de su familia a la app.",
+            "Se crea su expediente y queda listo para vincular a su padre o tutor.",
             fontFamily = Poppins, fontSize = 12.sp, lineHeight = 18.sp,
             color = Color(0xFF8C7FA8), textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
@@ -208,11 +180,8 @@ private fun CampoTexto(
 }
 
 private fun InfanteError.message(): String = when (this) {
-    InfanteError.NombreVacio -> "Escribe el nombre completo del niño"
+    InfanteError.NombreVacio -> "Escribe el nombre del niño"
     InfanteError.EdadInvalida -> "La edad debe ser un número entre 0 y 12"
-    InfanteError.TutorVacio -> "Escribe el nombre del tutor"
-    InfanteError.TelefonoInvalido -> "El teléfono debe tener al menos 10 dígitos"
-    InfanteError.CorreoInvalido -> "Escribe un correo electrónico válido"
 }
 
 @Preview(showBackground = true)
@@ -225,13 +194,6 @@ private fun InscribirInfanteScreenPreview() {
             edad = "", onEdadChange = {},
             edadError = null,
             alergias = "", onAlergiasChange = {},
-            tutor = "", onTutorChange = {},
-            tutorError = null,
-            tituloTutor = "Mamá", onElegirTituloTutor = {},
-            telefono = "", onTelefonoChange = {},
-            telefonoError = null,
-            correo = "", onCorreoChange = {},
-            correoError = null,
             salas = listOf(
                 SalaOpcion("Maternal", activo = true),
                 SalaOpcion("Preescolar 1", activo = false),

@@ -67,6 +67,7 @@ fun ParentCalendarScreen(
         item {
             CalendarGrid(
                 days = monthData.days,
+                startOffset = monthData.startOffset,
                 selectedDayNumber = selectedDayNumber,
                 onDayClick = { day ->
                     selectedDayNumber = day.dayNumber
@@ -90,9 +91,8 @@ private fun CalendarGrid(
     days: List<CalendarDay>,
     selectedDayNumber: Int,
     onDayClick: (CalendarDay) -> Unit,
+    startOffset: Int,
 ) {
-    // August 2026 starts on Saturday (5 empty slots before day 1 in 0-indexed Monday-start grid).
-    val startOffset = 5
     val totalSlots = startOffset + days.size
     val weekDays = listOf("L", "M", "M", "J", "V", "S", "D")
 

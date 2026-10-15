@@ -17,7 +17,7 @@ async def list_children(db: Db, _: AdminUser) -> list[ChildOut]:
 
 @router.post("/children", response_model=ChildDetail, status_code=status.HTTP_201_CREATED)
 async def create_child(db: Db, _: AdminUser, data: ChildCreate) -> ChildDetail:
-    """Inscribe a un infante y registra a su tutor. 422 NAME_REQUIRED, GUARDIAN_REQUIRED, AGE_INVALID o PHONE_INVALID."""
+    """Inscribe a un infante. El tutor es opcional; si viene, se registra y se le crea su invitación. 422 NAME_REQUIRED, AGE_INVALID, GUARDIAN_REQUIRED o PHONE_INVALID."""
     return await service.create_child(db, data)
 
 

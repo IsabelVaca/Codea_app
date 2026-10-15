@@ -17,6 +17,8 @@ data class CalendarMonthData(
     val monthName: String = "Agosto 2026",
     val days: List<CalendarDay> = defaultDays,
     val summaryText: String = "12 días asistidos · 1 ausencia · 4 días con nota de la maestra. Toca cualquier día para ver su resumen.",
+    // cuántos huecos hay antes del día 1 (la semana empieza en lunes). agosto 2026 empieza en sábado: 5.
+    val startOffset: Int = 5,
 ) {
     companion object {
         val defaultDays = (1..31).map { day ->

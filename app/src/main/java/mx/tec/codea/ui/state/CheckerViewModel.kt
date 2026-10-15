@@ -4,8 +4,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 import mx.tec.codea.data.CheckInRepository
 import mx.tec.codea.data.CheckInScenario
+import mx.tec.codea.data.DataEvents
+import mx.tec.codea.data.TeacherApiRepository
+import mx.tec.codea.data.api.toUserMessage
 import mx.tec.codea.domain.CheckInAttempt
 import mx.tec.codea.domain.CheckInRecord
 import mx.tec.codea.domain.CheckInRules
@@ -30,6 +36,7 @@ data class CheckerUiState(
 class CheckerViewModel : ViewModel() {
 
     private val repository = CheckInRepository()
+    private val api = TeacherApiRepository()
 
     var uiState by mutableStateOf(stateFor(CheckInScenario.ON_TIME))
         private set
@@ -43,8 +50,19 @@ class CheckerViewModel : ViewModel() {
         onScenarioChange(CheckInScenario.ON_TIME)
     }
 
+    // avisa a coordinación; solo se marca como avisado si la API lo guardó.
     fun onNotifyCoordination() {
-        uiState = uiState.copy(coordinationNotified = true)
+        val reason = if (uiState.status == CheckInStatus.OUT_OF_RANGE) "OUT_OF_RANGE" else "LATE"
+        viewModelScope.launch {
+            try {
+                api.notifyCoordination(reason)
+                uiState = uiState.copy(coordinationNotified = true)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                DataEvents.notice(e.toUserMessage())
+            }
+        }
     }
 
     fun onWriteLateReasonClick() {
@@ -55,8 +73,27 @@ class CheckerViewModel : ViewModel() {
         uiState = uiState.copy(lateReason = text)
     }
 
-    // null when the rules do not let the teacher check in.
-    fun buildRecord(): CheckInRecord? = CheckInRules.register(uiState.attempt, uiState.lateReason)
+    // registra la entrada en la API. todavía no hay gps: la posición se arma a partir de las
+    // coordenadas del centro (unos 11 m al norte), y la hora la pone el servidor.
+    // el registro que regresa la API es el que se guarda; si el servidor dice "no", sale el error.
+    fun registrar(centerLatitude: Double?, centerLongitude: Double?, onDone: (CheckInRecord) -> Unit) {
+        if (!CheckInRules.canRegister(uiState.attempt)) return
+        if (centerLatitude == null || centerLongitude == null) {
+            DataEvents.notice("El centro todavía no tiene ubicación registrada")
+            return
+        }
+        val reason = uiState.lateReason
+        viewModelScope.launch {
+            try {
+                val record = api.checkIn(centerLatitude + 0.0001, centerLongitude, reason)
+                onDone(record)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                DataEvents.notice(e.toUserMessage())
+            }
+        }
+    }
 
     private fun stateFor(scenario: CheckInScenario) =
         CheckerUiState(scenario = scenario, attempt = repository.attemptFor(scenario))

@@ -3,9 +3,6 @@ package mx.tec.codea.domain
 sealed interface InfanteError {
     data object NombreVacio : InfanteError
     data object EdadInvalida : InfanteError
-    data object TutorVacio : InfanteError
-    data object TelefonoInvalido : InfanteError
-    data object CorreoInvalido : InfanteError
 }
 
 object InfanteValidator {
@@ -17,19 +14,6 @@ object InfanteValidator {
         return if (valor == null || valor !in 0..12) InfanteError.EdadInvalida else null
     }
 
-    fun validateTutor(tutor: String): InfanteError? =
-        if (tutor.isBlank()) InfanteError.TutorVacio else null
-
-    fun validateTelefono(telefono: String): InfanteError? =
-        if (telefono.trim().length < 10) InfanteError.TelefonoInvalido else null
-
-    fun validateCorreo(correo: String): InfanteError? =
-        if (!correo.contains("@") || !correo.contains(".")) InfanteError.CorreoInvalido else null
-
-    fun isValid(nombre: String, edad: String, tutor: String, telefono: String, correo: String): Boolean =
-        validateNombre(nombre) == null &&
-            validateEdad(edad) == null &&
-            validateTutor(tutor) == null &&
-            validateTelefono(telefono) == null &&
-            validateCorreo(correo) == null
+    fun isValid(nombre: String, edad: String): Boolean =
+        validateNombre(nombre) == null && validateEdad(edad) == null
 }

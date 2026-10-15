@@ -10,45 +10,45 @@ class PadreRepository {
             nombre = "Laura Iglesias",
             iniciales = "LI",
             parentesco = "Mamá",
-            hijo = "Mateo Iglesias",
+            hijoIds = listOf("infante-1"),
             telefono = "55 1234 5678",
             correo = "laura.iglesias@correo.com"
         ),
         Padre(
             id = "padre-2",
-            nombre = "Jorge Solís",
-            iniciales = "JS",
+            nombre = "Carlos Gómez",
+            iniciales = "CG",
             parentesco = "Papá",
-            hijo = "Renata Solís",
+            hijoIds = listOf("infante-2"),
             telefono = "55 2345 6789",
-            correo = "jorge.solis@correo.com"
+            correo = "carlos.gomez@correo.com"
         ),
         Padre(
             id = "padre-3",
-            nombre = "Paula Ruiz",
-            iniciales = "PR",
+            nombre = "Andrea Torres",
+            iniciales = "AT",
             parentesco = "Mamá",
-            hijo = "Emiliano Ruiz",
+            hijoIds = listOf("infante-3"),
             telefono = "55 3456 7890",
-            correo = "paula.ruiz@correo.com"
+            correo = "andrea.torres@correo.com"
         ),
         Padre(
             id = "padre-4",
-            nombre = "Ana Fuentes",
-            iniciales = "AF",
-            parentesco = "Mamá",
-            hijo = "Diego Fuentes",
+            nombre = "Sofía Ruiz",
+            iniciales = "SR",
+            parentesco = "Tutora",
+            hijoIds = listOf("infante-4"),
             telefono = "55 4567 8901",
-            correo = "ana.fuentes@correo.com"
+            correo = "sofia.ruiz@correo.com"
         ),
         Padre(
             id = "padre-5",
-            nombre = "Marco Peña",
-            iniciales = "MP",
-            parentesco = "Papá",
-            hijo = "Aitana Peña",
+            nombre = "Marisol Hernández",
+            iniciales = "MH",
+            parentesco = "Mamá",
+            hijoIds = listOf("infante-5"),
             telefono = "55 5678 9012",
-            correo = "marco.pena@correo.com"
+            correo = "marisol.hernandez@correo.com"
         )
     )
 

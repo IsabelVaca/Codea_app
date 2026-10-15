@@ -48,6 +48,7 @@ fun ChatsScreen(
     messages: List<ChatMessage>,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onSend: (String) -> Unit = {},
 ) {
     if (selectedChild == null) {
         EmptyChatsScreen(modifier = modifier)
@@ -58,6 +59,7 @@ fun ChatsScreen(
         child = selectedChild,
         messages = messages,
         onBackClick = onBackClick,
+        onSend = onSend,
         modifier = modifier,
     )
 }
@@ -87,6 +89,7 @@ private fun ConversationScreen(
     child: Child,
     messages: List<ChatMessage>,
     onBackClick: () -> Unit,
+    onSend: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -129,7 +132,7 @@ private fun ConversationScreen(
             }
         }
 
-        MessageComposer(childId = child.id)
+        MessageComposer(childId = child.id, onSend = onSend)
     }
 }
 
@@ -211,6 +214,7 @@ private fun MessageBubble(
 @Composable
 private fun MessageComposer(
     childId: String,
+    onSend: (String) -> Unit,
 ) {
     var messageText by rememberSaveable(childId) {
         mutableStateOf("")
@@ -252,7 +256,10 @@ private fun MessageComposer(
 
         IconButton(
             onClick = {
-                // Sending will be implemented when the chat has real behavior.
+                if (messageText.isNotBlank()) {
+                    onSend(messageText)
+                    messageText = ""
+                }
             },
             modifier = Modifier.background(
                 color = MaterialTheme.colorScheme.tertiary,

@@ -173,27 +173,7 @@ fun InfanteCard(infante: Infante, onClick: () -> Unit = {}) {
                 ) {
                     //edad
                     Text(
-                        text = "${infante.edad} años" + " • ",
-                        modifier = Modifier,
-                        color = Color(red = 138, green = 128, blue = 165),
-                        fontSize = 13.sp,
-                        lineHeight = 13.sp,
-                        fontFamily = Poppins,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    //tutor
-                    Text(
-                        text = infante.tutor + " • ",
-                        modifier = Modifier,
-                        color = Color(red = 138, green = 128, blue = 165),
-                        fontSize = 13.sp,
-                        lineHeight = 13.sp,
-                        fontFamily = Poppins,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    //titulo
-                    Text(
-                        text = infante.tituloTutor,
+                        text = "${infante.edad} años",
                         modifier = Modifier,
                         color = Color(red = 138, green = 128, blue = 165),
                         fontSize = 13.sp,
