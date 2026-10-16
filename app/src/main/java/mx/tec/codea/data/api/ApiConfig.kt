@@ -1,7 +1,9 @@
 package mx.tec.codea.data.api
 
 object ApiConfig {
-    // 10.0.2.2 es tu Mac vista desde el emulador. En un celular real, usa la IP de tu Mac.
+    // 10.0.2.2 es tu Mac vista desde el emulador de Android: no hace falta nada más.
+    // (Celular físico por USB: usa "http://localhost:8000/api/v1/" y corre
+    //  adb reverse tcp:8000 tcp:8000 && adb reverse tcp:9000 tcp:9000)
     const val BASE_URL = "http://10.0.2.2:8000/api/v1/"
 
     // correo con el que se hace pasar la app en desarrollo (Bearer dev:<correo>).
