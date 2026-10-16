@@ -131,3 +131,30 @@ data class PadresAdminDetalleRoute(val padreId: String)
 
 @Serializable
 data object PadresAdminInscribirRoute
+
+// "rutinas" is a graph too: the list, "nueva rutina" and the detail of one
+// routine all keep the bottom bar on the "rutinas" tab.
+@Serializable
+data object RutinasAdminGraph
+
+@Serializable
+data object RutinasAdminRoute
+
+// "nueva rutina" tiene tres pasos pero un solo formulario, como el reporte:
+// el dueño del form es la primera pantalla del flujo.
+@Serializable
+data object RutinasAdminNuevaRoute
+
+@Serializable
+data object RutinasAdminCatalogoRoute
+
+@Serializable
+data object RutinasAdminOrdenRoute
+
+// detalle de una rutina: viaja el id, no el objeto.
+@Serializable
+data class RutinasAdminDetalleRoute(val rutinaId: String)
+
+// "agregar momento" abre sobre el detalle de la rutina que lo recibe.
+@Serializable
+data class RutinasAdminAgregarMomentoRoute(val rutinaId: String)

@@ -57,7 +57,13 @@ import mx.tec.codea.ui.screens.admin.InscribirInfanteScreen
 import mx.tec.codea.ui.screens.admin.OpcionChip
 import mx.tec.codea.ui.screens.admin.InscribirPadreScreen
 import mx.tec.codea.ui.screens.admin.PadreDetalleScreen
+import mx.tec.codea.ui.screens.admin.AgregarMomentoScreen
+import mx.tec.codea.ui.screens.admin.CatalogoMomentosScreen
+import mx.tec.codea.ui.screens.admin.NuevaRutinaScreen
+import mx.tec.codea.ui.screens.admin.OrdenRutinaScreen
 import mx.tec.codea.ui.screens.admin.PadresScreen
+import mx.tec.codea.ui.screens.admin.RutinaDetalleScreen
+import mx.tec.codea.ui.screens.admin.RutinasAdminScreen
 import mx.tec.codea.ui.screens.admin.SalaAdminDetalleScreen
 import mx.tec.codea.ui.screens.admin.SalaOpcion
 import mx.tec.codea.ui.screens.parent.calendar.ParentCalendarScreen
@@ -65,6 +71,7 @@ import mx.tec.codea.ui.screens.parent.documents.AddAuthorizedDialog
 import mx.tec.codea.ui.screens.parent.documents.ParentDocumentsScreen
 import mx.tec.codea.ui.screens.parent.photos.ParentPhotosScreen
 import mx.tec.codea.ui.screens.parent.today.ParentTodayScreen
+import mx.tec.codea.ui.state.AgregarMomentoViewModel
 import mx.tec.codea.ui.state.AltaAsistenteViewModel
 import mx.tec.codea.ui.state.CentroViewModel
 import mx.tec.codea.ui.state.CheckerViewModel
@@ -74,9 +81,11 @@ import mx.tec.codea.ui.state.DocentesAdminViewModel
 import mx.tec.codea.ui.state.InfantesAdminViewModel
 import mx.tec.codea.ui.state.InscribirInfanteViewModel
 import mx.tec.codea.ui.state.InscribirPadreViewModel
+import mx.tec.codea.ui.state.NuevaRutinaViewModel
 import mx.tec.codea.ui.state.PadresAdminViewModel
 import mx.tec.codea.ui.state.ParentViewModel
 import mx.tec.codea.ui.state.ReportFormViewModel
+import mx.tec.codea.ui.state.RutinasAdminViewModel
 import mx.tec.codea.ui.state.SalasAdminViewModel
 
 // the nav host is like a map of the app: it connects each route to its screen.
@@ -97,6 +106,7 @@ fun CodeaNavHost(
     val salasViewModel: SalasAdminViewModel = viewModel()
     val infantesViewModel: InfantesAdminViewModel = viewModel()
     val padresViewModel: PadresAdminViewModel = viewModel()
+    val rutinasViewModel: RutinasAdminViewModel = viewModel()
     val parentViewModel: ParentViewModel = viewModel()
 
     // showSnackbar is a suspend function, so it needs a scope.
@@ -697,6 +707,109 @@ fun CodeaNavHost(
                 )
             }
         }
+
+        navigation<RutinasAdminGraph>(startDestination = RutinasAdminRoute) {
+            composable<RutinasAdminRoute> {
+                val rutinas by rutinasViewModel.rutinas.collectAsState()
+                RutinasAdminScreen(
+                    rutinas = rutinas,
+                    onAbrirRutina = { rutinaId -> navController.navigate(RutinasAdminDetalleRoute(rutinaId)) },
+                    onNuevaRutina = { navController.navigate(RutinasAdminNuevaRoute) },
+                )
+            }
+            composable<RutinasAdminDetalleRoute> { backStackEntry ->
+                val route = backStackEntry.toRoute<RutinasAdminDetalleRoute>()
+                val rutinas by rutinasViewModel.rutinas.collectAsState()
+                val rutina = rutinas.firstOrNull { it.id == route.rutinaId }
+                    ?: return@composable
+                val momentosPorRutina by rutinasViewModel.momentos.collectAsState()
+                RutinaDetalleScreen(
+                    nombreRutina = rutina.nombre,
+                    momentos = momentosPorRutina[rutina.id].orEmpty(),
+                    onReordenar = { from, to -> rutinasViewModel.reordenar(rutina.id, from, to) },
+                    onAgregarMomento = { navController.navigate(RutinasAdminAgregarMomentoRoute(rutina.id)) },
+                    onGuardar = {
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar("\"${rutina.nombre}\" guardada")
+                        }
+                        navController.popBackStack()
+                    },
+                )
+            }
+            composable<RutinasAdminAgregarMomentoRoute> { backStackEntry ->
+                val route = backStackEntry.toRoute<RutinasAdminAgregarMomentoRoute>()
+                val agregarMomentoViewModel: AgregarMomentoViewModel = viewModel()
+                val uiState = agregarMomentoViewModel.uiState
+                val momentosPorRutina by rutinasViewModel.momentos.collectAsState()
+                val catalogo = remember(momentosPorRutina[route.rutinaId]) {
+                    rutinasViewModel.catalogoDisponible(route.rutinaId)
+                }
+                AgregarMomentoScreen(
+                    catalogo = catalogo,
+                    elegido = uiState.elegido,
+                    onElegir = agregarMomentoViewModel::onElegir,
+                    nombrePropio = uiState.nombrePropio,
+                    onNombrePropioChange = agregarMomentoViewModel::onNombrePropioChange,
+                    registroPropio = uiState.registroPropio,
+                    onRegistroPropioChange = agregarMomentoViewModel::onRegistroPropioChange,
+                    onAgregar = {
+                        val nombre = uiState.nombrePropio.trim().ifBlank { uiState.elegido.orEmpty() }
+                        if (nombre.isNotBlank()) {
+                            val registro = uiState.registroPropio.trim().ifBlank {
+                                catalogo.firstOrNull { it.nombre == nombre }?.registro.orEmpty()
+                            }
+                            rutinasViewModel.agregarMomento(route.rutinaId, nombre, registro)
+                            navController.popBackStack()
+                        }
+                    },
+                )
+            }
+            // el asistente de "nueva rutina" tiene tres pasos pero un solo formulario:
+            // "nueva rutina" lo crea y lo guarda mientras el flujo sigue abierto.
+            composable<RutinasAdminNuevaRoute> { backStackEntry ->
+                val form: NuevaRutinaViewModel = viewModel(backStackEntry)
+                val uiState = form.uiState
+                NuevaRutinaScreen(
+                    nombre = uiState.nombre,
+                    onNombreChange = form::onNombreChange,
+                    etapa = uiState.etapa,
+                    onElegirEtapa = form::onElegirEtapa,
+                    onElegirMomentos = { navController.navigate(RutinasAdminCatalogoRoute) },
+                )
+            }
+            composable<RutinasAdminCatalogoRoute> { backStackEntry ->
+                val form = nuevaRutinaForm(navController, backStackEntry)
+                val uiState = form.uiState
+                CatalogoMomentosScreen(
+                    catalogo = form.catalogoCompleto(),
+                    seleccionados = uiState.seleccionados,
+                    onAlternar = form::onAlternar,
+                    creando = uiState.creando,
+                    onAbrirCrear = form::onAbrirCrear,
+                    nombrePropio = uiState.nombrePropio,
+                    onNombrePropioChange = form::onNombrePropioChange,
+                    registroPropio = uiState.registroPropio,
+                    onRegistroPropioChange = form::onRegistroPropioChange,
+                    onGuardarPropio = form::onGuardarPropio,
+                    onContinuar = { navController.navigate(RutinasAdminOrdenRoute) },
+                )
+            }
+            composable<RutinasAdminOrdenRoute> { backStackEntry ->
+                val form = nuevaRutinaForm(navController, backStackEntry)
+                OrdenRutinaScreen(
+                    momentos = form.momentosFinal(),
+                    onReordenar = form::reordenarMomentos,
+                    onGuardar = {
+                        val nombre = form.uiState.nombre.trim().ifBlank { "Nueva rutina" }
+                        rutinasViewModel.crearRutina(nombre, form.momentosFinal())
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar("\"$nombre\" creada")
+                        }
+                        navController.popBackStack(RutinasAdminRoute, inclusive = false)
+                    },
+                )
+            }
+        }
     }
 }
 
@@ -705,6 +818,14 @@ fun CodeaNavHost(
 @Composable
 private fun reportForm(navController: NavHostController, backStackEntry: NavBackStackEntry): ReportFormViewModel {
     val flowEntry = remember(backStackEntry) { navController.getBackStackEntry<SelectReportMethodRoute>() }
+    return viewModel(flowEntry)
+}
+
+// los pasos 2 y 3 de "nueva rutina" piden el formulario del paso 1,
+// igual que el reporte con los suyos.
+@Composable
+private fun nuevaRutinaForm(navController: NavHostController, backStackEntry: NavBackStackEntry): NuevaRutinaViewModel {
+    val flowEntry = remember(backStackEntry) { navController.getBackStackEntry<RutinasAdminNuevaRoute>() }
     return viewModel(flowEntry)
 }
 

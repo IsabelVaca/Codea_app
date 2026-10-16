@@ -78,4 +78,5 @@ dependencies {
     implementation(libs.retrofit.kotlinx.serialization)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
+    implementation(libs.reorderable)
 }
