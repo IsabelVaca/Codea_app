@@ -60,10 +60,13 @@ fun NavHostController.navigateToCheckInDone() {
 }
 
 // after the check-in, we close the result screen (so the "menú" tab opens
-// on the menu next time) and jump to "mi día", which now shows the routine.
+// on the menu next time) and jump to "mi día". on top of it we open "rutina de hoy"
+// (read only), so the teacher sees the routine once before starting. its button
+// and the back button both return to "mi día".
 fun NavHostController.navigateToMyDayAfterCheckIn() {
     popBackStack<MenuRoute>(inclusive = false)
     navigateToTopLevel(TopLevelDestination.MY_DAY)
+    navigate(RutinaDeHoyRoute) { launchSingleTop = true }
 }
 
 // after "cerrar sesión" the day starts again, so we go to "mi día",

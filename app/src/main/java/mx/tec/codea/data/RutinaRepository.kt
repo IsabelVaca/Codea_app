@@ -1,9 +1,9 @@
 package mx.tec.codea.data
 
 import mx.tec.codea.domain.MomentoCatalogo
-import mx.tec.codea.domain.MomentoRutina
-import mx.tec.codea.domain.RutinaItem
 
+// solo los catálogos de momentos que se ofrecen al armar una rutina.
+// las rutinas en sí vienen de la API (RutinaApiRepository).
 class RutinaRepository {
 
     private val catalogo = listOf(
@@ -34,40 +34,4 @@ class RutinaRepository {
     )
 
     fun getCatalogoNuevaRutina(): List<MomentoCatalogo> = catalogoNuevaRutina
-
-    fun getRutinasIniciales(): List<RutinaItem> = listOf(
-        RutinaItem("preescolar", "Día completo · Preescolar", 9),
-        RutinaItem("lactantes", "Día completo · Lactantes y maternal", 9),
-        RutinaItem("lluvia", "Día de lluvia · sin patio", 8),
-        RutinaItem("evento", "Día de evento o festival", 7),
-    )
-
-    fun getMomentosIniciales(): Map<String, List<MomentoRutina>> = mapOf(
-        "preescolar" to momentosDe(
-            "preescolar",
-            "Llegada y bienvenida", "Desayuno", "Actividad guiada", "Recreo",
-            "Almuerzo", "Siesta", "Actividad libre", "Merienda", "Salida"
-        ),
-        "lactantes" to momentosDe(
-            "lactantes",
-            "Llegada y bienvenida", "Desayuno", "Higiene / cambio de pañal", "Actividad guiada",
-            "Almuerzo", "Siesta", "Actividad libre", "Merienda", "Salida"
-        ),
-        "lluvia" to momentosDe(
-            "lluvia",
-            "Llegada y bienvenida", "Desayuno", "Actividad guiada",
-            "Almuerzo", "Siesta", "Actividad libre", "Merienda", "Salida"
-        ),
-        "evento" to momentosDe(
-            "evento",
-            "Llegada y bienvenida", "Desayuno", "Actividad guiada",
-            "Almuerzo", "Actividad libre", "Merienda", "Salida"
-        ),
-    )
-
-    private fun momentosDe(rutinaId: String, vararg nombres: String): List<MomentoRutina> =
-        nombres.mapIndexed { i, nombre ->
-            val registro = catalogo.firstOrNull { it.nombre == nombre }?.registro.orEmpty()
-            MomentoRutina(id = "$rutinaId-${i + 1}", nombre = nombre, registro = registro)
-        }
 }

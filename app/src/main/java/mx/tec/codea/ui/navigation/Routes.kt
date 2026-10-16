@@ -20,6 +20,10 @@ data object MyDayGraph
 @Serializable
 data object MyDayRoute
 
+// la rutina de hoy, de solo lectura. se abre una sola vez, justo después de registrar la entrada.
+@Serializable
+data object RutinaDeHoyRoute
+
 // the three steps of the report. each one knows which moment of the day it is about.
 @Serializable
 data class SelectReportMethodRoute(val subprocessNumber: Int)
@@ -59,6 +63,10 @@ data object CheckInDoneRoute
 // an option of the menu that is not built yet. we send the enum name as text.
 @Serializable
 data class MenuOptionRoute(val optionName: String)
+
+// la lista de avisos de la fundación que ve la asistente (opción "Avisos" del menú).
+@Serializable
+data object AvisosFundacionRoute
 
 // the "centro" tab has two screens, so it is a graph like MyDayGraph: the
 // bottom bar keeps "centro" selected while "crear sala" is open on top of it.

@@ -39,8 +39,10 @@ import mx.tec.codea.ui.screens.CheckerScreen
 import mx.tec.codea.ui.screens.ComingSoonScreen
 import mx.tec.codea.ui.screens.DayNotStartedScreen
 import mx.tec.codea.ui.screens.MenuOption
+import mx.tec.codea.ui.screens.AvisosFundacionScreen
 import mx.tec.codea.ui.screens.MenuScreen
 import mx.tec.codea.ui.screens.MyDayScreen
+import mx.tec.codea.ui.screens.RutinaDeHoyScreen
 import mx.tec.codea.ui.screens.MyRoomScreen
 import mx.tec.codea.ui.screens.ReportScreen
 import mx.tec.codea.ui.screens.SelectReportMethodScreen
@@ -73,6 +75,7 @@ import mx.tec.codea.ui.screens.parent.photos.ParentPhotosScreen
 import mx.tec.codea.ui.screens.parent.today.ParentTodayScreen
 import mx.tec.codea.ui.state.AgregarMomentoViewModel
 import mx.tec.codea.ui.state.AltaAsistenteViewModel
+import mx.tec.codea.ui.state.AvisosViewModel
 import mx.tec.codea.ui.state.CentroViewModel
 import mx.tec.codea.ui.state.CheckerViewModel
 import mx.tec.codea.ui.state.CodeaViewModel
@@ -108,6 +111,8 @@ fun CodeaNavHost(
     val padresViewModel: PadresAdminViewModel = viewModel()
     val rutinasViewModel: RutinasAdminViewModel = viewModel()
     val parentViewModel: ParentViewModel = viewModel()
+    // los avisos que le llegan a la asistente (Menú) y al papá (campana de Hoy).
+    val avisosViewModel: AvisosViewModel = viewModel()
 
     // showSnackbar is a suspend function, so it needs a scope.
     val coroutineScope = rememberCoroutineScope()
@@ -153,6 +158,15 @@ fun CodeaNavHost(
                         onCheckerClick = { navController.navigateToCheckerThroughMenu() },
                     )
                 }
+            }
+
+            // "rutina de hoy": se abre solo después de registrar la entrada. es de solo lectura
+            // (la rutina la asigna coordinación) y su botón lleva a "mi día".
+            composable<RutinaDeHoyRoute> {
+                RutinaDeHoyScreen(
+                    routine = viewModel.routine,
+                    onComenzar = { navController.popBackStack(MyDayRoute, inclusive = false) },
+                )
             }
 
             // the report flow has three screens but one form. the owner of the form
@@ -249,12 +263,20 @@ fun CodeaNavHost(
             composable<MenuRoute> { backStackEntry ->
                 // toRoute reads the values we sent with the route (here, openChecker).
                 val route = backStackEntry.toRoute<MenuRoute>()
+                val avisosPendientes by avisosViewModel.pendientes.collectAsState()
                 MenuScreen(
                     teacher = viewModel.teacher,
                     checkIn = viewModel.checkIn,
                     openChecker = route.openChecker,
+                    avisosPendientes = avisosPendientes,
                     onCheckerClick = { navController.navigate(CheckerRoute) },
-                    onOptionClick = { option -> navController.navigate(MenuOptionRoute(option.name)) },
+                    onOptionClick = { option ->
+                        if (option == MenuOption.NOTICES) {
+                            navController.navigate(AvisosFundacionRoute)
+                        } else {
+                            navController.navigate(MenuOptionRoute(option.name))
+                        }
+                    },
                     onLogoutConfirm = {
                         viewModel.resetDay()
                         navController.navigateToMyDayAfterLogout()
@@ -292,6 +314,16 @@ fun CodeaNavHost(
                     onGoToMyDayClick = { navController.navigateToMyDayAfterCheckIn() },
                 )
             }
+            composable<AvisosFundacionRoute> {
+                // al entrar, lo que no había visto se marca como leído (el badge del menú baja a 0),
+                // pero esta vez se sigue viendo en "Nuevos".
+                LaunchedEffect(Unit) { avisosViewModel.alAbrir() }
+                val avisos by avisosViewModel.avisos.collectAsState()
+                AvisosFundacionScreen(
+                    avisos = avisos,
+                    onBackClick = { navController.popBackStack() },
+                )
+            }
             composable<MenuOptionRoute> { backStackEntry ->
                 val option = MenuOption.valueOf(backStackEntry.toRoute<MenuOptionRoute>().optionName)
                 ComingSoonScreen(
@@ -309,9 +341,13 @@ fun CodeaNavHost(
                 val centroViewModel: CentroViewModel = viewModel()
                 val salas by salasViewModel.salas.collectAsState()
                 val infantesCentro by infantesViewModel.infantes.collectAsState()
+                val avisos by centroViewModel.avisos.collectAsState()
                 CentroScreen(
                     salas = salas,
                     infantes = infantesCentro,
+                    destinoSalaId = centroViewModel.destinoSalaId,
+                    onDestinoChange = centroViewModel::onDestinoChange,
+                    avisos = avisos,
                     onSalaClick = { sala ->
                         navController.navigate(AdminSalaDetalleRoute(sala.id))
                     },
@@ -558,9 +594,14 @@ fun CodeaNavHost(
         // parent tabs. each is only one screen. the data comes from ParentViewModel.
         composable<ParentTodayRoute> {
             val context = LocalContext.current
+            val pendientes by avisosViewModel.pendientes.collectAsState()
+            val notifs by avisosViewModel.notifs.collectAsState()
             ParentTodayScreen(
                 summary = parentViewModel.summary,
                 timelineEvents = parentViewModel.timeline,
+                pendientes = pendientes,
+                notifs = notifs,
+                onAbrirNotif = avisosViewModel::alAbrir,
                 onNavigateToCalendar = {
                     navController.navigateToTopLevel(TopLevelDestination.PARENT_CALENDAR)
                 },
@@ -710,6 +751,8 @@ fun CodeaNavHost(
 
         navigation<RutinasAdminGraph>(startDestination = RutinasAdminRoute) {
             composable<RutinasAdminRoute> {
+                // al entrar (o volver del detalle) se piden las rutinas otra vez: lo que no se guardó se descarta.
+                LaunchedEffect(Unit) { rutinasViewModel.cargar() }
                 val rutinas by rutinasViewModel.rutinas.collectAsState()
                 RutinasAdminScreen(
                     rutinas = rutinas,
@@ -723,17 +766,24 @@ fun CodeaNavHost(
                 val rutina = rutinas.firstOrNull { it.id == route.rutinaId }
                     ?: return@composable
                 val momentosPorRutina by rutinasViewModel.momentos.collectAsState()
+                val salas by salasViewModel.salas.collectAsState()
                 RutinaDetalleScreen(
                     nombreRutina = rutina.nombre,
                     momentos = momentosPorRutina[rutina.id].orEmpty(),
                     onReordenar = { from, to -> rutinasViewModel.reordenar(rutina.id, from, to) },
                     onAgregarMomento = { navController.navigate(RutinasAdminAgregarMomentoRoute(rutina.id)) },
                     onGuardar = {
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("\"${rutina.nombre}\" guardada")
-                        }
-                        navController.popBackStack()
+                        rutinasViewModel.guardar(rutina.id, onSuccess = {
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar("\"${rutina.nombre}\" guardada")
+                            }
+                            navController.popBackStack()
+                        })
                     },
+                    salas = salas,
+                    salasAsignadas = rutina.salasIds.toSet(),
+                    esPredeterminada = rutina.esPredeterminada,
+                    onAlternarSala = { salaId, asignar -> rutinasViewModel.asignarSala(rutina.id, salaId, asignar) },
                 )
             }
             composable<RutinasAdminAgregarMomentoRoute> { backStackEntry ->
@@ -801,11 +851,12 @@ fun CodeaNavHost(
                     onReordenar = form::reordenarMomentos,
                     onGuardar = {
                         val nombre = form.uiState.nombre.trim().ifBlank { "Nueva rutina" }
-                        rutinasViewModel.crearRutina(nombre, form.momentosFinal())
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("\"$nombre\" creada")
-                        }
-                        navController.popBackStack(RutinasAdminRoute, inclusive = false)
+                        rutinasViewModel.crearRutina(nombre, form.momentosFinal(), onSuccess = {
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar("\"$nombre\" creada")
+                            }
+                            navController.popBackStack(RutinasAdminRoute, inclusive = false)
+                        })
                     },
                 )
             }

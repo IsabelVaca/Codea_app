@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -9,7 +9,8 @@ from app.core.pagination import Page
 from app.core.security import CurrentUser, get_child_in_scope
 from app.modules.auth.models import AppUser
 from app.modules.children.models import Child, ChildStatus
-from app.modules.classrooms.centers import center_today, get_active_classroom
+from app.modules.classrooms.centers import center_today, default_center, get_active_classroom
+from app.modules.classrooms.models import Classroom
 from app.modules.parents.models import ParentChildRel
 
 from .models import Announcement, Conversation, ConversationRead, Message, ParentNote
@@ -275,7 +276,54 @@ async def create_announcement(db: AsyncSession, current: CurrentUser, data: Anno
     db.add(announcement)
     await db.commit()
     await db.refresh(announcement)
-    return AnnouncementOut.model_validate(announcement)
+    return (await _announcements_out(db, [announcement]))[0]
+
+
+async def _announcements_out(db: AsyncSession, rows: list[Announcement]) -> list[AnnouncementOut]:
+    """Los avisos con el nombre de su sala."""
+    room_ids = {row.classroom_id for row in rows if row.classroom_id is not None}
+    names = dict((await db.execute(select(Classroom.id, Classroom.name).where(Classroom.id.in_(room_ids)))).all()) if room_ids else {}
+    return [
+        AnnouncementOut(
+            id=row.id,
+            text=row.text,
+            classroom_id=row.classroom_id,
+            classroom_name=names.get(row.classroom_id),
+            created_at=row.created_at,
+        )
+        for row in rows
+    ]
+
+
+async def list_announcements(db: AsyncSession, current: CurrentUser, limit: int) -> list[AnnouncementOut]:
+    query = select(Announcement).order_by(Announcement.created_at.desc(), Announcement.id.desc()).limit(limit)
+    if current.admin is not None:
+        query = query.where(Announcement.daycare_center_id == current.admin.daycare_center_id)
+    else:
+        # docente y papá ven los avisos de todo el centro y los de su sala (o las de sus hijos).
+        room_ids: set[int] = set()
+        center_ids: set[int] = set()
+        if current.teacher is not None and current.teacher.classroom_id is not None:
+            room_ids.add(current.teacher.classroom_id)
+        if current.parent is not None:
+            child_rooms = await db.scalars(
+                select(Child.classroom_id)
+                .join(ParentChildRel, ParentChildRel.child_id == Child.id)
+                .where(ParentChildRel.parent_id == current.id, Child.classroom_id.is_not(None))
+            )
+            room_ids.update(child_rooms.all())
+        # el centro sale de la sala; sin sala (docente nueva) se usa el único centro que hay.
+        if room_ids:
+            center_ids.update((await db.scalars(select(Classroom.daycare_center_id).where(Classroom.id.in_(room_ids)))).all())
+        if not center_ids:
+            center_ids.add((await default_center(db)).id)
+        query = query.where(
+            or_(
+                and_(Announcement.classroom_id.is_(None), Announcement.daycare_center_id.in_(center_ids)),
+                Announcement.classroom_id.in_(room_ids),
+            )
+        )
+    return await _announcements_out(db, list((await db.scalars(query)).all()))
 
 
 async def create_note(db: AsyncSession, current: CurrentUser, child_id: int, data: NoteIn) -> NoteOut:

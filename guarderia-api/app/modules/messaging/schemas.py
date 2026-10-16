@@ -16,6 +16,8 @@ class AnnouncementOut(Schema):
     id: int
     text: str
     classroom_id: int | None
+    # el nombre de la sala (null = aviso para todo el centro).
+    classroom_name: str | None = None
     created_at: datetime
 
 

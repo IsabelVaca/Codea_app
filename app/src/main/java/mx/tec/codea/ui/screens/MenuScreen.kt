@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -43,6 +44,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -77,6 +79,8 @@ fun MenuScreen(
     onOptionClick: (MenuOption) -> Unit,
     onLogoutConfirm: () -> Unit,
     modifier: Modifier = Modifier,
+    // avisos de la fundación que todavía no ha visto (sale en coral junto a la opción).
+    avisosPendientes: Int = 0,
 ) {
     // the interaction source is where the card hears about touches.
     // we keep it here, so we can also send a "fake" touch to it.
@@ -126,15 +130,12 @@ fun MenuScreen(
             modifier = Modifier.onSizeChanged { checkerSize = it },
         )
         MenuOption.entries.forEach { option ->
+            val esAvisos = option == MenuOption.NOTICES
             MenuRow(
                 title = stringResource(option.titleRes),
-                subtitle = stringResource(option.subtitleRes),
-                // "2 nuevos" is the only subtitle that asks for attention.
-                subtitleColor = if (option == MenuOption.NOTICES) {
-                    MaterialTheme.colorScheme.error
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
+                // los avisos no llevan subtítulo fijo: el número de nuevos va en el badge.
+                subtitle = if (esAvisos) null else stringResource(option.subtitleRes),
+                badge = if (esAvisos) avisosPendientes else 0,
                 onClick = { onOptionClick(option) },
             )
         }
@@ -302,6 +303,8 @@ private fun MenuRow(
     onClick: () -> Unit,
     titleColor: Color = MaterialTheme.colorScheme.onSurface,
     subtitleColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    // más de 0: un globito coral con el número, antes de la flecha.
+    badge: Int = 0,
 ) {
     Surface(
         onClick = onClick,
@@ -331,6 +334,20 @@ private fun MenuRow(
                         color = subtitleColor,
                     )
                 }
+            }
+            if (badge > 0) {
+                Text(
+                    text = badge.toString(),
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .defaultMinSize(minWidth = 24.dp)
+                        .background(Color(0xFFFF7A5A), RoundedCornerShape(50))
+                        .padding(horizontal = 8.dp, vertical = 3.dp),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color(0xFF2A2140),
+                    textAlign = TextAlign.Center,
+                )
             }
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,

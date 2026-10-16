@@ -35,7 +35,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import mx.tec.codea.ui.components.ScreenHeader
+import mx.tec.codea.ui.screens.parent.notifications.HoyHeader
+import mx.tec.codea.ui.screens.parent.notifications.NotifUi
+import mx.tec.codea.ui.screens.parent.notifications.PanelNotificaciones
 import mx.tec.codea.ui.theme.CodeaTheme
 import mx.tec.codea.ui.theme.Coral
 import mx.tec.codea.ui.theme.CoralDeep
@@ -53,18 +55,33 @@ fun ParentTodayScreen(
     timelineEvents: List<TimelineEvent> = ParentTodaySampleData.timelineEvents,
     onNavigateToCalendar: () -> Unit = {},
     onSendNote: (String) -> Unit = {},
+    // la campana: cuántas notificaciones no ha visto y la lista del panel.
+    pendientes: Int = 0,
+    notifs: List<NotifUi> = emptyList(),
+    // se llama al tocar la campana (marca las notificaciones como vistas).
+    onAbrirNotif: () -> Unit = {},
 ) {
+    var panelAbierto by remember { mutableStateOf(false) }
+
+    Box(modifier = modifier.fillMaxSize()) {
     LazyColumn(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .imePadding(),
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item {
-            ScreenHeader(
-                overline = "ESTANCIA LA ORUGA · FAMILIA",
-                title = "El día de ${summary.childFirstName}",
+            HoyHeader(
+                contexto = "ESTANCIA LA ORUGA · FAMILIA",
+                titulo = "El día de ${summary.childFirstName}",
+                pendientes = pendientes,
+                onAbrirNotif = {
+                    onAbrirNotif()
+                    panelAbierto = true
+                },
+                // el LazyColumn ya deja 20dp a los lados.
+                horizontalPadding = 0.dp,
             )
         }
 
@@ -108,6 +125,11 @@ fun ParentTodayScreen(
                 modifier = Modifier.padding(top = 8.dp, bottom = 16.dp),
             )
         }
+    }
+
+    if (panelAbierto) {
+        PanelNotificaciones(notifs = notifs, onCerrar = { panelAbierto = false })
+    }
     }
 }
 

@@ -4,7 +4,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import mx.tec.codea.data.AvisoApiRepository
+import mx.tec.codea.data.DataEvents
+import mx.tec.codea.data.api.ApiConfig
+import mx.tec.codea.data.api.toUserMessage
+import mx.tec.codea.domain.Aviso
 
 // vive solo en la pantalla Centro.
 class CentroViewModel : ViewModel() {
@@ -14,6 +24,14 @@ class CentroViewModel : ViewModel() {
     var avisoTexto by mutableStateOf("")
         private set
 
+    // id de la sala a la que va el aviso; null = todas las salas.
+    var destinoSalaId by mutableStateOf<String?>(null)
+        private set
+
+    // el historial, el más reciente primero.
+    private val _avisos = MutableStateFlow<List<Aviso>>(emptyList())
+    val avisos: StateFlow<List<Aviso>> = _avisos.asStateFlow()
+
     // mientras se manda, el botón se apaga para no publicar dos veces.
     private var publicando by mutableStateOf(false)
 
@@ -21,14 +39,39 @@ class CentroViewModel : ViewModel() {
     val canPublicar: Boolean
         get() = avisoTexto.isNotBlank() && !publicando
 
+    init {
+        // cada vez que algo cambia en el servidor (por ejemplo, un aviso nuevo), se vuelve a pedir.
+        viewModelScope.launch { DataEvents.changed.collect { cargarAvisos() } }
+        cargarAvisos()
+    }
+
+    fun cargarAvisos() {
+        if (!ApiConfig.isAdmin) return
+        viewModelScope.launch {
+            try {
+                _avisos.value = repository.getAll()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                DataEvents.notice("No se pudo cargar el historial de avisos: ${e.toUserMessage()}")
+            }
+        }
+    }
+
     fun onAvisoTextoChange(texto: String) {
         avisoTexto = texto
     }
 
-    // manda el aviso a todo el centro. si falla, el texto se queda y el error sale en el snackbar.
+    fun onDestinoChange(salaId: String?) {
+        destinoSalaId = salaId
+    }
+
+    // manda el aviso a la sala elegida (o a todo el centro). si falla, el texto se queda
+    // y el error sale en el snackbar.
     fun publicarAviso(onSuccess: () -> Unit = {}) {
         if (!canPublicar) return
         val texto = avisoTexto
+        val destino = destinoSalaId
         publicando = true
         launchAction(onSuccess = {
             publicando = false
@@ -36,7 +79,7 @@ class CentroViewModel : ViewModel() {
             onSuccess()
         }) {
             try {
-                repository.publicar(texto)
+                repository.publicar(texto, destino)
             } catch (e: Exception) {
                 publicando = false
                 throw e

@@ -181,3 +181,21 @@ async def test_announcement(client, world):
     )
     assert created.status_code == 201
     assert created.json()["classroom_id"] == world.room_a.id
+
+    everyone = await client.post("/announcements", headers=world.admin, json={"text": "Junta de padres el viernes"})
+    assert everyone.json()["classroom_id"] is None
+    assert everyone.json()["classroom_name"] is None
+    assert created.json()["classroom_name"] == "Preescolar 2"
+
+    # el admin ve todos, el más reciente primero.
+    history = (await client.get("/announcements", headers=world.admin)).json()
+    assert [a["text"] for a in history] == ["Junta de padres el viernes", "Mañana no hay servicio"]
+
+    # cada quien ve el del centro entero y el de su sala, no el de otra.
+    def texts(response):
+        return [a["text"] for a in response.json()]
+
+    assert texts(await client.get("/announcements", headers=world.teacher_a)) == ["Junta de padres el viernes", "Mañana no hay servicio"]
+    assert texts(await client.get("/announcements", headers=world.teacher_b)) == ["Junta de padres el viernes"]
+    assert texts(await client.get("/announcements", headers=world.mom)) == ["Junta de padres el viernes", "Mañana no hay servicio"]
+    assert texts(await client.get("/announcements", headers=world.dad)) == ["Junta de padres el viernes"]

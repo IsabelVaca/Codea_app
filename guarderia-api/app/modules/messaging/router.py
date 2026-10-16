@@ -16,6 +16,13 @@ async def create_announcement(db: Db, current: AdminUser, data: AnnouncementIn) 
     return await service.create_announcement(db, current, data)
 
 
+@router.get("/announcements", response_model=list[AnnouncementOut])
+async def list_announcements(db: Db, current: AnyUser, limit: int = Query(50, ge=1, le=200)) -> list[AnnouncementOut]:
+    """Los avisos, el más reciente primero. Admin: todos los del centro. Docente y papá: los del
+    centro entero y los de su sala (o la de sus hijos)."""
+    return await service.list_announcements(db, current, limit)
+
+
 @router.get("/conversations", response_model=list[ConversationOut])
 async def list_conversations(db: Db, current: AnyUser) -> list[ConversationOut]:
     """Las conversaciones (una por niño), cada una con su conteo de mensajes sin leer."""

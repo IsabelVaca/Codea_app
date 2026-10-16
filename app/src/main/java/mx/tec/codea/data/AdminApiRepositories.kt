@@ -10,12 +10,14 @@ import mx.tec.codea.data.api.ParentDto
 import mx.tec.codea.data.api.TeacherClassroomBody
 import mx.tec.codea.data.api.TeacherCreateBody
 import mx.tec.codea.data.api.TeacherDto
+import mx.tec.codea.domain.Aviso
 import mx.tec.codea.domain.Docente
 import mx.tec.codea.domain.Infante
 import mx.tec.codea.domain.Padre
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import java.util.TimeZone
 
 // ---------------- docentes ----------------
 
@@ -146,9 +148,34 @@ private fun ParentDto.toPadre() = Padre(
 // avisos
 
 class AvisoApiRepository {
-    suspend fun publicar(texto: String) {
-        ApiClient.api.publishAnnouncement(AnnouncementBody(text = texto.trim()))
+
+    // salaId = null: aviso para todo el centro.
+    suspend fun publicar(texto: String, salaId: String? = null) {
+        ApiClient.api.publishAnnouncement(
+            AnnouncementBody(text = texto.trim(), classroomId = salaId?.toInt())
+        )
     }
+
+    // los avisos que le tocan a quien pregunta, el más reciente primero:
+    // el admin ve todos; la asistente y los papás, los del centro entero y los de su sala.
+    suspend fun getAll(): List<Aviso> = ApiClient.api.announcements().map {
+        Aviso(
+            id = it.id.toString(),
+            destino = it.classroomName ?: it.classroomId?.let { "Sala eliminada" },
+            fecha = formatearFecha(it.createdAt),
+            texto = it.text,
+        )
+    }
+}
+
+// "2026-10-16T22:30:12.123Z" (UTC) -> "16 oct · 16:30" en la hora del teléfono.
+// no se usa java.time porque la app soporta Android 7 (API 24).
+private fun formatearFecha(iso: String): String = try {
+    val utc = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).apply { timeZone = TimeZone.getTimeZone("UTC") }
+    val fecha = utc.parse(iso.take(19))!!
+    SimpleDateFormat("d MMM · HH:mm", Locale("es", "MX")).format(fecha)
+} catch (e: Exception) {
+    iso.take(10)
 }
 
 // ayudas

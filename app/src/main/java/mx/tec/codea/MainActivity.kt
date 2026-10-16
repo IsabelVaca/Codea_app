@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import mx.tec.codea.data.LeidosStore
 import mx.tec.codea.ui.navigation.CodeaApp
 import mx.tec.codea.ui.theme.CodeaTheme
 
@@ -14,6 +15,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         // this lets the app draw behind the system bars (status bar and navigation bar).
         enableEdgeToEdge()
+        // qué avisos ya se vieron se guarda en el teléfono.
+        LeidosStore.init(applicationContext)
         setContent {
             CodeaTheme {
                 CodeaApp()

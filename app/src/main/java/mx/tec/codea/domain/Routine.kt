@@ -11,6 +11,8 @@ data class Subprocess(
     val status: SubprocessStatus,
     val time: String? = null,
     val description: String? = null,
+    // ARRIVAL, MEAL, ACTIVITY, NAP, HYGIENE o PICKUP cuando viene de la API.
+    val category: String? = null,
 )
 
 // the whole routine the teacher follows today.

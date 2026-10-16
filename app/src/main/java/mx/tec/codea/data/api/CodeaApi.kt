@@ -29,6 +29,19 @@ interface CodeaApi {
     @DELETE("classrooms/{id}")
     suspend fun deleteClassroom(@Path("id") id: Int)
 
+    // ----- plantillas de rutina (solo admin) -----
+    @GET("routine-templates")
+    suspend fun routineTemplates(): List<TemplateDto>
+
+    @POST("routine-templates")
+    suspend fun createRoutineTemplate(@Body body: TemplateBody): TemplateDto
+
+    @PUT("routine-templates/{id}")
+    suspend fun updateRoutineTemplate(@Path("id") id: Int, @Body body: TemplateBody): TemplateDto
+
+    @PUT("classrooms/{id}/routine-template")
+    suspend fun assignRoutineTemplate(@Path("id") classroomId: Int, @Body body: TemplateAssignBody)
+
     //  docentes
     @GET("teachers")
     suspend fun teachers(): List<TeacherDto>
@@ -168,4 +181,8 @@ interface CodeaApi {
     // ----- avisos -----
     @POST("announcements")
     suspend fun publishAnnouncement(@Body body: AnnouncementBody)
+
+    // el historial, el más reciente primero (solo admin).
+    @GET("announcements")
+    suspend fun announcements(@Query("limit") limit: Int = 50): List<AnnouncementDto>
 }

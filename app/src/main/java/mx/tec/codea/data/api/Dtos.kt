@@ -144,4 +144,54 @@ data class ParentCreateBody(
 @Serializable
 data class AnnouncementBody(
     val text: String,
+    // sin sala (null) el aviso es para todo el centro.
+    @SerialName("classroom_id") val classroomId: Int? = null,
+)
+
+@Serializable
+data class AnnouncementDto(
+    val id: Int,
+    val text: String,
+    @SerialName("classroom_id") val classroomId: Int? = null,
+    @SerialName("classroom_name") val classroomName: String? = null,
+    @SerialName("created_at") val createdAt: String,
+)
+
+
+// ----- plantillas de rutina -----
+@Serializable
+data class TemplateMomentDto(
+    val number: Int,
+    val name: String,
+    val category: String,
+)
+
+@Serializable
+data class TemplateDto(
+    val id: Int,
+    val name: String,
+    @SerialName("is_default") val isDefault: Boolean = false,
+    val moments: List<TemplateMomentDto> = emptyList(),
+    // las salas que la tienen asignada (las que no tienen una propia usan la predeterminada).
+    val classrooms: List<RefDto> = emptyList(),
+)
+
+@Serializable
+data class TemplateMomentBody(
+    val name: String,
+    val category: String,
+)
+
+// la plantilla se manda entera, con sus momentos en orden.
+@Serializable
+data class TemplateBody(
+    val name: String,
+    val moments: List<TemplateMomentBody>,
+    @SerialName("is_default") val isDefault: Boolean,
+)
+
+// templateId = null deja a la sala con la plantilla predeterminada.
+@Serializable
+data class TemplateAssignBody(
+    @SerialName("template_id") val templateId: Int?,
 )

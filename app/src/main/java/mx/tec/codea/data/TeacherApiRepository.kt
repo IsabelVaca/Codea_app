@@ -129,6 +129,7 @@ fun RoutineDto.toRoutine() = Routine(
             },
             time = clockOf(it.confirmedAt) ?: clockOf(it.startedAt),
             description = it.description,
+            category = it.category,
         )
     },
 )
