@@ -1,6 +1,6 @@
 # API: estado actual
 
-La API ya tiene **todos los endpoints de la primera entrega** del PDF: 56 en 12 módulos, con su lista en [`../api/endpoints.md`](../api/endpoints.md). Las **30 pruebas pasan** contra Postgres real (corridas el 16 de octubre de 2026). Lo que falta no son endpoints de la entrega, sino lo que hay alrededor: el login propio, quién recibe los avisos y las invitaciones, el worker y lo que piden las pantallas nuevas.
+La API ya tiene **todos los endpoints de la primera entrega** del PDF y algunos más: 65 en 13 módulos (a los 56 del 16 de octubre se sumaron `GET /announcements`, las plantillas de rutina, `/center` y `/invitations`), con su lista en [`../api/endpoints.md`](../api/endpoints.md). Las 30 pruebas del 16 de octubre pasaron contra Postgres real; hoy hay **43 pruebas escritas** y las nuevas todavía no se han corrido contra Postgres. Lo que falta no son endpoints de la entrega, sino lo que hay alrededor: el login propio, las invitaciones con código, el worker y lo que piden las pantallas nuevas.
 
 ## Lo que está hecho
 
@@ -17,7 +17,10 @@ La API ya tiene **todos los endpoints de la primera entrega** del PDF: 56 en 12 
 | `reports` | 4 | 1 + 1 | Reglas de `ReportValidator`; resumen del día y pantalla Hoy |
 | `media` | 4 | 3 | URL firmada para subir (5 min) y para leer (10 min); feed paginado |
 | `documents` | 5 | 1 | Documentos con su archivo y personas autorizadas |
-| `messaging` | 6 | 3 | Chat por niño con `client_id`, `after` y leídos; avisos (solo publicar); notas del papá |
+| `messaging` | 7 | 3 | Chat por niño con `client_id`, `after` y leídos; avisos (publicar y leer, según el rol); notas del papá |
+| `routines` (plantillas) | +4 | 1 | `GET/POST/PUT /routine-templates` y asignar plantilla a una sala; la plantilla se copia al día al checar |
+| `admins` | 2 | — | `GET/PATCH /center`: ubicación, radio del checador y zona horaria |
+| `auth` (invitaciones) | +2 | — | `POST/GET /invitations`: invitar a una persona nueva y ver su estado |
 
 "1 + 1" = una prueba propia y otra que lo cubre desde otro flujo. La cobertura es pareja en las reglas (checador, reportes, rutina) y delgada en padres, docentes, chat y documentos.
 
@@ -28,13 +31,13 @@ La API ya tiene **todos los endpoints de la primera entrega** del PDF: 56 en 12 
 | Login | Firebase (Google) o `dev:<correo>` | Login propio con correo, contraseña y JWT ([04](04-api-login-jwt.md)) |
 | Invitaciones | Se crean con el correo y una vigencia de 7 días, **sin código**; la persona entra si su correo de Google coincide | Código de invitación; mostrarlo al admin o mandarlo por correo |
 | Reenviar invitación | Solo para padres, y solo renueva la vigencia | También para docentes; regresar el código nuevo |
-| Avisos | `POST /announcements` guarda el aviso | Nadie lo puede leer: falta `GET /announcements` |
+| Avisos | `POST /announcements` guarda el aviso y `GET /announcements` los lista según el rol (admin: todos; docente y padre: los del centro y los de su sala) | Marcar como leído en el servidor (hoy la app lo guarda en el teléfono) y paginar por cursor |
 | Aviso a coordinación | Se guarda y se anota en el log | Push o correo al `ADMIN` (con el worker) |
 | Notas del papá | Se guardan y salen en `GET /children/{id}/day` | Mi sala no indica que hay nota nueva |
 | Documentos pedidos | Solo los que crea el seed | Lista por defecto al inscribir, o un endpoint para pedirlos |
 | Documentos del admin | `PUT /children/{id}/documents/{doc_id}` acepta `ADMIN` | El admin no puede pedir permiso para subir `kind: DOCUMENT` (solo el `PARENT`); decidir si el admin sube documentos |
 | Fotos | Se guardan tal como llegan | Quitar EXIF (ubicación GPS), miniaturas y validar que sí sea imagen: necesita el worker |
-| Módulo `admins` | Solo el modelo; `router.py`, `service.py` y `schemas.py` vacíos | Nada para el mínimo (los admins vienen del seed). Borrar los archivos vacíos o usarlos para `GET/POST /admins` después |
+| Módulo `admins` | Modelo y `GET/PATCH /center` | Nada más para el mínimo (los admins vienen del seed); `GET/POST /admins` después |
 | `app/workers/` y `monitoring/` | Vacíos | Fase 2 |
 
 ## Lo que no existe
@@ -42,7 +45,7 @@ La API ya tiene **todos los endpoints de la primera entrega** del PDF: 56 en 12 
 Para el mínimo (las pantallas P0 y P1 de [01](01-app-pantallas.md)):
 
 - Login, refresh, logout, activar cuenta, cambiar y recuperar contraseña.
-- `GET /announcements` (y marcar como leído, opcional).
+- Marcar avisos como leídos en el servidor (opcional; hoy se guarda en el teléfono).
 - Código de invitación en las respuestas del admin y `POST /teachers/{id}/resend-invitation`.
 - Indicador de nota del papá en `GET /classrooms/{id}/children`.
 

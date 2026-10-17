@@ -45,10 +45,11 @@ Sin endpoints nuevos: Hoy, Calendario, Fotos, Documentos y Chat ya existen.
 
 ## 5. Completar el mínimo (P1)
 
-- [ ] `GET /announcements`: avisos visibles para quien pregunta. `TEACHER`: los del centro y los de su sala. `PARENT`: los del centro y los de las salas de sus hijos. `ADMIN`: todos. Paginado por cursor, del más nuevo al más viejo.
-- [ ] `POST /announcements/{id}/read` y `unread_count` en la respuesta (opcional; la tabla `announcement_reads` de la propuesta).
+- [x] `GET /announcements`: avisos visibles para quien pregunta. `TEACHER`: los del centro y los de su sala. `PARENT`: los del centro y los de las salas de sus hijos. `ADMIN`: todos. Hecho el 17 de octubre, del más nuevo al más viejo y con `?limit=`; **falta paginar por cursor**.
+- [ ] `POST /announcements/{id}/read` y `unread_count` en la respuesta (opcional; la tabla `announcement_reads` de la propuesta). Hoy la app guarda los leídos en el teléfono.
+- [ ] Probar `GET /announcements` contra Postgres (la prueba ya está en `test_announcement`, falta correrla).
 - [ ] Recuperar contraseña por correo (`POST /auth/password/forgot`) **solo si** se decide tener correo; si no, el admin genera el código con `access-code`.
-- [ ] Pruebas de avisos y de su alcance.
+- [x] Pruebas de avisos y de su alcance (escritas en `test_announcement`).
 
 **Listo cuando:** todas las pantallas P0 y P1 de [01-app-pantallas.md](01-app-pantallas.md) funcionan contra la API.
 

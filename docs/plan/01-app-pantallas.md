@@ -1,6 +1,6 @@
 # App: pantallas para el mínimo funcional
 
-Hoy la app tiene 28 pantallas en uso, pero no tiene login: abre en `RoleSelectionScreen` y cada rol trabaja con datos de prueba. Para que funcione de verdad faltan **7 pantallas indispensables (P0)** y **7 para entregar completo (P1)**. Además, casi todas las pantallas que ya existen necesitan conectarse a la API.
+Hoy la app tiene unas 30 pantallas en uso, pero no tiene login: abre en `RoleSelectionScreen` y manda `Bearer dev:<correo>`. Desde la primera versión de este plan se conectó a la API buena parte de las pantallas de admin (salas, docentes, infantes, padres, rutinas, avisos), de la docente (rutina de hoy, avisos) y del padre (avisos). Para que funcione de verdad faltan **7 pantallas indispensables (P0)** y **6 para entregar completo (P1)** (la de Avisos ya está hecha).
 
 Prioridades:
 
@@ -34,7 +34,7 @@ La 7 solo es P0 si se elige que el admin comparta el código (ver [decisiones pe
 | 11 | **Selector de hijo** (componente, no pantalla) | `PARENT` | Cambiar de hijo en Hoy, Calendario, Fotos, Chat y Documentos. Hoy todo está fijo en "Mateo" | Encabezado de las tabs del padre | `GET /me` (`parent.children`) |
 | 12 | **Día del niño** (`ChildDayScreen`) | `TEACHER` | Capturar el resumen que ve el padre en Hoy (ánimo, comida, cambios de pañal, siesta y nota) y leer la nota que mandó el papá. Hoy nadie escribe ese resumen | Tocar a un niño en Mi sala | `GET /children/{id}/day`, `POST /children/{id}/daily-entries` |
 | 13 | **Agregar persona autorizada** (formulario) | `PARENT` | Nombre, parentesco y teléfono. Hoy el botón de Documentos no hace nada | Documentos → "Agregar" | `POST /children/{id}/authorized-pickups` |
-| 14 | **Avisos** (lectura) | `TEACHER`, `PARENT` | La lista de avisos del centro y de la sala. Hoy el admin los publica y nadie los ve | Docente: Menú → Avisos de la fundación. Padre: tarjeta en Hoy | `GET /announcements` (nuevo) |
+| 14 | ~~**Avisos** (lectura)~~ **Hecha** | `TEACHER`, `PARENT` | La lista de avisos del centro y de la sala. Docente: `AvisosFundacionScreen`, con "Nuevos" y "Anteriores" y botón de regresar. Padre: campana con contador en el encabezado de Hoy que abre `PanelNotificaciones`. Lo que ya se vio se guarda en el teléfono | Docente: Menú → Avisos de la fundación (con contador en el menú). Padre: campana en Hoy | `GET /announcements` |
 
 ### P2: después de la primera entrega
 
@@ -47,7 +47,7 @@ La 7 solo es P0 si se elige que el admin comparta el código (ver [decisiones pe
 | Solicitudes de borrado de fotos | `ADMIN` | El padre ya puede pedirlo; nadie lo resuelve |
 | Pedir un documento a la familia | `ADMIN` | Para el mínimo, la API crea una lista de documentos por defecto al inscribir |
 | Configuración del centro (ubicación, radio, turnos) | `ADMIN` | Para el mínimo vive en el seed |
-| Historial de avisos | `ADMIN` | Ver y borrar avisos publicados |
+| Historial de avisos | `ADMIN` | **Ver ya está hecho** (Centro, debajo de "Publicar aviso", con menú para elegir a quién va). Falta borrarlos |
 | Salida con persona autorizada | `TEACHER` | Flujo "por validar" de la propuesta |
 | Acuse de incidentes | `PARENT` | Flujo "por validar" de la propuesta |
 | Notificaciones | Todos | WorkManager periódico + canal de notificaciones, como la práctica 8 (sin FCM) |
@@ -92,15 +92,17 @@ Todas dejan de leer datos fijos. La columna "Falta" dice qué más necesita cada
 | Elegir método / Reporte / Elegir niños | `SelectReportMethodRoute`, `ReportRoute`, `SelectStudentsRoute` | Foto en `Bitmap`, el reporte se queda en memoria | Subir la foto (permiso firmado → POST al almacén → `complete`) y guardar el reporte en la API | `POST /media/uploads`, `POST /media/{id}/complete`, `POST /reports` |
 | Mi sala | `MyRoomRoute` | Asistencia y no leídos de muestra | Asistencia real, abrir Día del niño al tocar a un niño, marca de "nota del papá" | `GET /classrooms/{id}/children`, `PUT /attendance/{child_id}` |
 | Chats | `ChatsRoute` | Mensajes fijos; **el botón de enviar no hace nada** | Pasa a ser Bandeja (P0 #5) + conversación que envía, recibe y marca leído | `/conversations…` |
-| Menú | `MenuRoute` | Perfil fijo; cerrar sesión reinicia el día | Perfil de `GET /me`, cerrar sesión real, Mi perfil → Cambiar contraseña, Avisos → pantalla de avisos | `GET /me`, `POST /auth/logout` |
+| Menú | `MenuRoute` | Perfil fijo; cerrar sesión reinicia el día. **Avisos de la fundación ya abre la lista real, con contador de nuevos** | Perfil de `GET /me`, cerrar sesión real, Mi perfil → Cambiar contraseña | `GET /me`, `POST /auth/logout` |
 | Checador | `CheckerRoute` | Ubicación simulada con chips (`CheckInScenario`) | Ubicación real del teléfono, coordenadas y radio de `GET /me`, avisar a coordinación de verdad | `POST /staff-attendance/check-in`, `POST /staff-attendance/notify-coordination` |
 | Entrada registrada | `CheckInDoneRoute` | Funciona | Mostrar el registro que regresa la API | — |
+| Rutina de hoy | `RutinaDeHoyRoute` | **Nueva, de solo lectura.** Aparece justo después de registrar la entrada; muestra la rutina de la sala (la asignada por el admin o la predeterminada) y "Comenzar el día" lleva a Mi día | — | `GET /classrooms/{id}/routine` |
 
 ### Administrador
 
 | Pantalla | Ruta | Hoy | Falta | Endpoints |
 | --- | --- | --- | --- | --- |
-| Centro | `AdminCentroRoute` | Ocupación calculada cruzando listas; "Publicar aviso" solo limpia el campo | Ocupación de la API, publicar de verdad, avatar → Mi cuenta | `GET /classrooms`, `GET /children`, `POST /announcements` |
+| Centro | `AdminCentroRoute` | Ocupación calculada con la API; publica avisos de verdad, para todas las salas o solo una, y muestra el historial | Avatar → Mi cuenta | `GET /classrooms`, `GET /children`, `POST/GET /announcements` |
+| Rutinas (admin) | `RutinasAdminRoute` y detalle | Lista, crea, reordena, agrega momentos y guarda contra `/routine-templates`; marca las salas que usan cada rutina | Los momentos propios se guardan como categoría "actividad" (la API no guarda el texto de registro propio); marcar una sala recarga la lista y pierde lo que no se guardó | `GET/POST/PUT /routine-templates`, `PUT /classrooms/{id}/routine-template` |
 | Crear sala | `AdminCrearSalaRoute` | Funciona en memoria | Mandar `teacher_id` en lugar del nombre | `POST /classrooms` |
 | Detalle de sala | `AdminSalaDetalleRoute` | Asigna asistente **por nombre** y mueve niños por nombre de sala | Usar ids; manejar `409 CLASSROOM_NOT_EMPTY` al eliminar | `GET/PATCH/DELETE /classrooms/{id}`, `PUT /classrooms/{id}/staff`, `PATCH /children/{id}` |
 | Docentes / Detalle / Alta asistente | `AdminDocentesRoute`, `AdminDocenteDetalleRoute`, `AdminAltaAsistenteRoute` | Funciona en memoria; el alta no guarda teléfono, correo ni turno | Mandar todos los campos, turno desde `GET /shifts`, reactivar, mostrar el código de invitación | `/teachers…`, `GET /shifts` |
@@ -111,7 +113,7 @@ Todas dejan de leer datos fijos. La columna "Falta" dice qué más necesita cada
 
 | Pantalla | Ruta | Hoy | Falta | Endpoints |
 | --- | --- | --- | --- | --- |
-| Hoy | `ParentTodayRoute` | `ParentTodaySampleData`; la nota solo muestra un `Toast` | Datos reales, enviar la nota, tarjeta de avisos, avatar → Mi cuenta | `GET /children/{id}/day`, `POST /children/{id}/notes` |
+| Hoy | `ParentTodayRoute` | Datos reales y nota enviada a la API; encabezado con campana de notificaciones (avisos) | Avatar → Mi cuenta | `GET /children/{id}/day`, `POST /children/{id}/notes`, `GET /announcements` |
 | Calendario | `ParentCalendarRoute` | Agosto 2026 fijo | Cambiar de mes, datos reales; tocar un día abre Hoy de ese día | `GET /children/{id}/attendance?month=` |
 | Fotos | `ParentPhotosRoute` | Placeholders (`TODO: AsyncImage`); descargar y pedir borrado no hacen nada | Cargar imágenes con Coil, paginar, descargar, pedir borrado | `GET /media`, `POST /media/{id}/deletion-request` |
 | Documentos | `ParentDocumentsRoute` | `ParentDocumentsSampleData`; los tres botones no hacen nada | Subir con el selector de archivos del sistema, agregar (P1 #13) y quitar autorizados | `GET /children/{id}/documents`, `PUT /children/{id}/documents/{doc_id}`, `/authorized-pickups…` |
