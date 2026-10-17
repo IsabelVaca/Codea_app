@@ -1,10 +1,10 @@
 # Endpoints de la API (estado actual)
 
-Lista sacada del código el 16 de octubre de 2026 (rama `backend`, commit `12da735`): rutas y roles de cada `router.py`, cuerpos y respuestas del OpenAPI que genera FastAPI, y códigos de error de cada `service.py`. Reemplaza a `Endpoints_API_Codea.docx.pdf` y a [`endpoints-api-codea.pdf`](endpoints-api-codea.pdf), que tienen el mismo contenido y ya no coinciden en varios detalles (ver [qué cambió](#qué-cambió-respecto-al-pdf)).
+Lista sacada del código el 16 de octubre de 2026 (rama `backend`, commit `12da735`) y puesta al día el 17 de octubre con lo que se agregó después (centro, invitaciones, plantillas de rutina y avisos): rutas y roles de cada `router.py`, cuerpos y respuestas del OpenAPI que genera FastAPI, y códigos de error de cada `service.py`. Reemplaza a `Endpoints_API_Codea.docx.pdf` y a [`endpoints-api-codea.pdf`](endpoints-api-codea.pdf), que tienen el mismo contenido y ya no coinciden en varios detalles (ver [qué cambió](#qué-cambió-respecto-al-pdf)).
 
-Son **56 endpoints en 12 módulos**. El contrato exacto, con todos los campos, sigue siendo el OpenAPI: con la API prendida, `http://localhost:8000/docs`.
+Son **65 endpoints en 13 módulos**. El contrato exacto, con todos los campos, sigue siendo el OpenAPI: con la API prendida, `http://localhost:8000/docs`.
 
-Los cambios que vienen (login con JWT, avisos, etc.) no están aquí: están en [`../plan/05-api-plan.md`](../plan/05-api-plan.md).
+Los cambios que vienen (login con JWT, etc.) no están aquí: están en [`../plan/05-api-plan.md`](../plan/05-api-plan.md).
 
 ## Convenciones
 
@@ -115,6 +115,12 @@ La API calcula distancia, radio y retardo con su propio reloj; nunca acepta el e
 | --- | --- | --- | --- | --- | --- |
 | GET | `/classrooms/{id}/routine?date=` | `ADMIN`, `TEACHER` (su sala) | — | `RoutineOut`: `moments[]` (con `status`, `started_at`, `confirmed_at`, `report_count`), `current_step`, `total_steps`, `active_moment_id` | `404 CLASSROOM_NOT_FOUND` |
 | POST | `/routine-moments/{id}/confirm` | `TEACHER` | — | `RoutineOut` ya avanzada | `409 MOMENT_NOT_ACTIVE`; `404 MOMENT_NOT_FOUND` |
+| GET | `/routine-templates` | `ADMIN` | — | `TemplateOut[]`: `id`, `name`, `is_default`, `moments[]` (`number`, `name`, `category`) y `classrooms[]` que la tienen asignada. La predeterminada va primero | — |
+| POST | `/routine-templates` | `ADMIN` | `{name, moments[{name, category}], is_default?}` | 201 `TemplateOut` | `422 NAME_REQUIRED`, `MOMENTS_REQUIRED` |
+| PUT | `/routine-templates/{id}` | `ADMIN` | Igual que el POST: la plantilla se manda entera y reemplaza sus momentos, en ese orden | `TemplateOut` | `404 TEMPLATE_NOT_FOUND`; `422 NAME_REQUIRED`, `MOMENTS_REQUIRED` |
+| PUT | `/classrooms/{id}/routine-template` | `ADMIN` | `{template_id}` (`null` = vuelve a la predeterminada) | `{classroom, template_id}` | `404 CLASSROOM_NOT_FOUND`, `TEMPLATE_NOT_FOUND` |
+
+`category` es una de `ARRIVAL`, `MEAL`, `ACTIVITY`, `NAP`, `HYGIENE` o `PICKUP`. La plantilla de la sala (la asignada o, si no tiene, la predeterminada) se copia a los momentos del día **al checar la docente**: cambiar una plantilla no modifica un día que ya empezó.
 
 ## Reportes y día del niño
 
@@ -152,14 +158,24 @@ Hoy no hay endpoint para pedir documentos: la lista de cada niño la crea el see
 
 | Método | Ruta | Rol | Envía | Responde | Errores |
 | --- | --- | --- | --- | --- | --- |
-| POST | `/announcements` | `ADMIN` | `{text, classroom_id?}` (sin sala = todo el centro) | 201 `AnnouncementOut` | `422 TEXT_REQUIRED`; `404 CLASSROOM_NOT_FOUND` |
+| POST | `/announcements` | `ADMIN` | `{text, classroom_id?}` (sin sala = todo el centro) | 201 `AnnouncementOut`: `id`, `text`, `classroom_id`, `classroom_name`, `created_at` | `422 TEXT_REQUIRED`; `404 CLASSROOM_NOT_FOUND` |
+| GET | `/announcements?limit=` | Todos | — | `AnnouncementOut[]`, el más reciente primero (50 por omisión, máximo 200). `ADMIN`: todos los del centro. `TEACHER`: los del centro y los de su sala. `PARENT`: los del centro y los de las salas de sus hijos | — |
 | GET | `/conversations` | `TEACHER`, `PARENT` (al `ADMIN` le regresa lista vacía) | — | `ConversationOut[]`: una por niño, con `child`, `unread_count` y `last_message` | — |
 | GET | `/conversations/{id}/messages?cursor=&after=&limit=` | Participantes | — | `{items: MessageOut[], next_cursor}`; con `after=<id>` solo los nuevos. Cada mensaje trae `author_name`, `is_mine` e `is_read` | `404 CONVERSATION_NOT_FOUND` |
 | POST | `/conversations/{id}/messages` | Participantes | `{text, client_id?}` | 201 `MessageOut`; mismo `client_id`: 200 con el que ya existía | `422 TEXT_REQUIRED`; `404 CONVERSATION_NOT_FOUND` |
 | POST | `/conversations/{id}/read` | Participantes | — | 204 | `404 CONVERSATION_NOT_FOUND` |
 | POST | `/children/{id}/notes` | `PARENT` | `{text}` | 201 `NoteOut` (nota para hoy) | `422 TEXT_REQUIRED`; `404 CHILD_NOT_FOUND` |
 
-Participantes de una conversación: los padres ligados al niño y las docentes de su sala. Los avisos se publican pero todavía no hay endpoint para leerlos.
+Participantes de una conversación: los padres ligados al niño y las docentes de su sala. El servidor no lleva la cuenta de avisos leídos: la app guarda en el teléfono cuáles ya se vieron.
+
+## Centro e invitaciones
+
+| Método | Ruta | Rol | Envía | Responde | Errores |
+| --- | --- | --- | --- | --- | --- |
+| GET | `/center` | `ADMIN` | — | `CenterOut`: `name`, `latitude`, `longitude`, `check_in_radius_m`, `timezone` | `409 CENTER_MISSING` |
+| PATCH | `/center` | `ADMIN` | `{name?, latitude?, longitude?, check_in_radius_m?, timezone?}` (solo cambia lo que se manda; latitud y longitud en `null` quitan la ubicación) | `CenterOut` | `422 LOCATION_INCOMPLETE`, `LOCATION_INVALID`, `RADIUS_INVALID`, `TIMEZONE_INVALID` |
+| POST | `/invitations` | `ADMIN` | `{name, surname?, phone, email, role}` | 201 `InvitationOut` | `409 EMAIL_TAKEN`, `ALREADY_HAS_ACCOUNT` |
+| GET | `/invitations?status=&role=` | `ADMIN` | — | `InvitationOut[]`: `status` (`PENDING`, `ACCEPTED`, `EXPIRED`), `expires_at`, `accepted_at` | — |
 
 ## Enums
 
