@@ -14,7 +14,7 @@ Foto a 2026-10-16 (leyendo el código; las pruebas no se corrieron para esta fot
 
 | Qué | Requisito | Cómo, dentro del marco |
 |---|---|---|
-| **Auth propia con JWT** | RF-01, RNF01, RNF03 | Diseño ya hecho en [`docs/plan/04-api-login-jwt.md`](../docs/plan/04-api-login-jwt.md); no lo rehagas. Hoy `AUTH_MODE=firebase` (excluido por el marco) o `dev`. Agregar `POST /auth/login`, `/auth/refresh`, `/auth/logout`; contraseña de más de 8 caracteres con hash (bcrypt o argon2); access de 5 min y refresh. Ver [`docs/DECISIONES-PENDIENTES.md`](../docs/DECISIONES-PENDIENTES.md) #1. Las invitaciones pasan a crear la contraseña. |
+| ~~Auth propia con JWT~~ **Hecha** (rama `feature/login-jwt`) | RF-01, RNF01, RNF03 | Ver [`app/modules/auth/README.md`](app/modules/auth/README.md). Falta: límite de intentos, correo real con el código, auditoría de logins |
 | **Bitácora de auditoría** | RF-14 | Tabla `audit_log` (quién, qué, sobre qué, cuándo) escrita desde los `service.py`. |
 | **Avisos con imágenes** (`GET /announcements` ya existe) | HN5 | `media_id` en el aviso; marcar como leído en el servidor (`POST /announcements/{id}/read`), hoy el "leído" vive en el teléfono. |
 | **Resumen semanal** | RF-12 | Endpoint que agregue `daily_summary` por semana y niño. |

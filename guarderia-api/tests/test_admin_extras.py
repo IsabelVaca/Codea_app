@@ -1,4 +1,4 @@
-from tests.conftest import as_user
+from tests.conftest import as_user  # noqa: F401
 
 
 # --- centro ---
@@ -59,10 +59,14 @@ async def test_invite_new_admin_and_list(client, world):
     assert [item["email"] for item in pending] == ["lucia@test.dev"]
     assert (await client.get("/invitations?status=ACCEPTED", headers=world.admin)).json() == []
 
-    # al entrar con Google, la nueva administradora ya tiene su rol.
-    accepted = await client.post("/auth/accept-invitation", headers=as_user("lucia@test.dev"))
+    # al activar su cuenta con el código, la nueva administradora ya tiene su rol.
+    assert body["access_code"]["purpose"] == "INVITATION"
+    accepted = await client.post(
+        "/auth/activate",
+        json={"email": "lucia@test.dev", "code": body["access_code"]["code"], "password": "una-clave-larga-1"},
+    )
     assert accepted.status_code == 200
-    assert accepted.json()["roles"] == ["ADMIN"]
+    assert accepted.json()["me"]["roles"] == ["ADMIN"]
     done = (await client.get("/invitations?status=ACCEPTED", headers=world.admin)).json()
     assert [item["email"] for item in done] == ["lucia@test.dev"]
 

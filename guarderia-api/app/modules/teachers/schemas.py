@@ -3,7 +3,7 @@ from datetime import datetime, time
 
 from pydantic import BaseModel
 
-from app.core.schemas import ClassroomRef, Schema
+from app.core.schemas import AccessCodeOut, ClassroomRef, Schema
 
 
 class ShiftOut(Schema):
@@ -31,6 +31,8 @@ class TeacherOut(BaseModel):
     # ya entró a la app con su invitación.
     has_account: bool
     children_count: int
+    # solo al dar de alta: el código para que la docente active su cuenta (se muestra una vez).
+    access_code: AccessCodeOut | None = None
 
 
 class TeacherCreate(BaseModel):

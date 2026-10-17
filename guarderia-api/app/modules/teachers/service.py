@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core import rules
 from app.core.errors import ApiError
 from app.core.schemas import ClassroomRef
-from app.core.security import revoke_sessions
+from app.core.security import revoke_all_sessions
 from app.modules.auth import service as auth
 from app.modules.auth.models import AppUser, Role, UserStatus
 from app.modules.children.models import Child, ChildStatus
@@ -55,7 +55,7 @@ async def _rows(db: AsyncSession, teacher_id: uuid.UUID | None = None) -> list[T
             shift=ShiftOut.model_validate(shift) if shift else None,
             checked_in_at=checked_in_at,
             active=user.status == UserStatus.ACTIVE,
-            has_account=user.firebase_uid is not None,
+            has_account=user.password_hash is not None,
             children_count=counts.get(teacher.classroom_id, 0),
         )
         for teacher, user, classroom, shift, checked_in_at in rows
@@ -98,9 +98,11 @@ async def create_teacher(db: AsyncSession, data: TeacherCreate) -> TeacherOut:
         db.add(user)
         await db.flush()
     db.add(Teacher(user_id=user.id, classroom_id=data.classroom_id, shift_id=data.shift_id))
-    await auth.create_invitation(db, user, Role.TEACHER)
+    created = await auth.create_invitation(db, user, Role.TEACHER)
     await db.commit()
-    return await get_teacher(db, user.id)
+    out = await get_teacher(db, user.id)
+    out.access_code = created[1] if created else None
+    return out
 
 
 async def update_teacher(db: AsyncSession, teacher_id: uuid.UUID, data: TeacherUpdate) -> TeacherOut:
@@ -128,9 +130,9 @@ async def set_active(db: AsyncSession, teacher_id: uuid.UUID, active: bool) -> T
         raise ApiError(404, "TEACHER_NOT_FOUND", "No existe esa docente")
     user = await db.get(AppUser, teacher_id)
     user.status = UserStatus.ACTIVE if active else UserStatus.INACTIVE
-    await db.commit()
     if not active:
-        revoke_sessions(user.firebase_uid)
+        await revoke_all_sessions(db, user)
+    await db.commit()
     return await get_teacher(db, teacher_id)
 
 

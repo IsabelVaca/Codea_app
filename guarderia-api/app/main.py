@@ -42,12 +42,6 @@ async def _ensure_bucket() -> None:
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    if settings.auth_mode == "firebase":
-        import firebase_admin
-        from firebase_admin import credentials
-
-        credential = credentials.Certificate(settings.firebase_credentials) if settings.firebase_credentials else None
-        firebase_admin.initialize_app(credential, {"projectId": settings.firebase_project_id})
     bucket = asyncio.create_task(_ensure_bucket()) if settings.env == "dev" else None
     yield
     if bucket is not None:

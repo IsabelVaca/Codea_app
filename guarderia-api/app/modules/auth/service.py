@@ -1,14 +1,16 @@
 import logging
+import uuid
 from datetime import timedelta
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core import clock, rules
+from app.core import clock, rules, tokens
 from app.core.config import settings
 from app.core.errors import ApiError
-from app.core.schemas import ClassroomRef
-from app.core.security import CurrentUser, Identity
+from app.core.passwords import hash_password_async, verify_password_async
+from app.core.schemas import AccessCodeOut, ClassroomRef
+from app.core.security import CurrentUser, load_current_user, revoke_all_sessions
 from app.modules.admins.models import Admin
 from app.modules.children.models import Child
 from app.modules.classrooms.centers import center_of_classroom
@@ -18,80 +20,241 @@ from app.modules.parents.models import Parent, ParentChildRel
 from app.modules.teachers.models import Shift, Teacher
 from app.modules.teachers.schemas import ShiftOut
 
-from .models import AppUser, Invitation, Role, UserStatus
-from .schemas import InvitationCreate, InvitationOut, InvitationStatus, MeAdmin, MeChild, MeOut, MeParent, MeTeacher
+from .models import AppUser, CodePurpose, Invitation, RefreshToken, Role, UserStatus
+from .schemas import (
+    ActivateIn,
+    ChangePasswordIn,
+    InvitationCreate,
+    InvitationOut,
+    InvitationStatus,
+    LoginIn,
+    MeAdmin,
+    MeChild,
+    MeOut,
+    MeParent,
+    MeTeacher,
+    SessionsOut,
+    TokenOut,
+)
 
 log = logging.getLogger(__name__)
 
 
-async def create_invitation(db: AsyncSession, user: AppUser, role: Role) -> Invitation | None:
-    """Crea la invitación para entrar a la app. Quien ya tiene cuenta no la necesita."""
-    if user.firebase_uid is not None or not user.email:
+# ---------------------------------------------------------------- códigos de acceso
+
+
+async def _expire_pending(db: AsyncSession, user_id: uuid.UUID) -> None:
+    """Un código nuevo deja sin vigencia a los anteriores que no se hayan usado."""
+    await db.execute(
+        update(Invitation)
+        .where(Invitation.user_id == user_id, Invitation.accepted_at.is_(None), Invitation.expires_at > clock.now())
+        .values(expires_at=clock.now())
+    )
+
+
+async def create_invitation(
+    db: AsyncSession, user: AppUser, role: Role, purpose: CodePurpose = CodePurpose.INVITATION
+) -> tuple[Invitation, AccessCodeOut] | None:
+    """Crea un código de acceso. Para una invitación, quien ya activó su cuenta no lo necesita (regresa None).
+    El código en claro solo existe en este regreso: en la base queda su hash."""
+    if not user.email:
         return None
+    if purpose == CodePurpose.INVITATION and user.password_hash is not None:
+        return None
+    await _expire_pending(db, user.id)
+    code = tokens.new_access_code()
     invitation = Invitation(
         user_id=user.id,
         email=user.email,
         role=role,
+        code_hash=tokens.hash_code(code),
+        purpose=purpose,
         expires_at=clock.now() + timedelta(days=settings.invitation_days),
     )
     db.add(invitation)
-    # todavía no hay worker de correos: por ahora la invitación solo queda en el log.
-    log.info("invitación %s para %s", role.value, user.email)
-    return invitation
+    await db.flush()
+    return invitation, AccessCodeOut(code=code, purpose=purpose.value, expires_at=invitation.expires_at)
 
 
-async def renew_invitation(db: AsyncSession, user: AppUser, role: Role) -> None:
-    """Reenviar = renovar la vigencia de la invitación pendiente (o crear una nueva)."""
-    if user.firebase_uid is not None:
+async def renew_invitation(db: AsyncSession, user: AppUser, role: Role) -> AccessCodeOut:
+    """Reenviar = generar un código nuevo para quien todavía no activa su cuenta."""
+    if user.password_hash is not None:
         raise ApiError(409, "INVITATION_ALREADY_ACCEPTED", "Esta persona ya entró a la app")
-    pending = (
-        await db.scalars(
-            select(Invitation).where(Invitation.user_id == user.id, Invitation.accepted_at.is_(None))
-        )
-    ).all()
-    if not pending:
-        await create_invitation(db, user, role)
-        return
-    for invitation in pending:
-        invitation.expires_at = clock.now() + timedelta(days=settings.invitation_days)
-    log.info("invitación reenviada a %s", user.email)
+    created = await create_invitation(db, user, role)
+    if created is None:
+        raise ApiError(422, "EMAIL_INVALID", "Esta persona no tiene correo")
+    return created[1]
 
 
-async def accept_invitation(db: AsyncSession, identity: Identity) -> AppUser:
-    """Liga la cuenta de Google (Firebase) con la invitación que mandó el administrador."""
-    user = await db.scalar(select(AppUser).where(AppUser.firebase_uid == identity.uid))
-    if user is not None:
-        return user
-    if not identity.email:
-        raise ApiError(403, "INVITATION_REQUIRED", "Tu cuenta no tiene acceso; pide tu invitación en la dirección")
-    if not identity.email_verified:
-        raise ApiError(403, "EMAIL_NOT_VERIFIED", "Tu correo todavía no está verificado")
+async def issue_access_code(db: AsyncSession, user_id: uuid.UUID) -> AccessCodeOut:
+    """El administrador genera un código: de invitación si la persona nunca entró, y si ya entró
+    sirve para poner una contraseña nueva (olvidó la suya)."""
+    user = await db.get(AppUser, user_id)
+    if user is None:
+        raise ApiError(404, "USER_NOT_FOUND", "No existe esa persona")
+    if user.status != UserStatus.ACTIVE:
+        raise ApiError(409, "USER_INACTIVE", "Esa persona está dada de baja")
+    roles = (await load_current_user(db, user)).roles
+    if not roles:
+        raise ApiError(404, "USER_NOT_FOUND", "No existe esa persona")
+    purpose = CodePurpose.INVITATION if user.password_hash is None else CodePurpose.PASSWORD_RESET
+    created = await create_invitation(db, user, roles[0], purpose)
+    if created is None:
+        raise ApiError(422, "EMAIL_INVALID", "Esta persona no tiene correo")
+    await db.commit()
+    return created[1]
 
+
+# ---------------------------------------------------------------- sesión
+
+
+async def _issue_tokens(
+    db: AsyncSession,
+    user: AppUser,
+    *,
+    family_id: uuid.UUID | None = None,
+    user_agent: str | None = None,
+    with_me: bool = True,
+) -> tuple[TokenOut, RefreshToken]:
+    """Crea el par de tokens. El refresh token se guarda solo como hash."""
+    raw = tokens.new_refresh_token()
+    row = RefreshToken(
+        user_id=user.id,
+        token_hash=tokens.hash_token(raw),
+        family_id=family_id or uuid.uuid4(),
+        expires_at=clock.now() + timedelta(seconds=settings.refresh_ttl_s),
+        user_agent=(user_agent or "")[:300] or None,
+    )
+    db.add(row)
+    await db.flush()
+    me = await build_me(db, await load_current_user(db, user)) if with_me else None
+    out = TokenOut(
+        access_token=tokens.create_access_token(user.id, user.token_version),
+        expires_in=settings.access_ttl_s,
+        refresh_token=raw,
+        refresh_expires_in=settings.refresh_ttl_s,
+        me=me,
+    )
+    return out, row
+
+
+async def login(db: AsyncSession, data: LoginIn, user_agent: str | None) -> TokenOut:
+    email = data.email.strip().lower()
+    user = await db.scalar(select(AppUser).where(AppUser.email == email))
+    # siempre se verifica contra algún hash (el falso si no hay cuenta): tarda igual y no delata qué correos existen.
+    valid = await verify_password_async(data.password, user.password_hash if user else None)
+    if user is None or (user.password_hash is not None and not valid):
+        raise ApiError(401, "INVALID_CREDENTIALS", "Correo o contraseña incorrectos")
+    if user.password_hash is None:
+        raise ApiError(403, "ACCOUNT_NOT_ACTIVATED", "Aún no activas tu cuenta; usa el código que te dio la dirección")
+    if user.status != UserStatus.ACTIVE:
+        raise ApiError(403, "USER_INACTIVE", "Tu acceso a la app está desactivado")
+    user.last_login_at = clock.now()
+    out, _ = await _issue_tokens(db, user, user_agent=user_agent)
+    await db.commit()
+    return out
+
+
+async def activate(db: AsyncSession, data: ActivateIn, user_agent: str | None) -> TokenOut:
+    """Primer acceso (o contraseña nueva): el código del administrador abre la cuenta y fija la contraseña."""
+    email = data.email.strip().lower()
+    rules.check_password(data.password, email)
+    code_hash = tokens.hash_code(data.code)
     pending = (
         await db.scalars(
             select(Invitation)
-            .where(Invitation.email == identity.email, Invitation.accepted_at.is_(None))
-            .order_by(Invitation.id)
+            .where(Invitation.email == email, Invitation.accepted_at.is_(None))
+            .order_by(Invitation.id.desc())
         )
     ).all()
-    if not pending:
-        raise ApiError(403, "INVITATION_REQUIRED", "Tu cuenta no tiene acceso; pide tu invitación en la dirección")
-    now = clock.now()
-    valid = [invitation for invitation in pending if invitation.expires_at > now]
-    if not valid:
-        raise ApiError(403, "INVITATION_EXPIRED", "Tu invitación ya venció; pide que te la reenvíen")
-
-    user = await db.get(AppUser, valid[0].user_id)
+    match = next((invitation for invitation in pending if invitation.code_hash == code_hash), None)
+    if match is None:
+        raise ApiError(403, "CODE_INVALID", "El código no es válido")
+    if match.expires_at <= clock.now():
+        raise ApiError(403, "CODE_EXPIRED", "El código ya venció; pide uno nuevo en la dirección")
+    user = await db.get(AppUser, match.user_id)
     if user.status != UserStatus.ACTIVE:
         raise ApiError(403, "USER_INACTIVE", "Tu acceso a la app está desactivado")
-    if user.firebase_uid is not None:
-        raise ApiError(409, "ACCOUNT_ALREADY_LINKED", "Esta invitación ya está ligada a otra cuenta")
-    user.firebase_uid = identity.uid
+
+    now = clock.now()
     for invitation in pending:
         if invitation.user_id == user.id:
             invitation.accepted_at = now
+    user.password_hash = await hash_password_async(data.password)
+    user.password_changed_at = now
+    user.last_login_at = now
+    if match.purpose == CodePurpose.PASSWORD_RESET:
+        # con una contraseña nueva, las sesiones anteriores ya no deben servir.
+        await revoke_all_sessions(db, user)
+    out, _ = await _issue_tokens(db, user, user_agent=user_agent)
     await db.commit()
-    return user
+    return out
+
+
+async def refresh(db: AsyncSession, raw: str, user_agent: str | None) -> TokenOut:
+    """Cambia un refresh token por un par nuevo. El viejo queda revocado y apunta al nuevo (rotación)."""
+    row = await db.scalar(
+        select(RefreshToken).where(RefreshToken.token_hash == tokens.hash_token(raw)).with_for_update()
+    )
+    if row is None:
+        raise ApiError(401, "REFRESH_INVALID", "La sesión ya no es válida; vuelve a entrar")
+    now = clock.now()
+    if row.revoked_at is not None:
+        if row.replaced_by_id is not None:
+            # ya se había rotado: alguien lo copió. Se cierra toda la familia.
+            await db.execute(
+                update(RefreshToken)
+                .where(RefreshToken.family_id == row.family_id, RefreshToken.revoked_at.is_(None))
+                .values(revoked_at=now)
+            )
+            await db.commit()
+        raise ApiError(401, "REFRESH_INVALID", "La sesión ya no es válida; vuelve a entrar")
+    user = await db.get(AppUser, row.user_id)
+    if row.expires_at <= now or user is None or user.status != UserStatus.ACTIVE:
+        raise ApiError(401, "REFRESH_INVALID", "La sesión ya no es válida; vuelve a entrar")
+
+    out, new_row = await _issue_tokens(
+        db, user, family_id=row.family_id, user_agent=user_agent or row.user_agent, with_me=False
+    )
+    row.revoked_at = now
+    row.last_used_at = now
+    row.replaced_by_id = new_row.id
+    await db.commit()
+    return out
+
+
+async def logout(db: AsyncSession, raw: str) -> None:
+    """Revoca el refresh token. No falla si ya no servía."""
+    row = await db.scalar(select(RefreshToken).where(RefreshToken.token_hash == tokens.hash_token(raw)))
+    if row is not None and row.revoked_at is None:
+        row.revoked_at = clock.now()
+        await db.commit()
+
+
+async def change_password(
+    db: AsyncSession, current: CurrentUser, data: ChangePasswordIn, user_agent: str | None
+) -> TokenOut:
+    """Cambia la contraseña y cierra todas las sesiones (también esta); regresa tokens nuevos para que
+    quien la cambió siga dentro."""
+    user = current.user
+    if not await verify_password_async(data.current_password, user.password_hash):
+        raise ApiError(403, "PASSWORD_INCORRECT", "La contraseña actual no es correcta")
+    rules.check_password(data.new_password, user.email)
+    user.password_hash = await hash_password_async(data.new_password)
+    user.password_changed_at = clock.now()
+    await revoke_all_sessions(db, user)
+    out, _ = await _issue_tokens(db, user, user_agent=user_agent)
+    await db.commit()
+    return out
+
+
+async def close_sessions(db: AsyncSession, current: CurrentUser) -> SessionsOut:
+    revoked = await revoke_all_sessions(db, current.user)
+    await db.commit()
+    return SessionsOut(revoked=revoked)
+
+
+# ---------------------------------------------------------------- perfil e invitaciones
 
 
 async def build_me(db: AsyncSession, current: CurrentUser) -> MeOut:
@@ -188,7 +351,7 @@ async def invite(db: AsyncSession, current: CurrentUser, data: InvitationCreate)
     if user is not None:
         if await db.get(role_model, user.id) is not None:
             raise ApiError(409, "EMAIL_TAKEN", "Ya hay una persona con ese rol y ese correo")
-        if user.firebase_uid is not None:
+        if user.password_hash is not None:
             # ya tiene cuenta, así que no hay a quién invitar; el rol extra se da desde su ficha.
             raise ApiError(409, "ALREADY_HAS_ACCOUNT", "Esa persona ya entró a la app")
     else:
@@ -200,10 +363,12 @@ async def invite(db: AsyncSession, current: CurrentUser, data: InvitationCreate)
         db.add(Admin(user_id=user.id, daycare_center_id=current.admin.daycare_center_id))
     else:
         db.add(role_model(user_id=user.id))
-    invitation = await create_invitation(db, user, data.role)
+    invitation, access_code = await create_invitation(db, user, data.role)
     await db.commit()
     await db.refresh(invitation)
-    return _invitation_out(invitation, user)
+    out = _invitation_out(invitation, user)
+    out.access_code = access_code
+    return out
 
 
 async def list_invitations(

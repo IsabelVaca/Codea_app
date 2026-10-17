@@ -43,3 +43,18 @@ def check_age(birth_date: date, today: date) -> int:
     if birth_date > today or not 0 <= age_on(birth_date, today) <= 12:
         raise ApiError(422, "AGE_INVALID", "La edad debe estar entre 0 y 12 años")
     return age_on(birth_date, today)
+
+
+PASSWORD_MIN = 9
+PASSWORD_MAX = 128
+
+
+def check_password(password: str, email: str | None = None) -> str:
+    """Más de 8 caracteres (RNF01), y un tope para que nadie mande textos enormes y gaste CPU en Argon2."""
+    if password is None or len(password) < PASSWORD_MIN:
+        raise ApiError(422, "PASSWORD_TOO_SHORT", f"La contraseña debe tener al menos {PASSWORD_MIN} caracteres")
+    if len(password) > PASSWORD_MAX:
+        raise ApiError(422, "PASSWORD_TOO_LONG", f"La contraseña no puede pasar de {PASSWORD_MAX} caracteres")
+    if email and password.strip().lower() == email.strip().lower():
+        raise ApiError(422, "PASSWORD_IS_EMAIL", "La contraseña no puede ser tu correo")
+    return password

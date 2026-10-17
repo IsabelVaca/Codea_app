@@ -4,9 +4,11 @@ Lo compartido por todos los módulos.
 
 | Archivo | Qué hace |
 |---|---|
-| `config.py` | `Settings` (pydantic-settings): lee `.env`. `AUTH_MODE=dev` solo se permite con `ENV=dev` (lo valida al arrancar) |
+| `config.py` | `Settings` (pydantic-settings): lee `.env`. `JWT_SECRET` es obligatorio (mínimo 32 caracteres) y no tiene valor por omisión |
 | `db.py` | Motor asíncrono, `Db` (una sesión por petición), `Base`, mixins `TimestampMixin`/`IdMixin`, `str_enum` (enums guardados como texto) |
-| `security.py` | `Identity` (quién dice el token) y `CurrentUser` (persona con roles), `require_role`, atajos `AdminUser`, `TeacherUser`, `ParentUser`, `StaffUser`, `AnyUser`, `AdminOrParent`, y el permiso por registro (`can_see_child`, `get_child_in_scope`, `ensure_classroom_access`) |
+| `passwords.py` | Argon2id con `pwdlib`; corre en un hilo aparte porque tarda a propósito; compara contra un hash falso si el correo no existe |
+| `tokens.py` | JWT HS256 (`PyJWT`, algoritmo fijado al verificar), refresh token aleatorio, hash SHA-256 y códigos `XXXX-XXXX` |
+| `security.py` | `CurrentUser` (persona con roles), `get_current_user` (decodifica el JWT), `revoke_all_sessions`, `require_role`, atajos `AdminUser`, `TeacherUser`, `ParentUser`, `StaffUser`, `AnyUser`, `AdminOrParent`, y el permiso por registro (`can_see_child`, `get_child_in_scope`, `ensure_classroom_access`) |
 | `errors.py` | `ApiError(status, code, title, detail, **extra)` y el formato Problem Details para todos los errores |
 | `rules.py` | Validaciones iguales a las de `domain/` en la app (nombre, teléfono, correo, cupo, edad) |
 | `clock.py` | `now()`, `local_now(tz)`, `local_today(tz)`; las pruebas fijan el reloj aquí |
@@ -17,14 +19,16 @@ Lo compartido por todos los módulos.
 
 ## Cómo funciona la identidad
 
-1. `get_identity` lee `Authorization: Bearer ...`. Con `AUTH_MODE=dev` acepta `dev:<correo>`; con `firebase` verifica el token con `firebase-admin`.
-2. `get_current_user` busca a la persona por `firebase_uid` en `app_user`. Sin cuenta: 403 `INVITATION_REQUIRED`. Desactivada: 403 `USER_INACTIVE`.
+1. `get_current_user` lee `Authorization: Bearer <access_token>` y decodifica el JWT (`401 UNAUTHENTICATED` si falta, `TOKEN_INVALID` si la firma, el tipo o el usuario no valen, `TOKEN_EXPIRED` si venció).
+2. Busca a la persona por `sub` en `app_user`. De baja: `403 USER_INACTIVE`. Si su `token_version` ya no coincide con el `tv` del token (cambió su contraseña, o la dieron de baja y la reactivaron): `401 TOKEN_INVALID`.
 3. `require_role(...)` revisa los roles que salen de Postgres (`admin`, `teacher`, `parent`), no del token.
 4. El servicio revisa el alcance por registro. Fuera de alcance: **404**, para no revelar que existe.
 
+La vigencia del token se compara con `clock.now()` (no con el reloj de PyJWT) para que las pruebas puedan mover la hora.
+
 ## Pendiente
 
-- **JWT propio** en lugar de Firebase ([decisión #1](../../../docs/DECISIONES-PENDIENTES.md)): `get_identity` pasaría a verificar un JWT firmado por la propia API; `app_user` necesitaría `password_hash`.
 - **Rate limiting y cabeceras de seguridad:** un middleware nuevo (y el `CORSMiddleware` configurado) en `main.py`.
 - **Auditoría:** helper `audit(db, current, action, entity, id)` que escriba en `audit_log`.
+- **Rotación de la llave del JWT** (`kid` en el header) y llave en Docker secrets.
 - **Logs estructurados** sin datos personales.

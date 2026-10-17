@@ -8,17 +8,19 @@ python3 -m venv .venv
 .venv/bin/pytest
 ```
 
-43 pruebas (conteo del 2026-10-16):
+68 pruebas (conteo del 2026-10-17):
 
 | Archivo | Pruebas | Qué cubre |
 |---|---|---|
-| `test_auth.py` | 6 | Sin token = 401, cuenta sin invitación, `/me` por rol, aceptar invitación, invitación vencida, rol revisado |
+| `test_auth.py` | 31 | Token (falta, basura, vencido, de otra persona, refresh usado como access), `/me` por rol, login (bien, mal, sin activar, de baja), activar con código (uso único, vencido, reglas de contraseña, código nuevo, recuperación), refresh con rotación y reuso, logout, baja que corta el acceso, cambio de contraseña y cerrar sesiones |
 | `test_admin.py` | 10 | Reglas de salas, ocupación y asistentes, bajas, inscripción de infantes con y sin tutor, alcance, padres, aviso |
 | `test_admin_extras.py` | 12 | Centro (lectura, edición, validaciones, solo admin), invitaciones, plantillas de rutina |
 | `test_teacher_day.py` | 7 | Check-in a tiempo, tarde y fuera de radio; arranque de la rutina; confirmar momentos; Mi sala y asistencia; reglas de reportes |
 | `test_media_documents.py` | 4 | Reglas de subida, foto en un reporte que llega a la familia, galería paginada, documentos y personas autorizadas |
 | `test_messaging.py` | 2 | Chat docente-familia y su alcance |
 | `test_parent_views.py` | 2 | Pantalla Hoy y calendario |
+
+Con el login propio, `as_user(correo)` fabrica un access token real de las personas de `world` (que ya tienen contraseña, con el hash calculado una sola vez). Los access tokens de las pruebas duran 30 días para que las que mueven el reloj no los venzan; la de expiración fija su propio TTL.
 
 Las reglas de `app/core/rules.py` usan los mismos casos que las pruebas de `domain/` de la app.
 
