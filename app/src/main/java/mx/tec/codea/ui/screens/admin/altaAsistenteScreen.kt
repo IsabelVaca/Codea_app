@@ -43,6 +43,7 @@ data class OpcionChip(val nombre: String, val activo: Boolean)
 fun AltaAsistenteScreen(
     nombre: String, onNombreChange: (String) -> Unit,
     nombreError: DocenteError?,
+    apellido: String = "", onApellidoChange: (String) -> Unit = {},
     telefono: String, onTelefonoChange: (String) -> Unit,
     telefonoError: DocenteError?,
     correo: String, onCorreoChange: (String) -> Unit,
@@ -100,7 +101,8 @@ fun AltaAsistenteScreen(
 
         SeccionLabel("DATOS PERSONALES")
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            CampoTexto(nombre, onNombreChange, "Nombre completo", error = nombreError)
+            CampoTexto(nombre, onNombreChange, "Nombre(s)", error = nombreError)
+            CampoTexto(apellido, onApellidoChange, "Apellido(s)")
             CampoTexto(telefono, onTelefonoChange, "Teléfono de contacto", KeyboardType.Phone, error = telefonoError)
             CampoTexto(correo, onCorreoChange, "Correo electrónico", KeyboardType.Email, error = correoError)
         }
@@ -204,7 +206,7 @@ private fun AltaAsistenteScreenPreview() {
 }
 
 private fun DocenteError.message(): String = when (this) {
-    DocenteError.NombreVacio -> "Escribe el nombre completo"
+    DocenteError.NombreVacio -> "Escribe el nombre"
     DocenteError.TelefonoInvalido -> "El teléfono debe tener al menos 10 dígitos"
     DocenteError.CorreoInvalido -> "Escribe un correo válido"
 }

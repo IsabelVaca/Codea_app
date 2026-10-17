@@ -82,6 +82,17 @@ async def test_teacher_rules_and_changes(client, world):
     assert (await client.get("/me", headers=world.teacher_a)).status_code == 200
 
 
+async def test_enroll_child_without_guardian(client, world):
+    created = await client.post(
+        "/children",
+        headers=world.admin,
+        json={"name": "Lucas", "birth_date": "2022-05-10", "classroom_id": world.room_a.id},
+    )
+    assert created.status_code == 201
+    assert created.json()["guardian"] is None
+    assert created.json()["classroom"]["name"] == "Preescolar 2"
+
+
 async def test_enroll_child_with_guardian(client, world):
     base = {
         "name": "Mateo",
@@ -93,8 +104,10 @@ async def test_enroll_child_with_guardian(client, world):
     }
     old = await client.post("/children", headers=world.admin, json={**base, "birth_date": "2010-01-01"})
     assert old.json()["code"] == "AGE_INVALID"
-    no_guardian = await client.post("/children", headers=world.admin, json={**base, "guardian": None})
-    assert no_guardian.json()["code"] == "GUARDIAN_REQUIRED"
+    nameless = await client.post(
+        "/children", headers=world.admin, json={**base, "guardian": {**base["guardian"], "name": " "}}
+    )
+    assert nameless.json()["code"] == "GUARDIAN_REQUIRED"
     bad_phone = await client.post(
         "/children", headers=world.admin, json={**base, "guardian": {**base["guardian"], "phone": "55"}}
     )

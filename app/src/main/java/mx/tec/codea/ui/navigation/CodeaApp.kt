@@ -7,6 +7,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -20,7 +21,8 @@ import androidx.navigation.compose.rememberNavController
 import mx.tec.codea.ui.components.CodeaBottomBar
 import mx.tec.codea.ui.screens.roleselection.RoleSelectionScreen
 import mx.tec.codea.ui.state.CodeaViewModel
-
+import mx.tec.codea.data.DataEvents
+import mx.tec.codea.data.api.ApiConfig
 // the root of the whole interface. it joins three parts:
 // the scaffold (the frame), the bottom bar (the tabs) and the nav host (the screens).
 @Composable
@@ -41,6 +43,14 @@ fun CodeaApp(modifier: Modifier = Modifier) {
         )
         return
     }
+
+    // por ahora no hay login: cada rol entra con un usuario de prueba del seed.
+    ApiConfig.devEmail = devEmailFor(role)
+    ApiConfig.isAdmin = role == Role.ADMIN
+    ApiConfig.isTeacher = role == Role.TEACHER
+    ApiConfig.isParent = role == Role.PARENT
+    // al cambiar de rol, las listas de admin se vuelven a pedir con el usuario nuevo.
+    LaunchedEffect(role) { DataEvents.notifyChanged() }
 
     // a different role receives a completely fresh navigation controller
     // instead of inheriting another role's back stack.
@@ -111,4 +121,10 @@ private fun RoleApp(
                 .consumeWindowInsets(innerPadding),
         )
     }
+}
+// usuarios de prueba que crea "python -m app.seed" en la API.
+private fun devEmailFor(role: Role): String = when (role) {
+    Role.ADMIN -> "admin@oruga.test"
+    Role.TEACHER -> "karla.robles@oruga.test"
+    Role.PARENT -> "laura.iglesias@oruga.test"
 }

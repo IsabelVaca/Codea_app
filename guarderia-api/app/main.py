@@ -12,6 +12,7 @@ from .core.config import settings
 from .core.db import get_db
 from .core.errors import ApiError
 from .core.storage import get_storage
+from .modules.admins.router import router as admins
 from .modules.attendance.router import router as attendance
 from .modules.auth.router import router as auth
 from .modules.children.router import router as children
@@ -78,6 +79,7 @@ async def ready(db: AsyncSession = Depends(get_db)) -> dict:
 
 for router in (
     auth,
+    admins,
     classrooms,
     teachers,
     children,

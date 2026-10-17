@@ -23,6 +23,7 @@
     <string name="nav_admin_docentes">Docentes</string>
     <string name="nav_admin_infantes">Infantes</string>
     <string name="nav_padres">Padres</string>
+    <string name="nav_admin_rutinas">Rutinas</string>
 
     <!-- parent bottom navigation labels -->
     <string name="nav_parent_today">Hoy</string>

@@ -199,7 +199,7 @@ fun SalaAdminDetalleScreen(
                         }
                         Column(modifier = Modifier.weight(1f)) {
                             Text(n.nombre, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
-                            Text("${n.edad} años · ${n.tutor}", fontSize = 12.sp, color = Color(0xFF8C7FA8))
+                            Text("${n.edad} años", fontSize = 12.sp, color = Color(0xFF8C7FA8))
                         }
                         IconButton(onClick = { onQuitarInfante(n) }) {
                             Icon(Icons.Default.Delete, contentDescription = "Sacar de la sala", tint = Color(0xFFC4432A))
@@ -259,9 +259,6 @@ fun SalaAdminDetalleScreenPreview() {
                     nombre = "Mateo Iglesias",
                     iniciales = "MI",
                     edad = 4,
-                    tutor = "Laura Iglesias",
-                    tituloTutor = "mamá",
-                    correoTutor = "laura.iglesias@correo.com",
                     sala = "Preescolar 2"
                 ),
                 Infante(
@@ -269,9 +266,6 @@ fun SalaAdminDetalleScreenPreview() {
                     nombre = "Valentina Ruiz",
                     iniciales = "VR",
                     edad = 4,
-                    tutor = "Sofía Ruiz",
-                    tituloTutor = "tía",
-                    correoTutor = "sofia.ruiz@correo.com",
                     sala = "Preescolar 2"
                 )
             ),
@@ -281,9 +275,6 @@ fun SalaAdminDetalleScreenPreview() {
                     nombre = "Renata Gómez",
                     iniciales = "RG",
                     edad = 3,
-                    tutor = "Carlos Gómez",
-                    tituloTutor = "papá",
-                    correoTutor = "carlos.gomez@correo.com",
                     sala = "Maternal"
                 )
             ),

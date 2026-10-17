@@ -2,6 +2,8 @@ from datetime import date, datetime
 
 from pydantic import BaseModel
 
+from app.core.schemas import ClassroomRef
+
 from .models import MomentCategory, MomentStatus
 
 
@@ -32,3 +34,43 @@ class RoutineOut(BaseModel):
     current_step: int
     total_steps: int
     active_moment_id: int | None
+
+
+class TemplateMomentIn(BaseModel):
+    name: str
+    category: MomentCategory
+
+
+class TemplateIn(BaseModel):
+    """Una plantilla completa: al editarla se manda entera, con sus momentos en orden."""
+
+    name: str
+    moments: list[TemplateMomentIn]
+    # la que usan las salas que no tienen una propia.
+    is_default: bool = False
+
+
+class TemplateMomentOut(BaseModel):
+    number: int
+    name: str
+    category: MomentCategory
+
+
+class TemplateOut(BaseModel):
+    id: int
+    name: str
+    is_default: bool
+    moments: list[TemplateMomentOut]
+    # las salas que la usan; las que no tienen plantilla propia usan la default.
+    classrooms: list[ClassroomRef]
+
+
+class TemplateAssign(BaseModel):
+    """template_id = null deja a la sala con la plantilla por defecto."""
+
+    template_id: int | None
+
+
+class TemplateAssignOut(BaseModel):
+    classroom: ClassroomRef
+    template_id: int | None

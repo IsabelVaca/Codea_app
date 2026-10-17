@@ -9,12 +9,9 @@ import mx.tec.codea.domain.InfanteValidator
 
 data class InscribirInfanteUiState(
     val nombre: String = "",
+    val apellido: String = "",
     val edad: String = "",
     val alergias: String = "",
-    val tutor: String = "",
-    val tituloTutor: String = "",
-    val telefono: String = "",
-    val correo: String = "",
     val salaElegida: String? = null
 ) {
     val nombreError: InfanteError?
@@ -23,19 +20,8 @@ data class InscribirInfanteUiState(
     val edadError: InfanteError?
         get() = if (edad.isEmpty()) null else InfanteValidator.validateEdad(edad)
 
-    val tutorError: InfanteError?
-        get() = if (tutor.isEmpty()) null else InfanteValidator.validateTutor(tutor)
-
-    val telefonoError: InfanteError?
-        get() = if (telefono.isEmpty()) null else InfanteValidator.validateTelefono(telefono)
-
-    val correoError: InfanteError?
-        get() = if (correo.isEmpty()) null else InfanteValidator.validateCorreo(correo)
-
     val canGuardar: Boolean
-        get() = InfanteValidator.isValid(nombre, edad, tutor, telefono, correo)
-            && tituloTutor.isNotBlank()
-            && salaElegida != null
+        get() = InfanteValidator.isValid(nombre, edad) && salaElegida != null
 }
 
 // vive solo en esta pantalla.
@@ -45,12 +31,9 @@ class InscribirInfanteViewModel : ViewModel() {
         private set
 
     fun onNombreChange(v: String) { uiState = uiState.copy(nombre = v) }
+    fun onApellidoChange(v: String) { uiState = uiState.copy(apellido = v) }
     fun onEdadChange(v: String) { uiState = uiState.copy(edad = v) }
     fun onAlergiasChange(v: String) { uiState = uiState.copy(alergias = v) }
-    fun onTutorChange(v: String) { uiState = uiState.copy(tutor = v) }
-    fun onTituloTutorChange(v: String) { uiState = uiState.copy(tituloTutor = v) }
-    fun onTelefonoChange(v: String) { uiState = uiState.copy(telefono = v) }
-    fun onCorreoChange(v: String) { uiState = uiState.copy(correo = v) }
 
     fun onElegirSala(nombre: String) {
         uiState = uiState.copy(salaElegida = if (uiState.salaElegida == nombre) null else nombre)

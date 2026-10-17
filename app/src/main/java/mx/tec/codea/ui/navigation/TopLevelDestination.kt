@@ -2,6 +2,7 @@ package mx.tec.codea.ui.navigation
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Face
@@ -98,6 +99,14 @@ enum class TopLevelDestination(
         route = PadresAdminGraph,
         icon = Icons.Filled.Person,
         labelRes = R.string.nav_padres,
+        isLocked = false,
+        roles = setOf(Role.ADMIN),
+    ),
+
+    RUTINAS(
+        route = RutinasAdminGraph,
+        icon = Icons.Filled.Checklist,
+        labelRes = R.string.nav_admin_rutinas,
         isLocked = false,
         roles = setOf(Role.ADMIN),
     ),

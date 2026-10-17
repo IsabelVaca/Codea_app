@@ -1,51 +1,65 @@
 package mx.tec.codea.ui.state
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import mx.tec.codea.data.InfanteRepository
+import kotlinx.coroutines.launch
+import mx.tec.codea.data.DataEvents
+import mx.tec.codea.data.InfanteApiRepository
+import mx.tec.codea.data.api.ApiConfig
+import mx.tec.codea.data.api.toUserMessage
 import mx.tec.codea.domain.Infante
 
 class InfantesAdminViewModel : ViewModel() {
 
-    private val repository = InfanteRepository()
+    private val repository = InfanteApiRepository()
 
-    private val _infantes = MutableStateFlow(repository.getAll().sortedBy { it.nombre })
+    private val _infantes = MutableStateFlow<List<Infante>>(emptyList())
     val infantes: StateFlow<List<Infante>> = _infantes.asStateFlow()
+
+    init {
+        viewModelScope.launch { DataEvents.changed.collect { cargar() } }
+        cargar()
+    }
+
+    fun cargar() {
+        if (!ApiConfig.isAdmin) return
+        viewModelScope.launch {
+            try {
+                _infantes.value = repository.getAll()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                DataEvents.notice("No se pudieron cargar los infantes: ${e.toUserMessage()}")
+            }
+        }
+    }
 
     // busca en el estado actual, no en el repository fijo.
     fun getInfante(id: String): Infante? = _infantes.value.firstOrNull { it.id == id }
 
+    // nuevaSala vacía = sacar de la sala.
     fun cambiarSala(infanteId: String, nuevaSala: String) {
-        _infantes.value = _infantes.value.map { infante ->
-            if (infante.id == infanteId) infante.copy(sala = nuevaSala) else infante
-        }
+        launchAction { repository.cambiarSala(infanteId, nuevaSala) }
     }
 
+    // alterna: si está de baja lo reactiva, si no lo da de baja.
     fun darDeBaja(infanteId: String) {
-        _infantes.value = _infantes.value.map { infante ->
-            if (infante.id == infanteId) infante.copy(baja = !infante.baja) else infante
-        }
+        val actual = getInfante(infanteId) ?: return
+        launchAction { repository.setBaja(infanteId, baja = !actual.baja) }
     }
 
-    fun inscribirInfante(nombre: String, edad: Int, tutor: String, tituloTutor: String, correoTutor: String, sala: String) {
-        val iniciales = nombre.trim()
-            .split(" ")
-            .filter { it.isNotBlank() }
-            .take(2)
-            .joinToString("") { it.first().uppercase() }
-
-        val nuevo = Infante(
-            id = "infante-${_infantes.value.size + 1}",
-            nombre = nombre,
-            iniciales = iniciales,
-            edad = edad,
-            tutor = tutor,
-            tituloTutor = tituloTutor,
-            correoTutor = correoTutor,
-            sala = sala
-        )
-        _infantes.value = (_infantes.value + nuevo).sortedBy { it.nombre }
+    fun inscribirInfante(
+        nombre: String,
+        edad: Int,
+        sala: String,
+        alergias: String = "",
+        apellido: String = "",
+        onSuccess: () -> Unit = {},
+    ) {
+        launchAction(onSuccess) { repository.inscribir(nombre, apellido, edad, sala, alergias) }
     }
 }

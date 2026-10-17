@@ -4,21 +4,22 @@ from datetime import timedelta
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core import clock
+from app.core import clock, rules
 from app.core.config import settings
 from app.core.errors import ApiError
 from app.core.schemas import ClassroomRef
 from app.core.security import CurrentUser, Identity
+from app.modules.admins.models import Admin
 from app.modules.children.models import Child
 from app.modules.classrooms.centers import center_of_classroom
 from app.modules.classrooms.models import Classroom, DaycareCenter
 from app.modules.classrooms.schemas import CenterOut
-from app.modules.parents.models import ParentChildRel
-from app.modules.teachers.models import Shift
+from app.modules.parents.models import Parent, ParentChildRel
+from app.modules.teachers.models import Shift, Teacher
 from app.modules.teachers.schemas import ShiftOut
 
 from .models import AppUser, Invitation, Role, UserStatus
-from .schemas import MeAdmin, MeChild, MeOut, MeParent, MeTeacher
+from .schemas import InvitationCreate, InvitationOut, InvitationStatus, MeAdmin, MeChild, MeOut, MeParent, MeTeacher
 
 log = logging.getLogger(__name__)
 
@@ -150,3 +151,70 @@ async def build_me(db: AsyncSession, current: CurrentUser) -> MeOut:
         teacher=teacher,
         parent=parent,
     )
+
+
+def _invitation_status(invitation: Invitation) -> InvitationStatus:
+    if invitation.accepted_at is not None:
+        return InvitationStatus.ACCEPTED
+    if invitation.expires_at <= clock.now():
+        return InvitationStatus.EXPIRED
+    return InvitationStatus.PENDING
+
+
+def _invitation_out(invitation: Invitation, user: AppUser) -> InvitationOut:
+    return InvitationOut(
+        id=invitation.id,
+        user_id=user.id,
+        name=user.name,
+        surname=user.surname,
+        full_name=user.full_name,
+        email=invitation.email,
+        role=invitation.role,
+        status=_invitation_status(invitation),
+        expires_at=invitation.expires_at,
+        accepted_at=invitation.accepted_at,
+        created_at=invitation.created_at,
+    )
+
+
+async def invite(db: AsyncSession, current: CurrentUser, data: InvitationCreate) -> InvitationOut:
+    """Invita a una persona con cualquier rol. Crea su usuario, su registro de rol y su invitación."""
+    name = rules.require_name(data.name)
+    phone = rules.check_phone(data.phone)
+    email = rules.check_email(data.email)
+
+    user = await db.scalar(select(AppUser).where(AppUser.email == email))
+    role_model = {Role.ADMIN: Admin, Role.TEACHER: Teacher, Role.PARENT: Parent}[data.role]
+    if user is not None:
+        if await db.get(role_model, user.id) is not None:
+            raise ApiError(409, "EMAIL_TAKEN", "Ya hay una persona con ese rol y ese correo")
+        if user.firebase_uid is not None:
+            # ya tiene cuenta, así que no hay a quién invitar; el rol extra se da desde su ficha.
+            raise ApiError(409, "ALREADY_HAS_ACCOUNT", "Esa persona ya entró a la app")
+    else:
+        user = AppUser(name=name, surname=data.surname.strip(), phone=phone, email=email)
+        db.add(user)
+        await db.flush()
+
+    if data.role == Role.ADMIN:
+        db.add(Admin(user_id=user.id, daycare_center_id=current.admin.daycare_center_id))
+    else:
+        db.add(role_model(user_id=user.id))
+    invitation = await create_invitation(db, user, data.role)
+    await db.commit()
+    await db.refresh(invitation)
+    return _invitation_out(invitation, user)
+
+
+async def list_invitations(
+    db: AsyncSession, status: InvitationStatus | None = None, role: Role | None = None
+) -> list[InvitationOut]:
+    """Las invitaciones, de la más nueva a la más vieja. Se puede filtrar por estado y por rol."""
+    query = select(Invitation, AppUser).join(AppUser, AppUser.id == Invitation.user_id)
+    if role is not None:
+        query = query.where(Invitation.role == role)
+    rows = (await db.execute(query.order_by(Invitation.id.desc()))).all()
+    items = [_invitation_out(invitation, user) for invitation, user in rows]
+    if status is not None:
+        items = [item for item in items if item.status == status]
+    return items

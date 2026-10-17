@@ -40,12 +40,13 @@ import mx.tec.codea.ui.theme.Poppins
 fun InscribirPadreScreen(
     nombre: String, onNombreChange: (String) -> Unit,
     nombreError: PadreError?,
+    apellido: String = "", onApellidoChange: (String) -> Unit = {},
     telefono: String, onTelefonoChange: (String) -> Unit,
     telefonoError: PadreError?,
     correo: String, onCorreoChange: (String) -> Unit,
     correoError: PadreError?,
     parentesco: String?, onElegirParentesco: (String) -> Unit,
-    hijosDisponibles: List<String>,
+    hijosDisponibles: List<Pair<String, String>>,
     hijosSeleccionados: List<String>,
     onToggleHijo: (String) -> Unit,
     canGuardar: Boolean,
@@ -101,7 +102,8 @@ fun InscribirPadreScreen(
 
         SeccionLabel("DATOS PERSONALES")
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            CampoTexto(nombre, onNombreChange, "Nombre completo", error = nombreError)
+            CampoTexto(nombre, onNombreChange, "Nombre(s)", error = nombreError)
+            CampoTexto(apellido, onApellidoChange, "Apellido(s)")
             CampoTexto(telefono, onTelefonoChange, "Teléfono de contacto", KeyboardType.Phone, error = telefonoError)
             CampoTexto(correo, onCorreoChange, "Correo electrónico", KeyboardType.Email, error = correoError)
         }
@@ -171,7 +173,7 @@ private fun CampoTexto(
 }
 
 private fun PadreError.message(): String = when (this) {
-    PadreError.NombreVacio -> "Escribe el nombre completo del padre o tutor"
+    PadreError.NombreVacio -> "Escribe el nombre del padre o tutor"
     PadreError.TelefonoInvalido -> "El teléfono debe tener al menos 10 dígitos"
     PadreError.CorreoInvalido -> "Escribe un correo electrónico válido"
 }

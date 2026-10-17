@@ -25,6 +25,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import coil3.compose.AsyncImage
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
@@ -91,7 +93,9 @@ data class Foto(
     val esIncidente get() = categoria == Categoria.INCIDENTES
 }
 
-val fotosDemo = listOf(
+// es "get()" (se arma al usarse) y no un valor de archivo: si no, al crear Foto desde otro lugar, Categoria y este archivo
+// se inicializan uno dentro del otro y Categoria.ACTIVIDADES llega null (crash al abrir el rol de padre).
+val fotosDemo: List<Foto> get() = listOf(
     Foto(1, "Hoy", "mar 29 sep", "Trazos", Categoria.ACTIVIDADES, Tono.LAVANDA, "10:15", "Maestra Laura", "Mateo practicó líneas curvas con crayones gruesos. Ya sostiene muy bien el crayón."),
     Foto(2, "Hoy", "mar 29 sep", "Patio", Categoria.ACTIVIDADES, Tono.AMARILLO, "11:00", "Maestra Sofía", "Juego libre en el patio con sus compañeros de sala."),
     Foto(3, "Hoy", "mar 29 sep", "Rodilla", Categoria.INCIDENTES, Tono.DURAZNO, "12:40", "Maestra Sofía", "Raspón leve en la rodilla al correr. Se limpió y se aplicó hielo 10 min. Siguió jugando con normalidad."),
@@ -265,7 +269,14 @@ private fun Miniatura(foto: Foto, onClick: () -> Unit) {
             .rayado(foto.tono)
             .clickable(onClick = onClick)
     ) {
-        // TODO: AsyncImage(model = foto.url, contentScale = ContentScale.Crop, modifier = Modifier.matchParentSize())
+        if (foto.url != null) {
+            AsyncImage(
+                model = foto.url,
+                contentDescription = foto.etiqueta,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.matchParentSize(),
+            )
+        }
         Etiqueta(foto.etiqueta, Modifier.align(Alignment.BottomStart).padding(6.dp))
         if (foto.esIncidente) {
             Text(
@@ -342,7 +353,16 @@ private fun VisorFoto(
                     .clip(RoundedCornerShape(20.dp)).rayado(foto.tono),
                 contentAlignment = Alignment.Center,
             ) {
-                Etiqueta("foto · ${foto.etiqueta}", grande = true)
+                if (foto.url != null) {
+                    AsyncImage(
+                        model = foto.url,
+                        contentDescription = foto.etiqueta,
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.matchParentSize(),
+                    )
+                } else {
+                    Etiqueta("foto · ${foto.etiqueta}", grande = true)
+                }
                 BotonRedondo(onAnterior, Color.White.copy(alpha = 0.8f), Modifier.align(Alignment.CenterStart).padding(start = 10.dp)) {
                     Icon(Icons.Default.ChevronLeft, "Anterior", tint = Ink)
                 }

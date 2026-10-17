@@ -1,12 +1,19 @@
 package mx.tec.codea.ui.navigation
 
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -22,6 +29,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.toRoute
 import kotlinx.coroutines.launch
 import mx.tec.codea.R
+import mx.tec.codea.data.DataEvents
 import mx.tec.codea.domain.ReportMethod
 import mx.tec.codea.ui.components.rememberDictation
 import mx.tec.codea.ui.components.rememberTakePhoto
@@ -49,13 +57,21 @@ import mx.tec.codea.ui.screens.admin.InscribirInfanteScreen
 import mx.tec.codea.ui.screens.admin.OpcionChip
 import mx.tec.codea.ui.screens.admin.InscribirPadreScreen
 import mx.tec.codea.ui.screens.admin.PadreDetalleScreen
+import mx.tec.codea.ui.screens.admin.AgregarMomentoScreen
+import mx.tec.codea.ui.screens.admin.CatalogoMomentosScreen
+import mx.tec.codea.ui.screens.admin.NuevaRutinaScreen
+import mx.tec.codea.ui.screens.admin.OrdenRutinaScreen
 import mx.tec.codea.ui.screens.admin.PadresScreen
+import mx.tec.codea.ui.screens.admin.RutinaDetalleScreen
+import mx.tec.codea.ui.screens.admin.RutinasAdminScreen
 import mx.tec.codea.ui.screens.admin.SalaAdminDetalleScreen
 import mx.tec.codea.ui.screens.admin.SalaOpcion
 import mx.tec.codea.ui.screens.parent.calendar.ParentCalendarScreen
+import mx.tec.codea.ui.screens.parent.documents.AddAuthorizedDialog
 import mx.tec.codea.ui.screens.parent.documents.ParentDocumentsScreen
 import mx.tec.codea.ui.screens.parent.photos.ParentPhotosScreen
 import mx.tec.codea.ui.screens.parent.today.ParentTodayScreen
+import mx.tec.codea.ui.state.AgregarMomentoViewModel
 import mx.tec.codea.ui.state.AltaAsistenteViewModel
 import mx.tec.codea.ui.state.CentroViewModel
 import mx.tec.codea.ui.state.CheckerViewModel
@@ -65,8 +81,11 @@ import mx.tec.codea.ui.state.DocentesAdminViewModel
 import mx.tec.codea.ui.state.InfantesAdminViewModel
 import mx.tec.codea.ui.state.InscribirInfanteViewModel
 import mx.tec.codea.ui.state.InscribirPadreViewModel
+import mx.tec.codea.ui.state.NuevaRutinaViewModel
 import mx.tec.codea.ui.state.PadresAdminViewModel
+import mx.tec.codea.ui.state.ParentViewModel
 import mx.tec.codea.ui.state.ReportFormViewModel
+import mx.tec.codea.ui.state.RutinasAdminViewModel
 import mx.tec.codea.ui.state.SalasAdminViewModel
 
 // the nav host is like a map of the app: it connects each route to its screen.
@@ -87,9 +106,16 @@ fun CodeaNavHost(
     val salasViewModel: SalasAdminViewModel = viewModel()
     val infantesViewModel: InfantesAdminViewModel = viewModel()
     val padresViewModel: PadresAdminViewModel = viewModel()
+    val rutinasViewModel: RutinasAdminViewModel = viewModel()
+    val parentViewModel: ParentViewModel = viewModel()
 
     // showSnackbar is a suspend function, so it needs a scope.
     val coroutineScope = rememberCoroutineScope()
+
+    // errores y avisos que mandan los ViewModels de admin (por ejemplo, un error de la API).
+    LaunchedEffect(Unit) {
+        DataEvents.notices.collect { snackbarHostState.showSnackbar(it) }
+    }
 
     NavHost(
         navController = navController,
@@ -110,7 +136,7 @@ fun CodeaNavHost(
             // the routine after it. with only one route, the back button, the tab and
             // the report flow always come back to the right screen.
             composable<MyDayRoute> {
-                if (viewModel.hasCheckedIn) {
+                if (viewModel.hasCheckedIn && viewModel.routine.subprocesses.isNotEmpty()) {
                     MyDayScreen(
                         routine = viewModel.routine,
                         selectedSubprocessNumber = viewModel.selectedSubprocessNumber,
@@ -187,10 +213,11 @@ fun CodeaNavHost(
                     onChildToggle = form::onChildToggle,
                     onSaveClick = {
                         // the shared view model receives the report...
-                        viewModel.addReport(form.toReport(route.subprocessNumber))
-                        Toast.makeText(context, savedMessage, Toast.LENGTH_LONG).show()
-                        // ...and the navigation is decided here, by the ui.
-                        navController.popBackStack(MyDayRoute, inclusive = false)
+                        viewModel.addReport(form.toReport(route.subprocessNumber), photo = form.uiState.photo, onSuccess = {
+                            Toast.makeText(context, savedMessage, Toast.LENGTH_LONG).show()
+                            // ...and the navigation is decided here, by the ui.
+                            navController.popBackStack(MyDayRoute, inclusive = false)
+                        })
                     },
                     onBackClick = { navController.popBackStack() },
                 )
@@ -214,6 +241,7 @@ fun CodeaNavHost(
                 selectedChild = child,
                 messages = child?.let { viewModel.messagesFor(it.id) }.orEmpty(),
                 onBackClick = { navController.navigateToTopLevel(TopLevelDestination.MY_ROOM) },
+                onSend = viewModel::sendMessage,
             )
         }
 
@@ -245,8 +273,7 @@ fun CodeaNavHost(
                     onScenarioChange = checker::onScenarioChange,
                     onCheckInClick = {
                         // the domain can say "no" (out of range): then nothing happens.
-                        val record = checker.buildRecord()
-                        if (record != null) {
+                        checker.registrar(viewModel.centerLatitude, viewModel.centerLongitude) { record ->
                             viewModel.registerCheckIn(record)
                             navController.navigateToCheckInDone()
                         }
@@ -292,10 +319,11 @@ fun CodeaNavHost(
                     onAvisoTextoChange = centroViewModel::onAvisoTextoChange,
                     canPublicarAviso = centroViewModel.canPublicar,
                     onPublicarAviso = {
-                        centroViewModel.publicarAviso()
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("Aviso publicado")
-                        }
+                        centroViewModel.publicarAviso(onSuccess = {
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar("Aviso publicado")
+                            }
+                        })
                     },
                     onCrearSala = { navController.navigate(AdminCrearSalaRoute) }
                 )
@@ -329,11 +357,12 @@ fun CodeaNavHost(
                         salasViewModel.editarCupo(salaId = sala.id, nuevoCupoMaximo = nuevoCupo.toInt())
                     },
                     onEliminar = {
-                        salasViewModel.eliminarSala(sala.id)
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("Sala \"${sala.nombre}\" eliminada")
-                        }
-                        navController.popBackStack()
+                        salasViewModel.eliminarSala(sala.id, onSuccess = {
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar("Sala \"${sala.nombre}\" eliminada")
+                            }
+                            navController.popBackStack()
+                        })
                     },
                     onBack = { navController.popBackStack() }
                 )
@@ -362,12 +391,14 @@ fun CodeaNavHost(
                         salasViewModel.crearSala(
                             nombre = uiState.nombre,
                             cupoMaximo = uiState.cupo.toInt(),
-                            asistente = uiState.asistenteElegida
+                            asistente = uiState.asistenteElegida,
+                            onSuccess = {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Sala \"${uiState.nombre}\" creada")
+                                }
+                                navController.popBackStack()
+                            }
                         )
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("Sala \"${uiState.nombre}\" creada")
-                        }
-                        navController.popBackStack()
                     },
                     onBack = { navController.popBackStack() },
                 )
@@ -414,6 +445,7 @@ fun CodeaNavHost(
                 AltaAsistenteScreen(
                     nombre = uiState.nombre, onNombreChange = altaAsistenteViewModel::onNombreChange,
                     nombreError = uiState.nombreError,
+                    apellido = uiState.apellido, onApellidoChange = altaAsistenteViewModel::onApellidoChange,
                     telefono = uiState.telefono, onTelefonoChange = altaAsistenteViewModel::onTelefonoChange,
                     telefonoError = uiState.telefonoError,
                     correo = uiState.correo, onCorreoChange = altaAsistenteViewModel::onCorreoChange,
@@ -423,11 +455,20 @@ fun CodeaNavHost(
                     turno = uiState.turno, onElegirTurno = altaAsistenteViewModel::onElegirTurno,
                     canGuardar = uiState.canGuardar,
                     onGuardar = {
-                        docentesViewModel.altaDocente(nombre = uiState.nombre, sala = uiState.salaElegida ?: "")
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("Asistente \"${uiState.nombre}\" dada de alta")
-                        }
-                        navController.popBackStack()
+                        docentesViewModel.altaDocente(
+                            nombre = uiState.nombre,
+                            apellido = uiState.apellido,
+                            sala = uiState.salaElegida ?: "",
+                            telefono = uiState.telefono,
+                            correo = uiState.correo,
+                            turno = uiState.turno,
+                            onSuccess = {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Asistente \"${uiState.nombre}\" dada de alta")
+                                }
+                                navController.popBackStack()
+                            }
+                        )
                     },
                     onBack = { navController.popBackStack() },
                 )
@@ -457,9 +498,13 @@ fun CodeaNavHost(
                 val infante = infantes.firstOrNull { it.id == route.infanteId }
                     ?: return@composable
                 val salasDisponibles by salasViewModel.salas.collectAsState()
+                val padres by padresViewModel.padres.collectAsState()
+                val padresVinculados = padres.filter { infante.id in it.hijoIds }
                 InfanteDetalleScreen(
                     infante = infante,
                     salas = salasDisponibles.map { it.nombre },
+                    padresVinculados = padresVinculados,
+                    onAbrirPadre = { padreId -> navController.navigate(PadresAdminDetalleRoute(padreId)) },
                     onSalaSeleccionada = { nuevaSala ->
                         infantesViewModel.cambiarSala(infanteId = infante.id, nuevaSala = nuevaSala)
                     },
@@ -480,71 +525,111 @@ fun CodeaNavHost(
                     nombre = uiState.nombre,
                     onNombreChange = inscribirInfanteViewModel::onNombreChange,
                     nombreError = uiState.nombreError,
+                    apellido = uiState.apellido,
+                    onApellidoChange = inscribirInfanteViewModel::onApellidoChange,
                     edad = uiState.edad,
                     onEdadChange = inscribirInfanteViewModel::onEdadChange,
                     edadError = uiState.edadError,
                     alergias = uiState.alergias,
                     onAlergiasChange = inscribirInfanteViewModel::onAlergiasChange,
-                    tutor = uiState.tutor,
-                    onTutorChange = inscribirInfanteViewModel::onTutorChange,
-                    tutorError = uiState.tutorError,
-                    tituloTutor = uiState.tituloTutor,
-                    onElegirTituloTutor = inscribirInfanteViewModel::onTituloTutorChange,
-                    telefono = uiState.telefono,
-                    onTelefonoChange = inscribirInfanteViewModel::onTelefonoChange,
-                    telefonoError = uiState.telefonoError,
-                    correo = uiState.correo,
-                    onCorreoChange = inscribirInfanteViewModel::onCorreoChange,
-                    correoError = uiState.correoError,
                     salas = salas,
                     onElegirSala = inscribirInfanteViewModel::onElegirSala,
                     canGuardar = uiState.canGuardar,
                     onGuardar = {
                         infantesViewModel.inscribirInfante(
                             nombre = uiState.nombre,
+                            apellido = uiState.apellido,
                             edad = uiState.edad.toInt(),
-                            tutor = uiState.tutor,
-                            tituloTutor = uiState.tituloTutor,
-                            correoTutor = uiState.correo,
-                            sala = uiState.salaElegida ?: ""
+                            sala = uiState.salaElegida ?: "",
+                            alergias = uiState.alergias,
+                            onSuccess = {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("\"${uiState.nombre}\" inscrito")
+                                }
+                                navController.popBackStack()
+                            }
                         )
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("\"${uiState.nombre}\" inscrito")
-                        }
-                        navController.popBackStack()
                     },
                     onBack = { navController.popBackStack() },
                 )
             }
         }
 
-        // parent tabs. each is only one screen for now.
+        // parent tabs. each is only one screen. the data comes from ParentViewModel.
         composable<ParentTodayRoute> {
             val context = LocalContext.current
             ParentTodayScreen(
+                summary = parentViewModel.summary,
+                timelineEvents = parentViewModel.timeline,
                 onNavigateToCalendar = {
                     navController.navigateToTopLevel(TopLevelDestination.PARENT_CALENDAR)
                 },
-                onSendNote = { _ ->
-                    Toast.makeText(context, "Nota enviada a la asistente", Toast.LENGTH_SHORT).show()
+                onSendNote = { texto ->
+                    parentViewModel.sendNote(texto, onSuccess = {
+                        Toast.makeText(context, "Nota enviada a la asistente", Toast.LENGTH_SHORT).show()
+                    })
                 },
             )
         }
 
         composable<ParentCalendarRoute> {
             ParentCalendarScreen(
-                onDaySelected = { _ ->
+                monthData = parentViewModel.monthData,
+                initialSelectedDay = parentViewModel.todayDayNumber,
+                onDaySelected = { day ->
+                    parentViewModel.selectDay(day.dayNumber)
                     navController.navigateToTopLevel(TopLevelDestination.PARENT_TODAY)
                 },
             )
         }
 
         composable<ParentPhotosRoute> {
-            ParentPhotosScreen()
+            val context = LocalContext.current
+            ParentPhotosScreen(
+                nombreNino = parentViewModel.childName.substringBefore(" "),
+                fotos = parentViewModel.photos,
+                // "descargar" abre la foto en el navegador, que la puede guardar.
+                onDescargar = { foto ->
+                    foto.url?.let { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) }
+                },
+                onPedirBorrar = parentViewModel::requestPhotoDeletion,
+            )
         }
 
         composable<ParentDocumentsRoute> {
-            ParentDocumentsScreen()
+            val context = LocalContext.current
+            var documentoElegido by remember { mutableStateOf<String?>(null) }
+            var mostrarAgregar by remember { mutableStateOf(false) }
+            // el selector de archivos del teléfono: PDF o imagen.
+            val selector = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+                val documentoId = documentoElegido
+                if (uri != null && documentoId != null) {
+                    val tipo = context.contentResolver.getType(uri) ?: "application/pdf"
+                    val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                    if (bytes != null) parentViewModel.uploadDocument(documentoId, bytes, tipo)
+                }
+                documentoElegido = null
+            }
+            ParentDocumentsScreen(
+                childName = parentViewModel.childName.substringBefore(" "),
+                documents = parentViewModel.documents,
+                authorizedPeople = parentViewModel.authorizedPeople,
+                onDocumentAction = { documento ->
+                    documentoElegido = documento.id
+                    selector.launch("*/*")
+                },
+                onAddAuthorized = { mostrarAgregar = true },
+                onRemoveAuthorized = parentViewModel::removeAuthorized,
+            )
+            if (mostrarAgregar) {
+                AddAuthorizedDialog(
+                    onConfirm = { nombre ->
+                        parentViewModel.addAuthorized(nombre)
+                        mostrarAgregar = false
+                    },
+                    onDismiss = { mostrarAgregar = false },
+                )
+            }
         }
 
 
@@ -563,13 +648,18 @@ fun CodeaNavHost(
                 val padres by padresViewModel.padres.collectAsState()
                 val padre = padres.firstOrNull { it.id == route.padreId }
                     ?: return@composable
+                val infantes by infantesViewModel.infantes.collectAsState()
+                val hijosNombres = infantes.filter { it.id in padre.hijoIds }.map { it.nombre }
                 PadreDetalleScreen(
                     padre = padre,
+                    hijosNombres = hijosNombres,
                     onToggleAcceso = { padresViewModel.toggleAcceso(padre.id) },
                     onReenviarInvitacion = {
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("Invitación reenviada a \"${padre.nombre}\"")
-                        }
+                        padresViewModel.reenviarInvitacion(padre.id, onSuccess = {
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar("Invitación reenviada a \"${padre.nombre}\"")
+                            }
+                        })
                     },
                     onAbrirChat = { navController.navigateToTopLevel(TopLevelDestination.CHATS) },
                     onBack = { navController.popBackStack() },
@@ -583,6 +673,8 @@ fun CodeaNavHost(
                     nombre = uiState.nombre,
                     onNombreChange = inscribirPadreViewModel::onNombreChange,
                     nombreError = uiState.nombreError,
+                    apellido = uiState.apellido,
+                    onApellidoChange = inscribirPadreViewModel::onApellidoChange,
                     telefono = uiState.telefono,
                     onTelefonoChange = inscribirPadreViewModel::onTelefonoChange,
                     telefonoError = uiState.telefonoError,
@@ -591,24 +683,130 @@ fun CodeaNavHost(
                     correoError = uiState.correoError,
                     parentesco = uiState.parentesco,
                     onElegirParentesco = inscribirPadreViewModel::onElegirParentesco,
-                    hijosDisponibles = infantesDisponibles.map { it.nombre },
+                    hijosDisponibles = infantesDisponibles.map { it.id to it.nombre },
                     hijosSeleccionados = uiState.hijosSeleccionados,
                     onToggleHijo = inscribirPadreViewModel::onToggleHijo,
                     canGuardar = uiState.canGuardar,
                     onGuardar = {
                         padresViewModel.inscribirPadre(
                             nombre = uiState.nombre,
+                            apellido = uiState.apellido,
                             telefono = uiState.telefono,
                             correo = uiState.correo,
                             parentesco = uiState.parentesco ?: "",
-                            hijos = uiState.hijosSeleccionados
+                            hijoIds = uiState.hijosSeleccionados,
+                            onSuccess = {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("\"${uiState.nombre}\" inscrito")
+                                }
+                                navController.popBackStack()
+                            }
                         )
+                    },
+                    onBack = { navController.popBackStack() },
+                )
+            }
+        }
+
+        navigation<RutinasAdminGraph>(startDestination = RutinasAdminRoute) {
+            composable<RutinasAdminRoute> {
+                val rutinas by rutinasViewModel.rutinas.collectAsState()
+                RutinasAdminScreen(
+                    rutinas = rutinas,
+                    onAbrirRutina = { rutinaId -> navController.navigate(RutinasAdminDetalleRoute(rutinaId)) },
+                    onNuevaRutina = { navController.navigate(RutinasAdminNuevaRoute) },
+                )
+            }
+            composable<RutinasAdminDetalleRoute> { backStackEntry ->
+                val route = backStackEntry.toRoute<RutinasAdminDetalleRoute>()
+                val rutinas by rutinasViewModel.rutinas.collectAsState()
+                val rutina = rutinas.firstOrNull { it.id == route.rutinaId }
+                    ?: return@composable
+                val momentosPorRutina by rutinasViewModel.momentos.collectAsState()
+                RutinaDetalleScreen(
+                    nombreRutina = rutina.nombre,
+                    momentos = momentosPorRutina[rutina.id].orEmpty(),
+                    onReordenar = { from, to -> rutinasViewModel.reordenar(rutina.id, from, to) },
+                    onAgregarMomento = { navController.navigate(RutinasAdminAgregarMomentoRoute(rutina.id)) },
+                    onGuardar = {
                         coroutineScope.launch {
-                            snackbarHostState.showSnackbar("\"${uiState.nombre}\" inscrito")
+                            snackbarHostState.showSnackbar("\"${rutina.nombre}\" guardada")
                         }
                         navController.popBackStack()
                     },
-                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable<RutinasAdminAgregarMomentoRoute> { backStackEntry ->
+                val route = backStackEntry.toRoute<RutinasAdminAgregarMomentoRoute>()
+                val agregarMomentoViewModel: AgregarMomentoViewModel = viewModel()
+                val uiState = agregarMomentoViewModel.uiState
+                val momentosPorRutina by rutinasViewModel.momentos.collectAsState()
+                val catalogo = remember(momentosPorRutina[route.rutinaId]) {
+                    rutinasViewModel.catalogoDisponible(route.rutinaId)
+                }
+                AgregarMomentoScreen(
+                    catalogo = catalogo,
+                    elegido = uiState.elegido,
+                    onElegir = agregarMomentoViewModel::onElegir,
+                    nombrePropio = uiState.nombrePropio,
+                    onNombrePropioChange = agregarMomentoViewModel::onNombrePropioChange,
+                    registroPropio = uiState.registroPropio,
+                    onRegistroPropioChange = agregarMomentoViewModel::onRegistroPropioChange,
+                    onAgregar = {
+                        val nombre = uiState.nombrePropio.trim().ifBlank { uiState.elegido.orEmpty() }
+                        if (nombre.isNotBlank()) {
+                            val registro = uiState.registroPropio.trim().ifBlank {
+                                catalogo.firstOrNull { it.nombre == nombre }?.registro.orEmpty()
+                            }
+                            rutinasViewModel.agregarMomento(route.rutinaId, nombre, registro)
+                            navController.popBackStack()
+                        }
+                    },
+                )
+            }
+            // el asistente de "nueva rutina" tiene tres pasos pero un solo formulario:
+            // "nueva rutina" lo crea y lo guarda mientras el flujo sigue abierto.
+            composable<RutinasAdminNuevaRoute> { backStackEntry ->
+                val form: NuevaRutinaViewModel = viewModel(backStackEntry)
+                val uiState = form.uiState
+                NuevaRutinaScreen(
+                    nombre = uiState.nombre,
+                    onNombreChange = form::onNombreChange,
+                    etapa = uiState.etapa,
+                    onElegirEtapa = form::onElegirEtapa,
+                    onElegirMomentos = { navController.navigate(RutinasAdminCatalogoRoute) },
+                )
+            }
+            composable<RutinasAdminCatalogoRoute> { backStackEntry ->
+                val form = nuevaRutinaForm(navController, backStackEntry)
+                val uiState = form.uiState
+                CatalogoMomentosScreen(
+                    catalogo = form.catalogoCompleto(),
+                    seleccionados = uiState.seleccionados,
+                    onAlternar = form::onAlternar,
+                    creando = uiState.creando,
+                    onAbrirCrear = form::onAbrirCrear,
+                    nombrePropio = uiState.nombrePropio,
+                    onNombrePropioChange = form::onNombrePropioChange,
+                    registroPropio = uiState.registroPropio,
+                    onRegistroPropioChange = form::onRegistroPropioChange,
+                    onGuardarPropio = form::onGuardarPropio,
+                    onContinuar = { navController.navigate(RutinasAdminOrdenRoute) },
+                )
+            }
+            composable<RutinasAdminOrdenRoute> { backStackEntry ->
+                val form = nuevaRutinaForm(navController, backStackEntry)
+                OrdenRutinaScreen(
+                    momentos = form.momentosFinal(),
+                    onReordenar = form::reordenarMomentos,
+                    onGuardar = {
+                        val nombre = form.uiState.nombre.trim().ifBlank { "Nueva rutina" }
+                        rutinasViewModel.crearRutina(nombre, form.momentosFinal())
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar("\"$nombre\" creada")
+                        }
+                        navController.popBackStack(RutinasAdminRoute, inclusive = false)
+                    },
                 )
             }
         }
@@ -620,6 +818,14 @@ fun CodeaNavHost(
 @Composable
 private fun reportForm(navController: NavHostController, backStackEntry: NavBackStackEntry): ReportFormViewModel {
     val flowEntry = remember(backStackEntry) { navController.getBackStackEntry<SelectReportMethodRoute>() }
+    return viewModel(flowEntry)
+}
+
+// los pasos 2 y 3 de "nueva rutina" piden el formulario del paso 1,
+// igual que el reporte con los suyos.
+@Composable
+private fun nuevaRutinaForm(navController: NavHostController, backStackEntry: NavBackStackEntry): NuevaRutinaViewModel {
+    val flowEntry = remember(backStackEntry) { navController.getBackStackEntry<RutinasAdminNuevaRoute>() }
     return viewModel(flowEntry)
 }
 

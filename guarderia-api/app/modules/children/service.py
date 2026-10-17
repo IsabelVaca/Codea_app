@@ -85,14 +85,17 @@ async def get_child(db: AsyncSession, current: CurrentUser, child_id: int) -> Ch
 
 
 async def create_child(db: AsyncSession, data: ChildCreate) -> ChildDetail:
-    """Inscribe a un infante, registra a su tutor y le crea su invitación."""
+    """Inscribe a un infante; si viene tutor, lo registra y le crea su invitación."""
     name = rules.require_name(data.name)
     rules.check_age(data.birth_date, await center_today(db))
+    # el tutor es opcional: la pestaña Padres también registra a los papás y los liga a sus hijos.
     guardian = data.guardian
-    if guardian is None or not guardian.name.strip():
-        raise ApiError(422, "GUARDIAN_REQUIRED", "El tutor es obligatorio")
-    phone = rules.check_phone(guardian.phone)
-    email = rules.check_email(guardian.email)
+    phone = email = None
+    if guardian is not None:
+        if not guardian.name.strip():
+            raise ApiError(422, "GUARDIAN_REQUIRED", "El tutor necesita un nombre")
+        phone = rules.check_phone(guardian.phone)
+        email = rules.check_email(guardian.email)
     if data.classroom_id is not None:
         await get_active_classroom(db, data.classroom_id)
 
@@ -105,16 +108,17 @@ async def create_child(db: AsyncSession, data: ChildCreate) -> ChildDetail:
     )
     db.add(child)
     await db.flush()
-    await parents.link_guardian(
-        db,
-        child,
-        name=guardian.name.strip(),
-        surname=guardian.surname.strip(),
-        phone=phone,
-        email=email,
-        relationship=guardian.relationship,
-        is_primary=True,
-    )
+    if guardian is not None:
+        await parents.link_guardian(
+            db,
+            child,
+            name=guardian.name.strip(),
+            surname=guardian.surname.strip(),
+            phone=phone,
+            email=email,
+            relationship=guardian.relationship,
+            is_primary=True,
+        )
     await db.commit()
     return await get_detail(db, child)
 

@@ -37,6 +37,7 @@ import mx.tec.codea.ui.theme.Poppins
 @Composable
 fun PadreDetalleScreen(
     padre: Padre,
+    hijosNombres: List<String>,
     onToggleAcceso: () -> Unit,
     onReenviarInvitacion: () -> Unit,
     onAbrirChat: () -> Unit,
@@ -96,7 +97,7 @@ fun PadreDetalleScreen(
                 }
                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(padre.nombre, fontFamily = Poppins, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
-                    Text("${padre.parentesco} de ${padre.hijo}", fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF5B4B8A))
+                    Text("${padre.parentesco} de ${hijosNombres.joinToString(", ")}", fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF5B4B8A))
                 }
                 Text(
                     text = if (padre.conAcceso) "Con acceso" else "Sin acceso",
@@ -113,7 +114,7 @@ fun PadreDetalleScreen(
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 InfoTarjeta("TELÉFONO", padre.telefono)
                 InfoTarjeta("CORREO", padre.correo)
-                InfoTarjeta("HIJOS INSCRITOS", padre.hijo)
+                InfoTarjeta("HIJOS INSCRITOS", hijosNombres.joinToString(", "))
             }
 
             SeccionLabel("ACCIONES")
