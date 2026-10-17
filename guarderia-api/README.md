@@ -1,6 +1,6 @@
 # API de la guardería
 
-FastAPI + PostgreSQL + un almacén compatible con S3 para fotos y documentos. Los endpoints son los de la primera entrega de [`docs/api/endpoints-api-codea.pdf`](../docs/api/endpoints-api-codea.pdf) y siguen la [propuesta de arquitectura](https://claude.ai/artifact/K4CqXjp82tkRLfpKDRdV5H). El contrato vivo es el OpenAPI: con la API prendida, ábrelo en http://localhost:8000/docs.
+FastAPI + PostgreSQL + un almacén compatible con S3 para fotos y documentos. Los endpoints son los de la primera entrega de [`docs/api/endpoints-api-codea.pdf`](../docs/api/endpoints-api-codea.pdf); la lista vigente, sacada del código, está en [`docs/api/endpoints.md`](../docs/api/endpoints.md). Siguen la [propuesta de arquitectura](https://claude.ai/artifact/K4CqXjp82tkRLfpKDRdV5H). El contrato vivo es el OpenAPI: con la API prendida, ábrelo en http://localhost:8000/docs.
 
 ## Levantarla
 

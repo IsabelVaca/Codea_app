@@ -10,6 +10,26 @@ Maquetas HTML de diseño. Son de referencia visual: las pantallas de la app se a
 
 Los archivos son autocontenidos (funcionan sin internet): ábrelos en el navegador con doble clic. Necesitan JavaScript porque el contenido viene empaquetado dentro del HTML.
 
+## Estilo
+
+[`estilo.md`](estilo.md) resume las convenciones de las prácticas del curso ([startdroid.com](https://startdroid.com/)) que sigue Codea: capas y paquetes, nombres, estado, red, sesión, Hilt, diseño, pruebas y la API.
+
+## Plan de trabajo
+
+[`plan/`](plan/README.md) tiene el plan para llegar al mínimo funcional: pantallas que faltan en la app, cómo conectarla a la API, estado de la API, diseño del login con JWT y tareas en orden.
+
+## API
+
+El código de la API vive en [`guarderia-api/`](../guarderia-api/) (cómo levantarla: [`guarderia-api/README.md`](../guarderia-api/README.md)).
+
+| Archivo | Qué contiene |
+| --- | --- |
+| [`api/endpoints.md`](api/endpoints.md) | **Referencia vigente.** Los 56 endpoints que tiene hoy la API, sacados del código: rol, qué envían, qué responden y sus códigos de error. |
+| [`api/endpoints-api-codea.pdf`](api/endpoints-api-codea.pdf) | Histórico. Endpoints de la primera entrega por rol, con las rutas anteriores; ya no coincide en varios detalles con el código. |
+| [Propuesta de arquitectura: API de la guardería](https://claude.ai/artifact/K4CqXjp82tkRLfpKDRdV5H) | Arquitectura completa: componentes, login con Firebase, convenciones, modelo de datos, fotos con S3, monitoreo y seguridad. |
+
+El contrato vivo es el OpenAPI que genera FastAPI: con la API prendida, ábrelo en `http://localhost:8000/docs`.
+
 ### Pantallas de la app y su referencia en el prototipo
 
 | Tab | Pantalla en el prototipo | Estado |
