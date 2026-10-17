@@ -97,6 +97,10 @@ interface CodeaApi {
     @GET("me")
     suspend fun me(): MeDto
 
+    // cambia la contraseña y regresa tokens nuevos: la API cierra todas las sesiones, también esta.
+    @POST("me/password")
+    suspend fun changePassword(@Body body: ChangePasswordBody): TokenDto
+
     // ----- mi sala -----
     @GET("classrooms/{id}/children")
     suspend fun roomChildren(@Path("id") id: Int): List<RoomChildDto>

@@ -60,6 +60,8 @@ fun ParentTodayScreen(
     notifs: List<NotifUi> = emptyList(),
     // se llama al tocar la campana (marca las notificaciones como vistas).
     onAbrirNotif: () -> Unit = {},
+    // abre Mi cuenta (cambiar contraseña y cerrar sesión).
+    onCuentaClick: (() -> Unit)? = null,
 ) {
     var panelAbierto by remember { mutableStateOf(false) }
 
@@ -82,6 +84,7 @@ fun ParentTodayScreen(
                 },
                 // el LazyColumn ya deja 20dp a los lados.
                 horizontalPadding = 0.dp,
+                onCuentaClick = onCuentaClick,
             )
         }
 

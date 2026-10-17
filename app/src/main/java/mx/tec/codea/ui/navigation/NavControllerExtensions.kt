@@ -69,12 +69,6 @@ fun NavHostController.navigateToMyDayAfterCheckIn() {
     navigate(RutinaDeHoyRoute) { launchSingleTop = true }
 }
 
-// after "cerrar sesión" the day starts again, so we go to "mi día",
-// which now shows "aún el día no comienza".
-fun NavHostController.navigateToMyDayAfterLogout() {
-    navigateToTopLevel(TopLevelDestination.MY_DAY)
-}
-
 // the rules we use every time we jump from one tab to another.
 private fun NavOptionsBuilder.leaveCurrentTab(startDestinationId: Int) {
     // we remove the screens above the start screen, so the back button

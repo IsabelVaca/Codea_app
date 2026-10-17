@@ -37,3 +37,7 @@ fun timeToMinutes(hora: String?): Int? {
     val m = partes.getOrNull(1)?.toIntOrNull() ?: 0
     return h * 60 + m
 }
+
+// "23 oct": para mostrar cuándo vence algo.
+fun shortDateOf(iso: String?): String? =
+    parseIso(iso)?.let { SimpleDateFormat("d MMM", Locale("es", "MX")).format(it) }

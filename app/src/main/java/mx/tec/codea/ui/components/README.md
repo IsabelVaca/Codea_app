@@ -9,6 +9,7 @@ Piezas reutilizables entre pantallas.
 | `InfoBox.kt` | Recuadro informativo |
 | `InitialsAvatar.kt` | Círculo con iniciales |
 | `PersonaDropdown.kt` | Selector de personas (docente, padre, infante) usado por los formularios de admin |
+| `AccessCodeDialog.kt` | El código de acceso de alguien recién dado de alta, con botón de compartir. La API lo da una sola vez, así que es la única oportunidad de copiarlo |
 | `DeviceLaunchers.kt` | `rememberTakePhoto` (cámara) y `rememberDictation` (voz a texto), con sus permisos |
 
 ## Notas sobre `DeviceLaunchers.kt`

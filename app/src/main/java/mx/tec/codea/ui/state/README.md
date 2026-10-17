@@ -6,6 +6,8 @@ ViewModels. Las pantallas solo dibujan y llaman funciones de aquí; el estado sa
 
 | Archivo | Rol | Qué maneja | Estilo de estado |
 |---|---|---|---|
+| `SessionViewModel.kt` | Todos | **La sesión de la app**: Cargando / Anónimo / Activa, y el estado del formulario de entrada (`AuthFormState`). Se crea con una fábrica a la que `CodeaApp` le da el `SessionRepository` del `AppContainer` | `StateFlow` |
+| `AccountViewModel.kt` | Todos | Mi cuenta: el perfil y cambiar la contraseña | `mutableStateOf` |
 | `CodeaViewModel.kt` | Docente | **El compartido.** Check-in, rutina, momento elegido, reportes, niños y asistencia, chat abierto y mensajes | `mutableStateOf` |
 | `CheckerViewModel.kt` | Docente | Pantalla del checador (ubicación, estado, motivo de retardo) | — |
 | `ReportFormViewModel.kt` | Docente | Formulario de reporte (método, texto, foto, niños elegidos) | — |
@@ -22,9 +24,10 @@ ViewModels. Las pantallas solo dibujan y llaman funciones de aquí; el estado sa
 
 ## Reglas
 
-1. **`CodeaViewModel` se crea una sola vez** en `CodeaApp` (ámbito de la actividad). Nunca lo pidas con `viewModel()` dentro de un destino: ese destino recibiría una copia aparte.
+1. **`CodeaViewModel` se crea una sola vez por sesión** en `CodeaApp` (en el almacén de ViewModels de la sesión, ver `SessionScopesViewModel` en `ui/navigation/CodeaApp.kt`). Nunca lo pidas con `viewModel()` dentro de un destino: ese destino recibiría una copia aparte.
 2. Los ViewModels de pantalla se piden con `viewModel()` en `CodeaNavHost.kt`.
-3. Cada `cargar()` revisa la bandera de rol de `ApiConfig` (`isAdmin`, `isTeacher`, `isParent`) para no pedir datos que su rol no puede ver (la API respondería 403).
+3. Cada `cargar()` revisa la bandera de rol de `ApiConfig` (`isAdmin`, `isTeacher`, `isParent`; `CodeaApp` las fija con el rol de la sesión) para no pedir datos que su rol no puede ver (la API respondería 403).
+   Los ViewModels que necesitan algo del `AppContainer` (sesión) se crean con `viewModel(factory = ...)`; los demás con `viewModel()` y todos viven en el almacén de la sesión: al cerrar sesión se borran y la persona siguiente empieza limpia.
 4. Cada ViewModel con lista escucha `DataEvents.changed` y vuelve a cargar. Si agregas uno, haz lo mismo.
 5. Las escrituras van con `launchAction`; no repitas el try/catch.
 6. Los errores se muestran con `DataEvents.notice(e.toUserMessage())`.

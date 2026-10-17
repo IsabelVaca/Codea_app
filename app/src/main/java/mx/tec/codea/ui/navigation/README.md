@@ -2,8 +2,8 @@
 
 | Archivo | Qué hace |
 |---|---|
-| `CodeaApp.kt` | Raíz de la interfaz: selección de rol, banderas de `ApiConfig`, `key(role)`, `Scaffold` con barra inferior y snackbar |
-| `Routes.kt` | Rutas como objetos `@Serializable`. Solo llevan ids, nunca objetos completos |
+| `CodeaApp.kt` | Raíz de la interfaz. Decide por el **estado de la sesión**: arranque, inicio de sesión / activar cuenta o la app del rol (`RoleApp`: `Scaffold`, barra inferior y snackbar). Aquí vive también `SessionScopesViewModel`, que da a cada sesión su almacén de ViewModels |
+| `Routes.kt` | Rutas como objetos `@Serializable`. Solo llevan ids, nunca objetos completos. `AccountRoute` (Mi cuenta) la abren los tres roles |
 | `CodeaNavHost.kt` | El grafo: une cada ruta con su pantalla y su ViewModel (849 líneas, 32 destinos) |
 | `TopLevelDestination.kt` | Las pestañas de la barra inferior y qué roles las ven (`roles`) |
 | `NavControllerExtensions.kt` | Comportamiento al tocar una pestaña (navegar o reseleccionar) |
@@ -18,6 +18,8 @@
 
 Las pestañas exactas salen de `TopLevelDestination.kt`: ahí es donde se agregan o se quitan.
 
+**Mi cuenta** (`AccountRoute`) cuelga del `NavHost` y no de una pestaña: la abren el avatar de **Centro** (admin), el botón junto a la campana de **Hoy** (padre) y **Menú → Mi perfil** (docente).
+
 ## Cómo agregar una pantalla
 
 1. Declara la ruta en `Routes.kt` (`data object` si no lleva datos, `data class` si lleva ids).
@@ -27,8 +29,8 @@ Las pestañas exactas salen de `TopLevelDestination.kt`: ahí es donde se agrega
 
 ## Pendiente
 
-- **Login:** hoy `CodeaApp` muestra `RoleSelectionScreen`. Con login real, el rol sale del `GET /me` y esta pantalla desaparece.
+- **El login no es una ruta:** cerrar sesión cambia el estado de la sesión y `CodeaApp` dibuja otra cosa; no se navega a ningún lado. `RoleSelectionScreen` solo aparece para quien tiene más de un rol.
 - **Partir `CodeaNavHost.kt`:** es el archivo con más conflictos de merge. Separar un archivo por rol (`TeacherNavGraph`, `AdminNavGraph`, `ParentNavGraph`) reduce choques.
-- **Destinos `ComingSoon` de la docente:** documentos y perfil (`MenuOption` en `MenuScreen.kt`).
+- **Destinos `ComingSoon` de la docente:** documentos (`MenuOption` en `MenuScreen.kt`).
 - **Rutas del padre que faltan:** chat, menú del día, selector de hijo.
 - **Rutas del admin que faltan:** solicitudes de borrado, pagos.

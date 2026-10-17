@@ -34,22 +34,28 @@ Marco técnico: solo lo de <https://startdroid.pages.dev/> ([`docs/MARCO-TECNICO
 
 ## Cómo arranca
 
-1. `CodeaApp` muestra `RoleSelectionScreen` (no hay login real).
-2. El rol elegido fija `ApiConfig.devEmail` (un correo del seed) y las banderas `isAdmin`/`isTeacher`/`isParent`.
-3. `key(role)` crea un `NavController` nuevo por rol; la barra inferior muestra solo las pestañas de ese rol.
-4. Cada ViewModel pide sus datos a la API y se vuelve a cargar cuando `DataEvents.changed` avisa que algo cambió.
+1. `CodeaApplication` crea el `AppContainer` (DI manual) y este lee del teléfono la sesión guardada.
+2. `CodeaApp` dibuja según el estado de la sesión (`SessionViewModel`): **Cargando** → arranque, **Anónimo** → iniciar sesión / activar cuenta, **Activa** → la app del rol. Cerrar sesión no navega: solo cambia el estado.
+3. El rol sale de la sesión (`GET /me` → `roles`). Con un solo rol se entra directo; con varios, `RoleSelectionScreen` deja elegir. Las banderas `ApiConfig.isAdmin/isTeacher/isParent` siguen a ese rol.
+4. Cada sesión tiene su propio almacén de ViewModels (`SessionScopesViewModel`): sobrevive a girar la pantalla y se borra al cerrar sesión, así lo que veía una persona nunca llega a la siguiente.
+5. `key(role)` crea un `NavController` nuevo por rol; la barra inferior muestra solo las pestañas de ese rol.
+6. Cada ViewModel pide sus datos a la API y se vuelve a cargar cuando `DataEvents.changed` avisa que algo cambió.
 
 ## Estado
 
 | Rol | Estado | Falta |
 |---|---|---|
-| Docente | Check-in con GPS, rutina del día, reportes (escrito, dictado, foto), Mi sala con asistencia, chat | Documentos y perfil (abren `ComingSoon`); chat en tiempo real; sin conexión |
-| Admin | Centro y salas, docentes, infantes, padres, rutinas y catálogo de momentos, publicar avisos y ver su historial | Solicitudes de borrado de fotos, pagos, menú del día |
-| Padre | Hoy, calendario, fotos, documentos y personas autorizadas, nota a la asistente | Chat, varios hijos, menú del día, paginación de fotos |
-| Transversal | Compose, Retrofit, Coil | Login real, sesión con DataStore/Keystore, Room, WorkManager, huella, release firmado, HTTPS |
+| Docente | Check-in con GPS, rutina del día, reportes (escrito, dictado, foto), Mi sala con asistencia, chat, avisos, Mi cuenta | Documentos (abre `ComingSoon`); chat en tiempo real; sin conexión |
+| Admin | Centro y salas, docentes, infantes, padres, rutinas y catálogo de momentos, avisos, Mi cuenta, **código de acceso** al dar de alta o reenviar | Solicitudes de borrado de fotos, pagos, menú del día |
+| Padre | Hoy, calendario, fotos, documentos y personas autorizadas, nota a la asistente, avisos, Mi cuenta | Chat, varios hijos, menú del día, paginación de fotos |
+| Transversal | Compose, Retrofit, Coil, **login con JWT** (tokens cifrados con Keystore en DataStore, renovación automática), DI manual | Room, WorkManager, huella, release firmado, HTTPS y pruebas de interfaz |
 
 Detalle completo: [`docs/ESTADO.md`](../docs/ESTADO.md) y [`docs/REQUISITOS.md`](../docs/REQUISITOS.md).
 
 ## Configuración del release
 
-`app/build.gradle.kts`: `release` con `optimization.enable = false` y sin `signingConfig`. El manifiesto declara `CAMERA`, `RECORD_AUDIO`, `INTERNET` y `usesCleartextTraffic="true"`. Para la entrega hay que firmar, minificar y pasar a HTTPS.
+`app/build.gradle.kts`: `release` con `optimization.enable = false` y sin `signingConfig`: para la entrega hay que firmar y minificar.
+
+La dirección de la API sale de `BuildConfig.API_BASE_URL`: `-PapiBaseUrl=...` en la línea de comandos, o `API_BASE_URL` en `local.properties`, o el emulador (`http://10.0.2.2:8000/api/v1/`) por omisión. En release se lee `API_BASE_URL_RELEASE` (HTTPS) y, mientras no exista, queda una dirección inválida a propósito (`api.codea.invalid`) para que nadie entregue un APK apuntando a la Mac de alguien. El tráfico sin cifrar solo se permite en debug y solo a `10.0.2.2` y `localhost` (`src/debug/res/xml/network_security_config.xml`). `allowBackup="false"`.
+
+El manifiesto declara `CAMERA`, `RECORD_AUDIO` e `INTERNET`.

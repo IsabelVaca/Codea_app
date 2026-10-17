@@ -1,6 +1,6 @@
 # `ui/screens/` (docente y comunes)
 
-Aquí viven las pantallas de la docente. Las del admin están en [`admin/`](admin/README.md), las del padre en [`parent/`](parent/README.md) y la selección de rol en `roleselection/`.
+Aquí viven las pantallas de la docente. Las del admin están en [`admin/`](admin/README.md), las del padre en [`parent/`](parent/README.md), la selección de rol en `roleselection/`, **entrar** en `auth/` (`SplashScreen`, `LoginScreen`, `ActivateAccountScreen` y las piezas comunes `AuthComponents`) y **Mi cuenta** en `account/` (`AccountScreen`, para los tres roles).
 Las pantallas copian el diseño y el texto del prototipo (`docs/prototipos/`) y **solo dibujan**: reciben datos y callbacks, y llaman funciones del ViewModel.
 
 ## En uso (las que registra `CodeaNavHost.kt`)
@@ -14,7 +14,7 @@ Las pantallas copian el diseño y el texto del prototipo (`docs/prototipos/`) y 
 | `SelectStudentsScreen.kt` | Elegir niños del reporte | ✅ |
 | `MyRoomScreen.kt` | Mi sala y asistencia | ✅ |
 | `ChatsScreen.kt` | Conversaciones con las familias | ✅ Envía y lee por la API; sin tiempo real |
-| `MenuScreen.kt` | Menú: perfil, checador y otras opciones | 🟡 Documentos y perfil abren `ComingSoon`; Avisos ya abre `AvisosFundacionScreen` |
+| `MenuScreen.kt` | Menú: perfil, checador y otras opciones | 🟡 Documentos abre `ComingSoon`; Avisos abre `AvisosFundacionScreen`; Mi perfil abre Mi cuenta; Cerrar sesión cierra la sesión de verdad |
 | `CheckerScreen.kt` | Checador (GPS y mapa) | ✅ Mapa con Google Maps |
 | `CheckInDoneScreen.kt` | "Entrada registrada" | ✅ |
 | `ComingSoonScreen.kt` | Marcador de lo no construido | — |
@@ -31,7 +31,7 @@ Comprobado el 2026-10-16 con búsqueda de texto. Si se confirma que nada las usa
 
 ## Pendiente
 
-- Las dos opciones `ComingSoon` del menú: **documentos** y **perfil** (los avisos ya existen).
+- La opción `ComingSoon` del menú: **documentos** (avisos y perfil ya existen).
 - **"Finalizar día"** al terminar la rutina (tarea abierta en Teams).
 - **Mandar fotos** desde el chat (tarea abierta en Teams).
 - **Foto de calidad:** `TakePicturePreview` devuelve una miniatura; para fotos de verdad usar `TakePicture` con `FileProvider`, y comprimir y orientar según EXIF como pide el marco.

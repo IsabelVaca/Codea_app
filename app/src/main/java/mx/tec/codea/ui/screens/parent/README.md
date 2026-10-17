@@ -4,7 +4,7 @@ Pantallas del padre. Pestañas: **Hoy, Calendario, Fotos, Documentos**. Todas le
 
 | Carpeta | Pantalla | Estado |
 |---|---|---|
-| `today/` | Hoy: resumen del día (ánimo, comida, cambios, siesta, nota) y línea de tiempo; elegir otro día; mandar una nota a la asistente | ✅ |
+| `today/` | Hoy: resumen del día (ánimo, comida, cambios, siesta, nota) y línea de tiempo; elegir otro día; mandar una nota a la asistente; botón de Mi cuenta junto a la campana | ✅ |
 | `calendar/` | Calendario del mes con la asistencia de cada día | 🟡 Solo asistencia; faltan eventos y citas (CRF-03) |
 | `photos/` | Fotos por categoría y botón "Pedir que se borre" (usa Coil) | 🟡 Sin paginación en pantalla; el backend ya pagina |
 | `documents/` | Documentos pedidos (vigente o faltante), subir o reemplazar, y personas autorizadas a recoger (`AddAuthorizedDialog`) | ✅ |

@@ -7,7 +7,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -15,47 +18,158 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import mx.tec.codea.CodeaApplication
+import mx.tec.codea.data.DataEvents
+import mx.tec.codea.data.SessionRepository
+import mx.tec.codea.data.SessionState
+import mx.tec.codea.data.api.ApiConfig
+import mx.tec.codea.domain.Session
 import mx.tec.codea.ui.components.CodeaBottomBar
+import mx.tec.codea.ui.screens.auth.ActivateAccountScreen
+import mx.tec.codea.ui.screens.auth.LoginScreen
+import mx.tec.codea.ui.screens.auth.SplashScreen
 import mx.tec.codea.ui.screens.roleselection.RoleSelectionScreen
 import mx.tec.codea.ui.state.CodeaViewModel
-import mx.tec.codea.data.DataEvents
-import mx.tec.codea.data.api.ApiConfig
-// the root of the whole interface. it joins three parts:
-// the scaffold (the frame), the bottom bar (the tabs) and the nav host (the screens).
+import mx.tec.codea.ui.state.SessionViewModel
+
+// the root of the whole interface. what it draws depends on the session (the login is not a route:
+// closing the session just changes the state, so there is nothing to navigate):
+//   Loading   -> the splash, while the saved session is read from the phone
+//   Anonymous -> login / activate account
+//   Active    -> the app of the role (the scaffold, the bottom bar and the nav host)
 @Composable
 fun CodeaApp(modifier: Modifier = Modifier) {
-    // there is no login yet, so the user picks a role when the app opens.
-    var selectedRole by rememberSaveable { mutableStateOf<Role?>(null) }
+    val container = (LocalContext.current.applicationContext as CodeaApplication).container
+    val sessionViewModel: SessionViewModel = viewModel(factory = SessionViewModel.Factory(container.sessionRepository))
+    val state by sessionViewModel.state.collectAsState()
+    val form by sessionViewModel.form.collectAsState()
 
-    // CodeaApp is called right from setContent, so the owner of this view model is
-    // the activity. there is only one for the whole app: every tab sees the same object.
-    // if we called viewModel() inside each destination, each one would get its own copy.
-    val viewModel: CodeaViewModel = viewModel()
+    // lo que la persona anterior tenía en pantalla no debe verlo la siguiente: al cerrar sesión se borra todo.
+    val sessionScopes: SessionScopesViewModel = viewModel()
+    LaunchedEffect(state) {
+        if (state is SessionState.Anonymous) sessionScopes.clearAll()
+    }
 
-    val role = selectedRole
+    when (val current = state) {
+        SessionState.Loading -> SplashScreen(modifier)
+
+        SessionState.Anonymous -> {
+            var activating by rememberSaveable { mutableStateOf(false) }
+            if (activating) {
+                ActivateAccountScreen(
+                    form = form,
+                    onActivate = sessionViewModel::activate,
+                    onGoToLogin = {
+                        sessionViewModel.clearError()
+                        activating = false
+                    },
+                    modifier = modifier,
+                )
+            } else {
+                LoginScreen(
+                    form = form,
+                    onLogin = sessionViewModel::login,
+                    onGoToActivate = {
+                        sessionViewModel.clearError()
+                        activating = true
+                    },
+                    modifier = modifier,
+                )
+            }
+        }
+
+        is SessionState.Active -> {
+            // cada sesión tiene su propio almacén de ViewModels: sobrevive a girar la pantalla y se borra al salir.
+            val owner = sessionScopes.ownerFor(current.session.userId)
+            CompositionLocalProvider(LocalViewModelStoreOwner provides owner) {
+                SignedIn(
+                    session = current.session,
+                    sessions = container.sessionRepository,
+                    onLogout = sessionViewModel::logout,
+                    modifier = modifier,
+                )
+            }
+        }
+    }
+}
+
+// guarda un almacén de ViewModels por sesión. vive en la actividad (sobrevive a girar la pantalla) pero cada
+// almacén se borra al cerrar sesión, así el estado de una persona nunca llega a la siguiente.
+class SessionScopesViewModel : ViewModel() {
+    private val stores = mutableMapOf<String, ViewModelStore>()
+
+    fun ownerFor(userId: String): ViewModelStoreOwner {
+        val store = stores.getOrPut(userId) { ViewModelStore() }
+        return object : ViewModelStoreOwner {
+            override val viewModelStore: ViewModelStore = store
+        }
+    }
+
+    fun clearAll() {
+        stores.values.forEach { it.clear() }
+        stores.clear()
+    }
+
+    override fun onCleared() = clearAll()
+}
+
+// la app de quien ya entró. el rol sale de la sesión: con uno solo se entra directo, y con varios se elige.
+@Composable
+private fun SignedIn(
+    session: Session,
+    sessions: SessionRepository,
+    onLogout: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val roles = Role.entries.filter { it.name in session.roles }
+    var chosen by rememberSaveable { mutableStateOf<String?>(null) }
+    val role = when {
+        roles.size == 1 -> roles.first()
+        else -> roles.firstOrNull { it.name == chosen }
+    }
+
+    // los ViewModels piden datos solo si el rol lo permite; se apagan al salir.
+    ApiConfig.userKey = session.userId
+    ApiConfig.isAdmin = role == Role.ADMIN
+    ApiConfig.isTeacher = role == Role.TEACHER
+    ApiConfig.isParent = role == Role.PARENT
+    DisposableEffect(Unit) {
+        onDispose {
+            ApiConfig.userKey = null
+            ApiConfig.isAdmin = false
+            ApiConfig.isTeacher = false
+            ApiConfig.isParent = false
+        }
+    }
+    // al elegir rol o entrar con otra persona, las listas se vuelven a pedir.
+    LaunchedEffect(role, session.userId) { DataEvents.notifyChanged() }
+
     if (role == null) {
         RoleSelectionScreen(
-            onRoleSelected = { selectedRole = it },
+            roles = roles,
+            onRoleSelected = { chosen = it.name },
+            onLogout = onLogout,
             modifier = modifier,
         )
         return
     }
 
-    // por ahora no hay login: cada rol entra con un usuario de prueba del seed.
-    ApiConfig.devEmail = devEmailFor(role)
-    ApiConfig.isAdmin = role == Role.ADMIN
-    ApiConfig.isTeacher = role == Role.TEACHER
-    ApiConfig.isParent = role == Role.PARENT
-    // al cambiar de rol, las listas de admin se vuelven a pedir con el usuario nuevo.
-    LaunchedEffect(role) { DataEvents.notifyChanged() }
+    // CodeaViewModel is the shared view model of the teacher. it lives in the store of this session,
+    // so every tab sees the same object and a new session starts with a new one.
+    val viewModel: CodeaViewModel = viewModel()
 
     // a different role receives a completely fresh navigation controller
     // instead of inheriting another role's back stack.
     key(role) {
-        RoleApp(role = role, viewModel = viewModel, modifier = modifier)
+        RoleApp(role = role, viewModel = viewModel, sessions = sessions, onLogout = onLogout, modifier = modifier)
     }
 }
 
@@ -63,6 +177,8 @@ fun CodeaApp(modifier: Modifier = Modifier) {
 private fun RoleApp(
     role: Role,
     viewModel: CodeaViewModel,
+    sessions: SessionRepository,
+    onLogout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // "remember" keeps the same nav controller alive when the ui draws again.
@@ -116,15 +232,11 @@ private fun RoleApp(
             viewModel = viewModel,
             startDestination = startDestination,
             snackbarHostState = snackbarHostState,
+            sessions = sessions,
+            onLogout = onLogout,
             modifier = Modifier
                 .padding(innerPadding)
                 .consumeWindowInsets(innerPadding),
         )
     }
-}
-// usuarios de prueba que crea "python -m app.seed" en la API.
-private fun devEmailFor(role: Role): String = when (role) {
-    Role.ADMIN -> "admin@oruga.test"
-    Role.TEACHER -> "karla.robles@oruga.test"
-    Role.PARENT -> "laura.iglesias@oruga.test"
 }

@@ -31,8 +31,8 @@ class AvisosViewModel : ViewModel() {
     // los ids que eran nuevos al abrir la pantalla; null = todavía no se abre.
     private val snapshot = MutableStateFlow<Set<String>?>(null)
 
-    // cada usuario (correo) tiene sus propios leídos.
-    private val clave get() = "avisos:${ApiConfig.devEmail.orEmpty()}"
+    // cada persona (su id) tiene sus propios leídos.
+    private val clave get() = "avisos:${ApiConfig.userKey.orEmpty()}"
     private var ultimaClave = ""
 
     // el número que va en el badge del Menú / la campana.
