@@ -34,7 +34,7 @@ Regla: todo dentro de [`MARCO-TECNICO.md`](MARCO-TECNICO.md); lo que dependa de 
 | Día | A. Backend | B. App | C. Infra | D. Documentos |
 |---|---|---|---|---|
 | Vie 16 y sáb 17 (hecho o en curso) | Avisos con `GET` | Avisos, rutinas, conexión a la API | — | Esta documentación |
-| Dom 18 | Login JWT (fase 1 de `plan/README.md`) | Sesión, Arranque, Iniciar sesión, Activar cuenta | Elegir dónde se despliega; keystore de firma | Matriz de trazabilidad (borrador); clasificación de datos |
+| Dom 18 | ✅ **Login JWT hecho** (rama `feature/login-jwt`, sin subir) | ✅ **Sesión, Arranque, Iniciar sesión, Activar cuenta, Mi cuenta y código de acceso hechos** | Elegir dónde se despliega; keystore de firma | Matriz de trazabilidad (borrador); clasificación de datos |
 | Lun 19 | Auditoría (`audit_log`); resumen semanal; rate limiting y cabeceras | Fase 2 y 3 de `plan/README.md` (docente y padre conectados, chat); Room para asistencia y reportes | Despliegue con HTTPS | Aviso de privacidad; criterios éticos y legales; manual de usuario |
 | Mar 20 | **Congelamiento.** Escaneo ZAP, pruebas de IDOR e inyección; revisión de borrado de fotos | Fase 4 (admin); WorkManager para sincronizar; pruebas de interfaz | APK de release firmado; probarlo contra el servidor desplegado | Dilemas éticos; arquitectura (diagrama); manual de instalación; plan de implantación |
 | Mié 21 | Corregir hallazgos; documentar la API | Corregir; medir fotos (RNF05) | Ensayo completo en dispositivo físico | Matriz final con resultados reales; administración final; guion de 15 min |

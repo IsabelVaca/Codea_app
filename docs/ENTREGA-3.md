@@ -20,7 +20,7 @@ Estado a 2026-10-16. Los entregables nuevos se guardan en `docs/entrega/` (carpe
 
 | Elemento | Estado | Pendiente |
 |---|---|---|
-| Sesiones y tokens | ❌ | Auth propia con JWT ([decisión #1](DECISIONES-PENDIENTES.md)). |
+| Sesiones y tokens | ✅ | JWT de 5 min + refresh rotado (hash SHA-256, detección de reuso), `token_version` para cortar acceso al instante, tokens cifrados con Keystore en la app. Falta aprobar formalmente la [decisión #1](DECISIONES-PENDIENTES.md). |
 | Validación de permisos, anti-IDOR | ✅ | RBAC + 404 fuera de alcance; falta documentarlo con pruebas explícitas. |
 | Consultas parametrizadas | ✅ | SQLAlchemy ORM. |
 | Rate limiting y bloqueo | ❌ | Por implementar. |
@@ -32,8 +32,8 @@ Estado a 2026-10-16. Los entregables nuevos se guardan en `docs/entrega/` (carpe
 
 | Elemento | Estado |
 |---|---|
-| Pruebas del backend | ✅ 43 pruebas con pytest contra Postgres real. |
-| Pruebas JVM de la app | ✅ 11 pruebas de dominio. |
+| Pruebas del backend | ✅ 68 pruebas con pytest contra Postgres real (31 son de autenticación). |
+| Pruebas JVM de la app | ✅ 33 pruebas (dominio, autenticador de tokens y sesión, con servidor falso). |
 | Pruebas de interfaz | ❌ Solo `ExampleInstrumentedTest`. |
 | Matriz de trazabilidad (ID, descripción, criterio, evidencia, resultado, estado) | ❌ Partir de [`REQUISITOS.md`](REQUISITOS.md). Debe ser honesta: lo no cumplido se marca como no cumplido. |
 

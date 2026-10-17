@@ -1,5 +1,7 @@
 # API: login con correo, contraseña y JWT
 
+> **Estado (2026-10-17): implementado** en la rama `feature/login-jwt` (API y app), sin subir. Diferencias con este diseño: la contraseña lleva de **9** a 128 caracteres (RNF01 dice "mayores a 8"); `POST /me/password` devuelve `200 TokenOut` y no 204, para que quien la cambia siga dentro; un código nuevo deja sin vigencia a los anteriores; y quien está de baja recibe `403 USER_INACTIVE` aunque su token ya no coincida. La referencia vigente es [`guarderia-api/app/modules/auth/README.md`](../../guarderia-api/app/modules/auth/README.md).
+
 El login propio reemplaza a Firebase Auth. La regla de la propuesta se queda: **el token dice quién eres y Postgres dice qué puedes hacer**. El JWT solo lleva el id de la persona; el rol, el alcance y si está activa se leen de la base en cada request, como ya hace `get_current_user`. Así, dar de baja a alguien corta su acceso en el siguiente request.
 
 La base es el [anexo de identidad del curso](https://startdroid.com/practicas/anexo-auth.html) (FastAPI + PostgreSQL), que la app de la práctica 6 ya sabe usar: mismas librerías, mismos tiempos y la misma rotación del refresh token. Lo que cambia para Codea es el primer acceso (código de invitación en lugar de registro abierto) y que el rol se lee de Postgres en lugar de ir en el token.

@@ -9,12 +9,12 @@ Documentos hermanos: [`REQUISITOS.md`](REQUISITOS.md) · [`ENTREGA-3.md`](ENTREG
 
 | Área | Avance | Hecho | Falta |
 |---|---|---|---|
-| Requisitos (30 % de la app) | ~53 % | 12 de 32 completos y 10 parciales | Ver [`REQUISITOS.md`](REQUISITOS.md) |
+| Requisitos (30 % de la app) | ~59 % | 15 de 32 completos y 8 parciales | Ver [`REQUISITOS.md`](REQUISITOS.md) |
 | App: docente | Alto | Check-in con GPS, rutina, reportes (escrito, dictado, foto), Mi sala, chat | Documentos y perfil (`ComingSoon`); tiempo real; sin conexión |
 | App: admin | Alto | Salas, docentes, infantes, padres, rutinas y catálogo de momentos, centro y avisos (publicar e historial) | Solicitudes de borrado, pagos, menú del día |
 | App: padre | Medio | Hoy, calendario, fotos, documentos, personas autorizadas, nota a la asistente | Chat, varios hijos, paginación de fotos, menú del día |
-| Backend | Medio-alto | 13 módulos, migraciones, seed, 43 pruebas | Login JWT (diseñado en `plan/04`), auditoría, resumen semanal, pagos, endurecimiento |
-| Seguridad | Bajo | RBAC, alcance por registro (404), ORM parametrizado, invitaciones | Login real, HTTPS, rate limiting, cabeceras, escaneo |
+| Backend | Alto | 13 módulos, migraciones, seed, 68 pruebas, login JWT | Auditoría, resumen semanal, pagos, endurecimiento |
+| Seguridad | Medio | RBAC, alcance por registro (404), ORM parametrizado, **login JWT** (Argon2id, refresh rotado con detección de reuso, baja que corta el acceso al instante), tokens cifrados con Keystore | HTTPS, rate limiting y bloqueo, cabeceras, escaneo ZAP, auditoría |
 | Sin conexión | Nulo | — | Room + WorkManager |
 | Infraestructura | Bajo | Docker Compose para desarrollo, base en Aiven configurable | Despliegue público con HTTPS, APK firmado, respaldos, monitoreo |
 | Documentación de la entrega | Bajo | READMEs técnicos (esta carpeta) | Matriz de trazabilidad, manuales, ética y legal, administración final, presentación |
@@ -29,8 +29,7 @@ Documentos hermanos: [`REQUISITOS.md`](REQUISITOS.md) · [`ENTREGA-3.md`](ENTREG
 
 | Tema | Detalle |
 |---|---|
-| Login falso | La app manda `Bearer dev:<correo>` y el rol se elige a mano (`CodeaApp.kt`, `ApiConfig.kt`). |
-| HTTP sin cifrar | `BASE_URL = http://10.0.2.2:8000/` y `usesCleartextTraffic="true"` en el manifiesto. |
+| HTTP sin cifrar | Solo en debug y solo a `10.0.2.2`/`localhost` (`network_security_config`); falta definir `API_BASE_URL_RELEASE` con HTTPS. |
 | Release sin firmar | `app/build.gradle.kts` tiene `optimization.enable = false` y no hay `signingConfig`. |
 | Repositorios en memoria olvidados | En `data/` quedan clases de la etapa sin backend (`ChildRepository`, `TeacherRepository`, …); ver [`app/src/main/java/mx/tec/codea/data/README.md`](../app/src/main/java/mx/tec/codea/data/README.md). |
 | Datos de ejemplo del padre | `ui/screens/parent/*SampleData.kt` siguen en el repo; las pantallas leen del `ParentViewModel`. |
@@ -38,7 +37,7 @@ Documentos hermanos: [`REQUISITOS.md`](REQUISITOS.md) · [`ENTREGA-3.md`](ENTREG
 | `CodeaNavHost.kt` | 849 líneas; todos los frentes lo tocan y genera conflictos de merge. |
 | Estado con `mutableStateOf` | `CodeaViewModel` y `ParentViewModel`; el marco pide StateFlow. |
 | Contraseñas por defecto | `guarderia-api/.env.example` trae valores de ejemplo; cambiarlos antes de desplegar. |
-| Pruebas de la app | Solo 11 pruebas JVM de dominio; casi no hay pruebas instrumentadas. |
+| Pruebas de la app | 33 pruebas JVM (dominio, autenticador de tokens y sesión); casi no hay pruebas instrumentadas. |
 
 ## Cómo se calculó el avance de requisitos
 

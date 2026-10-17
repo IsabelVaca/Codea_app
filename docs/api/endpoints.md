@@ -4,14 +4,14 @@ Lista sacada del código el 16 de octubre de 2026 (rama `backend`, commit `12da7
 
 Son **65 endpoints en 13 módulos**. El contrato exacto, con todos los campos, sigue siendo el OpenAPI: con la API prendida, `http://localhost:8000/docs`.
 
-Los cambios que vienen (login con JWT, etc.) no están aquí: están en [`../plan/05-api-plan.md`](../plan/05-api-plan.md).
+El login con JWT ya está en la rama `feature/login-jwt` (aquí lo reflejan las secciones *Cuenta* y la convención de autenticación). Lo que falta vive en [`../plan/05-api-plan.md`](../plan/05-api-plan.md).
 
 ## Convenciones
 
 | Tema | Cómo es hoy |
 | --- | --- |
 | Base | `http://localhost:8000/api/v1` (emulador: `http://10.0.2.2:8000/api/v1`) |
-| Autenticación | `Authorization: Bearer <token>`. Con `AUTH_MODE=firebase`, el ID token de Firebase; con `AUTH_MODE=dev` (solo `ENV=dev`), `dev:<correo>`. **Va a cambiar a JWT propio** ([plan](../plan/04-api-login-jwt.md)) |
+| Autenticación | `Authorization: Bearer <access_token>`: JWT de 5 minutos que devuelve `POST /auth/login`; se renueva con `POST /auth/refresh` (refresh token de 7 días, rotado en cada uso). Detalle en [`app/modules/auth/README.md`](../../guarderia-api/app/modules/auth/README.md) |
 | Roles | `ADMIN`, `TEACHER`, `PARENT`, los mismos del `enum Role` de la app. Una persona puede tener más de uno |
 | Alcance | Además del rol, cada consulta se filtra: el `PARENT` solo ve a sus hijos y el `TEACHER` solo a los niños de su sala. Fuera de alcance responde **404**, no 403 |
 | Ids | `int` para salas, niños, momentos, reportes, fotos, documentos, conversaciones y mensajes; `uuid` para personas (docentes, padres, usuarios) |
@@ -40,7 +40,15 @@ Errores comunes a todos los endpoints con sesión: `401 UNAUTHENTICATED` (sin to
 | Método | Ruta | Rol | Envía | Responde | Errores |
 | --- | --- | --- | --- | --- | --- |
 | GET | `/me` | Todos | — | `MeOut`: datos de la persona, `roles` y un bloque por rol: `admin {center}`, `teacher {classroom, is_primary, shift, center}`, `parent {children[]}` | — |
-| POST | `/auth/accept-invitation` | Token válido sin cuenta | — (el correo sale del token) | `MeOut` | `403 EMAIL_NOT_VERIFIED`, `INVITATION_REQUIRED`, `INVITATION_EXPIRED`, `USER_INACTIVE`; `409 ACCOUNT_ALREADY_LINKED` |
+| POST | `/auth/login` | Sin sesión | `{email, password}` | `TokenOut` | `401 INVALID_CREDENTIALS` (el mismo para correo desconocido y contraseña mal); `403 ACCOUNT_NOT_ACTIVATED`, `USER_INACTIVE` |
+| POST | `/auth/activate` | Sin sesión | `{email, code, password}`: el código lo da el administrador | `TokenOut` | `403 CODE_INVALID`, `CODE_EXPIRED`, `USER_INACTIVE`; `422 PASSWORD_TOO_SHORT` (mínimo 9), `PASSWORD_TOO_LONG` (máximo 128), `PASSWORD_IS_EMAIL` |
+| POST | `/auth/refresh` | Sin sesión | `{refresh_token}` | `TokenOut` sin `me` (el viejo deja de servir) | `401 REFRESH_INVALID` |
+| POST | `/auth/logout` | Sin sesión | `{refresh_token}` | 204 (también si ya no servía) | — |
+| POST | `/me/password` | Todos | `{current_password, new_password}` | `TokenOut`: cierra todas las sesiones y da tokens nuevos para esta | `403 PASSWORD_INCORRECT`; `422 PASSWORD_TOO_SHORT`, `PASSWORD_TOO_LONG`, `PASSWORD_IS_EMAIL` |
+| DELETE | `/me/sessions` | Todos | — | `{revoked}`: cierra todas mis sesiones | — |
+| POST | `/users/{id}/access-code` | `ADMIN` | — | 201 `{code, purpose, expires_at}`: `INVITATION` si la persona nunca entró, `PASSWORD_RESET` si ya entró | `404 USER_NOT_FOUND`; `409 USER_INACTIVE` |
+
+`TokenOut`: `{access_token, token_type, expires_in, refresh_token, refresh_expires_in, me?}`. Errores del token en cualquier endpoint: `401 UNAUTHENTICATED` (falta el encabezado), `TOKEN_EXPIRED` (la app renueva y repite) y `TOKEN_INVALID` (firma, tipo o `token_version` no coinciden: la app cierra sesión); `403 USER_INACTIVE` (de baja).
 
 `center` trae `latitude`, `longitude`, `check_in_radius_m` y `timezone` para el checador.
 
@@ -174,8 +182,8 @@ Participantes de una conversación: los padres ligados al niño y las docentes d
 | --- | --- | --- | --- | --- | --- |
 | GET | `/center` | `ADMIN` | — | `CenterOut`: `name`, `latitude`, `longitude`, `check_in_radius_m`, `timezone` | `409 CENTER_MISSING` |
 | PATCH | `/center` | `ADMIN` | `{name?, latitude?, longitude?, check_in_radius_m?, timezone?}` (solo cambia lo que se manda; latitud y longitud en `null` quitan la ubicación) | `CenterOut` | `422 LOCATION_INCOMPLETE`, `LOCATION_INVALID`, `RADIUS_INVALID`, `TIMEZONE_INVALID` |
-| POST | `/invitations` | `ADMIN` | `{name, surname?, phone, email, role}` | 201 `InvitationOut` | `409 EMAIL_TAKEN`, `ALREADY_HAS_ACCOUNT` |
-| GET | `/invitations?status=&role=` | `ADMIN` | — | `InvitationOut[]`: `status` (`PENDING`, `ACCEPTED`, `EXPIRED`), `expires_at`, `accepted_at` | — |
+| POST | `/invitations` | `ADMIN` | `{name, surname?, phone, email, role}` | 201 `InvitationOut` con `access_code {code, purpose, expires_at}` (se muestra una sola vez) | `409 EMAIL_TAKEN`, `ALREADY_HAS_ACCOUNT` |
+| GET | `/invitations?status=&role=` | `ADMIN` | — | `InvitationOut[]`: `status` (`PENDING`, `ACCEPTED` = código usado, `EXPIRED`), `expires_at`, `accepted_at` | — |
 
 ## Enums
 

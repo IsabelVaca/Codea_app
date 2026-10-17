@@ -3,7 +3,7 @@
 Catálogo tomado del tablero de Teams (buckets *Req. de CODEA*, *Req. base*, *Requisitos no funcionales* e *Historias de usuario*). Los requisitos valen el 30 % de la calificación de la aplicación.
 
 **Estado a 2026-10-16**, revisado leyendo el código; no se corrió la app. ✅ = existe en el código · 🟡 = parcial · ❌ = no existe.
-**Avance estimado: 12 ✅ + 10 🟡 + 10 ❌ de 32, es decir ~53 %** (los parciales cuentan medio). Actualizado el 2026-10-17 tras el pull que trajo avisos completos.
+**Avance estimado: 15 ✅ + 8 🟡 + 9 ❌ de 32, es decir ~59 %** (los parciales cuentan medio). Actualizado el 2026-10-17 con el login JWT (rama `feature/login-jwt`, sin subir).
 
 > Los planes y la referencia de endpoints que ya existían son la fuente para el *cómo*: [`plan/`](plan/README.md) (pantallas, conexión de la app, estado de la API, login con JWT), [`estilo.md`](estilo.md) (convenciones) y [`api/endpoints.md`](api/endpoints.md) (los 65 endpoints). Este archivo solo dice qué requisito cubre cada cosa.
 
@@ -21,7 +21,7 @@ Catálogo tomado del tablero de Teams (buckets *Req. de CODEA*, *Req. base*, *Re
 
 | ID | Requisito | Estado | Evidencia / qué falta |
 |---|---|---|---|
-| RF-01 | Acceso con dos tipos de perfil | 🟡 | Los roles existen en la API (`require_role`). La app solo elige el rol en una pantalla (`RoleSelectionScreen`) y manda `Bearer dev:<correo>`. El login con JWT ya está **diseñado** en [`plan/04-api-login-jwt.md`](plan/04-api-login-jwt.md); falta implementarlo. |
+| RF-01 | Acceso con dos tipos de perfil | ✅ | Login con correo y contraseña (JWT) en `guarderia-api` y en la app (`ui/screens/auth/`); el rol sale de `GET /me`. Probado en el emulador con los tres roles. Rama `feature/login-jwt`. |
 | RF-02 | Lista de niños de la sala | ✅ | `GET /classrooms/{id}/children` y `MyRoomScreen`. |
 | RF-03 | Registro de entrada y salida | 🟡 | Solo hay asistencia `PRESENT`/`ABSENT` por día (`PUT /attendance/{child_id}`). No hay hora de entrada ni de salida. |
 | RF-04 | Bitácora del día | ✅ | Rutina por momentos, reportes, `daily-entries`, `GET /children/{id}/day`. |
@@ -40,9 +40,9 @@ Catálogo tomado del tablero de Teams (buckets *Req. de CODEA*, *Req. base*, *Re
 
 | ID | Requisito | Estado | Evidencia / qué falta |
 |---|---|---|---|
-| RNF01 | Contraseñas de más de 8 caracteres | ❌ | No hay login propio. Depende de la [decisión #1](DECISIONES-PENDIENTES.md). |
+| RNF01 | Contraseñas de más de 8 caracteres | ✅ | Mínimo 9 y máximo 128, en la app (`AuthValidator`) y en la API (`rules.check_password`); 8 no pasa. Probado en ambos lados. |
 | RNF02 | Control de acceso por roles (RBAC) | ✅ | `require_role` + permisos por registro. |
-| RNF03 | Contraseñas almacenadas como hash | 🟡 | No se guardan contraseñas propias. Con JWT propio habrá que hashearlas (bcrypt/argon2). |
+| RNF03 | Contraseñas almacenadas como hash | ✅ | Argon2id (`pwdlib`) en `app_user.password_hash`; los refresh tokens y los códigos de acceso solo se guardan como SHA-256. |
 | RNF04 | Disponibilidad del 99 % | ❌ | No hay despliegue ni monitoreo. Existen `/health/live` y `/health/ready`. |
 | RNF05 | Consultas de fotos en menos de 4 s | 🟡 | URLs firmadas y paginación por cursor. Nadie lo ha medido. |
 | RNF06 | Segundo plano mínimo y respetando ahorro de energía | ✅ | La app no usa trabajo en segundo plano todavía. Al agregar WorkManager, respetar restricciones del sistema. |
@@ -67,7 +67,7 @@ Buckets *Mejoras SF* y *\*extras* del tablero: notificaciones, imprimir/descarga
 
 | Hueco | Camino |
 |---|---|
-| Login y RNF01/03 | Seguir [`plan/04-api-login-jwt.md`](plan/04-api-login-jwt.md) (Argon2id, access de 5 min, refresh rotado) y [`plan/02-app-plan-tecnico.md`](plan/02-app-plan-tecnico.md) para la sesión en la app. |
+| ~~Login y RNF01/03~~ | **Hecho** (rama `feature/login-jwt`). |
 | Sin conexión | Room como caché local + WorkManager, como en [`estilo.md`](estilo.md); empezar por asistencia y reportes. |
 | Avisos con imágenes (HN5) | Agregar `media_id` al aviso; el resto de avisos ya está. |
 | Auditoría | Tabla `audit_log` escrita desde los `service.py`. |

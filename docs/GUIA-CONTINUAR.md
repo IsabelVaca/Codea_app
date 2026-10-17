@@ -7,7 +7,7 @@ Ya existían y **son la referencia para el cómo** (no los dupliques): [`estilo.
 ## 1. Reglas que no se negocian
 
 1. **El marco técnico es el de <https://startdroid.pages.dev/>.** Nada fuera de esa lista sin aprobación; se anota en [`DECISIONES-PENDIENTES.md`](DECISIONES-PENDIENTES.md).
-2. **Firebase está excluido** para notificaciones y tiempo real, y el login con Firebase se va a reemplazar por JWT propio (diseño en `plan/04-api-login-jwt.md`). No agregues más uso de Firebase.
+2. **Firebase está excluido** para notificaciones y tiempo real. El login ya es propio (JWT, rama `feature/login-jwt`); no agregues más uso de Firebase.
 3. Texto de la interfaz en español; comentarios del código en inglés en lo que ya existe (los más recientes están en español: sigue el estilo del archivo vecino).
 4. Dependencias en un solo sentido: `ui/screens` → `ui/state` → `data` → `domain`. `domain/` no importa Android.
 5. La API repite las reglas de `domain/` (`guarderia-api/app/core/rules.py`): si cambias una regla, cámbiala en los dos lados y en sus pruebas.
@@ -22,7 +22,13 @@ docker compose up -d --build
 docker compose exec api alembic upgrade head
 docker compose exec api python -m app.seed
 ```
-API en `http://localhost:8000/api/v1`, Swagger en `/docs`. En Swagger, **Authorize** acepta `dev:<correo>`; correos del seed: `admin@oruga.test`, `karla.robles@oruga.test` (docente), `laura.iglesias@oruga.test` (madre).
+API en `http://localhost:8000/api/v1`, Swagger en `/docs`.
+
+**Antes de arrancar**, `guarderia-api/.env` necesita `JWT_SECRET` (mínimo 32 caracteres; la API no arranca sin él): `python3 -c "import secrets; print(secrets.token_urlsafe(48))"`.
+
+**Entrar:** el seed deja a todos con la contraseña `codea1234` (`SEED_PASSWORD`). Correos: `admin@oruga.test`, `karla.robles@oruga.test` (docente), `laura.iglesias@oruga.test` (madre). En Swagger haz `POST /auth/login`, copia el `access_token` y pégalo en **Authorize** (dura 5 minutos). En la app, esos mismos correo y contraseña en la pantalla de inicio de sesión.
+
+**Personas nuevas:** el admin las da de alta, la app muestra un **código de acceso** (`XXXX-XXXX`, solo se ve una vez) y la persona lo usa en "Es mi primera vez: activar mi cuenta".
 
 **App**
 ```bash
