@@ -76,3 +76,12 @@ Cada módulo de `app/modules/` separa `router.py` (HTTP y rol), `service.py` (re
 - `pagination.py`: paginación por cursor
 
 Cada cambio al modelo lleva su migración: `alembic revision --autogenerate -m "..."`, y se revisa antes de aplicarla.
+
+## Documentación por carpeta
+
+- Estado y pendientes del backend: [`PENDIENTES.md`](PENDIENTES.md)
+- Índice de módulos, cada uno con su README: [`app/modules/README.md`](app/modules/README.md)
+- Lo compartido: [`app/core/README.md`](app/core/README.md) · pruebas: [`tests/README.md`](tests/README.md) · migraciones: [`migrations/README.md`](migrations/README.md)
+- Marco técnico (solo lo de startdroid) y estado general: [`../docs/MARCO-TECNICO.md`](../docs/MARCO-TECNICO.md), [`../docs/ESTADO.md`](../docs/ESTADO.md)
+
+> Nota: este README menciona `docs/api/endpoints-api-codea.pdf`, que no existe en el repo, y que `AUTH_MODE=firebase` es el modo real. Ambos puntos están pendientes (ver `PENDIENTES.md`).

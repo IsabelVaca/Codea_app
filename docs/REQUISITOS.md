@@ -1,0 +1,75 @@
+# Requisitos y su estado
+
+Catálogo tomado del tablero de Teams (buckets *Req. de CODEA*, *Req. base*, *Requisitos no funcionales* e *Historias de usuario*). Los requisitos valen el 30 % de la calificación de la aplicación.
+
+**Estado a 2026-10-16**, revisado leyendo el código; no se corrió la app. ✅ = existe en el código · 🟡 = parcial · ❌ = no existe.
+**Avance estimado: 12 ✅ + 10 🟡 + 10 ❌ de 32, es decir ~53 %** (los parciales cuentan medio). Actualizado el 2026-10-17 tras el pull que trajo avisos completos.
+
+> Los planes y la referencia de endpoints que ya existían son la fuente para el *cómo*: [`plan/`](plan/README.md) (pantallas, conexión de la app, estado de la API, login con JWT), [`estilo.md`](estilo.md) (convenciones) y [`api/endpoints.md`](api/endpoints.md) (los 65 endpoints). Este archivo solo dice qué requisito cubre cada cosa.
+
+## Requisitos del cliente (CRF)
+
+| ID | Requisito | Estado | Evidencia / qué falta |
+|---|---|---|---|
+| CRF-01 | Bitácora de pagos por infante | ❌ | No hay tabla, endpoint ni pantalla. Hacer: módulo `payments` en el backend (`models`, `schemas`, `service`, `router`, migración, pruebas) y pantalla de admin en `ui/screens/admin/`. |
+| CRF-02 | Administración de perfiles y salas | ✅ | Backend: módulos `classrooms`, `teachers`, `children`, `parents`. App: `ui/screens/admin/*`. |
+| CRF-03 | Calendario de eventos y citas | 🟡 | El calendario del padre muestra asistencia del mes (`GET /children/{id}/attendance`). No existe el modelo de eventos ni de citas. |
+| CRF-04 | Dictado de registro y consulta con IA | 🟡 | **Dictado a texto sí**: `rememberDictation` (en `ui/components/DeviceLaunchers.kt`) usa `RecognizerIntent` del sistema para llenar el reporte. **Consulta con IA no existe.** Ver [decisión #10](DECISIONES-PENDIENTES.md). |
+| CRF-05 | Checador para docentes | ✅ | `staff_attendance` (GPS, radio, retardo, aviso a coordinación) y `CheckerScreen`. El mapa usa Google Maps ([decisión #3](DECISIONES-PENDIENTES.md)). |
+
+## Requisitos base (RF)
+
+| ID | Requisito | Estado | Evidencia / qué falta |
+|---|---|---|---|
+| RF-01 | Acceso con dos tipos de perfil | 🟡 | Los roles existen en la API (`require_role`). La app solo elige el rol en una pantalla (`RoleSelectionScreen`) y manda `Bearer dev:<correo>`. El login con JWT ya está **diseñado** en [`plan/04-api-login-jwt.md`](plan/04-api-login-jwt.md); falta implementarlo. |
+| RF-02 | Lista de niños de la sala | ✅ | `GET /classrooms/{id}/children` y `MyRoomScreen`. |
+| RF-03 | Registro de entrada y salida | 🟡 | Solo hay asistencia `PRESENT`/`ABSENT` por día (`PUT /attendance/{child_id}`). No hay hora de entrada ni de salida. |
+| RF-04 | Bitácora del día | ✅ | Rutina por momentos, reportes, `daily-entries`, `GET /children/{id}/day`. |
+| RF-05 | Registro para varios niños a la vez | ✅ | `report_child` (muchos a muchos) y `SelectStudentsScreen`. |
+| RF-06 | Vista del familiar | ✅ | `ui/screens/parent/*` (Hoy, Calendario, Fotos, Documentos). |
+| RF-07 | Cada familia ve solo a sus hijos | ✅ | `can_see_child` / `get_child_in_scope` en `core/security.py`; fuera de alcance responde 404. |
+| RF-08 | Avisos del centro | ✅ | `POST` y `GET /announcements` (con alcance por rol). El admin publica y ve el historial en Centro; la docente los lee en Menú → Avisos (`AvisosFundacionScreen`); el padre, en la campana de Hoy. Limitación: el estado de "leído" vive solo en el teléfono (`LeidosStore`). |
+| RF-09 | Fotografía de la actividad | ✅ | `media` (URL firmada), `MediaUploader`, reportes con `media_id`. La cámara usa `TakePicturePreview` (miniatura; ver nota en `ui/components/README.md`). |
+| RF-10 | La familia puede pedir que se borre una foto | 🟡 | `POST /media/{id}/deletion-request` y botón en la pantalla de fotos del padre. Falta que el admin las revise (endpoint y pantalla). |
+| RF-11 | Funciona sin internet | ❌ | No hay Room, DataStore ni WorkManager. |
+| RF-12 | Resumen semanal | ❌ | Solo existe `daily_summary` (diario). |
+| RF-13 | Desbloqueo con huella | ❌ | No hay `BiometricPrompt` ([decisión #4](DECISIONES-PENDIENTES.md)). |
+| RF-14 | Registro de quién hizo qué | 🟡 | Hay columnas `created_by`/`marked_by`/`recorded_by` en algunas tablas. No hay bitácora de auditoría. |
+
+## Requisitos no funcionales (RNF)
+
+| ID | Requisito | Estado | Evidencia / qué falta |
+|---|---|---|---|
+| RNF01 | Contraseñas de más de 8 caracteres | ❌ | No hay login propio. Depende de la [decisión #1](DECISIONES-PENDIENTES.md). |
+| RNF02 | Control de acceso por roles (RBAC) | ✅ | `require_role` + permisos por registro. |
+| RNF03 | Contraseñas almacenadas como hash | 🟡 | No se guardan contraseñas propias. Con JWT propio habrá que hashearlas (bcrypt/argon2). |
+| RNF04 | Disponibilidad del 99 % | ❌ | No hay despliegue ni monitoreo. Existen `/health/live` y `/health/ready`. |
+| RNF05 | Consultas de fotos en menos de 4 s | 🟡 | URLs firmadas y paginación por cursor. Nadie lo ha medido. |
+| RNF06 | Segundo plano mínimo y respetando ahorro de energía | ✅ | La app no usa trabajo en segundo plano todavía. Al agregar WorkManager, respetar restricciones del sistema. |
+| RNF07 | Funciones principales sin conexión | ❌ | Igual que RF-11. |
+| RNF08 | Código con Jetpack Compose (Kotlin) | ✅ | |
+
+## Historias de usuario (HN)
+
+| ID | Historia | Estado | Evidencia / qué falta |
+|---|---|---|---|
+| HN1 | Imprimir reportes para coordinación | ❌ | Exportar a PDF o usar `PrintManager`. |
+| HN2 | Asistente ve la llegada de los padres | ❌ | Sin modelo ni pantalla. |
+| HN3 | Padre ve el menú del día | ❌ | `MenuScreen` es el menú de navegación de la docente, no el de comida. |
+| HN4 | Padre ve a varios hijos en la misma app | 🟡 | El modelo (`parent_child_rel`) lo permite; `ParentViewModel` usa solo el primer hijo. |
+| HN5 | Avisos por grupo y a todos con imágenes | 🟡 | Por sala o a todo el centro, ya con menú desplegable en la app. **No encontré soporte de imágenes** en los avisos. |
+
+## Fuera de las listas anteriores
+
+Buckets *Mejoras SF* y *\*extras* del tablero: notificaciones, imprimir/descargar bitácoras, llegada de padres, menú del día para admin, diseño para varios hijos, avisos por grupo con fotos, bloquear capturas, objetos perdidos. Ninguno está hecho, salvo lo ya contado arriba.
+
+## Cómo cerrar cada hueco dentro del marco
+
+| Hueco | Camino |
+|---|---|
+| Login y RNF01/03 | Seguir [`plan/04-api-login-jwt.md`](plan/04-api-login-jwt.md) (Argon2id, access de 5 min, refresh rotado) y [`plan/02-app-plan-tecnico.md`](plan/02-app-plan-tecnico.md) para la sesión en la app. |
+| Sin conexión | Room como caché local + WorkManager, como en [`estilo.md`](estilo.md); empezar por asistencia y reportes. |
+| Avisos con imágenes (HN5) | Agregar `media_id` al aviso; el resto de avisos ya está. |
+| Auditoría | Tabla `audit_log` escrita desde los `service.py`. |
+| Resumen semanal | Endpoint que agrega `daily_summary` por semana. |
+| Tiempo real del chat | Hoy se consulta con `?after=`; el marco permite SSE o WebSocket. |

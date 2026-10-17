@@ -1,5 +1,19 @@
 # Documentación de Codea
 
+## Índice
+
+| Documento | Para qué sirve |
+|---|---|
+| [`GUIA-CONTINUAR.md`](GUIA-CONTINUAR.md) | Empieza aquí: cómo levantar todo, mapa del repo y trampas |
+| [`ESTADO.md`](ESTADO.md) | Qué está hecho y qué falta por área |
+| [`REQUISITOS.md`](REQUISITOS.md) | Los 32 requisitos y su estado |
+| [`MARCO-TECNICO.md`](MARCO-TECNICO.md) | Qué tecnologías se permiten (startdroid) y cómo está el proyecto frente a eso |
+| [`DECISIONES-PENDIENTES.md`](DECISIONES-PENDIENTES.md) | Excepciones al marco que esperan aprobación |
+| [`ENTREGA-3.md`](ENTREGA-3.md) | Checklist de la rúbrica final |
+| [`PLAN.md`](PLAN.md) | Plan del 16 al 22 de octubre |
+
+> La sección de prototipos de abajo es de la primera etapa. La tabla "Estado" de las pantallas está desactualizada: por ejemplo, Chats ya envía mensajes por la API y el Menú ya no es solo de muestra. Para el estado real ve [`ESTADO.md`](ESTADO.md).
+
 ## Prototipos
 
 Maquetas HTML de diseño. Son de referencia visual: las pantallas de la app se arman copiando su diseño y sus textos.
@@ -44,7 +58,7 @@ El contrato vivo es el OpenAPI que genera FastAPI: con la API prendida, ábrelo 
 
 ## Estructura del código
 
-Sigue la de las prácticas del curso: `domain/` (reglas en Kotlin puro), `data/` (repositorios en memoria), `ui/state/` (ViewModels), `ui/screens/` (pantallas que solo dibujan), `ui/components/` y `ui/navigation/`. Las reglas del dominio tienen pruebas en `app/src/test/java/mx/tec/codea/domain/` (`./gradlew test`).
+Sigue la de las prácticas del curso: `domain/` (reglas en Kotlin puro), `data/` (repositorios que llaman a la API; quedan algunos en memoria de la etapa anterior), `ui/state/` (ViewModels), `ui/screens/` (pantallas que solo dibujan), `ui/components/` y `ui/navigation/`. Las reglas del dominio tienen pruebas en `app/src/test/java/mx/tec/codea/domain/` (`./gradlew test`).
 
 ## Google Maps
 
