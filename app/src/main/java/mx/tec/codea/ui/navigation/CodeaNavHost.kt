@@ -444,7 +444,6 @@ fun CodeaNavHost(
                     destinoSalaId = centroViewModel.destinoSalaId,
                     onDestinoChange = centroViewModel::onDestinoChange,
                     avisos = avisos,
-                    onCuentaClick = { navController.navigate(AccountRoute) },
                     solicitudesBorrado = pendientesBorrado,
                     onSolicitudesBorradoClick = { navController.navigate(AdminSolicitudesBorradoRoute) },
                     onSalaClick = { sala ->

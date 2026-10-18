@@ -19,4 +19,4 @@ Pestañas: **Centro, Docentes, Familias, Ajustes**. Cada una tiene su ViewModel 
 - **Imprimir o descargar bitácoras** (HN1).
 - **Enviar el código por correo** (tarea abierta): hoy el admin lo ve en pantalla y lo comparte (WhatsApp, en persona); no se manda ningún correo. Tampoco hay botón para generar un código de recuperación de contraseña a alguien que ya entró (`POST /users/{id}/access-code`).
 - **Arrastrar para ordenar** (`OrdenRutinaScreen`) depende de la librería `reorderable`, fuera del marco ([decisión #8](../../../../../../../../../../docs/DECISIONES-PENDIENTES.md)).
-- **Acceso:** estas pantallas piden datos solo si `ApiConfig.isAdmin`, que `CodeaApp` fija con el rol de la sesión (`GET /me`). El avatar de **Centro** y la opción «Mi cuenta» de **Ajustes** abren Mi cuenta.
+- **Acceso:** estas pantallas piden datos solo si `ApiConfig.isAdmin`, que `CodeaApp` fija con el rol de la sesión (`GET /me`). Mi cuenta (perfil, contraseña y cerrar sesión) se abre solo desde **Ajustes**.

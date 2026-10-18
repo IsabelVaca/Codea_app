@@ -76,7 +76,6 @@ fun CentroScreen(
     destinoSalaId: String? = null,           // null = todas las salas
     onDestinoChange: (String?) -> Unit = {},
     avisos: List<Aviso> = emptyList(),       // el historial, el más reciente primero
-    onCuentaClick: () -> Unit = {},          // abre Mi cuenta (cambiar contraseña y cerrar sesión)
     solicitudesBorrado: Int = 0,             // fotos que las familias piden borrar y esperan decisión
     onSolicitudesBorradoClick: () -> Unit = {},
 ) {
@@ -84,14 +83,7 @@ fun CentroScreen(
     val destino = salas.firstOrNull { it.id == destinoSalaId }
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Centro", fontWeight = FontWeight.Bold) },
-                actions = {
-                    IconButton(onClick = onCuentaClick) {
-                        Icon(Icons.Filled.Person, contentDescription = "Mi cuenta")
-                    }
-                },
-            )
+            TopAppBar(title = { Text("Centro", fontWeight = FontWeight.Bold) })
         },
         content = { paddingValues ->
     Column(

@@ -18,7 +18,7 @@
 
 Las pestañas exactas salen de `TopLevelDestination.kt`: ahí es donde se agregan o se quitan.
 
-**Mi cuenta** (`AccountRoute`) cuelga del `NavHost` y no de una pestaña: la abren el avatar de **Centro** (admin), el botón junto a la campana de **Hoy** (padre) y **Menú → Mi perfil** (docente).
+**Mi cuenta** (`AccountRoute`) cuelga del `NavHost` y no de una pestaña: la abre **Ajustes → Mi cuenta** (admin), el botón junto a la campana de **Hoy** (padre) y **Menú → Mi perfil** (docente).
 
 ## Cómo agregar una pantalla
 
