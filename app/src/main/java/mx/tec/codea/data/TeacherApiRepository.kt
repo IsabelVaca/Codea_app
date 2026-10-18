@@ -7,22 +7,20 @@ import mx.tec.codea.data.api.ApiClient
 import mx.tec.codea.data.api.AttendanceBody
 import mx.tec.codea.data.api.CheckInBody
 import mx.tec.codea.data.api.CheckInDto
+import mx.tec.codea.data.api.DailyEntryBody
+import mx.tec.codea.data.api.DayDto
 import mx.tec.codea.data.api.MeDto
-import mx.tec.codea.data.api.MessageBody
-import mx.tec.codea.data.api.MessageDto
 import mx.tec.codea.data.api.NotifyBody
 import mx.tec.codea.data.api.ReportBody
 import mx.tec.codea.data.api.RoomChildDto
 import mx.tec.codea.data.api.RoutineDto
 import mx.tec.codea.domain.AttendanceStatus
-import mx.tec.codea.domain.ChatMessage
 import mx.tec.codea.domain.CheckInRecord
 import mx.tec.codea.domain.Child
 import mx.tec.codea.domain.Report
 import mx.tec.codea.domain.Routine
 import mx.tec.codea.domain.Subprocess
 import mx.tec.codea.domain.SubprocessStatus
-import java.util.UUID
 
 // todo lo que la docente pide o manda a la API.
 class TeacherApiRepository {
@@ -40,6 +38,10 @@ class TeacherApiRepository {
         return ApiClient.json.decodeFromJsonElement(CheckInDto.serializer(), el).toRecord()
     }
 
+    // la salida del día: la API pide haber registrado la entrada y estar dentro del radio.
+    suspend fun checkOut(latitude: Double, longitude: Double): CheckInRecord =
+        api.checkOut(CheckInBody(latitude, longitude)).toRecord()
+
     suspend fun checkIn(latitude: Double, longitude: Double, lateReason: String): CheckInRecord =
         api.checkIn(
             CheckInBody(latitude, longitude, lateReason.trim().ifBlank { null })
@@ -52,6 +54,13 @@ class TeacherApiRepository {
     // ----- mi sala -----
 
     suspend fun roomChildren(classroomId: Int): List<RoomChildDto> = api.roomChildren(classroomId)
+
+    // el resumen de hoy del niño (lo que ya se capturó) y las notas de la familia.
+    suspend fun day(childId: Int): DayDto = api.childDay(childId, null)
+
+    suspend fun saveDailyEntry(childId: Int, body: DailyEntryBody) {
+        api.saveDailyEntry(childId, body)
+    }
 
     suspend fun setAttendance(childId: String, status: AttendanceStatus) {
         api.setAttendance(childId.toInt(), AttendanceBody(status.name))
@@ -77,21 +86,6 @@ class TeacherApiRepository {
             )
         )
     }
-
-    // ----- chat -----
-
-    // la API los manda del más nuevo al más viejo; la pantalla los quiere en orden.
-    suspend fun messages(conversationId: Int): List<ChatMessage> =
-        api.messages(conversationId, 100).items.reversed().map { it.toChatMessage() }
-
-    suspend fun markRead(conversationId: Int) {
-        api.markRead(conversationId)
-    }
-
-    // el client_id evita que un reintento duplique el mensaje.
-    suspend fun sendMessage(conversationId: Int, text: String) {
-        api.sendMessage(conversationId, MessageBody(text.trim(), UUID.randomUUID().toString()))
-    }
 }
 
 private fun CheckInDto.toRecord() = CheckInRecord(
@@ -99,13 +93,7 @@ private fun CheckInDto.toRecord() = CheckInRecord(
     placeName = placeName,
     minutesLate = minutesLate,
     lateReason = lateReason ?: "",
-)
-
-private fun MessageDto.toChatMessage() = ChatMessage(
-    text = text,
-    time = clockOf(createdAt) ?: "",
-    isFromTeacher = isMine,
-    isRead = isRead,
+    departureMinutes = minutesOfDay(checkedOutAt),
 )
 
 // de lo que manda la API a lo que entiende la app.
@@ -114,6 +102,7 @@ fun RoomChildDto.toChild() = Child(
     name = fullName,
     attendance = if (attendance == "ABSENT") AttendanceStatus.ABSENT else AttendanceStatus.PRESENT,
     hasUnreadChat = hasUnreadChat,
+    hasNoteToday = hasNoteToday,
 )
 
 fun RoutineDto.toRoutine() = Routine(

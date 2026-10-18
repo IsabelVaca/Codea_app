@@ -8,7 +8,7 @@ from .models import CheckInStatus, CoordinationReason
 
 
 class CheckInIn(BaseModel):
-    """Solo la ubicación del teléfono. La hora, la distancia y el estado los calcula la API."""
+    """Solo la ubicación del teléfono (sirve igual para la entrada y la salida). La hora, la distancia y el estado los calcula la API."""
 
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
@@ -27,6 +27,8 @@ class CheckInOut(BaseModel):
     distance_m: int
     allowed_radius_m: int
     place_name: str
+    # null hasta que la docente registra su salida (POST /staff-attendance/check-out).
+    checked_out_at: datetime | None = None
 
 
 class NotifyIn(BaseModel):

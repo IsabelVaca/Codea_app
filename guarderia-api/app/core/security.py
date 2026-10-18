@@ -1,38 +1,26 @@
-import logging
 import uuid
 from dataclasses import dataclass
 from typing import Annotated
 
 from fastapi import Depends
-from fastapi.concurrency import run_in_threadpool
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from app.modules.admins.models import Admin
-from app.modules.auth.models import AppUser, Role, UserStatus
+from app.modules.auth.models import AppUser, RefreshToken, Role, UserStatus
 from app.modules.children.models import Child
 from app.modules.parents.models import Parent, ParentChildRel
 from app.modules.teachers.models import Teacher
 
-from .config import settings
+from . import clock
 from .db import Db
 from .errors import ApiError
+from .tokens import decode_access_token
 
-log = logging.getLogger(__name__)
+# El token dice quién eres; la API dice qué puedes hacer.
+# El JWT solo lleva el id de la persona: el rol y lo que cada quien puede ver salen de Postgres en cada petición.
 
-# Firebase dice quién eres; la API dice qué puedes hacer.
-# El token de Firebase solo prueba la identidad: el rol y lo que cada quien puede ver salen de Postgres.
-
-bearer = HTTPBearer(auto_error=False, description="ID token de Firebase (o dev:<correo> en desarrollo)")
-
-
-@dataclass(frozen=True)
-class Identity:
-    """Lo que dice el token: quién es, aunque todavía no tenga cuenta en la guardería."""
-
-    uid: str
-    email: str | None
-    email_verified: bool
+bearer = HTTPBearer(auto_error=False, description="access_token que devuelve POST /auth/login")
 
 
 @dataclass(frozen=True)
@@ -60,42 +48,25 @@ class CurrentUser:
         return roles
 
 
-def _verify_firebase(token: str) -> dict:
-    from firebase_admin import auth
-
-    return auth.verify_id_token(token)
-
-
-async def get_identity(credentials: HTTPAuthorizationCredentials | None = Depends(bearer)) -> Identity:
+async def get_current_user(
+    db: Db, credentials: HTTPAuthorizationCredentials | None = Depends(bearer)
+) -> CurrentUser:
     if credentials is None:
         raise ApiError(401, "UNAUTHENTICATED", "Falta el token de acceso")
-    token = credentials.credentials
-
-    if settings.auth_mode == "dev":
-        # solo en desarrollo: "dev:<correo>" se hace pasar por esa persona.
-        if not token.startswith("dev:") or "@" not in token:
-            raise ApiError(401, "TOKEN_INVALID", "El token no es válido", "En modo dev usa Bearer dev:<correo>")
-        email = token.removeprefix("dev:").strip().lower()
-        return Identity(uid=f"dev:{email}", email=email, email_verified=True)
-
+    payload = decode_access_token(credentials.credentials)
     try:
-        claims = await run_in_threadpool(_verify_firebase, token)
-    except Exception:
-        raise ApiError(401, "TOKEN_INVALID", "El token no es válido o ya expiró")
-    email = claims.get("email")
-    return Identity(
-        uid=claims["uid"],
-        email=email.lower() if email else None,
-        email_verified=bool(claims.get("email_verified")),
-    )
-
-
-async def get_current_user(db: Db, identity: Identity = Depends(get_identity)) -> CurrentUser:
-    user = await db.scalar(select(AppUser).where(AppUser.firebase_uid == identity.uid))
+        user_id = uuid.UUID(payload["sub"])
+    except ValueError:
+        raise ApiError(401, "TOKEN_INVALID", "El token no es válido")
+    user = await db.get(AppUser, user_id)
     if user is None:
-        raise ApiError(403, "INVITATION_REQUIRED", "Tu cuenta no tiene acceso; pide tu invitación en la dirección")
+        raise ApiError(401, "TOKEN_INVALID", "El token no es válido")
+    # primero el estado: quien está de baja ve un mensaje claro aunque su token ya no coincida.
     if user.status != UserStatus.ACTIVE:
         raise ApiError(403, "USER_INACTIVE", "Tu acceso a la app está desactivado")
+    # versión distinta = la persona cambió su contraseña (o la dieron de baja y la reactivaron) después de emitir el token.
+    if user.token_version != payload["tv"]:
+        raise ApiError(401, "TOKEN_INVALID", "El token no es válido")
     return await load_current_user(db, user)
 
 
@@ -166,13 +137,13 @@ def ensure_classroom_access(current: CurrentUser, classroom_id: int) -> None:
     raise ApiError(404, "CLASSROOM_NOT_FOUND", "No existe esa sala")
 
 
-def revoke_sessions(firebase_uid: str | None) -> None:
-    """Cierra las sesiones de Firebase de alguien dado de baja. Si no hay credenciales, solo lo anota."""
-    if not firebase_uid or settings.auth_mode != "firebase" or not settings.firebase_credentials:
-        return
-    try:
-        from firebase_admin import auth
-
-        auth.revoke_refresh_tokens(firebase_uid)
-    except Exception:
-        log.exception("no se pudieron revocar las sesiones de %s", firebase_uid)
+async def revoke_all_sessions(db: Db, user: AppUser) -> int:
+    """Cierra todas las sesiones de una persona: los access tokens vivos dejan de servir (token_version)
+    y los refresh tokens quedan revocados. No hace commit: lo hace quien la llama."""
+    user.token_version += 1
+    result = await db.execute(
+        update(RefreshToken)
+        .where(RefreshToken.user_id == user.id, RefreshToken.revoked_at.is_(None))
+        .values(revoked_at=clock.now())
+    )
+    return result.rowcount or 0

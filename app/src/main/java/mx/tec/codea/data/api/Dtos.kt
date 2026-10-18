@@ -52,6 +52,8 @@ data class TeacherDto(
     val active: Boolean = true,
     @SerialName("has_account") val hasAccount: Boolean = false,
     @SerialName("children_count") val childrenCount: Int = 0,
+    // solo al dar de alta: el código para que la docente active su cuenta.
+    @SerialName("access_code") val accessCode: AccessCodeDto? = null,
 )
 
 @Serializable
@@ -78,6 +80,8 @@ data class ParentDto(
     @SerialName("child_ids") val childIds: List<Int> = emptyList(),
     @SerialName("has_access") val hasAccess: Boolean = true,
     @SerialName("has_account") val hasAccount: Boolean = false,
+    // solo al dar de alta o reenviar: el código para que el padre active su cuenta.
+    @SerialName("access_code") val accessCode: AccessCodeDto? = null,
 )
 
 // ---------- lo que manda la app ----------

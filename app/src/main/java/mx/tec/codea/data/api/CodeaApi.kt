@@ -29,6 +29,23 @@ interface CodeaApi {
     @DELETE("classrooms/{id}")
     suspend fun deleteClassroom(@Path("id") id: Int)
 
+    // ----- centro (solo admin) -----
+    @GET("center")
+    suspend fun center(): CenterDto
+
+    @PATCH("center")
+    suspend fun updateCenter(@Body body: CenterUpdateBody): CenterDto
+
+    // ----- solicitudes de borrado de fotos (solo admin) -----
+    @GET("media/deletion-requests")
+    suspend fun deletionRequests(@Query("status") status: String = "PENDING"): List<DeletionReviewDto>
+
+    @POST("media/deletion-requests/{id}/approve")
+    suspend fun approveDeletion(@Path("id") id: Int, @Body body: DecisionBody = DecisionBody()): DeletionReviewDto
+
+    @POST("media/deletion-requests/{id}/reject")
+    suspend fun rejectDeletion(@Path("id") id: Int, @Body body: DecisionBody = DecisionBody()): DeletionReviewDto
+
     // ----- plantillas de rutina (solo admin) -----
     @GET("routine-templates")
     suspend fun routineTemplates(): List<TemplateDto>
@@ -97,6 +114,10 @@ interface CodeaApi {
     @GET("me")
     suspend fun me(): MeDto
 
+    // cambia la contraseña y regresa tokens nuevos: la API cierra todas las sesiones, también esta.
+    @POST("me/password")
+    suspend fun changePassword(@Body body: ChangePasswordBody): TokenDto
+
     // ----- mi sala -----
     @GET("classrooms/{id}/children")
     suspend fun roomChildren(@Path("id") id: Int): List<RoomChildDto>
@@ -122,12 +143,23 @@ interface CodeaApi {
     @POST("staff-attendance/check-in")
     suspend fun checkIn(@Body body: CheckInBody): CheckInDto
 
+    @POST("staff-attendance/check-out")
+    suspend fun checkOut(@Body body: CheckInBody): CheckInDto
+
     @POST("staff-attendance/notify-coordination")
     suspend fun notifyCoordination(@Body body: NotifyBody)
 
     // ----- chat -----
+    @GET("conversations")
+    suspend fun conversations(): List<ConversationDto>
+
+    // after = solo los mensajes más nuevos que ese id (null = los últimos).
     @GET("conversations/{id}/messages")
-    suspend fun messages(@Path("id") id: Int, @Query("limit") limit: Int): MessagePage
+    suspend fun messages(
+        @Path("id") id: Int,
+        @Query("limit") limit: Int,
+        @Query("after") after: Int?,
+    ): MessagePage
 
     @POST("conversations/{id}/messages")
     suspend fun sendMessage(@Path("id") id: Int, @Body body: MessageBody): MessageDto
@@ -141,6 +173,12 @@ interface CodeaApi {
 
     @GET("children/{id}/attendance")
     suspend fun childAttendance(@Path("id") id: Int, @Query("month") month: String): CalendarDto
+
+    @POST("children/{id}/daily-entries")
+    suspend fun saveDailyEntry(@Path("id") id: Int, @Body body: DailyEntryBody): DailyEntryDto
+
+    @GET("children/{id}/weekly-summary")
+    suspend fun weeklySummary(@Path("id") id: Int): WeeklySummaryDto
 
     @POST("children/{id}/notes")
     suspend fun sendNote(@Path("id") id: Int, @Body body: NoteBody)

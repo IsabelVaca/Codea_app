@@ -38,6 +38,10 @@ data class SelectStudentsRoute(val subprocessNumber: Int)
 @Serializable
 data object MyRoomRoute
 
+// el resumen del día de un niño (ánimo, comida, pañales, siesta y nota) que captura la docente. se abre desde Mi sala.
+@Serializable
+data class ResumenDelDiaRoute(val childId: String)
+
 // the conversations with the families.
 @Serializable
 data object ChatsRoute
@@ -78,6 +82,10 @@ data object AdminCentroRoute
 
 @Serializable
 data object AdminCrearSalaRoute
+
+// las fotos que las familias piden borrar; el admin decide (se abre desde Centro).
+@Serializable
+data object AdminSolicitudesBorradoRoute
 
 // detalle de una sala: viaja el id, no el objeto.
 @Serializable
@@ -125,6 +133,9 @@ data object ParentCalendarRoute
 data object ParentPhotosRoute
 
 @Serializable
+data object ParentChatRoute
+
+@Serializable
 data object ParentDocumentsRoute
 
 
@@ -166,3 +177,7 @@ data class RutinasAdminDetalleRoute(val rutinaId: String)
 // "agregar momento" abre sobre el detalle de la rutina que lo recibe.
 @Serializable
 data class RutinasAdminAgregarMomentoRoute(val rutinaId: String)
+// "Mi cuenta": perfil, cambiar contraseña y cerrar sesión. la abren el admin (Centro), el padre (Hoy)
+// y la docente (Menú → Mi perfil).
+@Serializable
+data object AccountRoute

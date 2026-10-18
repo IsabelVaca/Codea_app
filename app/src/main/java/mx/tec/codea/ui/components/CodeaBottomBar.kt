@@ -18,7 +18,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import mx.tec.codea.R
 import mx.tec.codea.ui.navigation.TopLevelDestination
 import mx.tec.codea.ui.theme.CodeaTheme
@@ -63,6 +65,10 @@ fun CodeaBottomBar(
                             text = stringResource(destination.labelRes),
                             // the selected label is bolder, like in the prototype.
                             fontWeight = if (selected) FontWeight.ExtraBold else FontWeight.Bold,
+                            // con cinco tabs "Documentos" no cabe y se partía en dos líneas.
+                            fontSize = if (destinations.size > 4) 10.sp else TextUnit.Unspecified,
+                            maxLines = 1,
+                            softWrap = false,
                         )
                     },
                     colors = itemColors,

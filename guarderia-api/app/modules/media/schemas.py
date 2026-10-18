@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 from enum import StrEnum
 
@@ -63,3 +64,26 @@ class DeletionRequestOut(Schema):
     media_id: int
     status: DeletionStatus
     created_at: datetime
+
+
+class DeletionReviewOut(BaseModel):
+    """Una solicitud de borrado como la ve el admin: quién la pidió, de qué niños es la foto y la foto misma."""
+
+    id: int
+    media_id: int
+    status: DeletionStatus
+    reason: str | None
+    requested_by_id: uuid.UUID
+    requested_by_name: str
+    child_names: list[str]
+    # URL firmada de 10 minutos para ver la foto antes de decidir; vacía si ya se borró.
+    photo_url: str | None
+    created_at: datetime
+    decided_at: datetime | None
+    decision_note: str | None
+
+
+class DeletionDecisionIn(BaseModel):
+    """La explicación es opcional; queda guardada con la solicitud."""
+
+    note: str | None = Field(default=None, max_length=500)

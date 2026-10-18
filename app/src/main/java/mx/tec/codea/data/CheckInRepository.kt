@@ -2,9 +2,10 @@ package mx.tec.codea.data
 
 import mx.tec.codea.domain.CheckInAttempt
 
-// there is no real clock or gps yet, so the prototype lets us pick the situation
-// we want to show. each one is a screen of "registrar entrada" in the html prototype.
-enum class CheckInScenario { ON_TIME, LATE, OUT_OF_RANGE }
+// REAL usa la hora y el GPS del teléfono (ver CheckerViewModel). los otros tres son casos
+// simulados del prototipo que solo se pueden elegir en las compilaciones de prueba:
+// cada uno es una pantalla de "registrar entrada" del prototipo html.
+enum class CheckInScenario { REAL, ON_TIME, LATE, OUT_OF_RANGE }
 
 // where the check-in data comes from. the coordinates are our own (a spot in monterrey),
 // because the prototype has no real place. when the clock and the gps are real,
@@ -30,6 +31,8 @@ class CheckInRepository {
     )
 
     fun attemptFor(scenario: CheckInScenario): CheckInAttempt = when (scenario) {
+        // solo es un relleno mientras llega la ubicación real: la pantalla no lo muestra.
+        CheckInScenario.REAL -> base
         // screen 2: inside the school, 8 minutes early.
         CheckInScenario.ON_TIME -> base
         // e2: inside the school, 19 minutes late.

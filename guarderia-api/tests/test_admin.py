@@ -79,7 +79,10 @@ async def test_teacher_rules_and_changes(client, world):
     assert off.json()["active"] is False
     assert (await client.get("/me", headers=world.teacher_a)).json()["code"] == "USER_INACTIVE"
     await client.post(f"/teachers/{world.teacher_a_id}/reactivate", headers=world.admin)
-    assert (await client.get("/me", headers=world.teacher_a)).status_code == 200
+    # la baja cerró sus sesiones: el token de antes ya no sirve, pero puede volver a entrar con su contraseña.
+    assert (await client.get("/me", headers=world.teacher_a)).json()["code"] == "TOKEN_INVALID"
+    relogin = await client.post("/auth/login", json={"email": "karla@test.dev", "password": "clave-de-prueba-123"})
+    assert relogin.status_code == 200
 
 
 async def test_enroll_child_without_guardian(client, world):
@@ -120,9 +123,14 @@ async def test_enroll_child_with_guardian(client, world):
     assert child["guardian"]["full_name"] == "Laura Iglesias"
     assert child["guardian"]["relationship"] == "MOTHER"
 
-    # la mamá entra con su invitación y ve a su hijo.
-    laura = {"Authorization": "Bearer dev:laura@test.dev"}
-    me = (await client.post("/auth/accept-invitation", headers=laura)).json()
+    # la mamá activa su cuenta con el código que le dio la dirección y ve a su hijo.
+    assert child["access_code"]["purpose"] == "INVITATION"
+    activated = await client.post(
+        "/auth/activate",
+        json={"email": "laura@test.dev", "code": child["access_code"]["code"], "password": "una-clave-larga-1"},
+    )
+    assert activated.status_code == 200
+    me = activated.json()["me"]
     assert [kid["id"] for kid in me["parent"]["children"]] == [child["id"]]
 
     off = await client.post(f"/children/{child['id']}/deactivate", headers=world.admin)

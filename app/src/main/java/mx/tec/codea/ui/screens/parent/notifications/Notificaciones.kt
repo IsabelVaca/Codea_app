@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -87,6 +89,8 @@ fun HoyHeader(
     onAbrirNotif: () -> Unit,
     modifier: Modifier = Modifier,
     horizontalPadding: Dp = 22.dp,
+    // si viene, se dibuja el botón de Mi cuenta junto a la campana.
+    onCuentaClick: (() -> Unit)? = null,
 ) {
     Row(
         modifier
@@ -102,10 +106,25 @@ fun HoyHeader(
             )
             Text(
                 titulo, fontFamily = Poppins, fontWeight = FontWeight.Bold,
-                fontSize = 22.sp, color = AvisoColores.Ink, maxLines = 1
+                fontSize = 22.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground, maxLines = 1
             )
         }
         BotonCampana(pendientes, onAbrirNotif)
+        if (onCuentaClick != null) BotonCuenta(onCuentaClick)
+    }
+}
+
+@Composable
+private fun BotonCuenta(onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(44.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(AvisoColores.VioletaSuave)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(Icons.Filled.Person, contentDescription = "Mi cuenta", tint = AvisoColores.Ink)
     }
 }
 

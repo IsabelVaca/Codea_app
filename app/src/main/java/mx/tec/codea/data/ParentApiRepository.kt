@@ -7,6 +7,7 @@ import mx.tec.codea.data.api.DeletionBody
 import mx.tec.codea.data.api.DocumentDto
 import mx.tec.codea.data.api.DocumentUploadBody
 import mx.tec.codea.data.api.FeedItemDto
+import mx.tec.codea.data.api.WeeklySummaryDto
 import mx.tec.codea.data.api.MeDto
 import mx.tec.codea.data.api.NoteBody
 import mx.tec.codea.data.api.PickupBody
@@ -22,6 +23,8 @@ class ParentApiRepository {
     suspend fun day(childId: Int, date: String?): DayDto = api.childDay(childId, date)
 
     suspend fun calendar(childId: Int, month: String): CalendarDto = api.childAttendance(childId, month)
+
+    suspend fun weekly(childId: Int): WeeklySummaryDto = api.weeklySummary(childId)
 
     suspend fun sendNote(childId: Int, text: String) {
         api.sendNote(childId, NoteBody(text.trim()))

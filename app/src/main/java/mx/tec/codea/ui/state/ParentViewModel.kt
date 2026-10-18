@@ -16,7 +16,11 @@ import mx.tec.codea.data.api.DocumentDto
 import mx.tec.codea.data.api.FeedItemDto
 import mx.tec.codea.data.api.toUserMessage
 import mx.tec.codea.data.clockOf
+import mx.tec.codea.data.api.WeeklySummaryDto
 import mx.tec.codea.data.parseIso
+import mx.tec.codea.domain.DiaSemana
+import mx.tec.codea.domain.ResumenSemana
+import mx.tec.codea.domain.ResumenSemanaTextos
 import mx.tec.codea.ui.screens.parent.calendar.CalendarDay
 import mx.tec.codea.ui.screens.parent.calendar.CalendarMonthData
 import mx.tec.codea.ui.screens.parent.calendar.DayAttendanceStatus
@@ -70,6 +74,10 @@ class ParentViewModel : ViewModel() {
     )
         private set
 
+    // el resumen de la semana de su hijo; null mientras carga.
+    var weekly by mutableStateOf<ResumenSemana?>(null)
+        private set
+
     var documents by mutableStateOf<List<RequestedDocument>>(emptyList())
         private set
 
@@ -105,6 +113,7 @@ class ParentViewModel : ViewModel() {
             // cada parte se pide por separado: si una falla, las demás se muestran.
             parte("el día") { cargarDia() }
             parte("el calendario") { cargarMes() }
+            parte("el resumen semanal") { cargarSemana() }
             parte("los documentos") { cargarDocumentos() }
             parte("las fotos") { cargarFotos() }
         }
@@ -148,6 +157,42 @@ class ParentViewModel : ViewModel() {
         val mes = String.format(Locale.US, "%04d-%02d", shownYear, shownMonth + 1)
         monthData = repository.calendar(id, mes).toMonthData()
     }
+
+    // ---------------- resumen semanal ----------------
+
+    private suspend fun cargarSemana() {
+        val id = childId ?: return
+        weekly = repository.weekly(id).toResumen()
+    }
+
+    // "2026-10-12" y "2026-10-16" -> "12 al 16 de octubre" (si cruza de mes: "28 de septiembre al 2 de octubre").
+    private fun rango(inicio: String, fin: String): String {
+        val entrada = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        val a = entrada.parse(inicio) ?: return "$inicio al $fin"
+        val b = entrada.parse(fin) ?: return "$inicio al $fin"
+        val mes = SimpleDateFormat("MMMM", es)
+        val dia = SimpleDateFormat("d", es)
+        return if (mes.format(a) == mes.format(b)) {
+            "${dia.format(a)} al ${dia.format(b)} de ${mes.format(b)}"
+        } else {
+            "${dia.format(a)} de ${mes.format(a)} al ${dia.format(b)} de ${mes.format(b)}"
+        }
+    }
+
+    private fun WeeklySummaryDto.toResumen() = ResumenSemana(
+        rango = rango(weekStart, weekEnd),
+        diasAsistidos = daysAttended,
+        diasAusente = daysAbsent,
+        animo = ResumenSemanaTextos.animo(moods),
+        comidas = ResumenSemanaTextos.comidas(meals),
+        siesta = ResumenSemanaTextos.siesta(napMinutesAverage),
+        cambios = diaperChangesTotal,
+        logros = achievements,
+        notasFamilia = familyNotes,
+        dias = days.mapIndexed { i, d ->
+            DiaSemana(ResumenSemanaTextos.letrasDeLaSemana.getOrElse(i) { "" }, ResumenSemanaTextos.estado(d.status))
+        },
+    )
 
     // ---------------- documentos ----------------
 

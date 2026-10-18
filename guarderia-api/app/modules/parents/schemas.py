@@ -2,6 +2,8 @@ import uuid
 
 from pydantic import BaseModel
 
+from app.core.schemas import AccessCodeOut
+
 from .models import Relationship
 
 
@@ -27,6 +29,8 @@ class ParentOut(BaseModel):
     has_access: bool
     # ya entró con su invitación.
     has_account: bool
+    # solo al dar de alta o reenviar: el código para activar la cuenta (se muestra una vez).
+    access_code: AccessCodeOut | None = None
 
 
 class ParentCreate(BaseModel):

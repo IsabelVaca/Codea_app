@@ -4,6 +4,8 @@ import mx.tec.codea.data.api.AnnouncementBody
 import mx.tec.codea.data.api.ApiClient
 import mx.tec.codea.data.api.ChildClassroomBody
 import mx.tec.codea.data.api.ChildCreateBody
+import mx.tec.codea.data.api.CenterDto
+import mx.tec.codea.data.api.CenterUpdateBody
 import mx.tec.codea.data.api.ChildDto
 import mx.tec.codea.data.api.ParentCreateBody
 import mx.tec.codea.data.api.ParentDto
@@ -14,6 +16,8 @@ import mx.tec.codea.domain.Aviso
 import mx.tec.codea.domain.Docente
 import mx.tec.codea.domain.Infante
 import mx.tec.codea.domain.Padre
+import mx.tec.codea.domain.SolicitudBorrado
+import mx.tec.codea.domain.UbicacionCentro
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -32,7 +36,7 @@ class DocenteApiRepository {
     }
 
     suspend fun alta(nombre: String, apellido: String, telefono: String, correo: String, sala: String, turno: String) {
-        api.createTeacher(
+        val creada = api.createTeacher(
             TeacherCreateBody(
                 name = nombre.trim(),
                 surname = apellido.trim(),
@@ -42,6 +46,8 @@ class DocenteApiRepository {
                 shiftId = AdminDirectory.shiftId(turno),
             )
         )
+        // la API da el código de acceso una sola vez: el admin lo comparte para que la docente active su cuenta.
+        creada.accessCode?.let { DataEvents.accessCode(AccessCodeNotice(creada.fullName, it.code, shortDateOf(it.expiresAt).orEmpty())) }
     }
 
     // sala vacía = sin sala.
@@ -72,12 +78,12 @@ class InfanteApiRepository {
     suspend fun getAll(): List<Infante> =
         api.children().map { it.toInfante() }.sortedBy { it.nombre }
 
-    suspend fun inscribir(nombre: String, apellido: String, edad: Int, sala: String, alergias: String) {
+    suspend fun inscribir(nombre: String, apellido: String, nacimiento: String, sala: String, alergias: String) {
         api.createChild(
             ChildCreateBody(
                 name = nombre.trim(),
                 surname = apellido.trim(),
-                birthDate = nacimientoParaEdad(edad),
+                birthDate = nacimiento,
                 allergies = alergias.trim().ifBlank { null },
                 classroomId = AdminDirectory.classroomId(sala),
             )
@@ -113,7 +119,7 @@ class PadreApiRepository {
         api.parents().map { it.toPadre() }.sortedBy { it.nombre }
 
     suspend fun inscribir(nombre: String, apellido: String, telefono: String, correo: String, parentesco: String, hijoIds: List<String>) {
-        api.createParent(
+        val creado = api.createParent(
             ParentCreateBody(
                 name = nombre.trim(),
                 surname = apellido.trim(),
@@ -123,14 +129,17 @@ class PadreApiRepository {
                 childIds = hijoIds.map { it.toInt() },
             )
         )
+        creado.accessCode?.let { DataEvents.accessCode(AccessCodeNotice(creado.fullName, it.code, shortDateOf(it.expiresAt).orEmpty())) }
     }
 
     suspend fun setAcceso(padreId: String, conAcceso: Boolean) {
         if (conAcceso) api.reactivateParent(padreId) else api.deactivateParent(padreId)
     }
 
+    // la API genera un código nuevo; se muestra para que el admin lo comparta.
     suspend fun reenviarInvitacion(padreId: String) {
-        api.resendInvitation(padreId)
+        val padre = api.resendInvitation(padreId)
+        padre.accessCode?.let { DataEvents.accessCode(AccessCodeNotice(padre.fullName, it.code, shortDateOf(it.expiresAt).orEmpty())) }
     }
 }
 
@@ -144,6 +153,49 @@ private fun ParentDto.toPadre() = Padre(
     correo = email ?: "",
     conAcceso = hasAccess,
 )
+
+// ubicación del centro
+
+class CentroApiRepository {
+
+    suspend fun ubicacion(): UbicacionCentro = ApiClient.api.center().toUbicacion()
+
+    // la ubicación nueva es donde está el admin ahora; el radio se queda como estaba.
+    suspend fun fijarUbicacion(latitud: Double, longitud: Double): UbicacionCentro =
+        ApiClient.api.updateCenter(CenterUpdateBody(latitud, longitud)).toUbicacion()
+}
+
+private fun CenterDto.toUbicacion() = UbicacionCentro(
+    latitud = latitude,
+    longitud = longitude,
+    radioMetros = checkInRadiusM,
+)
+
+// solicitudes de borrado de fotos
+
+class SolicitudBorradoApiRepository {
+
+    suspend fun pendientes(): List<SolicitudBorrado> = ApiClient.api.deletionRequests("PENDING").map {
+        SolicitudBorrado(
+            id = it.id.toString(),
+            solicitante = it.requestedByName,
+            ninos = it.childNames,
+            motivo = it.reason,
+            fotoUrl = it.photoUrl,
+            fecha = formatearFecha(it.createdAt),
+        )
+    }
+
+    // borra la foto del servidor y de las galerías de las familias.
+    suspend fun aprobar(id: String) {
+        ApiClient.api.approveDeletion(id.toInt())
+    }
+
+    // la foto se queda.
+    suspend fun rechazar(id: String) {
+        ApiClient.api.rejectDeletion(id.toInt())
+    }
+}
 
 // avisos
 
@@ -170,7 +222,7 @@ class AvisoApiRepository {
 
 // "2026-10-16T22:30:12.123Z" (UTC) -> "16 oct · 16:30" en la hora del teléfono.
 // no se usa java.time porque la app soporta Android 7 (API 24).
-private fun formatearFecha(iso: String): String = try {
+internal fun formatearFecha(iso: String): String = try {
     val utc = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).apply { timeZone = TimeZone.getTimeZone("UTC") }
     val fecha = utc.parse(iso.take(19))!!
     SimpleDateFormat("d MMM · HH:mm", Locale("es", "MX")).format(fecha)
@@ -199,18 +251,6 @@ private fun parentescoFromApi(valor: String?): String = when (valor) {
     "FATHER" -> "Papá"
     "LEGAL_GUARDIAN" -> "Tutor"
     else -> "Otro"
-}
-
-// el formulario pide la edad y la API la fecha de nacimiento: se calcula una fecha que dé esa edad.
-// se resta un día de más para que la diferencia de zona horaria con el servidor no cambie la edad.
-private fun nacimientoParaEdad(edad: Int): String {
-    val c = Calendar.getInstance()
-    c.add(Calendar.YEAR, -edad)
-    c.add(Calendar.DAY_OF_YEAR, -1)
-    return String.format(
-        Locale.US, "%04d-%02d-%02d",
-        c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH)
-    )
 }
 
 // "2026-10-14T14:05:00.123+00:00" -> "8:05" en la hora del teléfono. sin checada: "--:--".

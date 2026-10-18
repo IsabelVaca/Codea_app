@@ -18,14 +18,18 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.OutlinedTextField
@@ -54,6 +58,7 @@ import mx.tec.codea.data.SalaRepository
 import mx.tec.codea.domain.Aviso
 import mx.tec.codea.domain.Infante
 import mx.tec.codea.domain.Sala
+import mx.tec.codea.domain.UbicacionCentro
 import mx.tec.codea.ui.theme.CodeaTheme
 import mx.tec.codea.ui.theme.Poppins
 import mx.tec.codea.ui.theme.salaColor
@@ -72,12 +77,46 @@ fun CentroScreen(
     destinoSalaId: String? = null,           // null = todas las salas
     onDestinoChange: (String?) -> Unit = {},
     avisos: List<Aviso> = emptyList(),       // el historial, el más reciente primero
+    onCuentaClick: () -> Unit = {},          // abre Mi cuenta (cambiar contraseña y cerrar sesión)
+    solicitudesBorrado: Int = 0,             // fotos que las familias piden borrar y esperan decisión
+    onSolicitudesBorradoClick: () -> Unit = {},
+    ubicacion: UbicacionCentro? = null,      // dónde está la estancia para el checador
+    ubicando: Boolean = false,
+    onUsarMiUbicacion: () -> Unit = {},
 ) {
+    var confirmarUbicacion by remember { mutableStateOf(false) }
+    if (confirmarUbicacion) {
+        // cambia el lugar donde todas las docentes registran su entrada, así que se pide confirmar.
+        AlertDialog(
+            onDismissRequest = { confirmarUbicacion = false },
+            title = { Text("¿Usar tu ubicación actual?") },
+            text = {
+                Text(
+                    "La estancia quedará donde estás ahora. Las docentes solo podrán registrar su entrada " +
+                        "a menos de ${ubicacion?.radioMetros ?: 60} metros de aquí.",
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmarUbicacion = false
+                    onUsarMiUbicacion()
+                }) { Text("Sí, usar mi ubicación") }
+            },
+            dismissButton = { TextButton(onClick = { confirmarUbicacion = false }) { Text("Cancelar") } },
+        )
+    }
     // si la sala elegida deja de existir, el aviso vuelve a ser para todas.
     val destino = salas.firstOrNull { it.id == destinoSalaId }
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Centro", fontWeight = FontWeight.Bold) })
+            TopAppBar(
+                title = { Text("Centro", fontWeight = FontWeight.Bold) },
+                actions = {
+                    IconButton(onClick = onCuentaClick) {
+                        Icon(Icons.Filled.Person, contentDescription = "Mi cuenta")
+                    }
+                },
+            )
         },
         content = { paddingValues ->
     Column(
@@ -92,6 +131,12 @@ fun CentroScreen(
             modifier = Modifier.verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+            SolicitudesBorradoCard(pendientes = solicitudesBorrado, onClick = onSolicitudesBorradoClick)
+            UbicacionCard(
+                ubicacion = ubicacion,
+                ubicando = ubicando,
+                onUsarMiUbicacion = { confirmarUbicacion = true },
+            )
             SeccionLabel("Ocupación de salas")
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 salas.forEach { sala ->
@@ -350,3 +395,62 @@ fun CentroScreenPreview() {
         )
     }
 }
+
+// la entrada a las solicitudes de borrado de fotos; se pinta de color de alerta si hay pendientes.
+@Composable
+private fun SolicitudesBorradoCard(pendientes: Int, onClick: () -> Unit) {
+    val hayPendientes = pendientes > 0
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(22.dp))
+            .background(if (hayPendientes) Color(0xFFFFEDE7) else Color(0xFFF4F1FB))
+            .clickable(onClick = onClick)
+            .padding(14.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text("Fotos que piden borrar", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
+            Text(
+                if (hayPendientes) "$pendientes por revisar" else "No hay solicitudes pendientes",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = if (hayPendientes) Color(0xFFC4432A) else Color(0xFF6B6485),
+            )
+        }
+        Text("Ver", fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF5B3FE0))
+    }
+}
+
+// dónde está la estancia para el checador y el botón para fijarla donde está el admin ahora.
+@Composable
+private fun UbicacionCard(ubicacion: UbicacionCentro?, ubicando: Boolean, onUsarMiUbicacion: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(22.dp))
+            .background(Color(0xFFF4F1FB))
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text("Ubicación del checador", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
+        Text(
+            text = when {
+                ubicacion == null -> "Cargando…"
+                ubicacion.definida ->
+                    String.format(java.util.Locale.US, "%.5f, %.5f · radio de %d m", ubicacion.latitud, ubicacion.longitud, ubicacion.radioMetros)
+                else -> "Sin ubicación: las docentes no pueden registrar su entrada"
+            },
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color(0xFF6B6485),
+        )
+        Button(
+            onClick = onUsarMiUbicacion,
+            enabled = !ubicando && ubicacion != null,
+            modifier = Modifier.fillMaxWidth(),
+        ) { Text(if (ubicando) "Buscando tu ubicación…" else "Usar mi ubicación actual") }
+    }
+}
+

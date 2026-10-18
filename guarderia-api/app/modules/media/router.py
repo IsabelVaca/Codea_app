@@ -2,11 +2,22 @@ from fastapi import APIRouter, Query, Response, status
 
 from app.core.db import Db
 from app.core.pagination import Page, parse_cursor
-from app.core.security import AnyUser, ParentUser
+from app.core.security import AdminUser, AnyUser, ParentUser
 from app.core.storage import StorageDep
 
 from . import service
-from .schemas import DeletionRequestIn, DeletionRequestOut, FeedItem, MediaOut, PhotoCategory, UploadIn, UploadOut
+from .models import DeletionStatus
+from .schemas import (
+    DeletionDecisionIn,
+    DeletionRequestIn,
+    DeletionRequestOut,
+    DeletionReviewOut,
+    FeedItem,
+    MediaOut,
+    PhotoCategory,
+    UploadIn,
+    UploadOut,
+)
 
 router = APIRouter(prefix="/media", tags=["fotos"])
 
@@ -46,3 +57,28 @@ async def request_deletion(
     if not created:
         response.status_code = status.HTTP_200_OK
     return request
+
+
+@router.get("/deletion-requests", response_model=list[DeletionReviewOut])
+async def list_deletion_requests(
+    db: Db, _: AdminUser, storage: StorageDep, status: DeletionStatus = DeletionStatus.PENDING
+) -> list[DeletionReviewOut]:
+    """Las solicitudes de borrado de fotos que pidieron las familias; por omisión, las pendientes."""
+    return await service.list_deletion_requests(db, storage, status)
+
+
+@router.post("/deletion-requests/{request_id}/approve", response_model=DeletionReviewOut)
+async def approve_deletion(
+    db: Db, current: AdminUser, storage: StorageDep, request_id: int, data: DeletionDecisionIn | None = None
+) -> DeletionReviewOut:
+    """Borra la foto del bucket y de todas las pantallas. 404 DELETION_REQUEST_NOT_FOUND, 409 REQUEST_ALREADY_DECIDED."""
+    return await service.decide_deletion(db, current, storage, request_id, True, data or DeletionDecisionIn())
+
+
+@router.post("/deletion-requests/{request_id}/reject", response_model=DeletionReviewOut)
+async def reject_deletion(
+    db: Db, current: AdminUser, storage: StorageDep, request_id: int, data: DeletionDecisionIn | None = None
+) -> DeletionReviewOut:
+    """La foto se queda; la solicitud queda resuelta (con una explicación opcional). 409 REQUEST_ALREADY_DECIDED."""
+    return await service.decide_deletion(db, current, storage, request_id, False, data or DeletionDecisionIn())
+

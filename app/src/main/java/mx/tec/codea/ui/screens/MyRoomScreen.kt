@@ -2,6 +2,7 @@ package mx.tec.codea.ui.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,6 +47,11 @@ fun MyRoomScreen(
     onAttendanceChange: (childId: String, status: AttendanceStatus) -> Unit,
     onChatClick: (childId: String) -> Unit,
     modifier: Modifier = Modifier,
+    // el nombre real de la sala de la docente; vacío mientras carga.
+    roomName: String = "",
+    // marcas de asistencia que esperan conexión para llegar al servidor.
+    pendingChanges: Int = 0,
+    onSummaryClick: (childId: String) -> Unit = {},
 ) {
     // derived values: we count them every time, so they are never out of date.
     val presentCount = children.count { it.attendance == AttendanceStatus.PRESENT }
@@ -59,8 +65,31 @@ fun MyRoomScreen(
         item {
             ScreenHeader(
                 overline = stringResource(R.string.my_room_overline),
-                title = stringResource(R.string.my_room_title),
+                title = if (roomName.isBlank()) {
+                    stringResource(R.string.my_room_title_generic)
+                } else {
+                    stringResource(R.string.my_room_title, roomName)
+                },
             )
+        }
+
+        if (pendingChanges > 0) {
+            item {
+                Text(
+                    text = if (pendingChanges == 1) {
+                        "1 cambio sin enviar · se manda solo cuando vuelva la conexión"
+                    } else {
+                        "$pendingChanges cambios sin enviar · se mandan solos cuando vuelva la conexión"
+                    },
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.22f), RoundedCornerShape(14.dp))
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                )
+            }
         }
 
         item {
@@ -78,6 +107,7 @@ fun MyRoomScreen(
                 child = child,
                 onAttendanceSelected = { newStatus -> onAttendanceChange(child.id, newStatus) },
                 onChatClick = { onChatClick(child.id) },
+                onSummaryClick = { onSummaryClick(child.id) },
             )
         }
     }
@@ -144,6 +174,7 @@ private fun ChildCard(
     child: Child,
     onAttendanceSelected: (AttendanceStatus) -> Unit,
     onChatClick: () -> Unit,
+    onSummaryClick: () -> Unit,
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -164,6 +195,26 @@ private fun ChildCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
+                )
+
+                if (child.hasNoteToday) {
+                    Text(
+                        text = stringResource(R.string.my_room_note_today),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier
+                            .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.22f), RoundedCornerShape(10.dp))
+                            .padding(horizontal = 10.dp, vertical = 4.dp),
+                    )
+                }
+
+                Text(
+                    text = "Resumen del día ›",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.clickable(onClick = onSummaryClick),
                 )
 
                 Row(

@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core import rules
 from app.core.errors import ApiError
 from app.core.security import CurrentUser
+from app.modules.audit import service as audit
 from app.modules.classrooms.models import DaycareCenter
 from app.modules.classrooms.schemas import CenterOut
 
@@ -58,5 +59,19 @@ async def update_center(db: AsyncSession, current: CurrentUser, data: CenterUpda
             raise ApiError(422, "TIMEZONE_INVALID", "La zona horaria no existe", "Ejemplo: America/Monterrey")
         center.timezone = data.timezone
 
+    # el checador de todas las docentes depende de estos datos: queda registrado quién los cambió y a qué.
+    audit.record(
+        db,
+        audit.CENTER_UPDATED,
+        actor_id=current.user.id,
+        entity_type="CENTER",
+        entity_id=center.id,
+        detail={
+            "fields": sorted(sent),
+            "latitude": center.latitude,
+            "longitude": center.longitude,
+            "check_in_radius_m": center.check_in_radius_m,
+        },
+    )
     await db.commit()
     return CenterOut.model_validate(center)

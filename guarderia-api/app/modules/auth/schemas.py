@@ -4,7 +4,7 @@ from enum import StrEnum
 
 from pydantic import BaseModel
 
-from app.core.schemas import ClassroomRef
+from app.core.schemas import AccessCodeOut, ClassroomRef
 from app.modules.auth.models import Role
 from app.modules.classrooms.schemas import CenterOut
 from app.modules.parents.models import Relationship
@@ -79,3 +79,42 @@ class InvitationOut(BaseModel):
     expires_at: datetime
     accepted_at: datetime | None
     created_at: datetime
+    # solo al crear la invitación: el código se muestra una vez y en la base queda su hash.
+    access_code: AccessCodeOut | None = None
+
+
+class LoginIn(BaseModel):
+    email: str
+    password: str
+
+
+class ActivateIn(BaseModel):
+    """Primer acceso: el correo, el código que dio el administrador y la contraseña nueva."""
+
+    email: str
+    code: str
+    password: str
+
+
+class RefreshIn(BaseModel):
+    refresh_token: str
+
+
+class ChangePasswordIn(BaseModel):
+    current_password: str
+    new_password: str
+
+
+class TokenOut(BaseModel):
+    """Lo que regresan login, activar, refrescar y cambiar contraseña. `me` viene en todos menos en refrescar."""
+
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int
+    refresh_token: str
+    refresh_expires_in: int
+    me: MeOut | None = None
+
+
+class SessionsOut(BaseModel):
+    revoked: int

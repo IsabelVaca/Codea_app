@@ -1,4 +1,4 @@
-from tests.conftest import as_user
+from tests.conftest import as_user  # noqa: F401
 
 
 # --- centro ---
@@ -59,10 +59,14 @@ async def test_invite_new_admin_and_list(client, world):
     assert [item["email"] for item in pending] == ["lucia@test.dev"]
     assert (await client.get("/invitations?status=ACCEPTED", headers=world.admin)).json() == []
 
-    # al entrar con Google, la nueva administradora ya tiene su rol.
-    accepted = await client.post("/auth/accept-invitation", headers=as_user("lucia@test.dev"))
+    # al activar su cuenta con el código, la nueva administradora ya tiene su rol.
+    assert body["access_code"]["purpose"] == "INVITATION"
+    accepted = await client.post(
+        "/auth/activate",
+        json={"email": "lucia@test.dev", "code": body["access_code"]["code"], "password": "una-clave-larga-1"},
+    )
     assert accepted.status_code == 200
-    assert accepted.json()["roles"] == ["ADMIN"]
+    assert accepted.json()["me"]["roles"] == ["ADMIN"]
     done = (await client.get("/invitations?status=ACCEPTED", headers=world.admin)).json()
     assert [item["email"] for item in done] == ["lucia@test.dev"]
 
@@ -211,3 +215,23 @@ async def test_templates_are_admin_only(client, world):
         f"/classrooms/{world.room_a.id}/routine-template", headers=world.teacher_a, json={"template_id": None}
     )
     assert denied.status_code == 403
+
+
+async def test_center_changes_are_audited(client, world):
+    changed = await client.patch(
+        "/center", headers=world.admin, json={"latitude": 25.7, "longitude": -100.3, "check_in_radius_m": 120}
+    )
+    assert changed.status_code == 200
+    # una petición que falla no deja rastro de cambio.
+    assert (await client.patch("/center", headers=world.admin, json={"check_in_radius_m": 5})).status_code == 422
+
+    [entry] = (await client.get("/audit-log?action=CENTER_UPDATED", headers=world.admin)).json()["items"]
+    assert entry["actor_name"] == "Directora Prueba"
+    assert entry["entity_type"] == "CENTER" and entry["entity_id"] == str(world.center.id)
+    assert entry["detail"] == {
+        "fields": ["check_in_radius_m", "latitude", "longitude"],
+        "latitude": 25.7,
+        "longitude": -100.3,
+        "check_in_radius_m": 120,
+    }
+

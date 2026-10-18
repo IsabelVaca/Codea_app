@@ -31,6 +31,11 @@ class StaffCheckIn(IdMixin, Base):
     status: Mapped[CheckInStatus] = mapped_column(str_enum(CheckInStatus))
     minutes_late: Mapped[int] = mapped_column(default=0)
     late_reason: Mapped[str | None] = mapped_column(Text)
+    # la salida, con la misma regla de ubicación que la entrada; vacía hasta que la docente la registra.
+    checked_out_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    out_latitude: Mapped[float | None] = mapped_column(Float)
+    out_longitude: Mapped[float | None] = mapped_column(Float)
+    out_distance_m: Mapped[int | None]
 
 
 class CoordinationReason(StrEnum):

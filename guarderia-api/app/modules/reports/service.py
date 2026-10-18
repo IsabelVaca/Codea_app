@@ -1,6 +1,6 @@
-from datetime import date
+from datetime import date, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,7 +17,7 @@ from app.modules.messaging.schemas import NoteOut
 from app.modules.routines import service as routines
 from app.modules.routines.models import MomentCategory, MomentStatus, RoutineMoment
 
-from .models import DailySummary, Report, ReportChild
+from .models import DailySummary, Report, ReportChild, ReportType
 from .schemas import (
     DailyEntryIn,
     DailyEntryOut,
@@ -27,6 +27,9 @@ from .schemas import (
     ReportOut,
     TimelineEvent,
     TimelineType,
+    WeekDayOut,
+    WeekDayStatus,
+    WeeklySummaryOut,
 )
 
 # ReportValidator.DESCRIPTION_MIN en la app.
@@ -238,3 +241,118 @@ async def child_day(db: AsyncSession, current: CurrentUser, child_id: int, day: 
         timeline=timeline,
         notes=[NoteOut.model_validate(note) for note in notes],
     )
+
+
+async def weekly_summary(
+    db: AsyncSession, current: CurrentUser, child_id: int, week_start: date | None
+) -> WeeklySummaryOut:
+    """El resumen de la semana (lunes a viernes) a partir de lo que ya se registró cada día.
+
+    Cualquier fecha sirve como `week_start`: se toma el lunes de esa semana. Sin fecha, la semana de hoy.
+    Un día cuenta como asistido si su sala tuvo rutina, o si hay un resumen o un reporte suyo, y no se marcó ausente.
+    """
+    child = await get_child_in_scope(db, current, child_id)
+    today = await center_today(db)
+    monday = (week_start or today) - timedelta(days=(week_start or today).weekday())
+    friday = monday + timedelta(days=4)
+    week = [monday + timedelta(days=offset) for offset in range(5)]
+
+    absent = set(
+        (
+            await db.scalars(
+                select(Attendance.date).where(
+                    Attendance.child_id == child.id,
+                    Attendance.date.between(monday, friday),
+                    Attendance.status == AttendanceStatus.ABSENT,
+                )
+            )
+        ).all()
+    )
+    summaries = {
+        row.date: row
+        for row in (
+            await db.scalars(
+                select(DailySummary).where(DailySummary.child_id == child.id, DailySummary.date.between(monday, friday))
+            )
+        ).all()
+    }
+    routine_days: set[date] = set()
+    if child.classroom_id is not None:
+        routine_days = set(
+            (
+                await db.scalars(
+                    select(RoutineMoment.date)
+                    .where(RoutineMoment.classroom_id == child.classroom_id, RoutineMoment.date.between(monday, friday))
+                    .distinct()
+                )
+            ).all()
+        )
+    reports = (
+        await db.execute(
+            select(RoutineMoment.date, Report.type, Report.description)
+            .join(Report, Report.routine_moment_id == RoutineMoment.id)
+            .join(ReportChild, ReportChild.report_id == Report.id)
+            .where(ReportChild.child_id == child.id, RoutineMoment.date.between(monday, friday))
+            .order_by(Report.id)
+        )
+    ).all()
+    notes = dict(
+        (
+            await db.execute(
+                select(ParentNote.date, func.count())
+                .where(ParentNote.child_id == child.id, ParentNote.date.between(monday, friday))
+                .group_by(ParentNote.date)
+            )
+        ).all()
+    )
+
+    days: list[WeekDayOut] = []
+    for day in week:
+        summary = summaries.get(day)
+        reports_today = [report for report in reports if report.date == day]
+        if day > today:
+            status = WeekDayStatus.NO_RECORD
+        elif day in absent:
+            status = WeekDayStatus.ABSENT
+        elif day in routine_days or summary is not None or reports_today:
+            status = WeekDayStatus.ATTENDED
+        else:
+            status = WeekDayStatus.NO_RECORD
+        days.append(
+            WeekDayOut(
+                date=day,
+                status=status,
+                mood=summary.mood if summary else None,
+                meals=summary.meals if summary else None,
+                diaper_changes=summary.diaper_changes if summary else None,
+                nap_minutes=summary.nap_minutes if summary else None,
+                reports=len(reports_today),
+                family_notes=notes.get(day, 0),
+            )
+        )
+
+    def tally(values) -> dict:
+        counts: dict = {}
+        for value in values:
+            if value is not None:
+                counts[value] = counts.get(value, 0) + 1
+        return counts
+
+    naps = [day.nap_minutes for day in days if day.nap_minutes is not None and day.status == WeekDayStatus.ATTENDED]
+    return WeeklySummaryOut(
+        child_id=child.id,
+        child_name=child.full_name,
+        week_start=monday,
+        week_end=friday,
+        days_attended=sum(1 for day in days if day.status == WeekDayStatus.ATTENDED),
+        days_absent=sum(1 for day in days if day.status == WeekDayStatus.ABSENT),
+        moods=tally(day.mood for day in days),
+        meals=tally(day.meals for day in days),
+        nap_minutes_average=round(sum(naps) / len(naps)) if naps else None,
+        diaper_changes_total=sum(day.diaper_changes or 0 for day in days),
+        reports_by_type=tally(report.type for report in reports),
+        achievements=[report.description for report in reports if report.type == ReportType.ACHIEVEMENT],
+        family_notes=sum(day.family_notes for day in days),
+        days=days,
+    )
+

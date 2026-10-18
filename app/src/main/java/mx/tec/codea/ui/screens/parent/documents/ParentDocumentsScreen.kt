@@ -62,7 +62,8 @@ fun ParentDocumentsScreen(
 
         items(
             items = documents,
-            key = { it.id },
+            // documentos y autorizados comparten LazyColumn: sus ids pueden coincidir, por eso el prefijo.
+            key = { "documento-${it.id}" },
         ) { document ->
             DocumentCard(
                 document = document,
@@ -85,7 +86,7 @@ fun ParentDocumentsScreen(
 
         items(
             items = authorizedPeople,
-            key = { it.id },
+            key = { "autorizado-${it.id}" },
         ) { person ->
             AuthorizedPersonRow(
                 person = person,

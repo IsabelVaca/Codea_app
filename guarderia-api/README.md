@@ -16,9 +16,22 @@ docker compose exec api python -m app.seed   # datos de ejemplo, los mismos de l
 
 ## Entrar
 
-Con `AUTH_MODE=firebase` la app manda el ID token de Firebase (`Authorization: Bearer <token>`) y la API lo verifica con `firebase-admin`. El rol y lo que cada quien puede ver salen de Postgres, no de Firebase.
+Login propio con correo y contraseña (JWT). La regla: **el token dice quién eres y Postgres dice qué puedes hacer**: el JWT solo lleva el id de la persona; el rol, el alcance y si está de baja se leen de la base en cada petición. Diseño completo en [`docs/plan/04-api-login-jwt.md`](../docs/plan/04-api-login-jwt.md).
 
-Para desarrollar sin proyecto de Firebase, `AUTH_MODE=dev` (solo funciona con `ENV=dev`) acepta `Authorization: Bearer dev:<correo>`. El seed imprime los correos; por ejemplo:
+Antes de arrancar, `.env` necesita `JWT_SECRET` (mínimo 32 caracteres; la API no arranca sin él):
+
+```bash
+python3 -c "import secrets; print(secrets.token_urlsafe(48))"   # pega el resultado en .env
+```
+
+| Token | Dura | Para qué |
+| --- | --- | --- |
+| `access_token` (JWT, HS256) | 5 minutos | Va en cada petición: `Authorization: Bearer <access_token>` |
+| `refresh_token` (texto aleatorio) | 7 días | Se cambia por un par nuevo en `POST /auth/refresh`; **cada uso lo rota** y el viejo deja de servir. En la base solo queda su hash |
+
+Si llega un refresh token que ya se había rotado, alguien lo copió: se cierra toda la sesión de esa familia.
+
+El seed (`python -m app.seed`, solo con `ENV=dev`) deja a todos con la contraseña `SEED_PASSWORD` (`codea1234` por omisión) e imprime los correos; por ejemplo:
 
 | Rol | Correo |
 | --- | --- |
@@ -26,11 +39,18 @@ Para desarrollar sin proyecto de Firebase, `AUTH_MODE=dev` (solo funciona con `E
 | TEACHER | `karla.robles@oruga.test` (Preescolar 2) |
 | PARENT | `laura.iglesias@oruga.test` (mamá de Mateo Iglesias) |
 
-En Swagger, el botón **Authorize** pide solo el token: escribe `dev:karla.robles@oruga.test`.
+En Swagger: haz `POST /auth/login` con correo y contraseña, copia el `access_token` y pégalo en **Authorize**. Dura 5 minutos; para uno nuevo usa `POST /auth/refresh`.
 
-### Invitaciones
+La contraseña lleva de 9 a 128 caracteres y no puede ser el correo (RNF01: "mayores a 8"). Se guarda con Argon2id.
 
-Nadie entra solo por tener cuenta de Google. Al dar de alta a una docente (`POST /teachers`), a un tutor (`POST /children`) o a un padre (`POST /parents`), la API crea una invitación para su correo. La primera vez que esa persona entra, la app llama `POST /auth/accept-invitation`, que liga su cuenta con la invitación. Después de eso, `GET /me` ya regresa su rol. Por ahora no se mandan correos: la invitación solo queda en el log.
+### Códigos de acceso (invitaciones)
+
+Nadie entra solo por saber un correo. Al dar de alta a una docente (`POST /teachers`), a un tutor (`POST /children`) o a un padre (`POST /parents`), la respuesta trae `access_code`: un código `XXXX-XXXX` que **se muestra una sola vez** (en la base queda su hash) y dura 7 días. El administrador se lo comparte a la persona, que lo usa en `POST /auth/activate` junto con su correo y la contraseña que elija. Con eso queda con sesión iniciada.
+
+- **Otro código:** `POST /users/{id}/access-code` (admin). Si la persona nunca entró es de tipo `INVITATION`; si ya entró, `PASSWORD_RESET` (olvidó su contraseña): al usarlo se cierran sus sesiones anteriores. Un código nuevo deja sin vigencia a los anteriores.
+- **Cambiar la contraseña:** `POST /me/password`. Cierra todas las sesiones y devuelve tokens nuevos para la actual. `DELETE /me/sessions` cierra todas las sesiones.
+- **Baja:** dar de baja a alguien sube su `token_version` y revoca sus refresh tokens, así que su acceso se corta en la siguiente petición. Al reactivarla debe volver a entrar.
+- Por ahora no se mandan correos: el administrador comparte el código.
 
 ## Fotos y documentos
 
@@ -76,3 +96,12 @@ Cada módulo de `app/modules/` separa `router.py` (HTTP y rol), `service.py` (re
 - `pagination.py`: paginación por cursor
 
 Cada cambio al modelo lleva su migración: `alembic revision --autogenerate -m "..."`, y se revisa antes de aplicarla.
+
+## Documentación por carpeta
+
+- Estado y pendientes del backend: [`PENDIENTES.md`](PENDIENTES.md)
+- Índice de módulos, cada uno con su README: [`app/modules/README.md`](app/modules/README.md)
+- Lo compartido: [`app/core/README.md`](app/core/README.md) · pruebas: [`tests/README.md`](tests/README.md) · migraciones: [`migrations/README.md`](migrations/README.md)
+- Marco técnico (solo lo de startdroid) y estado general: [`../docs/MARCO-TECNICO.md`](../docs/MARCO-TECNICO.md), [`../docs/ESTADO.md`](../docs/ESTADO.md)
+
+

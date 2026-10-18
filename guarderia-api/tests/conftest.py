@@ -5,6 +5,7 @@ Se corren desde guarderia-api/ con la base de docker compose prendida: .venv/bin
 
 import asyncio
 import os
+import uuid
 from datetime import UTC, date, datetime, time
 from pathlib import Path
 from types import SimpleNamespace
@@ -27,8 +28,10 @@ DB_HOST = _env.get("TEST_DB_HOST", "localhost")
 TEST_DB = "guarderia_test"
 TEST_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/{TEST_DB}"
 
-# antes de importar la app: modo dev de auth y la base de pruebas.
-os.environ.update(ENV="dev", AUTH_MODE="dev", DATABASE_URL=TEST_URL)
+# antes de importar la app: la base de pruebas y la llave del JWT. Los access tokens de las pruebas duran
+# 30 días para que las pruebas que mueven el reloj no los venzan; la prueba de expiración fija su propio TTL.
+os.environ.update(ENV="dev", DATABASE_URL=TEST_URL, ACCESS_TTL_S=str(30 * 24 * 3600))
+os.environ.setdefault("JWT_SECRET", "llave-solo-para-pruebas-0123456789abcdefghij")
 
 import asyncpg  # noqa: E402
 from httpx import ASGITransport, AsyncClient  # noqa: E402
@@ -39,6 +42,8 @@ from sqlalchemy.pool import NullPool  # noqa: E402
 import app.core.registry  # noqa: E402,F401
 from app.core import clock  # noqa: E402
 from app.core.db import Base, get_db  # noqa: E402
+from app.core.passwords import hash_password  # noqa: E402
+from app.core.tokens import create_access_token  # noqa: E402
 from app.core.storage import get_storage  # noqa: E402
 from app.main import app  # noqa: E402
 from app.modules.admins.models import Admin  # noqa: E402
@@ -55,8 +60,22 @@ TODAY = date(2026, 10, 14)
 SCHOOL = (25.651600, -100.289600)
 
 
+# Argon2 tarda a propósito: el hash de la contraseña de prueba se calcula una sola vez para todas las pruebas.
+TEST_PASSWORD = "clave-de-prueba-123"
+TEST_HASH = hash_password(TEST_PASSWORD)
+
+# correo -> (id, token_version) de las personas que crea la fixture `world`, para armar su token.
+_USERS: dict[str, tuple[uuid.UUID, int]] = {}
+
+
+def bearer(token: str) -> dict[str, str]:
+    return {"Authorization": f"Bearer {token}"}
+
+
 def as_user(email: str) -> dict[str, str]:
-    return {"Authorization": f"Bearer dev:{email}"}
+    """El encabezado con un access token real de una persona de `world` (ya existe en la base)."""
+    user_id, version = _USERS[email]
+    return bearer(create_access_token(user_id, version))
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -120,6 +139,9 @@ class FakeStorage:
     def put(self, key: str, size: int = 1234) -> None:
         self.objects[key] = size
 
+    async def delete(self, key: str) -> None:
+        self.objects.pop(key, None)
+
 
 @pytest.fixture
 def storage() -> FakeStorage:
@@ -146,9 +168,10 @@ async def world(db) -> SimpleNamespace:
     """Un centro chico: 2 salas, 1 admin, 2 docentes, 3 niños y 2 papás, todos ya con cuenta."""
 
     async def person(name: str, email: str) -> AppUser:
-        user = AppUser(name=name, surname="Prueba", email=email, phone="8112345678", firebase_uid=f"dev:{email}")
+        user = AppUser(name=name, surname="Prueba", email=email, phone="8112345678", password_hash=TEST_HASH)
         db.add(user)
         await db.flush()
+        _USERS[email] = (user.id, user.token_version)
         return user
 
     center = DaycareCenter(name="La Oruga", latitude=SCHOOL[0], longitude=SCHOOL[1], check_in_radius_m=60)
@@ -213,4 +236,5 @@ async def world(db) -> SimpleNamespace:
         teacher_a_id=teacher_a.id,
         teacher_b_id=teacher_b.id,
         mom_id=mom.id,
+        dad_id=dad.id,
     )

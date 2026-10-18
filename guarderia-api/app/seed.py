@@ -12,6 +12,7 @@ from sqlalchemy import select
 import app.core.registry  # noqa: F401  (registra todas las tablas)
 from app.core.config import settings
 from app.core.db import SessionLocal
+from app.core.passwords import hash_password
 from app.modules.admins.models import Admin
 from app.modules.auth import service as auth
 from app.modules.auth.models import AppUser, Role
@@ -73,17 +74,21 @@ async def seed() -> None:
             print("La base ya tiene datos; no se siembra nada.")
             return
 
-        # en modo dev cada persona ya "aceptó" su invitación y entra con Bearer dev:<correo>;
-        # con Firebase, cada quien la acepta al entrar con Google.
-        logins: list[tuple[str, str]] = []
+        # en desarrollo (ENV=dev) cada persona ya tiene su cuenta activada con SEED_PASSWORD, para poder entrar
+        # sin pasar por la invitación. fuera de desarrollo no se pone ninguna contraseña conocida: cada quien
+        # recibe un código de invitación (se imprime una vez) y activa su cuenta.
+        logins: list[tuple[str, str, str]] = []
+        seed_hash = hash_password(settings.seed_password) if settings.env == "dev" else None
 
         async def account(user: AppUser, role: Role) -> None:
             await db.flush()
-            if settings.auth_mode == "dev":
-                user.firebase_uid = f"dev:{user.email}"
+            detail = ""
+            if seed_hash is not None:
+                user.password_hash = seed_hash
             else:
-                await auth.create_invitation(db, user, role)
-            logins.append((role.value, user.email))
+                created = await auth.create_invitation(db, user, role)
+                detail = created[1].code if created else ""
+            logins.append((role.value, user.email, detail))
 
         center = DaycareCenter(name="La Oruga", latitude=25.6516, longitude=-100.2896, check_in_radius_m=60)
         db.add(center)
@@ -156,10 +161,12 @@ async def seed() -> None:
         await db.commit()
 
         print(f"Listo: centro «{center.name}», 3 salas, {len(TEACHERS)} docentes y {len(CHILDREN)} niños.")
-        if settings.auth_mode == "dev":
-            print("Entra con Authorization: Bearer dev:<correo>")
-        for role, email in logins:
-            print(f"  {role:<8} {email}")
+        if seed_hash is not None:
+            print(f"Entra con POST /auth/login: correo de abajo y contraseña «{settings.seed_password}»")
+        else:
+            print("Cada persona activa su cuenta con POST /auth/activate usando su código (se muestra solo ahora):")
+        for role, email, code in logins:
+            print(f"  {role:<8} {email}  {code}")
 
 
 if __name__ == "__main__":

@@ -82,3 +82,6 @@ class RoomChild(BaseModel):
     conversation_id: int | None
     has_unread_chat: bool
     unread_count: int
+    # notas que el papá le dejó a la asistente hoy (POST /children/{id}/notes): marcan al niño en Mi sala.
+    notes_today: int = 0
+    has_note_today: bool = False

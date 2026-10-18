@@ -128,3 +128,128 @@ async def test_report_rules(client, world):
     assert len(listed) == 1
     routine = (await client.get(f"/classrooms/{world.room_a.id}/routine", headers=world.teacher_a)).json()
     assert routine["moments"][0]["report_count"] == 1
+
+
+async def test_my_room_marks_children_with_a_note_from_the_family_today(client, world, fixed_clock):
+    def by_name(children):
+        return {child["name"]: child for child in children}
+
+    before = by_name((await client.get(f"/classrooms/{world.room_a.id}/children", headers=world.teacher_a)).json())
+    assert before["Sofía"]["has_note_today"] is False and before["Sofía"]["notes_today"] == 0
+
+    for text in ("Hoy no durmió bien.", "Se queda con su abuela a la salida."):
+        sent = await client.post(f"/children/{world.sofia.id}/notes", headers=world.mom, json={"text": text})
+        assert sent.status_code == 201
+
+    after = by_name((await client.get(f"/classrooms/{world.room_a.id}/children", headers=world.teacher_a)).json())
+    assert after["Sofía"]["has_note_today"] is True and after["Sofía"]["notes_today"] == 2
+    assert after["Diego"]["has_note_today"] is False  # solo marca a quien recibió la nota
+
+    # al día siguiente la nota ya no cuenta como "de hoy".
+    fixed_clock(datetime(2026, 10, 15, 14, 0, tzinfo=UTC))
+    tomorrow = by_name((await client.get(f"/classrooms/{world.room_a.id}/children", headers=world.teacher_a)).json())
+    assert tomorrow["Sofía"]["has_note_today"] is False
+
+
+async def test_a_note_for_one_room_does_not_mark_the_other(client, world):
+    await client.post(f"/children/{world.renata.id}/notes", headers=world.dad, json={"text": "Llega tarde."})
+    room_a = (await client.get(f"/classrooms/{world.room_a.id}/children", headers=world.teacher_a)).json()
+    room_b = (await client.get(f"/classrooms/{world.room_b.id}/children", headers=world.teacher_b)).json()
+    assert not any(child["has_note_today"] for child in room_a)
+    assert [child["has_note_today"] for child in room_b] == [True]
+
+
+# ---------------------------------------------------------------- salida de la docente
+
+
+async def test_check_out_needs_a_check_in_first(client, world):
+    response = await client.post("/staff-attendance/check-out", headers=world.teacher_a, json=AT_SCHOOL)
+    assert response.status_code == 409 and response.json()["code"] == "NOT_CHECKED_IN"
+
+
+async def test_check_out_after_check_in(client, world, fixed_clock):
+    assert (await client.post("/staff-attendance/check-in", headers=world.teacher_a, json=AT_SCHOOL)).status_code == 201
+    today = (await client.get("/staff-attendance/today", headers=world.teacher_a)).json()
+    assert today["checked_out_at"] is None
+
+    fixed_clock(datetime(2026, 10, 14, 22, 5, tzinfo=UTC))  # 16:05 en Monterrey
+    out = await client.post("/staff-attendance/check-out", headers=world.teacher_a, json=AT_SCHOOL)
+    assert out.status_code == 201
+    assert out.json()["checked_out_at"].startswith("2026-10-14T22:05")
+    assert out.json()["status"] in ("ON_TIME", "LATE")  # la entrada no cambia
+
+    today = (await client.get("/staff-attendance/today", headers=world.teacher_a)).json()
+    assert today["checked_out_at"] == out.json()["checked_out_at"]
+
+
+async def test_check_out_twice_returns_the_same_exit(client, world, fixed_clock):
+    await client.post("/staff-attendance/check-in", headers=world.teacher_a, json=AT_SCHOOL)
+    fixed_clock(datetime(2026, 10, 14, 22, 5, tzinfo=UTC))
+    first = await client.post("/staff-attendance/check-out", headers=world.teacher_a, json=AT_SCHOOL)
+    fixed_clock(datetime(2026, 10, 14, 22, 45, tzinfo=UTC))
+    again = await client.post("/staff-attendance/check-out", headers=world.teacher_a, json=AT_SCHOOL)
+    assert first.status_code == 201 and again.status_code == 200
+    assert again.json()["checked_out_at"] == first.json()["checked_out_at"]  # no se pisa la hora
+
+
+async def test_check_out_must_be_inside_the_radius(client, world):
+    await client.post("/staff-attendance/check-in", headers=world.teacher_a, json=AT_SCHOOL)
+    far = {"latitude": 25.6642, "longitude": SCHOOL[1]}  # a más de un kilómetro
+    response = await client.post("/staff-attendance/check-out", headers=world.teacher_a, json=far)
+    assert response.status_code == 422 and response.json()["code"] == "OUT_OF_RANGE"
+    assert (await client.get("/staff-attendance/today", headers=world.teacher_a)).json()["checked_out_at"] is None
+
+
+async def test_check_out_is_per_teacher(client, world):
+    await client.post("/staff-attendance/check-in", headers=world.teacher_a, json=AT_SCHOOL)
+    # fernando no registró entrada, así que no puede registrar la salida de karla ni la suya.
+    response = await client.post("/staff-attendance/check-out", headers=world.teacher_b, json=AT_SCHOOL)
+    assert response.status_code == 409
+    assert (await client.get("/staff-attendance/today", headers=world.teacher_b)).json() is None
+
+
+
+async def test_one_report_can_be_for_several_children(client, world):
+    """RF-05: un solo reporte para varios niños; cada papá lo ve en su Hoy y no en el de otro."""
+    routine = (await client.get(f"/classrooms/{world.room_a.id}/routine", headers=world.teacher_a)).json()
+    moment = routine["moments"][0]["id"]
+    created = await client.post(
+        "/reports",
+        headers=world.teacher_a,
+        json={
+            "routine_moment_id": moment,
+            "type": "ACHIEVEMENT",
+            "method": "WRITTEN",
+            "description": "Armaron juntos una torre de bloques.",
+            "child_ids": [world.sofia.id, world.diego.id],
+        },
+    )
+    assert created.status_code == 201
+    assert sorted(created.json()["child_ids"]) == sorted([world.sofia.id, world.diego.id])
+
+    # el contador del momento es uno solo, aunque el reporte sea de dos niños.
+    listed = (await client.get("/reports", params={"moment_id": moment}, headers=world.teacher_a)).json()
+    assert len(listed) == 1
+
+    # la mamá de Sofía lo ve en su Hoy.
+    day = (await client.get(f"/children/{world.sofia.id}/day", headers=world.mom)).json()
+    assert any("torre de bloques" in event["description"] for event in day["timeline"])
+    # Renata (otra sala) no aparece en ese reporte.
+    other = (await client.get(f"/children/{world.renata.id}/day", headers=world.dad)).json()
+    assert not any("torre de bloques" in event["description"] for event in other["timeline"])
+
+
+async def test_a_report_cannot_include_a_child_from_another_room(client, world):
+    routine = (await client.get(f"/classrooms/{world.room_a.id}/routine", headers=world.teacher_a)).json()
+    response = await client.post(
+        "/reports",
+        headers=world.teacher_a,
+        json={
+            "routine_moment_id": routine["moments"][0]["id"],
+            "type": "ACHIEVEMENT",
+            "method": "WRITTEN",
+            "description": "Intento con un niño que no es de mi sala.",
+            "child_ids": [world.sofia.id, world.renata.id],
+        },
+    )
+    assert response.status_code in (404, 422)

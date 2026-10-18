@@ -52,6 +52,9 @@ data class MeDto(
     val name: String,
     val surname: String = "",
     @SerialName("full_name") val fullName: String,
+    val email: String? = null,
+    // "ADMIN", "TEACHER" y/o "PARENT": con ellos la app decide qué tabs mostrar.
+    val roles: List<String> = emptyList(),
     val teacher: MeTeacherDto? = null,
     val parent: MeParentDto? = null,
 )
@@ -68,11 +71,14 @@ data class RoomChildDto(
     @SerialName("conversation_id") val conversationId: Int? = null,
     @SerialName("has_unread_chat") val hasUnreadChat: Boolean = false,
     @SerialName("unread_count") val unreadCount: Int = 0,
+    @SerialName("has_note_today") val hasNoteToday: Boolean = false,
 )
 
 @Serializable
 data class AttendanceBody(
     val status: String,
+    // el día de la marca ("aaaa-mm-dd"); sin él la API usa hoy. Importa cuando la marca llega después.
+    val date: String? = null,
 )
 
 // ---------- rutina ----------
@@ -126,6 +132,7 @@ data class CheckInDto(
     @SerialName("distance_m") val distanceM: Int = 0,
     @SerialName("allowed_radius_m") val allowedRadiusM: Int = 0,
     @SerialName("place_name") val placeName: String = "",
+    @SerialName("checked_out_at") val checkedOutAt: String? = null,
 )
 
 @Serializable
@@ -142,9 +149,24 @@ data class MessageDto(
     @SerialName("conversation_id") val conversationId: Int,
     @SerialName("author_name") val authorName: String = "",
     val text: String,
+    @SerialName("client_id") val clientId: String? = null,
     @SerialName("created_at") val createdAt: String,
     @SerialName("is_mine") val isMine: Boolean = false,
     @SerialName("is_read") val isRead: Boolean = false,
+)
+
+@Serializable
+data class ConversationChildDto(
+    val id: Int,
+    @SerialName("full_name") val fullName: String,
+)
+
+@Serializable
+data class ConversationDto(
+    val id: Int,
+    val child: ConversationChildDto,
+    @SerialName("unread_count") val unreadCount: Int = 0,
+    @SerialName("last_message") val lastMessage: MessageDto? = null,
 )
 
 @Serializable

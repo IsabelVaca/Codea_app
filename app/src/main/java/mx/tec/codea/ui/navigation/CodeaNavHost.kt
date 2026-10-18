@@ -20,7 +20,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.delay
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -29,6 +33,10 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.toRoute
 import kotlinx.coroutines.launch
 import mx.tec.codea.R
+import mx.tec.codea.data.AccessCodeNotice
+import mx.tec.codea.data.SessionRepository
+import mx.tec.codea.ui.components.AccessCodeDialog
+import mx.tec.codea.ui.screens.account.AccountScreen
 import mx.tec.codea.data.DataEvents
 import mx.tec.codea.domain.ReportMethod
 import mx.tec.codea.ui.components.rememberDictation
@@ -48,7 +56,9 @@ import mx.tec.codea.ui.screens.ReportScreen
 import mx.tec.codea.ui.screens.SelectReportMethodScreen
 import mx.tec.codea.ui.screens.SelectStudentsScreen
 import mx.tec.codea.ui.screens.admin.AltaAsistenteScreen
+import mx.tec.codea.ui.screens.ResumenDelDiaScreen
 import mx.tec.codea.ui.screens.admin.CentroScreen
+import mx.tec.codea.ui.screens.admin.SolicitudesBorradoScreen
 import mx.tec.codea.ui.screens.admin.CrearSalaScreen
 import mx.tec.codea.ui.screens.admin.DocenteDetalleScreen
 import mx.tec.codea.ui.screens.admin.DocenteOpcion
@@ -76,8 +86,13 @@ import mx.tec.codea.ui.screens.parent.today.ParentTodayScreen
 import mx.tec.codea.ui.state.AgregarMomentoViewModel
 import mx.tec.codea.ui.state.AltaAsistenteViewModel
 import mx.tec.codea.ui.state.AvisosViewModel
+import mx.tec.codea.ui.state.ChatViewModel
 import mx.tec.codea.ui.state.CentroViewModel
+import mx.tec.codea.ui.state.SolicitudesBorradoViewModel
+import mx.tec.codea.ui.state.CheckerConfig
 import mx.tec.codea.ui.state.CheckerViewModel
+import mx.tec.codea.ui.state.ResumenDelDiaViewModel
+import mx.tec.codea.ui.state.AccountViewModel
 import mx.tec.codea.ui.state.CodeaViewModel
 import mx.tec.codea.ui.state.CrearSalaViewModel
 import mx.tec.codea.ui.state.DocentesAdminViewModel
@@ -102,6 +117,9 @@ fun CodeaNavHost(
     // MyDayGraph for a teacher, AdminCentroGraph for an admin, ParentTodayRoute for a parent.
     startDestination: Any,
     snackbarHostState: SnackbarHostState,
+    // la sesión: Mi cuenta cambia la contraseña con ella, y onLogout la cierra (CodeaApp cambia de pantalla solo).
+    sessions: SessionRepository,
+    onLogout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // shared by all the admin screens.
@@ -113,6 +131,12 @@ fun CodeaNavHost(
     val parentViewModel: ParentViewModel = viewModel()
     // los avisos que le llegan a la asistente (Menú) y al papá (campana de Hoy).
     val avisosViewModel: AvisosViewModel = viewModel()
+    // la bandeja y la conversación de la docente y del papá.
+    val chatViewModel: ChatViewModel = viewModel()
+    val accountViewModel: AccountViewModel = viewModel(factory = AccountViewModel.Factory(sessions))
+
+    // el código de acceso de alguien recién dado de alta: se muestra una sola vez.
+    var codigoPendiente by remember { mutableStateOf<AccessCodeNotice?>(null) }
 
     // showSnackbar is a suspend function, so it needs a scope.
     val coroutineScope = rememberCoroutineScope()
@@ -121,6 +145,10 @@ fun CodeaNavHost(
     LaunchedEffect(Unit) {
         DataEvents.notices.collect { snackbarHostState.showSnackbar(it) }
     }
+    LaunchedEffect(Unit) {
+        DataEvents.accessCodes.collect { codigoPendiente = it }
+    }
+    codigoPendiente?.let { AccessCodeDialog(notice = it, onDismiss = { codigoPendiente = null }) }
 
     NavHost(
         navController = navController,
@@ -241,21 +269,45 @@ fun CodeaNavHost(
         composable<MyRoomRoute> {
             MyRoomScreen(
                 children = viewModel.children,
+                roomName = viewModel.teacher.roomName,
+                pendingChanges = viewModel.pendingChanges,
+                onSummaryClick = { childId -> navController.navigate(ResumenDelDiaRoute(childId)) },
                 onAttendanceChange = viewModel::setAttendance,
                 onChatClick = { childId ->
-                    viewModel.openChat(childId)
-                    navController.navigateToTopLevel(TopLevelDestination.CHATS)
+                    val conversation = viewModel.conversationOf(childId)
+                    if (conversation == null) {
+                        DataEvents.notice("Este niño todavía no tiene chat")
+                    } else {
+                        chatViewModel.open(conversation)
+                        navController.navigateToTopLevel(TopLevelDestination.CHATS)
+                    }
+                },
+            )
+        }
+
+        composable<ResumenDelDiaRoute> { backStackEntry ->
+            val route = backStackEntry.toRoute<ResumenDelDiaRoute>()
+            val resumenViewModel: ResumenDelDiaViewModel = viewModel()
+            LaunchedEffect(route.childId) { route.childId.toIntOrNull()?.let(resumenViewModel::cargar) }
+            ResumenDelDiaScreen(
+                viewModel = resumenViewModel,
+                onBackClick = { navController.popBackStack() },
+                onGuardado = {
+                    coroutineScope.launch { snackbarHostState.showSnackbar("Resumen guardado") }
+                    navController.popBackStack()
                 },
             )
         }
 
         composable<ChatsRoute> {
-            val child = viewModel.childById(viewModel.openChatChildId)
-            ChatsScreen(
-                selectedChild = child,
-                messages = child?.let { viewModel.messagesFor(it.id) }.orEmpty(),
-                onBackClick = { navController.navigateToTopLevel(TopLevelDestination.MY_ROOM) },
-                onSend = viewModel::sendMessage,
+            ChatTab(
+                chatViewModel = chatViewModel,
+                isParent = false,
+                // desde la conversación se vuelve a la bandeja; desde la bandeja, a Mi sala.
+                onBackClick = {
+                    if (chatViewModel.openId != null) chatViewModel.close()
+                    else navController.navigateToTopLevel(TopLevelDestination.MY_ROOM)
+                },
             )
         }
 
@@ -273,29 +325,59 @@ fun CodeaNavHost(
                     onOptionClick = { option ->
                         if (option == MenuOption.NOTICES) {
                             navController.navigate(AvisosFundacionRoute)
+                        } else if (option == MenuOption.PROFILE) {
+                            navController.navigate(AccountRoute)
                         } else {
                             navController.navigate(MenuOptionRoute(option.name))
                         }
                     },
-                    onLogoutConfirm = {
-                        viewModel.resetDay()
-                        navController.navigateToMyDayAfterLogout()
-                    },
+                    // cerrar sesión de verdad: CodeaApp ve que la sesión terminó y dibuja el inicio de sesión.
+                    onLogoutConfirm = onLogout,
                 )
             }
             composable<CheckerRoute> {
                 // this view model lives inside the destination: its owner is this screen,
                 // so the chosen case and the late reason are cleared when the teacher leaves.
                 val checker: CheckerViewModel = viewModel()
+                val locationPermission = rememberLauncherForActivityResult(
+                    ActivityResultContracts.RequestMultiplePermissions(),
+                ) { checker.onPermissionResult() }
+                val requestLocation = {
+                    locationPermission.launch(
+                        arrayOf(
+                            android.Manifest.permission.ACCESS_FINE_LOCATION,
+                            android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                        ),
+                    )
+                }
+                // cuando llegan las coordenadas del centro, el checador busca la ubicación del teléfono.
+                val centerLat = viewModel.centerLatitude
+                val centerLon = viewModel.centerLongitude
+                LaunchedEffect(centerLat, centerLon, viewModel.centerRadiusMeters, viewModel.teacher.shiftStartMinutes) {
+                    if (centerLat != null && centerLon != null) {
+                        if (!checker.hasLocationPermission()) requestLocation()
+                        checker.start(
+                            CheckerConfig(
+                                centerLatitude = centerLat,
+                                centerLongitude = centerLon,
+                                radiusMeters = viewModel.centerRadiusMeters,
+                                shiftStartMinutes = viewModel.teacher.shiftStartMinutes,
+                                placeName = viewModel.centerName.ifBlank { "La Oruga" },
+                            ),
+                        )
+                    }
+                }
                 CheckerScreen(
                     uiState = checker.uiState,
                     registeredCheckIn = viewModel.checkIn,
                     // the menu is right below the check-in, so going back is enough.
                     onBackClick = { navController.popBackStack() },
                     onScenarioChange = checker::onScenarioChange,
+                    onGrantLocationClick = { requestLocation() },
+                    onCheckOutClick = { checker.registrarSalida { record -> viewModel.registerCheckOut(record) } },
                     onCheckInClick = {
                         // the domain can say "no" (out of range): then nothing happens.
-                        checker.registrar(viewModel.centerLatitude, viewModel.centerLongitude) { record ->
+                        checker.registrar { record ->
                             viewModel.registerCheckIn(record)
                             navController.navigateToCheckInDone()
                         }
@@ -342,12 +424,36 @@ fun CodeaNavHost(
                 val salas by salasViewModel.salas.collectAsState()
                 val infantesCentro by infantesViewModel.infantes.collectAsState()
                 val avisos by centroViewModel.avisos.collectAsState()
+                val pendientesBorrado by centroViewModel.pendientesBorrado.collectAsState()
+                // la ubicación del teléfono pide permiso la primera vez; al contestar se fija si lo dieron.
+                val permisoUbicacion = rememberLauncherForActivityResult(
+                    ActivityResultContracts.RequestMultiplePermissions(),
+                ) { resultado ->
+                    if (resultado.values.any { it }) centroViewModel.fijarUbicacionActual()
+                }
                 CentroScreen(
                     salas = salas,
                     infantes = infantesCentro,
                     destinoSalaId = centroViewModel.destinoSalaId,
                     onDestinoChange = centroViewModel::onDestinoChange,
                     avisos = avisos,
+                    onCuentaClick = { navController.navigate(AccountRoute) },
+                    solicitudesBorrado = pendientesBorrado,
+                    onSolicitudesBorradoClick = { navController.navigate(AdminSolicitudesBorradoRoute) },
+                    ubicacion = centroViewModel.ubicacion,
+                    ubicando = centroViewModel.ubicando,
+                    onUsarMiUbicacion = {
+                        if (centroViewModel.hasLocationPermission()) {
+                            centroViewModel.fijarUbicacionActual()
+                        } else {
+                            permisoUbicacion.launch(
+                                arrayOf(
+                                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                                    android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                                ),
+                            )
+                        }
+                    },
                     onSalaClick = { sala ->
                         navController.navigate(AdminSalaDetalleRoute(sala.id))
                     },
@@ -401,6 +507,27 @@ fun CodeaNavHost(
                         })
                     },
                     onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<AdminSolicitudesBorradoRoute> {
+                val borradoViewModel: SolicitudesBorradoViewModel = viewModel()
+                val solicitudes by borradoViewModel.solicitudes.collectAsState()
+                val cargandoBorrado by borradoViewModel.cargando.collectAsState()
+                SolicitudesBorradoScreen(
+                    solicitudes = solicitudes,
+                    cargando = cargandoBorrado,
+                    onBackClick = { navController.popBackStack() },
+                    onAprobar = { solicitud ->
+                        borradoViewModel.aprobar(solicitud.id) {
+                            coroutineScope.launch { snackbarHostState.showSnackbar("Foto borrada") }
+                        }
+                    },
+                    onRechazar = { solicitud ->
+                        borradoViewModel.rechazar(solicitud.id) {
+                            coroutineScope.launch { snackbarHostState.showSnackbar("La foto se conserva") }
+                        }
+                    },
                 )
             }
 
@@ -563,9 +690,9 @@ fun CodeaNavHost(
                     nombreError = uiState.nombreError,
                     apellido = uiState.apellido,
                     onApellidoChange = inscribirInfanteViewModel::onApellidoChange,
-                    edad = uiState.edad,
-                    onEdadChange = inscribirInfanteViewModel::onEdadChange,
-                    edadError = uiState.edadError,
+                    nacimiento = uiState.nacimiento,
+                    onNacimientoChange = inscribirInfanteViewModel::onNacimientoChange,
+                    nacimientoError = uiState.nacimientoError,
                     alergias = uiState.alergias,
                     onAlergiasChange = inscribirInfanteViewModel::onAlergiasChange,
                     salas = salas,
@@ -575,7 +702,7 @@ fun CodeaNavHost(
                         infantesViewModel.inscribirInfante(
                             nombre = uiState.nombre,
                             apellido = uiState.apellido,
-                            edad = uiState.edad.toInt(),
+                            nacimiento = uiState.nacimientoIso ?: return@InscribirInfanteScreen,
                             sala = uiState.salaElegida ?: "",
                             alergias = uiState.alergias,
                             onSuccess = {
@@ -591,6 +718,30 @@ fun CodeaNavHost(
             }
         }
 
+        // mi cuenta: perfil, cambiar contraseña y cerrar sesión. la abren los tres roles.
+        composable<AccountRoute> {
+            val context = LocalContext.current
+            AccountScreen(
+                name = accountViewModel.name,
+                email = accountViewModel.email,
+                children = accountViewModel.children,
+                loadError = accountViewModel.loadError,
+                changing = accountViewModel.changing,
+                localError = accountViewModel.localError,
+                remoteError = accountViewModel.remoteError,
+                onChangePassword = { current, new, confirmation ->
+                    accountViewModel.changePassword(current, new, confirmation, onSuccess = {
+                        Toast.makeText(context, context.getString(R.string.account_password_changed), Toast.LENGTH_SHORT).show()
+                    })
+                },
+                onClearPasswordErrors = accountViewModel::clearPasswordErrors,
+                onLogoutConfirm = onLogout,
+                onBackClick = { navController.popBackStack() },
+                passwordChanged = accountViewModel.passwordChanged,
+                onPasswordChangedShown = accountViewModel::passwordChangedShown,
+            )
+        }
+
         // parent tabs. each is only one screen. the data comes from ParentViewModel.
         composable<ParentTodayRoute> {
             val context = LocalContext.current
@@ -602,6 +753,7 @@ fun CodeaNavHost(
                 pendientes = pendientes,
                 notifs = notifs,
                 onAbrirNotif = avisosViewModel::alAbrir,
+                onCuentaClick = { navController.navigate(AccountRoute) },
                 onNavigateToCalendar = {
                     navController.navigateToTopLevel(TopLevelDestination.PARENT_CALENDAR)
                 },
@@ -616,6 +768,7 @@ fun CodeaNavHost(
         composable<ParentCalendarRoute> {
             ParentCalendarScreen(
                 monthData = parentViewModel.monthData,
+                resumenSemana = parentViewModel.weekly,
                 initialSelectedDay = parentViewModel.todayDayNumber,
                 onDaySelected = { day ->
                     parentViewModel.selectDay(day.dayNumber)
@@ -634,6 +787,18 @@ fun CodeaNavHost(
                     foto.url?.let { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) }
                 },
                 onPedirBorrar = parentViewModel::requestPhotoDeletion,
+            )
+        }
+
+        composable<ParentChatRoute> {
+            ChatTab(
+                chatViewModel = chatViewModel,
+                isParent = true,
+                // con un solo hijo no hay bandeja: atrás regresa a Hoy.
+                onBackClick = {
+                    if (chatViewModel.openId != null && !chatViewModel.skipsInbox) chatViewModel.close()
+                    else navController.navigateToTopLevel(TopLevelDestination.PARENT_TODAY)
+                },
             )
         }
 
@@ -898,3 +1063,35 @@ private fun AnimatedContentTransitionScope<NavBackStackEntry>.tabSlideDirection(
         else -> SlideDirection.Left
     }
 }
+
+// the chat tab of the teacher and of the parent. while it is visible it asks the API for news
+// every 10 seconds; it stops when the app goes to the background (no WebSocket yet).
+@Composable
+private fun ChatTab(
+    chatViewModel: ChatViewModel,
+    isParent: Boolean,
+    onBackClick: () -> Unit,
+) {
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(lifecycle) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            while (true) {
+                chatViewModel.refresh()
+                delay(CHAT_POLL_MS)
+            }
+        }
+    }
+    ChatsScreen(
+        conversations = chatViewModel.conversations,
+        loaded = chatViewModel.loaded,
+        openConversation = chatViewModel.openConversation,
+        messages = chatViewModel.messages,
+        isParent = isParent,
+        onOpen = chatViewModel::open,
+        onBackClick = onBackClick,
+        onSend = chatViewModel::send,
+        onRetry = chatViewModel::retry,
+    )
+}
+
+private const val CHAT_POLL_MS = 10_000L

@@ -38,6 +38,7 @@ fun NavHostController.reselectTopLevel(destination: TopLevelDestination) {
         TopLevelDestination.PARENT_TODAY,
         TopLevelDestination.PARENT_CALENDAR,
         TopLevelDestination.PARENT_PHOTOS,
+        TopLevelDestination.PARENT_CHAT,
         TopLevelDestination.PARENT_DOCUMENTS -> Unit
     }
 }
@@ -67,12 +68,6 @@ fun NavHostController.navigateToMyDayAfterCheckIn() {
     popBackStack<MenuRoute>(inclusive = false)
     navigateToTopLevel(TopLevelDestination.MY_DAY)
     navigate(RutinaDeHoyRoute) { launchSingleTop = true }
-}
-
-// after "cerrar sesión" the day starts again, so we go to "mi día",
-// which now shows "aún el día no comienza".
-fun NavHostController.navigateToMyDayAfterLogout() {
-    navigateToTopLevel(TopLevelDestination.MY_DAY)
 }
 
 // the rules we use every time we jump from one tab to another.

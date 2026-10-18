@@ -4,14 +4,14 @@ Lista sacada del código el 16 de octubre de 2026 (rama `backend`, commit `12da7
 
 Son **65 endpoints en 13 módulos**. El contrato exacto, con todos los campos, sigue siendo el OpenAPI: con la API prendida, `http://localhost:8000/docs`.
 
-Los cambios que vienen (login con JWT, etc.) no están aquí: están en [`../plan/05-api-plan.md`](../plan/05-api-plan.md).
+El login con JWT ya está en la rama `feature/login-jwt` (aquí lo reflejan las secciones *Cuenta* y la convención de autenticación). Lo que falta vive en [`../plan/05-api-plan.md`](../plan/05-api-plan.md).
 
 ## Convenciones
 
 | Tema | Cómo es hoy |
 | --- | --- |
 | Base | `http://localhost:8000/api/v1` (emulador: `http://10.0.2.2:8000/api/v1`) |
-| Autenticación | `Authorization: Bearer <token>`. Con `AUTH_MODE=firebase`, el ID token de Firebase; con `AUTH_MODE=dev` (solo `ENV=dev`), `dev:<correo>`. **Va a cambiar a JWT propio** ([plan](../plan/04-api-login-jwt.md)) |
+| Autenticación | `Authorization: Bearer <access_token>`: JWT de 5 minutos que devuelve `POST /auth/login`; se renueva con `POST /auth/refresh` (refresh token de 7 días, rotado en cada uso). Detalle en [`app/modules/auth/README.md`](../../guarderia-api/app/modules/auth/README.md) |
 | Roles | `ADMIN`, `TEACHER`, `PARENT`, los mismos del `enum Role` de la app. Una persona puede tener más de uno |
 | Alcance | Además del rol, cada consulta se filtra: el `PARENT` solo ve a sus hijos y el `TEACHER` solo a los niños de su sala. Fuera de alcance responde **404**, no 403 |
 | Ids | `int` para salas, niños, momentos, reportes, fotos, documentos, conversaciones y mensajes; `uuid` para personas (docentes, padres, usuarios) |
@@ -40,7 +40,15 @@ Errores comunes a todos los endpoints con sesión: `401 UNAUTHENTICATED` (sin to
 | Método | Ruta | Rol | Envía | Responde | Errores |
 | --- | --- | --- | --- | --- | --- |
 | GET | `/me` | Todos | — | `MeOut`: datos de la persona, `roles` y un bloque por rol: `admin {center}`, `teacher {classroom, is_primary, shift, center}`, `parent {children[]}` | — |
-| POST | `/auth/accept-invitation` | Token válido sin cuenta | — (el correo sale del token) | `MeOut` | `403 EMAIL_NOT_VERIFIED`, `INVITATION_REQUIRED`, `INVITATION_EXPIRED`, `USER_INACTIVE`; `409 ACCOUNT_ALREADY_LINKED` |
+| POST | `/auth/login` | Sin sesión | `{email, password}` | `TokenOut` | `401 INVALID_CREDENTIALS` (el mismo para correo desconocido y contraseña mal); `403 ACCOUNT_NOT_ACTIVATED`, `USER_INACTIVE`; `429 TOO_MANY_ATTEMPTS` (con `retry_after_s` y `Retry-After`) tras 5 fallos seguidos del mismo correo |
+| POST | `/auth/activate` | Sin sesión | `{email, code, password}`: el código lo da el administrador | `TokenOut` | `403 CODE_INVALID`, `CODE_EXPIRED`, `USER_INACTIVE`; `422 PASSWORD_TOO_SHORT` (mínimo 9), `PASSWORD_TOO_LONG` (máximo 128), `PASSWORD_IS_EMAIL`; `429 TOO_MANY_ATTEMPTS` |
+| POST | `/auth/refresh` | Sin sesión | `{refresh_token}` | `TokenOut` sin `me` (el viejo deja de servir) | `401 REFRESH_INVALID` |
+| POST | `/auth/logout` | Sin sesión | `{refresh_token}` | 204 (también si ya no servía) | — |
+| POST | `/me/password` | Todos | `{current_password, new_password}` | `TokenOut`: cierra todas las sesiones y da tokens nuevos para esta | `403 PASSWORD_INCORRECT`; `422 PASSWORD_TOO_SHORT`, `PASSWORD_TOO_LONG`, `PASSWORD_IS_EMAIL` |
+| DELETE | `/me/sessions` | Todos | — | `{revoked}`: cierra todas mis sesiones | — |
+| POST | `/users/{id}/access-code` | `ADMIN` | — | 201 `{code, purpose, expires_at}`: `INVITATION` si la persona nunca entró, `PASSWORD_RESET` si ya entró | `404 USER_NOT_FOUND`; `409 USER_INACTIVE` |
+
+`TokenOut`: `{access_token, token_type, expires_in, refresh_token, refresh_expires_in, me?}`. Errores del token en cualquier endpoint: `401 UNAUTHENTICATED` (falta el encabezado), `TOKEN_EXPIRED` (la app renueva y repite) y `TOKEN_INVALID` (firma, tipo o `token_version` no coinciden: la app cierra sesión); `403 USER_INACTIVE` (de baja).
 
 `center` trae `latitude`, `longitude`, `check_in_radius_m` y `timezone` para el checador.
 
@@ -54,7 +62,7 @@ Errores comunes a todos los endpoints con sesión: `401 UNAUTHENTICATED` (sin to
 | PATCH | `/classrooms/{id}` | `ADMIN` | `{name?, capacity?, school_grade?}` | `ClassroomDetail` | `422 NAME_REQUIRED`, `CAPACITY_INVALID` |
 | PUT | `/classrooms/{id}/staff` | `ADMIN` | `{teacher_ids[], primary_teacher_id?}` | `ClassroomDetail` | `404 TEACHER_NOT_FOUND`; `422 PRIMARY_NOT_IN_STAFF` |
 | DELETE | `/classrooms/{id}` | `ADMIN` | — | 204; sus asistentes quedan sin sala | `409 CLASSROOM_NOT_EMPTY` |
-| GET | `/classrooms/{id}/children?date=` | `ADMIN`, `TEACHER` (su sala) | — | `RoomChild[]`: `attendance`, `conversation_id`, `has_unread_chat`, `unread_count` | `404 CLASSROOM_NOT_FOUND` |
+| GET | `/classrooms/{id}/children?date=` | `ADMIN`, `TEACHER` (su sala) | — | `RoomChild[]`: `attendance`, `conversation_id`, `has_unread_chat`, `unread_count`, `notes_today`, `has_note_today` (notas del papá de hoy) | `404 CLASSROOM_NOT_FOUND` |
 
 ## Docentes
 
@@ -96,8 +104,9 @@ Errores comunes a todos los endpoints con sesión: `401 UNAUTHENTICATED` (sin to
 
 | Método | Ruta | Rol | Envía | Responde | Errores |
 | --- | --- | --- | --- | --- | --- |
-| GET | `/staff-attendance/today` | `TEACHER` | — | `CheckInOut` o `null` | — |
+| GET | `/staff-attendance/today` | `TEACHER` | — | `CheckInOut` o `null` (con `checked_out_at` cuando ya registró la salida) | — |
 | POST | `/staff-attendance/check-in` | `TEACHER` | `{latitude, longitude, late_reason?}` | 201 `CheckInOut`: `status` (`ON_TIME`, `LATE`), `minutes_late`, `distance_m`, `allowed_radius_m`, `place_name`. Repetida el mismo día: 200 con la misma | `422 OUT_OF_RANGE` (con `distance_m` y `allowed_radius_m`); `409 CENTER_LOCATION_MISSING` |
+| POST | `/staff-attendance/check-out` | `TEACHER` | `{latitude, longitude}` | 201 `CheckInOut` con `checked_out_at`. Repetida: 200 con la misma salida | `409 NOT_CHECKED_IN`, `CENTER_LOCATION_MISSING`; `422 OUT_OF_RANGE` |
 | POST | `/staff-attendance/notify-coordination` | `TEACHER` | `{reason: LATE \| OUT_OF_RANGE, message?}` | 201 `NotifyOut`; hoy solo se guarda y se anota en el log | — |
 
 La API calcula distancia, radio y retardo con su propio reloj; nunca acepta el estado que calculó el teléfono. La checada también arranca la rutina del día.
@@ -129,6 +138,7 @@ La API calcula distancia, radio y retardo con su propio reloj; nunca acepta el e
 | POST | `/reports` | `TEACHER` | `{routine_moment_id, type, method, description, child_ids[], media_id?}` | 201 `ReportOut` | `422 DESCRIPTION_TOO_SHORT`, `CHILDREN_REQUIRED`; `409 MOMENT_NOT_STARTED`, `CHILD_ABSENT`, `MEDIA_NOT_READY`; `404 CHILD_NOT_FOUND`, `MEDIA_NOT_FOUND`, `MOMENT_NOT_FOUND` |
 | GET | `/reports?moment_id=` | `ADMIN`, `TEACHER` | — | `ReportOut[]` | `404 MOMENT_NOT_FOUND` |
 | POST | `/children/{id}/daily-entries` | `ADMIN`, `TEACHER` | `{date?, mood?, meals?, diaper_changes?, nap_minutes?, general_note?}`; solo cambia lo que se manda | `DailyEntryOut` | `404 CHILD_NOT_FOUND` |
+| GET | `/children/{id}/weekly-summary?week_start=` | Todos (en su alcance) | — | `WeeklySummaryOut`: lunes a viernes de esa semana (sin fecha, la de hoy): `days_attended`, `days_absent`, `moods`, `meals`, `nap_minutes_average`, `diaper_changes_total`, `reports_by_type`, `achievements`, `family_notes` y `days[]` | `404 CHILD_NOT_FOUND`; `422` si la fecha no es válida |
 | GET | `/children/{id}/day?date=` | Todos (en su alcance) | — | `DayOut`: `attendance`, `summary`, `timeline[]` y `notes[]` (las notas del papá) | `404 CHILD_NOT_FOUND` |
 
 ## Fotos
@@ -139,6 +149,9 @@ La API calcula distancia, radio y retardo con su propio reloj; nunca acepta el e
 | POST | `/media/{id}/complete` | Quien la pidió | — | `MediaOut` con `status: READY` | `409 UPLOAD_MISSING`; `404 MEDIA_NOT_FOUND` |
 | GET | `/media?child_id=&category=&cursor=&limit=` | Todos (en su alcance) | — | `{items: FeedItem[], next_cursor}`; cada foto con `url` firmada de 10 minutos, `category`, `teacher_name`, `note` | `404 CHILD_NOT_FOUND` |
 | POST | `/media/{id}/deletion-request` | `PARENT` | `{reason?}` | 201 `DeletionRequestOut`; repetida: 200 con la misma | `404 MEDIA_NOT_FOUND` |
+| GET | `/media/deletion-requests?status=` | `ADMIN` | — | `DeletionReviewOut[]` (por omisión `PENDING`): `reason`, `requested_by_name`, `child_names`, `photo_url` (firmada, 10 min; vacía si ya se borró), `decided_at`, `decision_note` | — |
+| POST | `/media/deletion-requests/{id}/approve` | `ADMIN` | `{note?}` | `DeletionReviewOut`: borra la foto del bucket y de todas las galerías | `404 DELETION_REQUEST_NOT_FOUND`, `409 REQUEST_ALREADY_DECIDED`, `502 STORAGE_UNAVAILABLE` |
+| POST | `/media/deletion-requests/{id}/reject` | `ADMIN` | `{note?}` | `DeletionReviewOut`: la foto se queda | `404`, `409 REQUEST_ALREADY_DECIDED` |
 
 Subida: después de `/media/uploads`, la app manda un POST multipart a `url` con todos los `fields` y el archivo en el campo `file`, y luego llama `/complete`.
 
@@ -174,8 +187,16 @@ Participantes de una conversación: los padres ligados al niño y las docentes d
 | --- | --- | --- | --- | --- | --- |
 | GET | `/center` | `ADMIN` | — | `CenterOut`: `name`, `latitude`, `longitude`, `check_in_radius_m`, `timezone` | `409 CENTER_MISSING` |
 | PATCH | `/center` | `ADMIN` | `{name?, latitude?, longitude?, check_in_radius_m?, timezone?}` (solo cambia lo que se manda; latitud y longitud en `null` quitan la ubicación) | `CenterOut` | `422 LOCATION_INCOMPLETE`, `LOCATION_INVALID`, `RADIUS_INVALID`, `TIMEZONE_INVALID` |
-| POST | `/invitations` | `ADMIN` | `{name, surname?, phone, email, role}` | 201 `InvitationOut` | `409 EMAIL_TAKEN`, `ALREADY_HAS_ACCOUNT` |
-| GET | `/invitations?status=&role=` | `ADMIN` | — | `InvitationOut[]`: `status` (`PENDING`, `ACCEPTED`, `EXPIRED`), `expires_at`, `accepted_at` | — |
+| POST | `/invitations` | `ADMIN` | `{name, surname?, phone, email, role}` | 201 `InvitationOut` con `access_code {code, purpose, expires_at}` (se muestra una sola vez) | `409 EMAIL_TAKEN`, `ALREADY_HAS_ACCOUNT` |
+| GET | `/invitations?status=&role=` | `ADMIN` | — | `InvitationOut[]`: `status` (`PENDING`, `ACCEPTED` = código usado, `EXPIRED`), `expires_at`, `accepted_at` | — |
+
+## Auditoría
+
+| Método | Ruta | Rol | Respuesta | Errores |
+| --- | --- | --- | --- | --- |
+| GET | `/audit-log?action=&actor_id=&limit=&cursor=` | `ADMIN` | `Page<AuditOut>`: `id`, `created_at`, `action`, `actor_id`, `actor_name`, `actor_email`, `entity_type`, `entity_id`, `detail`, `ip`; lo más nuevo primero, `limit` de 1 a 200 | `403` si no es admin; `422` si `limit` está fuera de rango |
+
+Acciones y qué datos guarda cada una: [`app/modules/audit/README.md`](../../guarderia-api/app/modules/audit/README.md). Solo se agrega; no hay forma de editar ni borrar.
 
 ## Enums
 

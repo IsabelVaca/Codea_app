@@ -1,7 +1,8 @@
 import uuid
+from datetime import datetime
 from enum import StrEnum
 
-from sqlalchemy import ForeignKey, String, Text, UniqueConstraint
+from sqlalchemy import DateTime, ForeignKey, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import Base, IdMixin, TimestampMixin, str_enum
@@ -16,6 +17,8 @@ class MediaStatus(StrEnum):
     # la API ya dio el permiso, pero el archivo todavía no llega al bucket.
     PENDING = "PENDING"
     READY = "READY"
+    # el admin aprobó una solicitud de borrado: el archivo ya no está en el bucket ni sale en ninguna pantalla.
+    DELETED = "DELETED"
 
 
 class Media(IdMixin, Base):
@@ -58,3 +61,7 @@ class MediaDeletionRequest(IdMixin, Base):
     status: Mapped[DeletionStatus] = mapped_column(
         str_enum(DeletionStatus), default=DeletionStatus.PENDING, server_default=DeletionStatus.PENDING.value
     )
+    # quién la resolvió (admin), cuándo y con qué explicación para la familia.
+    decided_by: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("app_user.id"))
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    decision_note: Mapped[str | None] = mapped_column(Text)

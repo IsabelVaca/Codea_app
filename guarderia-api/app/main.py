@@ -2,8 +2,9 @@ import asyncio
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import APIRouter, Depends, FastAPI
+from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.concurrency import run_in_threadpool
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,6 +14,7 @@ from .core.db import get_db
 from .core.errors import ApiError
 from .core.storage import get_storage
 from .modules.admins.router import router as admins
+from .modules.audit.router import router as audit
 from .modules.attendance.router import router as attendance
 from .modules.auth.router import router as auth
 from .modules.children.router import router as children
@@ -42,12 +44,6 @@ async def _ensure_bucket() -> None:
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    if settings.auth_mode == "firebase":
-        import firebase_admin
-        from firebase_admin import credentials
-
-        credential = credentials.Certificate(settings.firebase_credentials) if settings.firebase_credentials else None
-        firebase_admin.initialize_app(credential, {"projectId": settings.firebase_project_id})
     bucket = asyncio.create_task(_ensure_bucket()) if settings.env == "dev" else None
     yield
     if bucket is not None:
@@ -56,6 +52,41 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(title="API Guardería", lifespan=lifespan)
 errors.install(app)
+
+# la app Android no usa CORS; solo se abre para los orígenes web que se listen en CORS_ORIGINS (por omisión, ninguno).
+_cors_origins = [origin.strip() for origin in settings.cors_origins.split(",") if origin.strip()]
+if _cors_origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_cors_origins,
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+        allow_headers=["Authorization", "Content-Type"],
+        max_age=600,
+    )
+
+# Swagger necesita cargar scripts de otro sitio, así que la política de contenido estricta no va en su página.
+_DOC_PATHS = ("/docs", "/redoc", "/openapi.json")
+
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    """Cabeceras de seguridad en todas las respuestas, también en los errores."""
+    response = await call_next(request)
+    headers = response.headers
+    headers["X-Content-Type-Options"] = "nosniff"
+    headers["X-Frame-Options"] = "DENY"
+    headers["Referrer-Policy"] = "no-referrer"
+    headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    path = request.url.path
+    if not path.startswith(_DOC_PATHS):
+        headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'"
+    if path.startswith("/api/"):
+        # son datos de menores y tokens: nada de guardarlos en cachés del camino.
+        headers["Cache-Control"] = "no-store"
+    if settings.env != "dev":
+        # con HTTPS (producción) el navegador ya no vuelve a usar HTTP con este servidor.
+        headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
 
 # Todas las rutas viven bajo /api/v1. Los routers de cada módulo se agregan aquí.
 api = APIRouter(prefix="/api/v1")
@@ -79,6 +110,7 @@ async def ready(db: AsyncSession = Depends(get_db)) -> dict:
 
 for router in (
     auth,
+    audit,
     admins,
     classrooms,
     teachers,

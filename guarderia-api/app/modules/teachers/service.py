@@ -6,7 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core import rules
 from app.core.errors import ApiError
 from app.core.schemas import ClassroomRef
-from app.core.security import revoke_sessions
+from app.core.security import revoke_all_sessions
+from app.modules.audit import service as audit
 from app.modules.auth import service as auth
 from app.modules.auth.models import AppUser, Role, UserStatus
 from app.modules.children.models import Child, ChildStatus
@@ -55,7 +56,7 @@ async def _rows(db: AsyncSession, teacher_id: uuid.UUID | None = None) -> list[T
             shift=ShiftOut.model_validate(shift) if shift else None,
             checked_in_at=checked_in_at,
             active=user.status == UserStatus.ACTIVE,
-            has_account=user.firebase_uid is not None,
+            has_account=user.password_hash is not None,
             children_count=counts.get(teacher.classroom_id, 0),
         )
         for teacher, user, classroom, shift, checked_in_at in rows
@@ -80,7 +81,7 @@ async def _get_shift(db: AsyncSession, shift_id: int) -> Shift:
     return shift
 
 
-async def create_teacher(db: AsyncSession, data: TeacherCreate) -> TeacherOut:
+async def create_teacher(db: AsyncSession, data: TeacherCreate, actor_id: uuid.UUID | None = None) -> TeacherOut:
     """Da de alta a una docente y le crea su invitación para entrar a la app."""
     name = rules.require_name(data.name)
     phone = rules.check_phone(data.phone)
@@ -98,12 +99,19 @@ async def create_teacher(db: AsyncSession, data: TeacherCreate) -> TeacherOut:
         db.add(user)
         await db.flush()
     db.add(Teacher(user_id=user.id, classroom_id=data.classroom_id, shift_id=data.shift_id))
-    await auth.create_invitation(db, user, Role.TEACHER)
+    created = await auth.create_invitation(db, user, Role.TEACHER)
+    audit.record(
+        db, audit.USER_CREATED, actor_id=actor_id, entity_type="USER", entity_id=user.id, detail={"role": "TEACHER"}
+    )
     await db.commit()
-    return await get_teacher(db, user.id)
+    out = await get_teacher(db, user.id)
+    out.access_code = created[1] if created else None
+    return out
 
 
-async def update_teacher(db: AsyncSession, teacher_id: uuid.UUID, data: TeacherUpdate) -> TeacherOut:
+async def update_teacher(
+    db: AsyncSession, teacher_id: uuid.UUID, data: TeacherUpdate, actor_id: uuid.UUID | None = None
+) -> TeacherOut:
     """Cambia a la docente de sala o de turno."""
     teacher = await db.get(Teacher, teacher_id)
     if teacher is None:
@@ -118,19 +126,29 @@ async def update_teacher(db: AsyncSession, teacher_id: uuid.UUID, data: TeacherU
         if data.shift_id is not None:
             await _get_shift(db, data.shift_id)
         teacher.shift_id = data.shift_id
+    audit.record(
+        db, audit.USER_UPDATED, actor_id=actor_id, entity_type="USER", entity_id=teacher_id,
+        detail={"classroom_id": teacher.classroom_id, "shift_id": teacher.shift_id},
+    )
     await db.commit()
     return await get_teacher(db, teacher_id)
 
 
-async def set_active(db: AsyncSession, teacher_id: uuid.UUID, active: bool) -> TeacherOut:
+async def set_active(
+    db: AsyncSession, teacher_id: uuid.UUID, active: bool, actor_id: uuid.UUID | None = None
+) -> TeacherOut:
     """Dar de baja quita el acceso y cierra sus sesiones; reactivar se lo devuelve."""
     if await db.get(Teacher, teacher_id) is None:
         raise ApiError(404, "TEACHER_NOT_FOUND", "No existe esa docente")
     user = await db.get(AppUser, teacher_id)
     user.status = UserStatus.ACTIVE if active else UserStatus.INACTIVE
-    await db.commit()
     if not active:
-        revoke_sessions(user.firebase_uid)
+        await revoke_all_sessions(db, user)
+    audit.record(
+        db, audit.USER_REACTIVATED if active else audit.USER_DEACTIVATED, actor_id=actor_id,
+        entity_type="USER", entity_id=teacher_id, detail={"role": "TEACHER"},
+    )
+    await db.commit()
     return await get_teacher(db, teacher_id)
 
 

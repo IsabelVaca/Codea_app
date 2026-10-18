@@ -11,6 +11,7 @@ from app.modules.attendance.models import Attendance, AttendanceStatus
 from app.modules.auth.models import AppUser
 from app.modules.children.models import Child, ChildStatus
 from app.modules.messaging import service as messaging
+from app.modules.messaging.models import ParentNote
 from app.modules.teachers.models import Teacher
 
 from .centers import center_today, get_active_classroom
@@ -229,6 +230,15 @@ async def room_children(
         ).all()
     )
     chats = await messaging.unread_by_child(db, current.id, ids)
+    notes = dict(
+        (
+            await db.execute(
+                select(ParentNote.child_id, func.count())
+                .where(ParentNote.child_id.in_(ids), ParentNote.date == day)
+                .group_by(ParentNote.child_id)
+            )
+        ).all()
+    )
     result = []
     for child in children:
         conversation_id, unread = chats.get(child.id, (None, 0))
@@ -242,6 +252,8 @@ async def room_children(
                 conversation_id=conversation_id,
                 has_unread_chat=unread > 0,
                 unread_count=unread,
+                notes_today=notes.get(child.id, 0),
+                has_note_today=notes.get(child.id, 0) > 0,
             )
         )
     return result

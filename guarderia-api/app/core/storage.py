@@ -62,6 +62,10 @@ class Storage:
             return None
         return head["ContentLength"]
 
+    async def delete(self, key: str) -> None:
+        """Borra el archivo del bucket (S3 no se queja si ya no estaba)."""
+        await run_in_threadpool(self._internal.delete_object, Bucket=self.bucket, Key=key)
+
     def ensure_bucket(self) -> None:
         """Crea el bucket si no existe. Solo se usa en desarrollo, con MinIO."""
         try:
