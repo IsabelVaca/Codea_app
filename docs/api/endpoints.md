@@ -147,6 +147,9 @@ La API calcula distancia, radio y retardo con su propio reloj; nunca acepta el e
 | POST | `/media/{id}/complete` | Quien la pidió | — | `MediaOut` con `status: READY` | `409 UPLOAD_MISSING`; `404 MEDIA_NOT_FOUND` |
 | GET | `/media?child_id=&category=&cursor=&limit=` | Todos (en su alcance) | — | `{items: FeedItem[], next_cursor}`; cada foto con `url` firmada de 10 minutos, `category`, `teacher_name`, `note` | `404 CHILD_NOT_FOUND` |
 | POST | `/media/{id}/deletion-request` | `PARENT` | `{reason?}` | 201 `DeletionRequestOut`; repetida: 200 con la misma | `404 MEDIA_NOT_FOUND` |
+| GET | `/media/deletion-requests?status=` | `ADMIN` | — | `DeletionReviewOut[]` (por omisión `PENDING`): `reason`, `requested_by_name`, `child_names`, `photo_url` (firmada, 10 min; vacía si ya se borró), `decided_at`, `decision_note` | — |
+| POST | `/media/deletion-requests/{id}/approve` | `ADMIN` | `{note?}` | `DeletionReviewOut`: borra la foto del bucket y de todas las galerías | `404 DELETION_REQUEST_NOT_FOUND`, `409 REQUEST_ALREADY_DECIDED`, `502 STORAGE_UNAVAILABLE` |
+| POST | `/media/deletion-requests/{id}/reject` | `ADMIN` | `{note?}` | `DeletionReviewOut`: la foto se queda | `404`, `409 REQUEST_ALREADY_DECIDED` |
 
 Subida: después de `/media/uploads`, la app manda un POST multipart a `url` con todos los `fields` y el archivo en el campo `file`, y luego llama `/complete`.
 

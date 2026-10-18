@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import case, select
+from sqlalchemy import case, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -9,13 +9,25 @@ from app.core.errors import ApiError
 from app.core.pagination import Page
 from app.core.security import CurrentUser, get_child_in_scope
 from app.core.storage import UPLOAD_SECONDS, Storage
+from app.modules.audit import service as audit
 from app.modules.auth.models import AppUser
+from app.modules.children.models import Child
 from app.modules.parents.models import ParentChildRel
 from app.modules.reports.models import Report, ReportType
 from app.modules.routines.models import MomentCategory, RoutineMoment
 
-from .models import Media, MediaChild, MediaDeletionRequest, MediaKind, MediaStatus
-from .schemas import DeletionRequestIn, DeletionRequestOut, FeedItem, MediaOut, PhotoCategory, UploadIn, UploadOut
+from .models import DeletionStatus, Media, MediaChild, MediaDeletionRequest, MediaKind, MediaStatus
+from .schemas import (
+    DeletionDecisionIn,
+    DeletionRequestIn,
+    DeletionRequestOut,
+    DeletionReviewOut,
+    FeedItem,
+    MediaOut,
+    PhotoCategory,
+    UploadIn,
+    UploadOut,
+)
 
 MAX_BYTES = 10 * 1024 * 1024
 
@@ -168,3 +180,109 @@ async def request_deletion(
         )
     )
     return DeletionRequestOut.model_validate(request), created
+
+
+# ---------------------------------------------------------------- revisión del admin
+
+
+async def list_deletion_requests(
+    db: AsyncSession, storage: Storage, status: DeletionStatus
+) -> list[DeletionReviewOut]:
+    """Las solicitudes de borrado con ese estado, de la más vieja a la más nueva (la que lleva más esperando, primero)."""
+    return await _reviews(db, storage, MediaDeletionRequest.status == status)
+
+
+async def _reviews(db: AsyncSession, storage: Storage, *conditions) -> list[DeletionReviewOut]:
+    rows = (
+        await db.execute(
+            select(MediaDeletionRequest, Media, AppUser)
+            .join(Media, Media.id == MediaDeletionRequest.media_id)
+            .join(AppUser, AppUser.id == MediaDeletionRequest.requested_by)
+            .where(*conditions)
+            .order_by(MediaDeletionRequest.id)
+        )
+    ).all()
+    names: dict[int, list[str]] = {}
+    media_ids = [media.id for _, media, _ in rows]
+    if media_ids:
+        for media_id, child in (
+            await db.execute(
+                select(MediaChild.media_id, Child)
+                .join(Child, Child.id == MediaChild.child_id)
+                .where(MediaChild.media_id.in_(media_ids))
+                .order_by(Child.name)
+            )
+        ).all():
+            names.setdefault(media_id, []).append(child.full_name)
+    return [
+        DeletionReviewOut(
+            id=request.id,
+            media_id=media.id,
+            status=request.status,
+            reason=request.reason,
+            requested_by_id=requester.id,
+            requested_by_name=requester.full_name,
+            child_names=names.get(media.id, []),
+            photo_url=None if media.status == MediaStatus.DELETED else storage.presign_get(media.storage_key),
+            created_at=request.created_at,
+            decided_at=request.decided_at,
+            decision_note=request.decision_note,
+        )
+        for request, media, requester in rows
+    ]
+
+
+async def decide_deletion(
+    db: AsyncSession,
+    current: CurrentUser,
+    storage: Storage,
+    request_id: int,
+    approve: bool,
+    data: DeletionDecisionIn,
+) -> DeletionReviewOut:
+    """Aprobar borra la foto del bucket y de todas las pantallas; rechazar la deja como estaba.
+    Una solicitud ya resuelta no se vuelve a resolver (409)."""
+    request = await db.scalar(
+        select(MediaDeletionRequest).where(MediaDeletionRequest.id == request_id).with_for_update()
+    )
+    if request is None:
+        raise ApiError(404, "DELETION_REQUEST_NOT_FOUND", "No existe esa solicitud")
+    if request.status != DeletionStatus.PENDING:
+        raise ApiError(409, "REQUEST_ALREADY_DECIDED", "Esa solicitud ya se resolvió")
+
+    now = clock.now()
+    note = (data.note or "").strip() or None
+    new_status = DeletionStatus.APPROVED if approve else DeletionStatus.REJECTED
+    media = await db.get(Media, request.media_id)
+    if approve:
+        # primero el bucket: si falla, no se marca nada como borrado.
+        try:
+            await storage.delete(media.storage_key)
+        except Exception as error:
+            raise ApiError(502, "STORAGE_UNAVAILABLE", "No se pudo borrar el archivo; intenta de nuevo") from error
+        media.status = MediaStatus.DELETED
+        # los reportes conservan su texto, pero ya no apuntan a una foto que no existe.
+        await db.execute(update(Report).where(Report.media_id == media.id).values(media_id=None))
+        # si otras familias pidieron borrar la misma foto, su solicitud queda resuelta con ella.
+        await db.execute(
+            update(MediaDeletionRequest)
+            .where(
+                MediaDeletionRequest.media_id == media.id,
+                MediaDeletionRequest.status == DeletionStatus.PENDING,
+            )
+            .values(status=new_status, decided_by=current.id, decided_at=now, decision_note=note)
+        )
+    request.status = new_status
+    request.decided_by = current.id
+    request.decided_at = now
+    request.decision_note = note
+    audit.record(
+        db,
+        audit.MEDIA_DELETION_APPROVED if approve else audit.MEDIA_DELETION_REJECTED,
+        actor_id=current.id,
+        entity_type="MEDIA",
+        entity_id=media.id,
+        detail={"request_id": request.id},
+    )
+    await db.commit()
+    return (await _reviews(db, storage, MediaDeletionRequest.id == request.id))[0]

@@ -15,12 +15,15 @@ Archivos y bucket: `core/storage.py`.
 | `POST /media/{id}/complete` | cualquiera con cuenta | Marca el archivo como subido |
 | `GET /media` | padre | Galería paginada y filtrada por categoría, solo donde aparece su hijo |
 | `POST /media/{id}/deletion-request` | padre | "Pedir que se borre"; si ya la pidió, devuelve la misma con 200 |
+| `GET /media/deletion-requests?status=` | admin | Las solicitudes (por omisión `PENDING`): quién la pidió, el motivo, de qué niños es la foto y una URL firmada para verla |
+| `POST /media/deletion-requests/{id}/approve` | admin | Borra el archivo del bucket y marca la foto `DELETED` (sale de todas las galerías); los reportes conservan su texto sin foto; cierra las demás solicitudes de la misma foto. `409 REQUEST_ALREADY_DECIDED`; `502 STORAGE_UNAVAILABLE` si el bucket falla (y entonces no se marca nada) |
+| `POST /media/deletion-requests/{id}/reject` | admin | La foto se queda; la solicitud queda resuelta. Ambas aceptan `{note?}` para explicar la decisión |
 
 ## Estado
 
 | Hecho | Pendiente |
 |---|---|
-| Subida con URL firmada, galería con paginación por cursor, solicitud de borrado | **Revisión de solicitudes por el admin** (RF-10): listar, aprobar o rechazar, y borrar el objeto del bucket |
+| Subida con URL firmada, galería con paginación por cursor, solicitud de borrado, **revisión por el admin** (listar, aprobar con borrado real del bucket, rechazar; auditada) | Que la familia vea la respuesta a su solicitud (hoy solo el admin ve el estado) |
 | | **Medir** la consulta de fotos en menos de 4 s (RNF05) |
 | | Compresión y miniaturas del lado del servidor, si la app no comprime bien |
 | | Enviar fotos desde el padre o la asistente por el chat (tarea abierta) |
@@ -28,4 +31,4 @@ Archivos y bucket: `core/storage.py`.
 | | Almacén: SeaweedFS en desarrollo; RustFS es el que nombra el marco ([decisión #9](../../../../docs/DECISIONES-PENDIENTES.md)) |
 | | En producción, el bucket debe existir de antemano (`_ensure_bucket` solo corre con `ENV=dev`) |
 
-Pruebas: `tests/test_media_documents.py`.
+Pruebas: `tests/test_media_documents.py` y `tests/test_media_deletion.py` (9: listado, solo admin, aprobar borra, rechazar conserva, una sola decisión, solicitudes repetidas, falla del bucket, auditoría).

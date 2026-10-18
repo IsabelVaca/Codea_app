@@ -46,6 +46,12 @@ Registro cronológico de lo que se hizo, por qué y cómo se verificó. Lo nuevo
 - Para probarlo se dejó una nota de prueba de la mamá de Diego Hernández en Aiven (`Prueba: hoy llegó con tos…`, 18/oct); es dato de demostración.
 - El teléfono se bloqueó solo durante la prueba; se activó `svc power stayon usb` (pantalla encendida mientras esté conectado). Para revertirlo: `adb shell svc power stayon false`.
 
+### RF-10: el admin revisa las solicitudes de borrado de fotos (API)
+- `GET /media/deletion-requests`, `POST …/{id}/approve` y `…/reject` (solo admin). Aprobar borra el archivo del bucket (`Storage.delete`), marca la foto `DELETED` (sale de todas las galerías), deja los reportes sin foto pero con su texto y cierra las demás solicitudes de esa foto. Si el bucket falla responde `502` y no marca nada. Una solicitud se resuelve una sola vez (`409`).
+- Migración `c52d8e3f0b21` (`decided_by`, `decided_at`, `decision_note`), aplicada también en Aiven. Acciones auditadas: `MEDIA_DELETION_APPROVED/REJECTED`.
+- 9 pruebas nuevas (`test_media_deletion.py`). Total: **259 pruebas de la API en verde**. La matriz de roles se regeneró sola con las 3 rutas nuevas (75 endpoints).
+- Falta la pantalla del admin en la app (siguiente paso).
+
 ### Checador con GPS y hora reales
 - Antes: prototipo con datos fijos y `registrar()` mandaba siempre las coordenadas del centro (el servidor nunca rechazaba por distancia).
 - Ahora: `data/DeviceLocation.kt` (LocationManager de Android, sin Play Services; GPS y luego red, con tiempo límite), `domain/GeoMath.kt` (distancia haversine, con 4 pruebas en `GeoMathTest`) y `CheckerViewModel` con estados de ubicación (buscando, sin permiso, sin señal, lista). La fecha y la hora son las del teléfono; la entrada se registra con la posición real.

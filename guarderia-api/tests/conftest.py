@@ -139,6 +139,9 @@ class FakeStorage:
     def put(self, key: str, size: int = 1234) -> None:
         self.objects[key] = size
 
+    async def delete(self, key: str) -> None:
+        self.objects.pop(key, None)
+
 
 @pytest.fixture
 def storage() -> FakeStorage:
@@ -233,4 +236,5 @@ async def world(db) -> SimpleNamespace:
         teacher_a_id=teacher_a.id,
         teacher_b_id=teacher_b.id,
         mom_id=mom.id,
+        dad_id=dad.id,
     )

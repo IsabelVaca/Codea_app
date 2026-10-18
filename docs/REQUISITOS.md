@@ -30,7 +30,7 @@ Catálogo tomado del tablero de Teams (buckets *Req. de CODEA*, *Req. base*, *Re
 | RF-07 | Cada familia ve solo a sus hijos | ✅ | `can_see_child` / `get_child_in_scope` en `core/security.py`; fuera de alcance responde 404. |
 | RF-08 | Avisos del centro | ✅ | `POST` y `GET /announcements` (con alcance por rol). El admin publica y ve el historial en Centro; la docente los lee en Menú → Avisos (`AvisosFundacionScreen`); el padre, en la campana de Hoy. Limitación: el estado de "leído" vive solo en el teléfono (`LeidosStore`). |
 | RF-09 | Fotografía de la actividad | ✅ | `media` (URL firmada), `MediaUploader`, reportes con `media_id`. La cámara usa `TakePicturePreview` (miniatura; ver nota en `ui/components/README.md`). |
-| RF-10 | La familia puede pedir que se borre una foto | 🟡 | `POST /media/{id}/deletion-request` y botón en la pantalla de fotos del padre. Falta que el admin las revise (endpoint y pantalla). |
+| RF-10 | La familia puede pedir que se borre una foto | 🟡 | `POST /media/{id}/deletion-request` y botón en la pantalla de fotos del padre. **API de revisión hecha** (`GET /media/deletion-requests`, `approve` borra del bucket, `reject`; auditada; 9 pruebas en `test_media_deletion.py`). Falta la pantalla del admin en la app. |
 | RF-11 | Funciona sin internet | ❌ | No hay Room, DataStore ni WorkManager. |
 | RF-12 | Resumen semanal | ❌ | Solo existe `daily_summary` (diario). |
 | RF-13 | Desbloqueo con huella | ❌ | No hay `BiometricPrompt` ([decisión #4](DECISIONES-PENDIENTES.md)). |
