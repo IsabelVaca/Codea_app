@@ -77,7 +77,7 @@ Barra inferior: **Mi día · Mi sala · Chats · Menú**.
 1. **Mi día** dice «Aún el día no comienza»: «Ve al checador a registrar tu entrada cuando estés en la estancia». Toca **Checador** (también está en **Menú**).
 2. La pantalla «Registrar entrada» muestra la fecha y la hora del teléfono y tu turno. **No pide ubicación ni permisos**: el checador no usa GPS ni mapa.
    - **A tiempo:** toca **«Registrar mi entrada»**.
-   - **Tarde:** la app te avisa «Llegaste después de tu hora»; se registra igual con **retardo**. Puedes escribir el **motivo del retardo** (opcional), tocar **«Avisar a coordinación»** y luego «Registrar con retardo». Ese aviso se guarda, pero **hoy nadie lo puede leer desde la app** (Próximamente).
+   - **Tarde:** la app te avisa «Llegaste después de tu hora»; se registra igual con **retardo**. Puedes escribir el **motivo del retardo** (opcional) y luego tocar «Registrar con retardo». El retardo queda marcado en tu registro; la app no tiene aviso a coordinación.
 3. La hora que queda guardada es la del **servidor**, no la del teléfono.
 4. Al registrar te sale «¡Entrada registrada!» y la app te lleva sola a **«Rutina de hoy»**, de solo lectura. Toca **«Comenzar el día»**.
 
@@ -203,7 +203,6 @@ El checador **ya no tiene ajustes**: no usa ubicación ni radio.
 |---|---|
 | Quitar solo a un niño de una foto de grupo; revisar solicitudes de borrado de **documentos** | **Próximamente** (la revisión de solicitudes de fotos ya existe, ver 3.1) |
 | Ver la **bitácora de auditoría** | No hay pantalla; existe `GET /audit-log` en la API |
-| Ver los **avisos a coordinación** de las docentes | **Próximamente** |
 | Editar datos de docentes, infantes y padres; cambiar el nombre del centro y los turnos | **Próximamente** |
 | Pedir documentos a una familia (la lista de cada niño sale hoy del seed) | **Próximamente** |
 | Menú del día, llegada de padres, eventos y citas, imprimir reportes | **Próximamente** |

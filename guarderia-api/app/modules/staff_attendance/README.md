@@ -9,7 +9,7 @@ El checador **no usa ubicación**: registrar la entrada es un toque, la hora la 
 | `GET /staff-attendance/today` | docente | El registro de hoy, o `null` |
 | `POST /staff-attendance/check-in` | docente | Registra la entrada (cuerpo opcional: `late_reason`). `LATE` si llegó tarde. Repetirla devuelve la misma con 200 |
 | `POST /staff-attendance/check-out` | docente | Registra la salida. 409 `NOT_CHECKED_IN` sin entrada. Repetirla devuelve la misma con 200 |
-| `POST /staff-attendance/notify-coordination` | docente | Avisa a coordinación que llegará tarde |
+| `POST /staff-attendance/notify-coordination` | docente | Avisa a coordinación que llegará tarde. **La app ya no lo llama** (se quitó el botón el 18/oct); sigue disponible en la API |
 
 ## Cierre automático a las 9 pm
 
@@ -19,7 +19,7 @@ Una entrada sin salida se cierra sola a las **21:00 hora del centro** (`AUTO_CLO
 
 | Hecho | Pendiente |
 |---|---|
-| Entrada, salida, retardo y cierre automático | Que el admin vea los avisos de coordinación (hoy se guardan, no hay endpoint de lectura) |
+| Entrada, salida, retardo y cierre automático | Decidir si se quita `notify-coordination` y la tabla `coordination_notice`, que ya no usa la app |
 | | Notificaciones push: el marco excluye Firebase; usar WorkManager en la app |
 
 Pruebas: `tests/test_teacher_day.py` (`test_check_in_*`, `test_check_out_*`, `test_open_check_in_closes_at_9pm` y las demás del cierre).

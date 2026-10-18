@@ -137,3 +137,8 @@ Registro cronológico de lo que se hizo, por qué y cómo se verificó. Lo nuevo
 - **Ajustes** reemplaza a Rutinas: un menú con **Rutinas** (la lista de siempre, ahora con título y botón de volver) y **Mi cuenta**. Mi cuenta ya no se abre desde el avatar de Centro. La ubicación del checador salió de Centro y, con el checador sin ubicación, desapareció.
 - Barra inferior del admin: **Centro · Docentes · Familias · Ajustes**. Subido a `main` en `26515d4`.
 
+## 2026-10-18 · Se quita «Avisar a coordinación» del checador
+
+- El botón había pasado a la pantalla de retardo al quitar el caso «fuera del perímetro»; se quitó de la app, junto con `onNotifyCoordination`, `NotifyBody` y la llamada a la API. Los textos «coordinación lo verá» y «Coordinación recibe el aviso de retardo» se cambiaron porque nadie leía esos avisos.
+- Sigue en el backend `POST /staff-attendance/notify-coordination` y la tabla `coordination_notice`, sin quien los use.
+

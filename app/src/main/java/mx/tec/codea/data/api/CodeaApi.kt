@@ -139,9 +139,6 @@ interface CodeaApi {
     @POST("staff-attendance/check-out")
     suspend fun checkOut(): CheckInDto
 
-    @POST("staff-attendance/notify-coordination")
-    suspend fun notifyCoordination(@Body body: NotifyBody)
-
     // ----- chat -----
     @GET("conversations")
     suspend fun conversations(): List<ConversationDto>

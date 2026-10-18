@@ -34,7 +34,7 @@ Codea es la aplicación con la que la estancia infantil **La Oruga** (nombre que
 | Dirección IP y correo escrito en cada intento de entrar, correcto o fallido | Quien intenta entrar (aunque no tenga cuenta) | Los registra el servidor para frenar ataques y para la bitácora |
 | Sala, turno y relación con el niño | Docentes y tutores | Los captura el administrador |
 | Hora de entrada y de salida (la de salida puede ser la del cierre automático de las 9 pm), retardo y motivo del retardo. **No se guarda la ubicación** | Docentes | Al usar el checador (ver 2.4) |
-| Avisos a coordinación (motivo y mensaje opcional) | Docentes | Los escribe la docente en el checador |
+| Avisos a coordinación (motivo y mensaje opcional) | Docentes | **La app ya no los genera** (se quitó el botón el 18/oct); la tabla y el endpoint siguen en el servidor |
 | Mensajes, notas para la asistente | Docentes y tutores | Los escriben ellos en la app |
 | Persona(s) autorizada(s) para recoger al niño: nombre, parentesco y teléfono | Terceros | Los captura el tutor o el administrador |
 

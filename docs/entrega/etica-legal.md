@@ -151,7 +151,7 @@ Eso cumple la postura para una foto de **un solo niño**. **Sigue sin resolver:*
 
 - **No hay dato de ubicación** que proteger: no se pide el permiso, no se guarda nada y la migración `e74f0a5b3d43` borra lo que ya había (pendiente de aplicar en Aiven).
 - **Se pierde la verificación del lugar:** el registro prueba la hora, no que la docente estuviera en la estancia. Si más adelante hace falta, habría que volver a plantear el dilema con el aviso de privacidad por delante.
-- **Aviso a coordinación:** sigue existiendo para llegadas tarde, pero esos avisos **no tienen pantalla de lectura**: nadie los ve.
+- **Aviso a coordinación:** la app ya no lo ofrece (se quitó el botón el 18/oct). El endpoint y la tabla `coordination_notice` siguen en el backend, sin pantalla que los use.
 
 ### Dilema 3: acceso del administrador a los chats
 

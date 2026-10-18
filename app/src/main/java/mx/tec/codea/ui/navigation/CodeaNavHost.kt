@@ -372,7 +372,6 @@ fun CodeaNavHost(
                             navController.navigateToCheckInDone()
                         }
                     },
-                    onNotifyCoordinationClick = checker::onNotifyCoordination,
                     onWriteLateReasonClick = checker::onWriteLateReasonClick,
                     onLateReasonChange = checker::onLateReasonChange,
                 )

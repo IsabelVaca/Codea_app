@@ -10,7 +10,6 @@ import mx.tec.codea.data.api.CheckInDto
 import mx.tec.codea.data.api.DailyEntryBody
 import mx.tec.codea.data.api.DayDto
 import mx.tec.codea.data.api.MeDto
-import mx.tec.codea.data.api.NotifyBody
 import mx.tec.codea.data.api.ReportBody
 import mx.tec.codea.data.api.RoomChildDto
 import mx.tec.codea.data.api.RoutineDto
@@ -43,10 +42,6 @@ class TeacherApiRepository {
 
     suspend fun checkIn(lateReason: String): CheckInRecord =
         api.checkIn(CheckInBody(lateReason.trim().ifBlank { null })).toRecord()
-
-    suspend fun notifyCoordination(reason: String) {
-        api.notifyCoordination(NotifyBody(reason = reason))
-    }
 
     // ----- mi sala -----
 

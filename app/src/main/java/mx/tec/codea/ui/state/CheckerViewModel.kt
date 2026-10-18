@@ -30,7 +30,6 @@ data class CheckerUiState(
     val attempt: CheckInAttempt,
     val isWritingLateReason: Boolean = false,
     val lateReason: String = "",
-    val coordinationNotified: Boolean = false,
 ) {
     // derived state: the domain decides, the screen only paints it.
     val status: CheckInStatus = CheckInRules.statusOf(attempt)
@@ -59,20 +58,6 @@ class CheckerViewModel : ViewModel() {
     // vuelve a leer la hora del teléfono: la pantalla lo pide cada cierto tiempo para que el reloj no se quede atrás.
     fun refreshTime() {
         uiState = uiState.copy(attempt = attemptNow(config))
-    }
-
-    // avisa a coordinación que llegará tarde; solo se marca como avisado si la API lo guardó.
-    fun onNotifyCoordination() {
-        viewModelScope.launch {
-            try {
-                api.notifyCoordination("LATE")
-                uiState = uiState.copy(coordinationNotified = true)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                DataEvents.notice(e.toUserMessage())
-            }
-        }
     }
 
     fun onWriteLateReasonClick() {

@@ -193,11 +193,9 @@
     <string name="checker_check_in">Registrar mi entrada</string>
     <string name="checker_check_in_late">Registrar con retardo</string>
     <string name="checker_late_title">Llegaste después de tu hora</string>
-    <string name="checker_late_body">Se registra igual, pero queda marcado como retardo y coordinación lo verá.</string>
+    <string name="checker_late_body">Se registra igual, pero queda marcado como retardo.</string>
     <string name="checker_write_late_reason">+ Escribir el motivo del retardo (opcional)</string>
     <string name="checker_late_reason_label">Motivo del retardo</string>
-    <string name="checker_notify_coordination">Avisar a coordinación</string>
-    <string name="checker_coordination_notified">Aviso enviado</string>
     <string name="checker_already_registered">Ya registraste tu entrada a las %1$s</string>
     <string name="checker_already_registered_late">Ya registraste tu entrada con retardo a las %1$s</string>
     <string name="checker_exit_is_automatic">Cuando termines tu turno, vuelve aquí a registrar tu salida. Si se te olvida, se cierra sola a las 9:00 pm.</string>
@@ -220,7 +218,7 @@
         <item quantity="other">%1$d minutos después de tu hora.</item>
     </plurals>
     <string name="checker_done_no_paper">Sin papel ni firma · queda en tu expediente</string>
-    <string name="checker_done_coordination">Coordinación recibe el aviso de retardo</string>
+    <string name="checker_done_coordination">Tu retardo queda marcado en tu registro</string>
     <string name="checker_done_exit">Al terminar tu turno registras tu salida aquí mismo</string>
     <string name="checker_done_day_starts">El día arranca igual, sin perder momentos</string>
     <string name="checker_done_go_to_my_day">Ir a Mi día</string>

@@ -52,7 +52,6 @@ fun CheckerScreen(
     onRefreshTime: () -> Unit,
     onCheckOutClick: () -> Unit,
     onCheckInClick: () -> Unit,
-    onNotifyCoordinationClick: () -> Unit,
     onWriteLateReasonClick: () -> Unit,
     onLateReasonChange: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -121,7 +120,6 @@ fun CheckerScreen(
             CheckInStatus.LATE -> LateActions(
                 uiState = uiState,
                 onCheckInClick = onCheckInClick,
-                onNotifyCoordinationClick = onNotifyCoordinationClick,
                 onWriteLateReasonClick = onWriteLateReasonClick,
                 onLateReasonChange = onLateReasonChange,
             )
@@ -174,7 +172,6 @@ private fun CurrentTime(uiState: CheckerUiState) {
 private fun LateActions(
     uiState: CheckerUiState,
     onCheckInClick: () -> Unit,
-    onNotifyCoordinationClick: () -> Unit,
     onWriteLateReasonClick: () -> Unit,
     onLateReasonChange: (String) -> Unit,
 ) {
@@ -191,17 +188,6 @@ private fun LateActions(
             contentColor = MaterialTheme.colorScheme.onSecondary,
             onClick = onCheckInClick,
         )
-        OutlinedButton(
-            onClick = onNotifyCoordinationClick,
-            enabled = !uiState.coordinationNotified,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(
-                stringResource(
-                    if (uiState.coordinationNotified) R.string.checker_coordination_notified else R.string.checker_notify_coordination,
-                ),
-            )
-        }
         // the reason is optional, so the field only opens when the teacher asks for it.
         if (uiState.isWritingLateReason) {
             OutlinedTextField(
@@ -270,7 +256,6 @@ private fun CheckerScreenLatePreview() {
             onRefreshTime = {},
             onCheckOutClick = {},
             onCheckInClick = {},
-            onNotifyCoordinationClick = {},
             onWriteLateReasonClick = {},
             onLateReasonChange = {},
         )

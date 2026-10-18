@@ -130,12 +130,6 @@ data class CheckInDto(
     @SerialName("auto_closed") val autoClosed: Boolean = false,
 )
 
-@Serializable
-data class NotifyBody(
-    val reason: String,
-    val message: String? = null,
-)
-
 // ---------- chat ----------
 
 @Serializable
