@@ -104,8 +104,9 @@ Errores comunes a todos los endpoints con sesión: `401 UNAUTHENTICATED` (sin to
 
 | Método | Ruta | Rol | Envía | Responde | Errores |
 | --- | --- | --- | --- | --- | --- |
-| GET | `/staff-attendance/today` | `TEACHER` | — | `CheckInOut` o `null` | — |
+| GET | `/staff-attendance/today` | `TEACHER` | — | `CheckInOut` o `null` (con `checked_out_at` cuando ya registró la salida) | — |
 | POST | `/staff-attendance/check-in` | `TEACHER` | `{latitude, longitude, late_reason?}` | 201 `CheckInOut`: `status` (`ON_TIME`, `LATE`), `minutes_late`, `distance_m`, `allowed_radius_m`, `place_name`. Repetida el mismo día: 200 con la misma | `422 OUT_OF_RANGE` (con `distance_m` y `allowed_radius_m`); `409 CENTER_LOCATION_MISSING` |
+| POST | `/staff-attendance/check-out` | `TEACHER` | `{latitude, longitude}` | 201 `CheckInOut` con `checked_out_at`. Repetida: 200 con la misma salida | `409 NOT_CHECKED_IN`, `CENTER_LOCATION_MISSING`; `422 OUT_OF_RANGE` |
 | POST | `/staff-attendance/notify-coordination` | `TEACHER` | `{reason: LATE \| OUT_OF_RANGE, message?}` | 201 `NotifyOut`; hoy solo se guarda y se anota en el log | — |
 
 La API calcula distancia, radio y retardo con su propio reloj; nunca acepta el estado que calculó el teléfono. La checada también arranca la rutina del día.

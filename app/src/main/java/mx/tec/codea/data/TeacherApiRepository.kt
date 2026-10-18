@@ -36,6 +36,10 @@ class TeacherApiRepository {
         return ApiClient.json.decodeFromJsonElement(CheckInDto.serializer(), el).toRecord()
     }
 
+    // la salida del día: la API pide haber registrado la entrada y estar dentro del radio.
+    suspend fun checkOut(latitude: Double, longitude: Double): CheckInRecord =
+        api.checkOut(CheckInBody(latitude, longitude)).toRecord()
+
     suspend fun checkIn(latitude: Double, longitude: Double, lateReason: String): CheckInRecord =
         api.checkIn(
             CheckInBody(latitude, longitude, lateReason.trim().ifBlank { null })
@@ -80,6 +84,7 @@ private fun CheckInDto.toRecord() = CheckInRecord(
     placeName = placeName,
     minutesLate = minutesLate,
     lateReason = lateReason ?: "",
+    departureMinutes = minutesOfDay(checkedOutAt),
 )
 
 // de lo que manda la API a lo que entiende la app.

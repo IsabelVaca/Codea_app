@@ -280,7 +280,15 @@ private fun CheckerCard(
                     text = if (checkIn == null) {
                         stringResource(R.string.menu_checker_subtitle)
                     } else {
-                        stringResource(R.string.menu_checker_subtitle_done, formatTimeOfDay(checkIn.arrivalMinutes))
+                        if (checkIn.departureMinutes == null) {
+                            stringResource(R.string.menu_checker_subtitle_done, formatTimeOfDay(checkIn.arrivalMinutes))
+                        } else {
+                            stringResource(
+                                R.string.menu_checker_subtitle_out,
+                                formatTimeOfDay(checkIn.arrivalMinutes),
+                                formatTimeOfDay(checkIn.departureMinutes),
+                            )
+                        }
                     },
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

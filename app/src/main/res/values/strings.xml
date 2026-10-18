@@ -168,7 +168,8 @@
     <string name="menu_checked_in_late">Entrada con retardo a las %1$s</string>
     <string name="menu_checker_title">Checador</string>
     <string name="menu_checker_subtitle">Entrada y salida del turno</string>
-    <string name="menu_checker_subtitle_done">Entrada %1$s · la salida se registra sola</string>
+    <string name="menu_checker_subtitle_done">Entrada %1$s · falta registrar tu salida</string>
+    <string name="menu_checker_subtitle_out">Entrada %1$s · Salida %2$s</string>
     <string name="menu_documents_title">Mis documentos</string>
     <string name="menu_documents_subtitle">Contrato, constancias</string>
     <string name="menu_profile_title">Mi perfil</string>
@@ -182,6 +183,7 @@
     <!-- checker screen (inside menú) -->
     <string name="checker_overline">Menú · Checador</string>
     <string name="checker_title">Registrar entrada</string>
+    <string name="checker_title_registered">Tu jornada de hoy</string>
     <plurals name="checker_minutes_early">
         <item quantity="one">Llegas %1$d minuto antes</item>
         <item quantity="other">Llegas %1$d minutos antes</item>
@@ -208,13 +210,18 @@
     <string name="checker_coordination_notified">Aviso enviado</string>
     <string name="checker_already_registered">Ya registraste tu entrada a las %1$s</string>
     <string name="checker_already_registered_late">Ya registraste tu entrada con retardo a las %1$s</string>
-    <string name="checker_exit_is_automatic">La salida se registra sola al cerrar el día.</string>
+    <string name="checker_exit_is_automatic">Cuando termines tu turno, vuelve aquí a registrar tu salida.</string>
+    <string name="checker_exit_button">Registrar mi salida</string>
+    <string name="checker_exit_done">Salida registrada a las %1$s</string>
+    <string name="checker_exit_done_body">Ya quedó tu día completo. ¡Buen descanso!</string>
+    <string name="checker_exit_out_title">Todavía no estás en la estancia</string>
+    <string name="checker_exit_out_body">Tu salida solo se puede registrar dentro de La Oruga. Acércate y vuelve a intentar.</string>
     <string name="checker_simulate">Simular llegada (solo pruebas)</string>
     <string name="checker_scenario_real">Real</string>
     <string name="checker_locating_title">Buscando tu ubicación…</string>
     <string name="checker_locating_body">Estamos comparando dónde estás con la estancia. Puede tardar unos segundos.</string>
     <string name="checker_permission_title">Necesitamos tu ubicación</string>
-    <string name="checker_permission_body">La entrada solo se registra si estás dentro de la estancia. La ubicación se usa solo en este momento y no se guarda.</string>
+    <string name="checker_permission_body">La entrada solo se registra si estás dentro de la estancia. Se compara tu ubicación con la de la estancia y, al registrar tu entrada o tu salida, queda guardada junto con la hora. No se te sigue ni se guarda en otro momento.</string>
     <string name="checker_permission_button">Permitir ubicación</string>
     <string name="checker_unavailable_title">No pudimos ubicarte</string>
     <string name="checker_unavailable_body">Activa el GPS de tu teléfono, acércate a una ventana y vuelve a intentar.</string>
@@ -237,7 +244,7 @@
     <string name="checker_done_location">Ubicación verificada en la estancia</string>
     <string name="checker_done_no_paper">Sin papel ni firma · queda en tu expediente</string>
     <string name="checker_done_coordination">Coordinación recibe el aviso de retardo</string>
-    <string name="checker_done_exit">La salida se registra sola al cerrar el día</string>
+    <string name="checker_done_exit">Al terminar tu turno registras tu salida aquí mismo</string>
     <string name="checker_done_day_starts">El día arranca igual, sin perder momentos</string>
     <string name="checker_done_go_to_my_day">Ir a Mi día</string>
     <string name="checker_done_auto">La app te lleva sola en 2 segundos</string>

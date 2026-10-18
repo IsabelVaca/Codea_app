@@ -75,6 +75,7 @@ Quién puede llamar a cada endpoint. **Se genera leyendo las dependencias reales
 | PUT | `/routine-templates/{template_id}` | ✅ | — | — | Por rol |
 | GET | `/shifts` | ✅ | — | — | Por rol |
 | POST | `/staff-attendance/check-in` | — | ✅ | — | Por rol |
+| POST | `/staff-attendance/check-out` | — | ✅ | — | Por rol |
 | POST | `/staff-attendance/notify-coordination` | — | ✅ | — | Por rol |
 | GET | `/staff-attendance/today` | — | ✅ | — | Por rol |
 | GET | `/teachers` | ✅ | — | — | Por rol |
@@ -85,7 +86,7 @@ Quién puede llamar a cada endpoint. **Se genera leyendo las dependencias reales
 | POST | `/teachers/{teacher_id}/reactivate` | ✅ | — | — | Por rol |
 | POST | `/users/{user_id}/access-code` | ✅ | — | — | Por rol |
 
-Total: 76 endpoints (6 públicos, 54 por rol, 16 con alcance por registro).
+Total: 77 endpoints (6 públicos, 55 por rol, 16 con alcance por registro).
 
 ## Cómo se regenera
 

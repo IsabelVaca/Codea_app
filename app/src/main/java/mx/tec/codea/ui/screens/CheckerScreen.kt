@@ -65,6 +65,7 @@ fun CheckerScreen(
     onBackClick: () -> Unit,
     onScenarioChange: (CheckInScenario) -> Unit,
     onGrantLocationClick: () -> Unit,
+    onCheckOutClick: () -> Unit,
     onCheckInClick: () -> Unit,
     onRetryClick: () -> Unit,
     onNotifyCoordinationClick: () -> Unit,
@@ -82,22 +83,57 @@ fun CheckerScreen(
     ) {
         BackHeader(
             overline = stringResource(R.string.checker_overline),
-            title = stringResource(R.string.checker_title),
+            // con la entrada ya registrada la pantalla es la de la salida.
+            title = stringResource(if (registeredCheckIn != null) R.string.checker_title_registered else R.string.checker_title),
             onBackClick = onBackClick,
         )
-
-        if (registeredCheckIn != null) {
-            AlreadyRegistered(record = registeredCheckIn)
-            if (uiState.locationState == LocationState.READY) {
-                LocationMap(attempt = uiState.attempt, status = CheckInStatus.ON_TIME)
-            }
-            return@Column
-        }
 
         // los casos simulados son solo para probar: en la app de entrega no se ven.
         // it goes on top, so changing the case never needs a scroll.
         if (BuildConfig.DEBUG) {
             ScenarioPicker(selected = uiState.scenario, onScenarioChange = onScenarioChange)
+        }
+
+        if (registeredCheckIn != null) {
+            AlreadyRegistered(record = registeredCheckIn)
+            // la salida: se registra desde aquí, con la misma regla de ubicación que la entrada.
+            if (registeredCheckIn.departureMinutes != null) {
+                InfoBox(
+                    title = stringResource(R.string.checker_exit_done, formatTimeOfDay(registeredCheckIn.departureMinutes)),
+                    body = stringResource(R.string.checker_exit_done_body),
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    titleColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                )
+            } else if (uiState.locationState != LocationState.READY) {
+                LocationPending(
+                    state = uiState.locationState,
+                    onGrantClick = onGrantLocationClick,
+                    onRetryClick = onRetryClick,
+                )
+            } else if (uiState.status == CheckInStatus.OUT_OF_RANGE) {
+                InfoBox(
+                    title = stringResource(R.string.checker_exit_out_title),
+                    body = stringResource(R.string.checker_exit_out_body),
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    titleColor = MaterialTheme.colorScheme.onErrorContainer,
+                )
+                OutlinedButton(onClick = onRetryClick, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.checker_retry))
+                }
+            } else {
+                CheckInButton(
+                    text = stringResource(R.string.checker_exit_button),
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    onClick = onCheckOutClick,
+                )
+            }
+            if (uiState.locationState == LocationState.READY) {
+                // para la salida solo importa la distancia: no hay "retardo" que mostrar en el mapa.
+                val salidaStatus = if (uiState.status == CheckInStatus.OUT_OF_RANGE) CheckInStatus.OUT_OF_RANGE else CheckInStatus.ON_TIME
+                LocationMap(attempt = uiState.attempt, status = salidaStatus)
+            }
+            return@Column
         }
 
         // sin ubicación todavía no hay hora, mapa ni botón que valgan.
@@ -468,6 +504,7 @@ private fun CheckerScreenLatePreview() {
             onBackClick = {},
             onScenarioChange = {},
             onGrantLocationClick = {},
+            onCheckOutClick = {},
             onCheckInClick = {},
             onRetryClick = {},
             onNotifyCoordinationClick = {},

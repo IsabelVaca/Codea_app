@@ -150,6 +150,11 @@ class CodeaViewModel : ViewModel() {
         DataEvents.notifyChanged()
     }
 
+    // la salida ya quedó en la API: solo se actualiza el registro de hoy.
+    fun registerCheckOut(record: CheckInRecord) {
+        checkIn = record
+    }
+
     fun selectSubprocess(number: Int) {
         selectedSubprocessNumber = number
     }

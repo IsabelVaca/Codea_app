@@ -40,6 +40,7 @@ def _to_out(record: StaffCheckIn, center: DaycareCenter) -> CheckInOut:
         distance_m=record.distance_m,
         allowed_radius_m=center.check_in_radius_m,
         place_name=center.name,
+        checked_out_at=record.checked_out_at,
     )
 
 
@@ -102,6 +103,37 @@ async def check_in(db: AsyncSession, current: CurrentUser, data: CheckInIn) -> t
     # con la entrada de la docente arranca el día de su sala.
     if current.teacher.classroom_id is not None:
         await routines.ensure_day(db, current.teacher.classroom_id, record.date)
+    return _to_out(record, center), True
+
+
+async def check_out(db: AsyncSession, current: CurrentUser, data: CheckInIn) -> tuple[CheckInOut, bool]:
+    """Registra la salida del día. Pide haber registrado la entrada y estar dentro del radio, igual que la entrada.
+    Repetirla regresa la misma salida. Regresa (registro, creada)."""
+    center = await center_of_classroom(db, current.teacher.classroom_id)
+    if center.latitude is None or center.longitude is None:
+        raise ApiError(409, "CENTER_LOCATION_MISSING", "El centro todavía no tiene ubicación registrada")
+
+    record = await _find(db, current, center)
+    if record is None:
+        raise ApiError(409, "NOT_CHECKED_IN", "Primero registra tu entrada de hoy")
+    if record.checked_out_at is not None:
+        return _to_out(record, center), False
+
+    distance = distance_m(data.latitude, data.longitude, center.latitude, center.longitude)
+    if distance > center.check_in_radius_m:
+        raise ApiError(
+            422,
+            "OUT_OF_RANGE",
+            "Estás fuera del perímetro del centro",
+            f"Estás a {distance} m; el radio permitido es de {center.check_in_radius_m} m",
+            distance_m=distance,
+            allowed_radius_m=center.check_in_radius_m,
+        )
+    record.checked_out_at = clock.now()
+    record.out_latitude = data.latitude
+    record.out_longitude = data.longitude
+    record.out_distance_m = distance
+    await db.commit()
     return _to_out(record, center), True
 
 

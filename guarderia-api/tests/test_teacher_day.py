@@ -157,3 +157,53 @@ async def test_a_note_for_one_room_does_not_mark_the_other(client, world):
     room_b = (await client.get(f"/classrooms/{world.room_b.id}/children", headers=world.teacher_b)).json()
     assert not any(child["has_note_today"] for child in room_a)
     assert [child["has_note_today"] for child in room_b] == [True]
+
+
+# ---------------------------------------------------------------- salida de la docente
+
+
+async def test_check_out_needs_a_check_in_first(client, world):
+    response = await client.post("/staff-attendance/check-out", headers=world.teacher_a, json=AT_SCHOOL)
+    assert response.status_code == 409 and response.json()["code"] == "NOT_CHECKED_IN"
+
+
+async def test_check_out_after_check_in(client, world, fixed_clock):
+    assert (await client.post("/staff-attendance/check-in", headers=world.teacher_a, json=AT_SCHOOL)).status_code == 201
+    today = (await client.get("/staff-attendance/today", headers=world.teacher_a)).json()
+    assert today["checked_out_at"] is None
+
+    fixed_clock(datetime(2026, 10, 14, 22, 5, tzinfo=UTC))  # 16:05 en Monterrey
+    out = await client.post("/staff-attendance/check-out", headers=world.teacher_a, json=AT_SCHOOL)
+    assert out.status_code == 201
+    assert out.json()["checked_out_at"].startswith("2026-10-14T22:05")
+    assert out.json()["status"] in ("ON_TIME", "LATE")  # la entrada no cambia
+
+    today = (await client.get("/staff-attendance/today", headers=world.teacher_a)).json()
+    assert today["checked_out_at"] == out.json()["checked_out_at"]
+
+
+async def test_check_out_twice_returns_the_same_exit(client, world, fixed_clock):
+    await client.post("/staff-attendance/check-in", headers=world.teacher_a, json=AT_SCHOOL)
+    fixed_clock(datetime(2026, 10, 14, 22, 5, tzinfo=UTC))
+    first = await client.post("/staff-attendance/check-out", headers=world.teacher_a, json=AT_SCHOOL)
+    fixed_clock(datetime(2026, 10, 14, 22, 45, tzinfo=UTC))
+    again = await client.post("/staff-attendance/check-out", headers=world.teacher_a, json=AT_SCHOOL)
+    assert first.status_code == 201 and again.status_code == 200
+    assert again.json()["checked_out_at"] == first.json()["checked_out_at"]  # no se pisa la hora
+
+
+async def test_check_out_must_be_inside_the_radius(client, world):
+    await client.post("/staff-attendance/check-in", headers=world.teacher_a, json=AT_SCHOOL)
+    far = {"latitude": 25.6642, "longitude": SCHOOL[1]}  # a más de un kilómetro
+    response = await client.post("/staff-attendance/check-out", headers=world.teacher_a, json=far)
+    assert response.status_code == 422 and response.json()["code"] == "OUT_OF_RANGE"
+    assert (await client.get("/staff-attendance/today", headers=world.teacher_a)).json()["checked_out_at"] is None
+
+
+async def test_check_out_is_per_teacher(client, world):
+    await client.post("/staff-attendance/check-in", headers=world.teacher_a, json=AT_SCHOOL)
+    # fernando no registró entrada, así que no puede registrar la salida de karla ni la suya.
+    response = await client.post("/staff-attendance/check-out", headers=world.teacher_b, json=AT_SCHOOL)
+    assert response.status_code == 409
+    assert (await client.get("/staff-attendance/today", headers=world.teacher_b)).json() is None
+

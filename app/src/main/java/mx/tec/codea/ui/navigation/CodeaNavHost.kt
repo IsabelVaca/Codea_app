@@ -356,6 +356,7 @@ fun CodeaNavHost(
                     onBackClick = { navController.popBackStack() },
                     onScenarioChange = checker::onScenarioChange,
                     onGrantLocationClick = { requestLocation() },
+                    onCheckOutClick = { checker.registrarSalida { record -> viewModel.registerCheckOut(record) } },
                     onCheckInClick = {
                         // the domain can say "no" (out of range): then nothing happens.
                         checker.registrar { record ->

@@ -143,6 +143,9 @@ interface CodeaApi {
     @POST("staff-attendance/check-in")
     suspend fun checkIn(@Body body: CheckInBody): CheckInDto
 
+    @POST("staff-attendance/check-out")
+    suspend fun checkOut(@Body body: CheckInBody): CheckInDto
+
     @POST("staff-attendance/notify-coordination")
     suspend fun notifyCoordination(@Body body: NotifyBody)
 

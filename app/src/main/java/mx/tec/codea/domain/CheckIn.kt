@@ -24,6 +24,8 @@ data class CheckInRecord(
     val placeName: String,
     val minutesLate: Int,
     val lateReason: String,
+    // la salida, en minutos desde la medianoche; null mientras no la registre.
+    val departureMinutes: Int? = null,
 ) {
     val isLate: Boolean
         get() = minutesLate > 0

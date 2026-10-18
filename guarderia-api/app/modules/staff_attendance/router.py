@@ -24,6 +24,16 @@ async def check_in(db: Db, current: TeacherUser, data: CheckInIn, response: Resp
     return record
 
 
+@router.post("/check-out", response_model=CheckInOut, status_code=status.HTTP_201_CREATED)
+async def check_out(db: Db, current: TeacherUser, data: CheckInIn, response: Response) -> CheckInOut:
+    """Registra la salida del día. 409 NOT_CHECKED_IN si no hay entrada hoy; 422 OUT_OF_RANGE fuera del radio.
+    Repetirla regresa la misma salida con 200."""
+    record, created = await service.check_out(db, current, data)
+    if not created:
+        response.status_code = status.HTTP_200_OK
+    return record
+
+
 @router.post("/notify-coordination", response_model=NotifyOut, status_code=status.HTTP_201_CREATED)
 async def notify_coordination(db: Db, current: TeacherUser, data: NotifyIn) -> NotifyOut:
     """Avisa a coordinación que la docente llegará tarde o que está fuera del radio."""

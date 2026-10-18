@@ -29,7 +29,7 @@ App de la rama `integracion` en un teléfono Android real con **modo oscuro acti
 ## Pendientes que salieron de las correcciones
 
 - **Ubicación del centro para la demo:** la base trae las coordenadas del seed (Monterrey, sin relación con el lugar real). Para registrar una entrada de verdad, el admin debe poner la ubicación donde se hará la demo con `PATCH /center` (`latitude`, `longitude`, `check_in_radius_m`). La app todavía no tiene pantalla para eso (en [`PLAN-ACCION.md`](PLAN-ACCION.md), bloque 1).
-- La entrada **sí registrada** (dentro del perímetro) todavía no se probó en el teléfono por esa razón.
+- La entrada y la salida **sí registradas** se probaron en el teléfono con el simulador de pruebas (el servidor recibe coordenadas del centro y las valida): entrada con retardo a las 13:59 y salida a las 14:01. Con la ubicación real del teléfono (a 842 m del centro del seed) la app bloquea la entrada y la salida como debe.
 
 ## Cosas del entorno (no son fallas de la app)
 

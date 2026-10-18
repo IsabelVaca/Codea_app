@@ -130,6 +130,7 @@ data class CheckInDto(
     @SerialName("distance_m") val distanceM: Int = 0,
     @SerialName("allowed_radius_m") val allowedRadiusM: Int = 0,
     @SerialName("place_name") val placeName: String = "",
+    @SerialName("checked_out_at") val checkedOutAt: String? = null,
 )
 
 @Serializable

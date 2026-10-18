@@ -69,6 +69,17 @@ Registro cronológico de lo que se hizo, por qué y cómo se verificó. Lo nuevo
 - 6 pruebas nuevas (`test_weekly_summary.py`); la ruta se agregó a la prueba de IDOR y la matriz de roles se regeneró (76 endpoints). Total: **267 pruebas de la API en verde**.
 - Falta mostrarlo en la app del padre.
 
+### Salida de la docente (hallazgo de la sesión de documentos)
+- **Hallazgo:** la app decía «la salida se registra sola al cerrar el día» y no existía código de salida; y el aviso de permiso decía que la ubicación «no se guarda», cuando `staff_check_in` guarda latitud y longitud. Los dos textos eran falsos.
+- API: `POST /staff-attendance/check-out` (docente; 409 `NOT_CHECKED_IN` sin entrada, 422 `OUT_OF_RANGE` fuera del radio, repetida devuelve la misma sin pisar la hora) y `checked_out_at` en `GET /today`. Migración `d63e9f4a1c32` (cuatro columnas en `staff_check_in`), aplicada también en Aiven. 5 pruebas nuevas. **274 pruebas de la API en verde.**
+- App: «Tu jornada de hoy» con el botón «Registrar mi salida» (misma regla de ubicación), tarjeta del Menú con «Entrada 13:59 · Salida 14:01», y los textos corregidos. El selector de pruebas ya sale también con la entrada registrada; el mapa dice «Fuera del perímetro» cuando corresponde.
+- Probado en el teléfono: entrada con retardo (13:59, el servidor la validó con las coordenadas del simulador), salida a las 14:01, y con la ubicación real (842 m) la app bloquea la salida.
+- Quedan sin resolver (anotados por la otra sesión): la fecha de nacimiento se inventa a partir de la edad (`nacimientoParaEdad`), no hay política de retención ni respaldos, y no hay comando para crear solo al primer admin.
+
+### RF-10 probado de punta a punta en el teléfono
+- Con la docente ya con entrada, se subió una foto de prueba (por la API, al bucket local), se creó un reporte con foto y la mamá pidió borrarla. En la app del admin: «1 por revisar» → pantalla con la foto real, el niño, quién la pidió y el motivo → «Borrar la foto» → confirmación → «Foto borrada»; la lista se vació en 1–2 s. Por la API: solicitud `APPROVED` sin `photo_url`, galería de la familia vacía y la bitácora registra al admin.
+- Datos de demostración que quedaron en Aiven: la entrada y salida de Karla Robles del 18/oct, el reporte «Prueba: Diego pintó un sol…» (ya sin foto) y la solicitud de borrado aprobada.
+
 ### Checador con GPS y hora reales
 - Antes: prototipo con datos fijos y `registrar()` mandaba siempre las coordenadas del centro (el servidor nunca rechazaba por distancia).
 - Ahora: `data/DeviceLocation.kt` (LocationManager de Android, sin Play Services; GPS y luego red, con tiempo límite), `domain/GeoMath.kt` (distancia haversine, con 4 pruebas en `GeoMathTest`) y `CheckerViewModel` con estados de ubicación (buscando, sin permiso, sin señal, lista). La fecha y la hora son las del teléfono; la entrada se registra con la posición real.

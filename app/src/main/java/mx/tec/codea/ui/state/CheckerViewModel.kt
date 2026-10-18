@@ -166,6 +166,28 @@ class CheckerViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    // registra la salida con la posición del teléfono; la API la rechaza si no hay entrada o si está fuera del radio.
+    fun registrarSalida(onDone: (CheckInRecord) -> Unit) {
+        val config = config ?: return
+        if (uiState.locationState != LocationState.READY) return
+        if (uiState.status == CheckInStatus.OUT_OF_RANGE) return
+        val attempt = uiState.attempt
+        val (latitude, longitude) = if (uiState.scenario == CheckInScenario.REAL) {
+            attempt.teacherLatitude to attempt.teacherLongitude
+        } else {
+            (config.centerLatitude + 0.0001) to config.centerLongitude
+        }
+        viewModelScope.launch {
+            try {
+                onDone(api.checkOut(latitude, longitude))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                DataEvents.notice(e.toUserMessage())
+            }
+        }
+    }
+
     private fun stateFor(scenario: CheckInScenario) =
         CheckerUiState(scenario = scenario, attempt = repository.attemptFor(scenario))
 
