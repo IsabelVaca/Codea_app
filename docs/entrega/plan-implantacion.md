@@ -204,6 +204,7 @@ Revisiones con cuidado especial (`migrations/README.md`):
 | `98306224d8b5` (login con JWT) | **Elimina `app_user.firebase_uid`**: el dato no se recupera (el `downgrade` recrea la columna vacía). Después de migrar, **nadie tiene contraseña** hasta que el administrador les genere un código; las invitaciones pendientes se dan por vencidas. Solo aplica a una base creada antes del login propio |
 | `d63e9f4a1c32` (salida de la docente) | Agrega cuatro columnas a `staff_check_in`. Su `downgrade` las elimina y **se pierden las salidas ya registradas** (hora y ubicación de salida) |
 | `e74f0a5b3d43` (checador sin ubicación) | Quita seis columnas de `staff_check_in` y agrega `auto_closed`. Su `downgrade` las recrea vacías: **las coordenadas y distancias ya guardadas se pierden para siempre** y no se recuperan. Aplicarla en Aiven requiere aprobación |
+| `f85a1b6c4e54` (horario del centro) | Agrega cuatro columnas a `daycare_center` con valores por omisión; su `downgrade` las elimina y **se pierde el horario configurado** (vuelve a los valores por omisión al volver a subir). Va después de `e74f0a5b3d43`. Aplicarla en Aiven requiere aprobación |
 | `c52d8e3f0b21` (revisión de borrado de fotos) | Agrega `decided_by`, `decided_at` y `decision_note` a `media_deletion_request`. Su `downgrade` las elimina y **se pierden las decisiones ya tomadas**. El valor `DELETED` de `media.status` no necesita cambio de esquema, pero las fotos ya marcadas así seguirían marcadas tras bajar de versión |
 
 ### 6.3 Archivos (fotos y documentos)

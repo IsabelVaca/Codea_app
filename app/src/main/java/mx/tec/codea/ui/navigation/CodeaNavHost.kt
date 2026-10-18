@@ -76,6 +76,7 @@ import mx.tec.codea.ui.screens.admin.DocenteScreen
 import mx.tec.codea.ui.screens.admin.InfanteDetalleScreen
 import mx.tec.codea.ui.screens.admin.FamiliasScreen
 import mx.tec.codea.ui.screens.admin.AjustesScreen
+import mx.tec.codea.ui.screens.admin.HorarioScreen
 import mx.tec.codea.ui.screens.admin.InscribirInfanteScreen
 import mx.tec.codea.ui.screens.admin.OpcionChip
 import mx.tec.codea.ui.screens.admin.InscribirPadreScreen
@@ -106,6 +107,7 @@ import mx.tec.codea.ui.state.AccountViewModel
 import mx.tec.codea.ui.state.CodeaViewModel
 import mx.tec.codea.ui.state.CrearSalaViewModel
 import mx.tec.codea.ui.state.DocentesAdminViewModel
+import mx.tec.codea.ui.state.HorarioAdminViewModel
 import mx.tec.codea.ui.state.InfantesAdminViewModel
 import mx.tec.codea.ui.state.InscribirInfanteViewModel
 import mx.tec.codea.ui.state.InscribirPadreViewModel
@@ -351,11 +353,12 @@ fun CodeaNavHost(
                 // so the late reason is cleared when the teacher leaves.
                 val checker: CheckerViewModel = viewModel()
                 // el turno y el nombre del centro llegan de GET /me; si cambian, el checador los vuelve a leer.
-                LaunchedEffect(viewModel.centerName, viewModel.teacher.shiftStartMinutes) {
+                LaunchedEffect(viewModel.centerName, viewModel.teacher.shiftStartMinutes, viewModel.centerWorkDays) {
                     checker.start(
                         CheckerConfig(
                             shiftStartMinutes = viewModel.teacher.shiftStartMinutes,
                             placeName = viewModel.centerName.ifBlank { "La Oruga" },
+                            workDays = viewModel.centerWorkDays,
                         ),
                     )
                 }
@@ -881,7 +884,27 @@ fun CodeaNavHost(
                 AjustesScreen(
                     totalRutinas = rutinas.size,
                     onRutinasClick = { navController.navigate(RutinasAdminRoute) },
+                    onHorarioClick = { navController.navigate(AjustesHorarioRoute) },
                     onCuentaClick = { navController.navigate(AccountRoute) },
+                )
+            }
+            composable<AjustesHorarioRoute> {
+                val horarioViewModel: HorarioAdminViewModel = viewModel()
+                HorarioScreen(
+                    horario = horarioViewModel.editado,
+                    error = horarioViewModel.error,
+                    canGuardar = horarioViewModel.canGuardar,
+                    onEntrada = horarioViewModel::onEntrada,
+                    onSalida = horarioViewModel::onSalida,
+                    onCierre = horarioViewModel::onCierre,
+                    onToggleDia = horarioViewModel::onToggleDia,
+                    onGuardar = {
+                        horarioViewModel.guardar(onSuccess = {
+                            coroutineScope.launch { snackbarHostState.showSnackbar("Horario guardado") }
+                            navController.popBackStack()
+                        })
+                    },
+                    onBack = { navController.popBackStack() },
                 )
             }
             composable<RutinasAdminRoute> {

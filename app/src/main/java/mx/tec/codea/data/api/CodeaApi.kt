@@ -29,6 +29,13 @@ interface CodeaApi {
     @DELETE("classrooms/{id}")
     suspend fun deleteClassroom(@Path("id") id: Int)
 
+    // ----- centro (solo admin) -----
+    @GET("center")
+    suspend fun center(): CenterDto
+
+    @PATCH("center")
+    suspend fun updateCenterSchedule(@Body body: CenterScheduleBody): CenterDto
+
     // ----- solicitudes de borrado de fotos (solo admin) -----
     @GET("media/deletion-requests")
     suspend fun deletionRequests(@Query("status") status: String = "PENDING"): List<DeletionReviewDto>

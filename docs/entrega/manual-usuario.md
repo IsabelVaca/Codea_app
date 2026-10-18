@@ -75,7 +75,7 @@ Barra inferior: **Mi día · Mi sala · Chats · Menú**.
 ### 2.1 Antes de empezar el día: Mi día y el Checador
 
 1. **Mi día** dice «Aún el día no comienza»: «Ve al checador a registrar tu entrada cuando estés en la estancia». Toca **Checador** (también está en **Menú**).
-2. La pantalla «Registrar entrada» muestra la fecha y la hora del teléfono y tu turno. **No pide ubicación ni permisos**: el checador no usa GPS ni mapa.
+2. La pantalla «Registrar entrada» muestra la fecha y la hora del teléfono. Si hoy no es uno de los días de trabajo que el administrador definió, dice «Hoy no es día de trabajo» y no deja registrar. **No pide ubicación ni permisos**: el checador no usa GPS ni mapa.
    - **A tiempo:** toca **«Registrar mi entrada»**.
    - **Tarde:** la app te avisa «Llegaste después de tu hora»; se registra igual con **retardo**. Puedes escribir el **motivo del retardo** (opcional) y luego tocar «Registrar con retardo». El retardo queda marcado en tu registro; la app no tiene aviso a coordinación.
 3. La hora que queda guardada es la del **servidor**, no la del teléfono.
@@ -83,7 +83,7 @@ Barra inferior: **Mi día · Mi sala · Chats · Menú**.
 
 **Importante sobre tu privacidad:** el checador guarda solo la **hora de entrada, la hora de salida, el retardo y el motivo** que escribas. **No guarda tu ubicación.** Ver [`aviso-privacidad.md`](aviso-privacidad.md).
 
-**Salida.** Al terminar tu turno vuelve al checador: la pantalla se llama **«Tu jornada de hoy»** y muestra el botón **«Registrar mi salida»**. Al registrarla dice «Salida registrada a las …». Una salida repetida no cambia la hora ya registrada. **Si se te olvida, a las 9:00 pm el servidor cierra tu día solo:** la salida queda a las 9:00 pm y la pantalla dice «Salida automática a las 21:00». En **Menú**, la tarjeta del checador dice «Entrada 13:59 · falta registrar tu salida» y, después, «Entrada 13:59 · Salida 14:01».
+**Salida.** Al terminar tu turno vuelve al checador: la pantalla se llama **«Tu jornada de hoy»** y muestra el botón **«Registrar mi salida»**. Al registrarla dice «Salida registrada a las …». Una salida repetida no cambia la hora ya registrada. **Si se te olvida, a la hora de cierre del centro (21:00 por omisión) el servidor cierra tu día solo:** la salida queda en esa hora y la pantalla dice «Salida automática a las 21:00». En **Menú**, la tarjeta del checador dice «Entrada 13:59 · falta registrar tu salida» y, después, «Entrada 13:59 · Salida 14:01».
 
 ### 2.2 Mi día: la rutina
 
@@ -193,9 +193,10 @@ Corregir el nombre, la fecha de nacimiento o las alergias de un infante ya inscr
 El menú de lo que el administrador configura. Cada fila abre su pantalla:
 
 - **Rutinas:** lista de **plantillas de rutina** con su número de momentos. **«+ Nueva rutina»** pide nombre y momentos; cada momento tiene una categoría (llegada, comida, actividad, siesta, higiene, entrega) y hay un **catálogo de momentos** (también se puede agregar uno propio). Se pueden **ordenar** los momentos (la pantalla de arrastre usa una librería pendiente de aprobar; ver `DECISIONES-PENDIENTES.md`, decisión #8) y **asignar una plantilla a una sala**. Cambiar una plantilla **no modifica un día que ya empezó**: la rutina del día se copia cuando la docente checa.
+- **Horario:** el horario de todo el centro. Se elige la **hora de entrada** (después de ella se marca retardo), la **hora de salida**, la **hora de cierre automático** (a esa hora se cierran solas las entradas que sigan abiertas) y los **días de trabajo** (L M X J V S D). Se toca cada hora para cambiarla; la app avisa si la entrada no es antes de la salida, si el cierre es antes de la salida o si no hay ningún día. Un día que no marques no deja registrar entrada. Por omisión: 8:00 a 16:00, cierre a las 21:00, lunes a viernes.
 - **Mi cuenta:** perfil, cambiar contraseña y cerrar sesión (ver 1.4).
 
-El checador **ya no tiene ajustes**: no usa ubicación ni radio.
+El checador **no usa ubicación ni radio**.
 
 ### 3.5 Lo que el administrador todavía no puede hacer desde la app
 
@@ -203,7 +204,7 @@ El checador **ya no tiene ajustes**: no usa ubicación ni radio.
 |---|---|
 | Quitar solo a un niño de una foto de grupo; revisar solicitudes de borrado de **documentos** | **Próximamente** (la revisión de solicitudes de fotos ya existe, ver 3.1) |
 | Ver la **bitácora de auditoría** | No hay pantalla; existe `GET /audit-log` en la API |
-| Editar datos de docentes, infantes y padres; cambiar el nombre del centro y los turnos | **Próximamente** |
+| Editar datos de docentes, infantes y padres; cambiar el nombre del centro | **Próximamente** |
 | Pedir documentos a una familia (la lista de cada niño sale hoy del seed) | **Próximamente** |
 | Menú del día, llegada de padres, eventos y citas, imprimir reportes | **Próximamente** |
 

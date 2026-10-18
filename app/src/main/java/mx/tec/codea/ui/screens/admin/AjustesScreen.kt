@@ -35,6 +35,7 @@ import mx.tec.codea.ui.theme.Poppins
 fun AjustesScreen(
     totalRutinas: Int,
     onRutinasClick: () -> Unit,
+    onHorarioClick: () -> Unit,
     onCuentaClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -54,6 +55,11 @@ fun AjustesScreen(
                 titulo = "Rutinas",
                 detalle = if (totalRutinas == 1) "1 plantilla · momentos del día y salas" else "$totalRutinas plantillas · momentos del día y salas",
                 onClick = onRutinasClick,
+            )
+            AjusteFila(
+                titulo = "Horario",
+                detalle = "Entrada, salida, cierre automático y días de trabajo",
+                onClick = onHorarioClick,
             )
             SeccionLabel("MI SESIÓN")
             AjusteFila(

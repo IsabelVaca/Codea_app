@@ -50,7 +50,7 @@ Errores comunes a todos los endpoints con sesión: `401 UNAUTHENTICATED` (sin to
 
 `TokenOut`: `{access_token, token_type, expires_in, refresh_token, refresh_expires_in, me?}`. Errores del token en cualquier endpoint: `401 UNAUTHENTICATED` (falta el encabezado), `TOKEN_EXPIRED` (la app renueva y repite) y `TOKEN_INVALID` (firma, tipo o `token_version` no coinciden: la app cierra sesión); `403 USER_INACTIVE` (de baja).
 
-`center` trae `latitude`, `longitude`, `check_in_radius_m` y `timezone` para el checador.
+`center` trae `timezone` y el horario del centro para el checador: `entry_time`, `exit_time`, `auto_close_time` ("08:00:00") y `work_days` (1 = lunes … 7 = domingo). También sigue trayendo `latitude`, `longitude` y `check_in_radius_m`, que el checador ya no usa.
 
 ## Salas
 
@@ -105,7 +105,7 @@ Errores comunes a todos los endpoints con sesión: `401 UNAUTHENTICATED` (sin to
 | Método | Ruta | Rol | Envía | Responde | Errores |
 | --- | --- | --- | --- | --- | --- |
 | GET | `/staff-attendance/today` | `TEACHER` | — | `CheckInOut` o `null` (con `checked_out_at` y `auto_closed` cuando ya hay salida). Cierra antes las entradas abiertas pasadas de las 9 pm | — |
-| POST | `/staff-attendance/check-in` | `TEACHER` | `{late_reason?}` (sin ubicación) | 201 `CheckInOut`: `status` (`ON_TIME`, `LATE`), `minutes_late`, `place_name`, `auto_closed`. Repetida el mismo día: 200 con la misma | — |
+| POST | `/staff-attendance/check-in` | `TEACHER` | `{late_reason?}` (sin ubicación) | 201 `CheckInOut`: `status` (`ON_TIME`, `LATE`), `minutes_late`, `place_name`, `auto_closed`. Repetida el mismo día: 200 con la misma | `409 NOT_WORKING_DAY` si hoy no es uno de los `work_days` del centro |
 | POST | `/staff-attendance/check-out` | `TEACHER` | — (sin cuerpo) | 201 `CheckInOut` con `checked_out_at`. Repetida, o ya cerrada a las 9 pm: 200 con la misma salida | `409 NOT_CHECKED_IN` |
 | POST | `/staff-attendance/notify-coordination` | `TEACHER` | `{reason: LATE, message?}` | 201 `NotifyOut`; hoy solo se guarda y se anota en el log | — |
 
@@ -185,8 +185,8 @@ Participantes de una conversación: los padres ligados al niño y las docentes d
 
 | Método | Ruta | Rol | Envía | Responde | Errores |
 | --- | --- | --- | --- | --- | --- |
-| GET | `/center` | `ADMIN` | — | `CenterOut`: `name`, `latitude`, `longitude`, `check_in_radius_m`, `timezone` | `409 CENTER_MISSING` |
-| PATCH | `/center` | `ADMIN` | `{name?, latitude?, longitude?, check_in_radius_m?, timezone?}` (solo cambia lo que se manda; latitud y longitud en `null` quitan la ubicación) | `CenterOut` | `422 LOCATION_INCOMPLETE`, `LOCATION_INVALID`, `RADIUS_INVALID`, `TIMEZONE_INVALID` |
+| GET | `/center` | `ADMIN` | — | `CenterOut`: `name`, `latitude`, `longitude`, `check_in_radius_m`, `timezone`, `entry_time`, `exit_time`, `auto_close_time`, `work_days` | `409 CENTER_MISSING` |
+| PATCH | `/center` | `ADMIN` | `{name?, latitude?, longitude?, check_in_radius_m?, timezone?, entry_time?, exit_time?, auto_close_time?, work_days?}` (solo cambia lo que se manda; latitud y longitud en `null` quitan la ubicación). Horario: la entrada va antes de la salida y la salida no pasa del cierre | `CenterOut` | `422 LOCATION_INCOMPLETE`, `LOCATION_INVALID`, `RADIUS_INVALID`, `TIMEZONE_INVALID`, `SCHEDULE_INVALID`, `WORKDAYS_INVALID` |
 | POST | `/invitations` | `ADMIN` | `{name, surname?, phone, email, role}` | 201 `InvitationOut` con `access_code {code, purpose, expires_at}` (se muestra una sola vez) | `409 EMAIL_TAKEN`, `ALREADY_HAS_ACCOUNT` |
 | GET | `/invitations?status=&role=` | `ADMIN` | — | `InvitationOut[]`: `status` (`PENDING`, `ACCEPTED` = código usado, `EXPIRED`), `expires_at`, `accepted_at` | — |
 

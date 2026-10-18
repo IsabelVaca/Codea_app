@@ -153,6 +153,10 @@ data object AjustesAdminGraph
 @Serializable
 data object AjustesAdminRoute
 
+// el horario del centro: entrada, salida, cierre automático y días de trabajo.
+@Serializable
+data object AjustesHorarioRoute
+
 // las rutinas son una opción de Ajustes: la lista, "nueva rutina" y el detalle de una rutina.
 @Serializable
 data object RutinasAdminRoute

@@ -14,6 +14,7 @@ import mx.tec.codea.domain.CheckInAttempt
 import mx.tec.codea.domain.CheckInRecord
 import mx.tec.codea.domain.CheckInRules
 import mx.tec.codea.domain.CheckInStatus
+import mx.tec.codea.domain.HorarioRules
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -23,11 +24,14 @@ import java.util.Locale
 data class CheckerConfig(
     val shiftStartMinutes: Int,
     val placeName: String,
+    val workDays: Set<Int> = setOf(1, 2, 3, 4, 5),
 )
 
 // what the check-in screen shows right now.
 data class CheckerUiState(
     val attempt: CheckInAttempt,
+    // false cuando hoy no es uno de los días de trabajo del centro: no hay entrada que registrar.
+    val isWorkDay: Boolean = true,
     val isWritingLateReason: Boolean = false,
     val lateReason: String = "",
 ) {
@@ -57,7 +61,7 @@ class CheckerViewModel : ViewModel() {
 
     // vuelve a leer la hora del teléfono: la pantalla lo pide cada cierto tiempo para que el reloj no se quede atrás.
     fun refreshTime() {
-        uiState = uiState.copy(attempt = attemptNow(config))
+        uiState = uiState.copy(attempt = attemptNow(config), isWorkDay = isWorkDayToday(config))
     }
 
     fun onWriteLateReasonClick() {
@@ -95,6 +99,9 @@ class CheckerViewModel : ViewModel() {
             }
         }
     }
+
+    private fun isWorkDayToday(config: CheckerConfig): Boolean =
+        HorarioRules.esDiaDeTrabajo(config.workDays, HorarioRules.diaIso(Calendar.getInstance().get(Calendar.DAY_OF_WEEK)))
 
     // la hora y la fecha son las del teléfono.
     private fun attemptNow(config: CheckerConfig): CheckInAttempt {

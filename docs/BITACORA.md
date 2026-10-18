@@ -142,3 +142,12 @@ Registro cronológico de lo que se hizo, por qué y cómo se verificó. Lo nuevo
 - El botón había pasado a la pantalla de retardo al quitar el caso «fuera del perímetro»; se quitó de la app, junto con `onNotifyCoordination`, `NotifyBody` y la llamada a la API. Los textos «coordinación lo verá» y «Coordinación recibe el aviso de retardo» se cambiaron porque nadie leía esos avisos.
 - Sigue en el backend `POST /staff-attendance/notify-coordination` y la tabla `coordination_notice`, sin quien los use.
 
+## 2026-10-18 · Horario del centro configurable
+
+- Hasta ahora la hora de entrada salía del turno de cada docente (`shift`, seed Matutino 8:00 a 16:00 y Vespertino 12:00 a 20:00), la salida solo se mostraba en el Menú, el cierre automático era la constante 21:00 y no había días de trabajo. Nada se podía cambiar desde la app.
+- API: `daycare_center` trae `entry_time`, `exit_time`, `auto_close_time` y `work_days` (migración `f85a1b6c4e54`, con valores por omisión 8:00, 16:00, 21:00 y lunes a viernes). `GET` y `PATCH /center` los aceptan, con `422 SCHEDULE_INVALID` y `WORKDAYS_INVALID`, y el cambio queda en la auditoría. El retardo se mide contra la entrada del centro, el cierre automático usa `auto_close_time` y la entrada en un día no laboral responde `409 NOT_WORKING_DAY`. 289 pruebas de la API en verde.
+- App: Ajustes → **Horario** (tres horas con selector y siete chips de días, con las mismas validaciones que la API). El checador de la docente toma la entrada y la salida del centro y, en un día no laboral, dice «Hoy no es día de trabajo».
+- Los turnos (`shift`) se quedan en la base y en el alta de la docente, pero ya no afectan el retardo. Falta decidir si se quitan del alta.
+- Ojo: por omisión el centro **no trabaja sábado ni domingo**, así que hasta que el admin los marque, el checador no deja registrar entrada esos días.
+- Pendiente: aplicar `e74f0a5b3d43` y `f85a1b6c4e54` en Aiven (necesita aprobación) y probar la pantalla en el teléfono.
+

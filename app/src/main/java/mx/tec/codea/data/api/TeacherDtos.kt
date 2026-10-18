@@ -18,6 +18,20 @@ data class CenterDto(
     val id: Int,
     val name: String,
     val timezone: String = "",
+    // el horario del centro; la API manda las horas como "08:00:00" y los días de 1 (lunes) a 7 (domingo).
+    @SerialName("entry_time") val entryTime: String = "08:00:00",
+    @SerialName("exit_time") val exitTime: String = "16:00:00",
+    @SerialName("auto_close_time") val autoCloseTime: String = "21:00:00",
+    @SerialName("work_days") val workDays: List<Int> = listOf(1, 2, 3, 4, 5),
+)
+
+// el admin cambia el horario completo; lo que queda en null no se manda.
+@Serializable
+data class CenterScheduleBody(
+    @SerialName("entry_time") val entryTime: String,
+    @SerialName("exit_time") val exitTime: String,
+    @SerialName("auto_close_time") val autoCloseTime: String,
+    @SerialName("work_days") val workDays: List<Int>,
 )
 
 @Serializable

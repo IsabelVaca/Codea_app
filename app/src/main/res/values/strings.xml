@@ -190,6 +190,8 @@
     <string name="checker_on_time">Llegas justo a tiempo</string>
     <string name="checker_late_note">Tu turno empezaba %1$s · %2$d min de retardo</string>
     <string name="checker_out_of_schedule">Fuera de horario</string>
+    <string name="checker_not_workday_title">Hoy no es día de trabajo</string>
+    <string name="checker_not_workday_body">El centro no marcó hoy como día de trabajo, así que no hay entrada que registrar.</string>
     <string name="checker_check_in">Registrar mi entrada</string>
     <string name="checker_check_in_late">Registrar con retardo</string>
     <string name="checker_late_title">Llegaste después de tu hora</string>

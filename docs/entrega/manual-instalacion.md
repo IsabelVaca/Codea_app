@@ -95,6 +95,7 @@ Aplica en orden las migraciones de `guarderia-api/migrations/versions/`:
 | `c52d8e3f0b21` | Revisión de solicitudes de borrado de fotos (columnas `decided_by`, `decided_at`, `decision_note`) |
 | `d63e9f4a1c32` | Salida de la docente (columnas `checked_out_at`, `out_latitude`, `out_longitude`, `out_distance_m` en `staff_check_in`). Según `docs/BITACORA.md`, la base de Aiven ya está migrada a esta revisión |
 | `e74f0a5b3d43` | Checador sin ubicación: quita `latitude`, `longitude`, `distance_m` y `out_latitude`, `out_longitude`, `out_distance_m` de `staff_check_in` y agrega `auto_closed`. **No está aplicada en Aiven.** Su `downgrade` no recupera las coordenadas borradas |
+| `f85a1b6c4e54` | Horario del centro: agrega `entry_time`, `exit_time`, `auto_close_time` y `work_days` a `daycare_center`, con valores por omisión (8:00, 16:00, 21:00, lunes a viernes). **No está aplicada en Aiven** y va después de `e74f0a5b3d43` |
 
 
 Para comprobar en qué revisión quedó la base: `docker compose exec api alembic current`.

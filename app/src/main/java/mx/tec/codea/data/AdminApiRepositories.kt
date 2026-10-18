@@ -5,6 +5,7 @@ import mx.tec.codea.data.api.ApiClient
 import mx.tec.codea.data.api.ChildClassroomBody
 import mx.tec.codea.data.api.ChildCreateBody
 import mx.tec.codea.data.api.CenterDto
+import mx.tec.codea.data.api.CenterScheduleBody
 import mx.tec.codea.data.api.ChildDto
 import mx.tec.codea.data.api.ParentCreateBody
 import mx.tec.codea.data.api.ParentDto
@@ -13,6 +14,8 @@ import mx.tec.codea.data.api.TeacherCreateBody
 import mx.tec.codea.data.api.TeacherDto
 import mx.tec.codea.domain.Aviso
 import mx.tec.codea.domain.Docente
+import mx.tec.codea.domain.HorarioCentro
+import mx.tec.codea.domain.formatTimeOfDay
 import mx.tec.codea.domain.Infante
 import mx.tec.codea.domain.Padre
 import mx.tec.codea.domain.SolicitudBorrado
@@ -150,6 +153,30 @@ private fun ParentDto.toPadre() = Padre(
     telefono = phone ?: "",
     correo = email ?: "",
     conAcceso = hasAccess,
+)
+
+// horario del centro
+
+class CentroApiRepository {
+
+    suspend fun horario(): HorarioCentro = ApiClient.api.center().toHorario()
+
+    suspend fun guardarHorario(horario: HorarioCentro): HorarioCentro =
+        ApiClient.api.updateCenterSchedule(
+            CenterScheduleBody(
+                entryTime = formatTimeOfDay(horario.entradaMinutos),
+                exitTime = formatTimeOfDay(horario.salidaMinutos),
+                autoCloseTime = formatTimeOfDay(horario.cierreMinutos),
+                workDays = horario.diasDeTrabajo.sorted(),
+            ),
+        ).toHorario()
+}
+
+fun CenterDto.toHorario() = HorarioCentro(
+    entradaMinutos = timeToMinutes(entryTime) ?: (8 * 60),
+    salidaMinutos = timeToMinutes(exitTime) ?: (16 * 60),
+    cierreMinutos = timeToMinutes(autoCloseTime) ?: (21 * 60),
+    diasDeTrabajo = workDays.toSet(),
 )
 
 // solicitudes de borrado de fotos

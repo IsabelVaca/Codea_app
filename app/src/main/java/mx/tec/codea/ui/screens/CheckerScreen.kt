@@ -109,6 +109,17 @@ fun CheckerScreen(
 
         CurrentTime(uiState = uiState)
 
+        // un día que el admin no marcó como de trabajo: no hay entrada que registrar.
+        if (!uiState.isWorkDay) {
+            InfoBox(
+                title = stringResource(R.string.checker_not_workday_title),
+                body = stringResource(R.string.checker_not_workday_body),
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                titleColor = MaterialTheme.colorScheme.onSurface,
+            )
+            return@Column
+        }
+
         // each status has its own message and its own buttons.
         when (uiState.status) {
             CheckInStatus.ON_TIME -> CheckInButton(

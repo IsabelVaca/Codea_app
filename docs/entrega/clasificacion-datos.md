@@ -126,6 +126,7 @@ Solo el administrador la lee (`GET /audit-log`). Una bitácora que se borra pier
 | `name` | Bajo | — | Sin borrado | — |
 | `latitude`, `longitude` | Bajo | Siguen en `daycare_center` y las edita el administrador por la API (`PATCH /center`), pero **el checador ya no las usa** y la app ya no las pide ni las muestra | Sin borrado | — |
 | `check_in_radius_m`, `timezone` | Bajo | Validadas (`RADIUS_INVALID`, `TIMEZONE_INVALID`) | Sin borrado | — |
+| `entry_time`, `exit_time`, `auto_close_time`, `work_days` | Bajo | Solo el administrador las edita (`PATCH /center`); la API valida que la entrada vaya antes de la salida, que el cierre no sea antes de la salida y que haya al menos un día (`SCHEDULE_INVALID`, `WORKDAYS_INVALID`); cada cambio queda en la bitácora de auditoría (`CENTER_UPDATED`, con el horario nuevo) | Sin borrado | — |
 
 #### `classroom`
 

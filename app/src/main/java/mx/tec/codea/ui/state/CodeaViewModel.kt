@@ -50,6 +50,10 @@ class CodeaViewModel : ViewModel() {
     var centerName by mutableStateOf("")
         private set
 
+    // los días en que se trabaja (1 = lunes … 7 = domingo); el checador avisa si hoy no es uno de ellos.
+    var centerWorkDays by mutableStateOf(setOf(1, 2, 3, 4, 5))
+        private set
+
     var teacher by mutableStateOf(Teacher("", "", "", 8 * 60, 16 * 60))
         private set
 
@@ -96,12 +100,14 @@ class CodeaViewModel : ViewModel() {
                 val t = me.teacher ?: return@launch
                 classroomId = t.classroom?.id
                 centerName = t.center.name
+                centerWorkDays = t.center.workDays.toSet()
                 teacher = Teacher(
                     fullName = me.fullName,
                     greetingName = "miss ${me.name}",
                     roomName = t.classroom?.name ?: "Sin sala",
-                    shiftStartMinutes = timeToMinutes(t.shift?.startTime) ?: (8 * 60),
-                    shiftEndMinutes = timeToMinutes(t.shift?.endTime) ?: (16 * 60),
+                    // la entrada y la salida son las del centro, iguales para todas (las configura el admin).
+                    shiftStartMinutes = timeToMinutes(t.center.entryTime) ?: (8 * 60),
+                    shiftEndMinutes = timeToMinutes(t.center.exitTime) ?: (16 * 60),
                 )
                 checkIn = repository.checkInToday()
                 val room = classroomId
