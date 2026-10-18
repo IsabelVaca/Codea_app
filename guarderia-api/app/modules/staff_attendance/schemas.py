@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from app.core.schemas import Schema
 
@@ -8,10 +8,8 @@ from .models import CheckInStatus, CoordinationReason
 
 
 class CheckInIn(BaseModel):
-    """Solo la ubicación del teléfono (sirve igual para la entrada y la salida). La hora, la distancia y el estado los calcula la API."""
+    """La entrada no manda ubicación: la hora y el estado los calcula la API. Solo el motivo del retardo, si hubo."""
 
-    latitude: float = Field(ge=-90, le=90)
-    longitude: float = Field(ge=-180, le=180)
     late_reason: str | None = None
 
 
@@ -24,11 +22,11 @@ class CheckInOut(BaseModel):
     status: CheckInStatus
     minutes_late: int
     late_reason: str | None
-    distance_m: int
-    allowed_radius_m: int
     place_name: str
-    # null hasta que la docente registra su salida (POST /staff-attendance/check-out).
+    # null hasta que la docente registra su salida (POST /staff-attendance/check-out) o llegan las 9 pm.
     checked_out_at: datetime | None = None
+    # true si la salida la puso el cierre automático de las 9 pm.
+    auto_closed: bool = False
 
 
 class NotifyIn(BaseModel):
