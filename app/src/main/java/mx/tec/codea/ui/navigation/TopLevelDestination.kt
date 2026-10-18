@@ -133,6 +133,13 @@ enum class TopLevelDestination(
         isLocked = false,
         roles = setOf(Role.PARENT),
     ),
+    PARENT_CHAT(
+        route = ParentChatRoute,
+        icon = Icons.Filled.Email,
+        labelRes = R.string.nav_parent_chat,
+        isLocked = false,
+        roles = setOf(Role.PARENT),
+    ),
     PARENT_DOCUMENTS(
         route = ParentDocumentsRoute,
         icon = Icons.Filled.Description,

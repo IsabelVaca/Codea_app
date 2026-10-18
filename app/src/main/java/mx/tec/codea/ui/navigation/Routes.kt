@@ -125,6 +125,9 @@ data object ParentCalendarRoute
 data object ParentPhotosRoute
 
 @Serializable
+data object ParentChatRoute
+
+@Serializable
 data object ParentDocumentsRoute
 
 

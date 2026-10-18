@@ -29,6 +29,7 @@
     <string name="nav_parent_today">Hoy</string>
     <string name="nav_parent_calendar">Calendario</string>
     <string name="nav_parent_photos">Fotos</string>
+    <string name="nav_parent_chat">Chat</string>
     <string name="nav_parent_documents">Documento</string>
 
     <!-- my day screen -->
@@ -139,7 +140,15 @@
     <string name="my_room_chat">Chat</string>
 
     <!-- chats screen -->
-    <string name="chats_empty_instruction">Ve a la sección «Mi sala» para abrir el chat deseado.</string>
+    <string name="chats_inbox_title">Chats con las familias</string>
+    <string name="chats_inbox_title_parent">Chat con la sala</string>
+    <string name="chats_inbox_empty">Todavía no hay chats.</string>
+    <string name="chats_inbox_loading">Cargando chats…</string>
+    <string name="chats_no_messages_short">Sin mensajes todavía</string>
+    <string name="chats_parent_of">Sala de %1$s</string>
+    <string name="chats_parent_title">Chat con la asistente</string>
+    <string name="chats_sending">Enviando…</string>
+    <string name="chats_failed_retry">No se envió · toca para reintentar</string>
     <string name="chats_family_of">Familia de %1$s</string>
     <string name="chats_title">Chat con la familia</string>
     <string name="chats_no_messages">Aún no hay mensajes en esta conversación.</string>

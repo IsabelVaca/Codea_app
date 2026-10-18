@@ -130,8 +130,16 @@ interface CodeaApi {
     suspend fun notifyCoordination(@Body body: NotifyBody)
 
     // ----- chat -----
+    @GET("conversations")
+    suspend fun conversations(): List<ConversationDto>
+
+    // after = solo los mensajes más nuevos que ese id (null = los últimos).
     @GET("conversations/{id}/messages")
-    suspend fun messages(@Path("id") id: Int, @Query("limit") limit: Int): MessagePage
+    suspend fun messages(
+        @Path("id") id: Int,
+        @Query("limit") limit: Int,
+        @Query("after") after: Int?,
+    ): MessagePage
 
     @POST("conversations/{id}/messages")
     suspend fun sendMessage(@Path("id") id: Int, @Body body: MessageBody): MessageDto

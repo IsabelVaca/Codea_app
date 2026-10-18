@@ -38,6 +38,7 @@ fun NavHostController.reselectTopLevel(destination: TopLevelDestination) {
         TopLevelDestination.PARENT_TODAY,
         TopLevelDestination.PARENT_CALENDAR,
         TopLevelDestination.PARENT_PHOTOS,
+        TopLevelDestination.PARENT_CHAT,
         TopLevelDestination.PARENT_DOCUMENTS -> Unit
     }
 }

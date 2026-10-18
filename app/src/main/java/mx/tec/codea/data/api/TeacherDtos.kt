@@ -145,9 +145,24 @@ data class MessageDto(
     @SerialName("conversation_id") val conversationId: Int,
     @SerialName("author_name") val authorName: String = "",
     val text: String,
+    @SerialName("client_id") val clientId: String? = null,
     @SerialName("created_at") val createdAt: String,
     @SerialName("is_mine") val isMine: Boolean = false,
     @SerialName("is_read") val isRead: Boolean = false,
+)
+
+@Serializable
+data class ConversationChildDto(
+    val id: Int,
+    @SerialName("full_name") val fullName: String,
+)
+
+@Serializable
+data class ConversationDto(
+    val id: Int,
+    val child: ConversationChildDto,
+    @SerialName("unread_count") val unreadCount: Int = 0,
+    @SerialName("last_message") val lastMessage: MessageDto? = null,
 )
 
 @Serializable

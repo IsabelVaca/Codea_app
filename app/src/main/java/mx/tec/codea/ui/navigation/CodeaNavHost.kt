@@ -20,7 +20,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.delay
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -80,6 +84,7 @@ import mx.tec.codea.ui.screens.parent.today.ParentTodayScreen
 import mx.tec.codea.ui.state.AgregarMomentoViewModel
 import mx.tec.codea.ui.state.AltaAsistenteViewModel
 import mx.tec.codea.ui.state.AvisosViewModel
+import mx.tec.codea.ui.state.ChatViewModel
 import mx.tec.codea.ui.state.CentroViewModel
 import mx.tec.codea.ui.state.CheckerViewModel
 import mx.tec.codea.ui.state.AccountViewModel
@@ -121,6 +126,8 @@ fun CodeaNavHost(
     val parentViewModel: ParentViewModel = viewModel()
     // los avisos que le llegan a la asistente (Menú) y al papá (campana de Hoy).
     val avisosViewModel: AvisosViewModel = viewModel()
+    // la bandeja y la conversación de la docente y del papá.
+    val chatViewModel: ChatViewModel = viewModel()
     val accountViewModel: AccountViewModel = viewModel(factory = AccountViewModel.Factory(sessions))
 
     // el código de acceso de alguien recién dado de alta: se muestra una sola vez.
@@ -259,19 +266,26 @@ fun CodeaNavHost(
                 children = viewModel.children,
                 onAttendanceChange = viewModel::setAttendance,
                 onChatClick = { childId ->
-                    viewModel.openChat(childId)
-                    navController.navigateToTopLevel(TopLevelDestination.CHATS)
+                    val conversation = viewModel.conversationOf(childId)
+                    if (conversation == null) {
+                        DataEvents.notice("Este niño todavía no tiene chat")
+                    } else {
+                        chatViewModel.open(conversation)
+                        navController.navigateToTopLevel(TopLevelDestination.CHATS)
+                    }
                 },
             )
         }
 
         composable<ChatsRoute> {
-            val child = viewModel.childById(viewModel.openChatChildId)
-            ChatsScreen(
-                selectedChild = child,
-                messages = child?.let { viewModel.messagesFor(it.id) }.orEmpty(),
-                onBackClick = { navController.navigateToTopLevel(TopLevelDestination.MY_ROOM) },
-                onSend = viewModel::sendMessage,
+            ChatTab(
+                chatViewModel = chatViewModel,
+                isParent = false,
+                // desde la conversación se vuelve a la bandeja; desde la bandeja, a Mi sala.
+                onBackClick = {
+                    if (chatViewModel.openId != null) chatViewModel.close()
+                    else navController.navigateToTopLevel(TopLevelDestination.MY_ROOM)
+                },
             )
         }
 
@@ -679,6 +693,18 @@ fun CodeaNavHost(
             )
         }
 
+        composable<ParentChatRoute> {
+            ChatTab(
+                chatViewModel = chatViewModel,
+                isParent = true,
+                // con un solo hijo no hay bandeja: atrás regresa a Hoy.
+                onBackClick = {
+                    if (chatViewModel.openId != null && !chatViewModel.skipsInbox) chatViewModel.close()
+                    else navController.navigateToTopLevel(TopLevelDestination.PARENT_TODAY)
+                },
+            )
+        }
+
         composable<ParentDocumentsRoute> {
             val context = LocalContext.current
             var documentoElegido by remember { mutableStateOf<String?>(null) }
@@ -940,3 +966,35 @@ private fun AnimatedContentTransitionScope<NavBackStackEntry>.tabSlideDirection(
         else -> SlideDirection.Left
     }
 }
+
+// the chat tab of the teacher and of the parent. while it is visible it asks the API for news
+// every 10 seconds; it stops when the app goes to the background (no WebSocket yet).
+@Composable
+private fun ChatTab(
+    chatViewModel: ChatViewModel,
+    isParent: Boolean,
+    onBackClick: () -> Unit,
+) {
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(lifecycle) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            while (true) {
+                chatViewModel.refresh()
+                delay(CHAT_POLL_MS)
+            }
+        }
+    }
+    ChatsScreen(
+        conversations = chatViewModel.conversations,
+        loaded = chatViewModel.loaded,
+        openConversation = chatViewModel.openConversation,
+        messages = chatViewModel.messages,
+        isParent = isParent,
+        onOpen = chatViewModel::open,
+        onBackClick = onBackClick,
+        onSend = chatViewModel::send,
+        onRetry = chatViewModel::retry,
+    )
+}
+
+private const val CHAT_POLL_MS = 10_000L

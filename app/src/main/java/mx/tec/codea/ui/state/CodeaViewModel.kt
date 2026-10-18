@@ -17,7 +17,6 @@ import mx.tec.codea.data.timeToMinutes
 import mx.tec.codea.data.toChild
 import mx.tec.codea.data.toRoutine
 import mx.tec.codea.domain.AttendanceStatus
-import mx.tec.codea.domain.ChatMessage
 import mx.tec.codea.domain.CheckInRecord
 import mx.tec.codea.domain.Child
 import mx.tec.codea.domain.Report
@@ -64,12 +63,6 @@ class CodeaViewModel : ViewModel() {
 
     var children by mutableStateOf<List<Child>>(emptyList())
         private set
-
-    // the chat that "mi sala" opened last, so the "chats" tab shows it.
-    var openChatChildId by mutableStateOf<String?>(null)
-        private set
-
-    private var chatMessages by mutableStateOf<List<ChatMessage>>(emptyList())
 
     val hasCheckedIn: Boolean
         get() = checkIn != null
@@ -138,9 +131,8 @@ class CodeaViewModel : ViewModel() {
 
     fun childById(id: String?): Child? = children.firstOrNull { it.id == id }
 
-    // solo se guarda la conversación abierta.
-    fun messagesFor(childId: String): List<ChatMessage> =
-        if (childId == openChatChildId) chatMessages else emptyList()
+    // la conversación de un niño de la sala (la maneja ChatViewModel); null = todavía no tiene.
+    fun conversationOf(childId: String): Int? = conversationIds[childId]
 
     // ---------------- eventos de la pantalla ----------------
 
@@ -178,43 +170,6 @@ class CodeaViewModel : ViewModel() {
             } catch (e: Exception) {
                 DataEvents.notice(e.toUserMessage())
                 cargar()
-            }
-        }
-    }
-
-    fun openChat(childId: String) {
-        openChatChildId = childId
-        chatMessages = emptyList()
-        val conversation = conversationIds[childId] ?: return
-        viewModelScope.launch {
-            try {
-                chatMessages = repository.messages(conversation)
-                repository.markRead(conversation)
-                children = children.map { if (it.id == childId) it.copy(hasUnreadChat = false) else it }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                DataEvents.notice("No se pudo abrir el chat: ${e.toUserMessage()}")
-            }
-        }
-    }
-
-    fun sendMessage(text: String) {
-        val childId = openChatChildId ?: return
-        val conversation = conversationIds[childId]
-        if (conversation == null) {
-            DataEvents.notice("Este niño todavía no tiene chat")
-            return
-        }
-        if (text.isBlank()) return
-        viewModelScope.launch {
-            try {
-                repository.sendMessage(conversation, text)
-                chatMessages = repository.messages(conversation)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                DataEvents.notice("No se pudo enviar: ${e.toUserMessage()}")
             }
         }
     }
