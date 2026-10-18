@@ -300,3 +300,42 @@ async def test_a_report_cannot_include_a_child_from_another_room(client, world):
         },
     )
     assert response.status_code in (404, 422)
+
+
+# ---------------------------------------------------------------- horario del centro
+
+
+async def test_lateness_uses_the_center_entry_time(client, world):
+    # el reloj de las pruebas está en las 7:52: con la entrada a las 7:30 ya es retardo.
+    await client.patch("/center", headers=world.admin, json={"entry_time": "07:30"})
+    record = (await client.post("/staff-attendance/check-in", headers=world.teacher_a, json={})).json()
+    assert record["status"] == "LATE" and record["minutes_late"] == 22
+
+
+async def test_check_in_is_rejected_on_a_non_working_day(client, world):
+    # el 14 de octubre de 2026 es miércoles (3): si solo se trabaja sábado y domingo, no se puede checar.
+    await client.patch("/center", headers=world.admin, json={"work_days": [6, 7]})
+    response = await client.post("/staff-attendance/check-in", headers=world.teacher_a, json={})
+    assert response.status_code == 409 and response.json()["code"] == "NOT_WORKING_DAY"
+    assert (await client.get("/staff-attendance/today", headers=world.teacher_a)).json() is None
+
+
+async def test_check_in_works_again_when_the_day_is_added(client, world):
+    await client.patch("/center", headers=world.admin, json={"work_days": [6, 7]})
+    assert (await client.post("/staff-attendance/check-in", headers=world.teacher_a, json={})).status_code == 409
+    await client.patch("/center", headers=world.admin, json={"work_days": [3, 6, 7]})
+    assert (await client.post("/staff-attendance/check-in", headers=world.teacher_a, json={})).status_code == 201
+
+
+async def test_auto_close_uses_the_configured_time(client, world, fixed_clock):
+    await client.patch("/center", headers=world.admin, json={"auto_close_time": "18:00"})
+    await client.post("/staff-attendance/check-in", headers=world.teacher_a, json={})
+
+    fixed_clock(datetime(2026, 10, 14, 23, 59, tzinfo=UTC))  # 17:59 en Monterrey: todavía abierta
+    assert (await client.get("/staff-attendance/today", headers=world.teacher_a)).json()["auto_closed"] is False
+
+    fixed_clock(datetime(2026, 10, 15, 0, 0, tzinfo=UTC))  # 18:00 en Monterrey
+    today = (await client.get("/staff-attendance/today", headers=world.teacher_a)).json()
+    assert today["auto_closed"] is True
+    assert today["checked_out_at"].startswith("2026-10-15T00:00")  # la salida queda en la hora configurada
+

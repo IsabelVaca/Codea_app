@@ -1,6 +1,6 @@
-from datetime import datetime
+from datetime import datetime, time
 
-from sqlalchemy import DateTime, Float, ForeignKey, String
+from sqlalchemy import ARRAY, DateTime, Float, ForeignKey, Integer, String, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import Base, IdMixin
@@ -16,6 +16,14 @@ class DaycareCenter(IdMixin, Base):
     check_in_radius_m: Mapped[int] = mapped_column(default=60, server_default="60")
     timezone: Mapped[str] = mapped_column(
         String(64), default="America/Monterrey", server_default="America/Monterrey"
+    )
+    # el horario de todo el centro (hora local del centro): a qué hora empieza el día, a qué hora termina
+    # y a qué hora se cierran solas las entradas que siguen abiertas. work_days: 1 = lunes … 7 = domingo.
+    entry_time: Mapped[time] = mapped_column(default=time(8), server_default="08:00")
+    exit_time: Mapped[time] = mapped_column(default=time(16), server_default="16:00")
+    auto_close_time: Mapped[time] = mapped_column(default=time(21), server_default="21:00")
+    work_days: Mapped[list[int]] = mapped_column(
+        ARRAY(Integer), default=[1, 2, 3, 4, 5], server_default=text("'{1,2,3,4,5}'")
     )
 
 

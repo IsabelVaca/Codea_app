@@ -69,6 +69,10 @@ async def test_me_for_each_role(client, world):
     assert teacher["teacher"]["classroom"]["name"] == "Preescolar 2"
     assert teacher["teacher"]["shift"]["start_time"] == "08:00:00"
     assert teacher["teacher"]["center"]["check_in_radius_m"] == 60
+    # el horario del centro viaja con la docente: entrada, salida, cierre automático y días de trabajo.
+    center = teacher["teacher"]["center"]
+    assert (center["entry_time"], center["exit_time"], center["auto_close_time"]) == ("08:00:00", "16:00:00", "21:00:00")
+    assert center["work_days"] == [1, 2, 3, 4, 5]
 
     parent = (await client.get("/me", headers=world.mom)).json()
     assert parent["roles"] == ["PARENT"]

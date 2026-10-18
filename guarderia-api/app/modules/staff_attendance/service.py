@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, time
+from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import or_, select
@@ -11,16 +11,11 @@ from app.core.security import CurrentUser
 from app.modules.classrooms.centers import center_of_classroom
 from app.modules.classrooms.models import DaycareCenter
 from app.modules.routines import service as routines
-from app.modules.teachers.models import Shift
 
 from .models import CheckInStatus, CoordinationNotice, StaffCheckIn
 from .schemas import CheckInIn, CheckInOut, NotifyIn, NotifyOut
 
 log = logging.getLogger(__name__)
-
-# a esta hora (del centro) se cierran solas las entradas que siguen sin salida.
-AUTO_CLOSE_AT = time(21, 0)
-
 
 def _to_out(record: StaffCheckIn, center: DaycareCenter) -> CheckInOut:
     return CheckInOut(
@@ -37,15 +32,16 @@ def _to_out(record: StaffCheckIn, center: DaycareCenter) -> CheckInOut:
 
 
 async def close_stale(db: AsyncSession, center: DaycareCenter) -> None:
-    """Cierra las entradas sin salida cuyo cierre de las 9 pm ya pasó: un día anterior, o hoy después de las 9.
+    """Cierra las entradas sin salida cuyo cierre automático ya pasó: un día anterior, o hoy después de la hora
+    de cierre que el admin configuró en el centro (21:00 por omisión).
 
     No hay proceso aparte: corre al inicio de cada petición del checador, así que el registro queda cerrado
     la primera vez que alguien lo consulta. Hay un solo centro, por eso la zona horaria es la suya.
-    La salida queda a las 21:00 (o en la hora de la entrada, si la docente llegó después de las 9).
+    La salida queda en la hora de cierre (o en la hora de la entrada, si la docente llegó después).
     """
     tz = ZoneInfo(center.timezone)
     now = clock.local_now(center.timezone)
-    after_cutoff = now.time() >= AUTO_CLOSE_AT
+    after_cutoff = now.time() >= center.auto_close_time
     stale = await db.scalars(
         select(StaffCheckIn).where(
             StaffCheckIn.checked_out_at.is_(None),
@@ -54,7 +50,7 @@ async def close_stale(db: AsyncSession, center: DaycareCenter) -> None:
     )
     changed = False
     for record in stale:
-        cutoff = datetime.combine(record.date, AUTO_CLOSE_AT, tzinfo=tz)
+        cutoff = datetime.combine(record.date, center.auto_close_time, tzinfo=tz)
         record.checked_out_at = max(cutoff, record.checked_in_at)
         record.auto_closed = True
         changed = True
@@ -86,12 +82,13 @@ async def check_in(db: AsyncSession, current: CurrentUser, data: CheckInIn) -> t
         return _to_out(existing, center), False
 
     now = clock.local_now(center.timezone)
-    minutes_late = 0
-    shift = await db.get(Shift, current.teacher.shift_id) if current.teacher.shift_id else None
-    if shift is not None:
-        arrival = now.hour * 60 + now.minute
-        start = shift.start_time.hour * 60 + shift.start_time.minute
-        minutes_late = max(arrival - start, 0)
+    # el centro cierra algunos días: ese día no se registra entrada.
+    if now.isoweekday() not in center.work_days:
+        raise ApiError(409, "NOT_WORKING_DAY", "Hoy no es día de trabajo", "El administrador define los días en Ajustes")
+    # el retardo se mide contra la hora de entrada del centro, igual para todas.
+    arrival = now.hour * 60 + now.minute
+    start = center.entry_time.hour * 60 + center.entry_time.minute
+    minutes_late = max(arrival - start, 0)
 
     record = StaffCheckIn(
         teacher_id=current.id,

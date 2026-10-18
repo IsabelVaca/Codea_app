@@ -1,5 +1,5 @@
 import uuid
-from datetime import date
+from datetime import date, time
 
 from pydantic import BaseModel
 
@@ -15,6 +15,11 @@ class CenterOut(Schema):
     longitude: float | None
     check_in_radius_m: int
     timezone: str
+    # el horario del centro. work_days: 1 = lunes … 7 = domingo.
+    entry_time: time
+    exit_time: time
+    auto_close_time: time
+    work_days: list[int]
 
 
 class StaffMember(BaseModel):

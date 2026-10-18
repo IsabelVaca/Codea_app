@@ -235,3 +235,64 @@ async def test_center_changes_are_audited(client, world):
         "check_in_radius_m": 120,
     }
 
+
+# --- horario del centro ---
+
+
+async def test_center_schedule_defaults_and_update(client, world):
+    got = (await client.get("/center", headers=world.admin)).json()
+    assert (got["entry_time"], got["exit_time"], got["auto_close_time"]) == ("08:00:00", "16:00:00", "21:00:00")
+    assert got["work_days"] == [1, 2, 3, 4, 5]
+
+    changed = await client.patch(
+        "/center",
+        headers=world.admin,
+        json={"entry_time": "07:30", "exit_time": "15:00", "auto_close_time": "20:00", "work_days": [6, 1, 3, 1]},
+    )
+    assert changed.status_code == 200
+    body = changed.json()
+    assert (body["entry_time"], body["exit_time"], body["auto_close_time"]) == ("07:30:00", "15:00:00", "20:00:00")
+    assert body["work_days"] == [1, 3, 6]  # sin repetidos y en orden
+    # lo que no se mandó no cambia.
+    assert body["check_in_radius_m"] == 60
+
+    # se puede cambiar una sola hora mientras el horario completo siga teniendo sentido.
+    only_close = await client.patch("/center", headers=world.admin, json={"auto_close_time": "22:30"})
+    assert only_close.status_code == 200 and only_close.json()["auto_close_time"] == "22:30:00"
+
+
+async def test_center_schedule_validations(client, world):
+    cases = [
+        ({"entry_time": "16:00"}, "SCHEDULE_INVALID"),  # la entrada no puede igualar a la salida (16:00)
+        ({"entry_time": "17:00"}, "SCHEDULE_INVALID"),
+        ({"exit_time": "07:00"}, "SCHEDULE_INVALID"),
+        ({"auto_close_time": "15:00"}, "SCHEDULE_INVALID"),  # el cierre no puede ir antes de la salida (16:00)
+        ({"entry_time": None}, "SCHEDULE_INVALID"),
+        ({"work_days": []}, "WORKDAYS_INVALID"),
+        ({"work_days": [0]}, "WORKDAYS_INVALID"),
+        ({"work_days": [1, 8]}, "WORKDAYS_INVALID"),
+    ]
+    for body, code in cases:
+        response = await client.patch("/center", headers=world.admin, json=body)
+        assert response.status_code == 422, body
+        assert response.json()["code"] == code, body
+    # nada de lo anterior cambió el horario.
+    got = (await client.get("/center", headers=world.admin)).json()
+    assert (got["entry_time"], got["exit_time"], got["auto_close_time"]) == ("08:00:00", "16:00:00", "21:00:00")
+
+
+async def test_only_the_admin_changes_the_schedule(client, world):
+    denied = await client.patch("/center", headers=world.teacher_a, json={"entry_time": "07:00"})
+    assert denied.status_code == 403
+
+
+async def test_schedule_changes_are_audited(client, world):
+    await client.patch("/center", headers=world.admin, json={"entry_time": "07:30", "work_days": [1, 2, 3]})
+    [entry] = (await client.get("/audit-log?action=CENTER_UPDATED", headers=world.admin)).json()["items"]
+    assert entry["detail"]["schedule"] == {
+        "entry_time": "07:30",
+        "exit_time": "16:00",
+        "auto_close_time": "21:00",
+        "work_days": [1, 2, 3],
+    }
+
