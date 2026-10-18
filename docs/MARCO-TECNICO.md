@@ -56,8 +56,9 @@ Resumen tomado del sitio el 2026-10-16. Si hay duda, el sitio manda: vuelve a le
 
 ## Lo que el marco pide y todavía no existe en el proyecto
 
-Room, WorkManager, Photo Picker/FileProvider, EXIF/compresión previa a la subida, Compose UI Test, WebSocket o SSE para el chat, pruebas con servidor falso.
-Casi todo coincide con requisitos sin cumplir (sin conexión, login, notificaciones): ver [`REQUISITOS.md`](REQUISITOS.md).
+Photo Picker/FileProvider, EXIF/compresión previa a la subida, Compose UI Test, WebSocket o SSE para el chat.
+**Ya existen desde el 18/oct:** Room y WorkManager (asistencia sin conexión: cola y caché de Mi sala; ver [`app/src/main/java/mx/tec/codea/data/offline/`](../app/src/main/java/mx/tec/codea/data/offline/)) y pruebas con servidor falso (`mockwebserver3`). KSP es el procesador de Room y el marco lo menciona para Hilt.
+Casi todo lo que falta coincide con requisitos sin cumplir (notificaciones, huella): ver [`REQUISITOS.md`](REQUISITOS.md).
 
 ## Cómo pedir una excepción
 

@@ -38,6 +38,12 @@ fun timeToMinutes(hora: String?): Int? {
     return h * 60 + m
 }
 
+// "2026-10-18": el día de hoy según el teléfono, como lo pide la API.
+fun hoyIso(): String {
+    val c = Calendar.getInstance()
+    return String.format(Locale.US, "%04d-%02d-%02d", c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH))
+}
+
 // el día de hoy según el teléfono, para las validaciones que dependen de la fecha.
 fun hoyLocal(): mx.tec.codea.domain.Fecha {
     val c = Calendar.getInstance()

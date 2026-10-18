@@ -12,8 +12,8 @@ Estado a 2026-10-16. Los entregables nuevos se guardan en `docs/entrega/` (carpe
 | Integración completa | 🟡 | Probar de punta a punta los tres roles contra el backend desplegado. |
 | Persistencia | ✅ | Postgres. |
 | Cámara, multimedia, sensores | ✅ | Cámara, micrófono (dictado), GPS. |
-| Operación sin conexión | ❌ | Room + WorkManager. |
-| Sincronización posterior | ❌ | Cola de cambios pendientes. |
+| Operación sin conexión | 🟡 | **Asistencia de Mi sala** sin conexión: Room (cola de marcas y caché de la última Mi sala). Probado en el teléfono con la API apagada. Lo demás (reportes, fotos, chat, check-in) requiere conexión. |
+| Sincronización posterior | 🟡 | WorkManager manda la cola solo al volver la red (reintento con espera creciente, colapsa marcas repetidas). Probado de punta a punta; solo cubre la asistencia. |
 | Datos realistas | ✅ | `python -m app.seed`. |
 
 ## Parte 2: Seguridad

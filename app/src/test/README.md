@@ -2,13 +2,15 @@
 
 ## Hoy
 
-JVM, con JUnit y un servidor falso (`mockwebserver3`). **56 pruebas, 0 fallos** (2026-10-18):
+JVM, con JUnit y un servidor falso (`mockwebserver3`). **69 pruebas, 0 fallos** (2026-10-18):
 
 | Clase | Pruebas | Qué cubre |
 |---|---|---|
 | `domain/CheckInRulesTest` | 4 | A tiempo, tarde y fuera del radio |
 | `domain/RoutineRulesTest` | 4 | Avance de la rutina |
 | `domain/ReportValidatorTest` | 3 | Reportes sin texto o sin niños |
+| `domain/OfflineAttendanceTest` | 9 | La cola sin conexión con dobles en memoria: con red se manda; sin red espera; un error permanente se avisa y no se guarda; `flush` manda y vacía; de varias marcas del mismo niño solo la última; se detiene si la red sigue caída sin perder nada; descarta lo que ya no tiene remedio; una marca nueva no la pisa una vieja de la cola; marcas pendientes por día. **Mutación comprobada:** quitar el `removeFor` hace fallar justo la prueba que lo cubre |
+| `data/OfflineErrorsTest` | 4 | Qué se reintenta (red, 5xx, 401, 408, 429) y qué no (400, 403, 404, 409, 422) |
 | `domain/GeoMathTest` | 4 | Distancia entre dos puntos (checador): mismo punto, un grado de latitud, caso del prototipo, simetría |
 | `domain/ChatRulesTest` | 4 | Reglas del chat docente-familia |
 | `domain/ResumenSemanaTextosTest` | 5 | Resumen semanal: lo más frecuente primero, empates, sin registros, valores desconocidos, siesta y estado del día |

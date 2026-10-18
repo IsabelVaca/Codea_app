@@ -77,6 +77,8 @@ data class RoomChildDto(
 @Serializable
 data class AttendanceBody(
     val status: String,
+    // el día de la marca ("aaaa-mm-dd"); sin él la API usa hoy. Importa cuando la marca llega después.
+    val date: String? = null,
 )
 
 // ---------- rutina ----------

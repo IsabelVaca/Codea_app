@@ -48,6 +48,8 @@ fun MyRoomScreen(
     modifier: Modifier = Modifier,
     // el nombre real de la sala de la docente; vacío mientras carga.
     roomName: String = "",
+    // marcas de asistencia que esperan conexión para llegar al servidor.
+    pendingChanges: Int = 0,
 ) {
     // derived values: we count them every time, so they are never out of date.
     val presentCount = children.count { it.attendance == AttendanceStatus.PRESENT }
@@ -67,6 +69,25 @@ fun MyRoomScreen(
                     stringResource(R.string.my_room_title, roomName)
                 },
             )
+        }
+
+        if (pendingChanges > 0) {
+            item {
+                Text(
+                    text = if (pendingChanges == 1) {
+                        "1 cambio sin enviar · se manda solo cuando vuelva la conexión"
+                    } else {
+                        "$pendingChanges cambios sin enviar · se mandan solos cuando vuelva la conexión"
+                    },
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.22f), RoundedCornerShape(14.dp))
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                )
+            }
         }
 
         item {

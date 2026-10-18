@@ -9,6 +9,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import mx.tec.codea.data.SessionRepository
 import mx.tec.codea.data.api.ApiClient
+import mx.tec.codea.data.offline.Offline
 import mx.tec.codea.data.local.KeystoreTokenCipher
 import mx.tec.codea.data.local.SessionStore
 
@@ -26,6 +27,7 @@ class AppContainer(context: Context) {
     val sessionRepository = SessionRepository(store, ApiClient.createAuthApi())
 
     init {
+        Offline.init(context)
         ApiClient.init(sessionRepository)
         // lee la sesión guardada; mientras tanto el estado es Loading y la app muestra el arranque.
         appScope.launch { sessionRepository.load() }

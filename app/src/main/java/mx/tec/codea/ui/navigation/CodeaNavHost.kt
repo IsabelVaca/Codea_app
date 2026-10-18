@@ -268,6 +268,7 @@ fun CodeaNavHost(
             MyRoomScreen(
                 children = viewModel.children,
                 roomName = viewModel.teacher.roomName,
+                pendingChanges = viewModel.pendingChanges,
                 onAttendanceChange = viewModel::setAttendance,
                 onChatClick = { childId ->
                     val conversation = viewModel.conversationOf(childId)

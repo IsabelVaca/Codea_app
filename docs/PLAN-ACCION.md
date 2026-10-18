@@ -37,9 +37,10 @@ Se trabaja en la rama `integracion` (login JWT + chat sobre `main`). Cada bloque
 | 6 | HN5 | `media_id` en los avisos. |
 | 7 ✅ | Rúbrica, parte 3 | Pruebas explícitas de IDOR, inyección y matriz de roles. Hecho el 18/oct (los límites de subida ya estaban en `test_upload_rules`). |
 
-## Bloque 3: sin conexión (solo si el bloque 2 termina el lunes)
+## Bloque 3: sin conexión
 
-- [ ] Room como caché de asistencia y reportes del día, y cola de cambios pendientes que se envía al recuperar la red. Alcance recortado a asistencia, como dice [`PLAN.md`](PLAN.md).
+- [x] Room como caché de Mi sala y cola de marcas de asistencia que se envía al recuperar la red (WorkManager). Alcance recortado a asistencia, como dice [`PLAN.md`](PLAN.md). Hecho el 18/oct y probado en el teléfono con la API apagada.
+- [ ] Reportes sin conexión (no se hizo: llevan fotos y son más caros de sincronizar).
 
 ## Bloque 4: documentos de la entrega (carpeta `docs/entrega/`)
 

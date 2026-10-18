@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -102,5 +103,15 @@ dependencies {
     implementation(libs.coil.network.okhttp)
     implementation(libs.reorderable)
     implementation(libs.androidx.datastore.preferences)
+    // sin conexión: la cola de cambios pendientes y la caché de Mi sala viven en Room;
+    // WorkManager los manda cuando vuelve la red.
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.work.runtime.ktx)
     testImplementation(libs.okhttp.mockwebserver)
+}
+// Room guarda el esquema de cada versión de la base en app/schemas para poder migrar sin perder datos.
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
