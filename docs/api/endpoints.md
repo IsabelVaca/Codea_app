@@ -62,7 +62,7 @@ Errores comunes a todos los endpoints con sesión: `401 UNAUTHENTICATED` (sin to
 | PATCH | `/classrooms/{id}` | `ADMIN` | `{name?, capacity?, school_grade?}` | `ClassroomDetail` | `422 NAME_REQUIRED`, `CAPACITY_INVALID` |
 | PUT | `/classrooms/{id}/staff` | `ADMIN` | `{teacher_ids[], primary_teacher_id?}` | `ClassroomDetail` | `404 TEACHER_NOT_FOUND`; `422 PRIMARY_NOT_IN_STAFF` |
 | DELETE | `/classrooms/{id}` | `ADMIN` | — | 204; sus asistentes quedan sin sala | `409 CLASSROOM_NOT_EMPTY` |
-| GET | `/classrooms/{id}/children?date=` | `ADMIN`, `TEACHER` (su sala) | — | `RoomChild[]`: `attendance`, `conversation_id`, `has_unread_chat`, `unread_count` | `404 CLASSROOM_NOT_FOUND` |
+| GET | `/classrooms/{id}/children?date=` | `ADMIN`, `TEACHER` (su sala) | — | `RoomChild[]`: `attendance`, `conversation_id`, `has_unread_chat`, `unread_count`, `notes_today`, `has_note_today` (notas del papá de hoy) | `404 CLASSROOM_NOT_FOUND` |
 
 ## Docentes
 

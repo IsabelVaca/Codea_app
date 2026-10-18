@@ -9,6 +9,8 @@ data class Child(
     val name: String,
     val attendance: AttendanceStatus,
     val hasUnreadChat: Boolean,
+    // el papá le dejó una nota a la asistente hoy: se marca en Mi sala.
+    val hasNoteToday: Boolean = false,
 ) {
     val firstName: String
         get() = name.substringBefore(" ")

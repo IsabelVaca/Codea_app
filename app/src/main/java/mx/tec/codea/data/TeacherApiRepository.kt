@@ -88,6 +88,7 @@ fun RoomChildDto.toChild() = Child(
     name = fullName,
     attendance = if (attendance == "ABSENT") AttendanceStatus.ABSENT else AttendanceStatus.PRESENT,
     hasUnreadChat = hasUnreadChat,
+    hasNoteToday = hasNoteToday,
 )
 
 fun RoutineDto.toRoutine() = Routine(

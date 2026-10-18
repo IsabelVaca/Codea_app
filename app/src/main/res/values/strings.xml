@@ -134,6 +134,7 @@
     <string name="my_room_overline">Estancia La Oruga</string>
     <string name="my_room_title">Sala · %1$s</string>
     <string name="my_room_title_generic">Mi sala</string>
+    <string name="my_room_note_today">Nota de la familia hoy</string>
     <string name="my_room_present_count">presentes</string>
     <string name="my_room_unread_count">chats sin leer</string>
     <string name="my_room_present">Presente</string>

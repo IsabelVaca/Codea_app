@@ -172,6 +172,18 @@ private fun ChildCard(
                     color = MaterialTheme.colorScheme.onSurface,
                 )
 
+                if (child.hasNoteToday) {
+                    Text(
+                        text = stringResource(R.string.my_room_note_today),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier
+                            .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.22f), RoundedCornerShape(10.dp))
+                            .padding(horizontal = 10.dp, vertical = 4.dp),
+                    )
+                }
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(7.dp),

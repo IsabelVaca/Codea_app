@@ -18,7 +18,7 @@ Se trabaja en la rama `integracion` (login JWT + chat sobre `main`). Cada bloque
 
 ## Bloque 1: terminar el mínimo funcional
 
-- [ ] `has_note_today` en `GET /classrooms/{id}/children` y marca en Mi sala.
+- [x] `has_note_today` en `GET /classrooms/{id}/children` y marca en Mi sala (18/oct; falta verlo en el teléfono).
 - [ ] Selector de hijo en las tabs del padre (HN4); la API ya devuelve la lista en `GET /me`.
 - [ ] Pantallas P1 que falten de [`plan/01-app-pantallas.md`](plan/01-app-pantallas.md).
 - [ ] Documentos por defecto al inscribir a un infante.

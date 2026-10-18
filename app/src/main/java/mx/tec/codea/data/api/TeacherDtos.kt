@@ -71,6 +71,7 @@ data class RoomChildDto(
     @SerialName("conversation_id") val conversationId: Int? = null,
     @SerialName("has_unread_chat") val hasUnreadChat: Boolean = false,
     @SerialName("unread_count") val unreadCount: Int = 0,
+    @SerialName("has_note_today") val hasNoteToday: Boolean = false,
 )
 
 @Serializable
