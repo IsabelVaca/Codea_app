@@ -20,6 +20,9 @@ from app.modules.parents.models import Parent, ParentChildRel
 from app.modules.teachers.models import Shift, Teacher
 from app.modules.teachers.schemas import ShiftOut
 
+from app.modules.audit import service as audit
+
+from . import throttle
 from .models import AppUser, CodePurpose, Invitation, RefreshToken, Role, UserStatus
 from .schemas import (
     ActivateIn,
@@ -86,7 +89,9 @@ async def renew_invitation(db: AsyncSession, user: AppUser, role: Role) -> Acces
     return created[1]
 
 
-async def issue_access_code(db: AsyncSession, user_id: uuid.UUID) -> AccessCodeOut:
+async def issue_access_code(
+    db: AsyncSession, user_id: uuid.UUID, admin_id: uuid.UUID | None = None, ip: str | None = None
+) -> AccessCodeOut:
     """El administrador genera un código: de invitación si la persona nunca entró, y si ya entró
     sirve para poner una contraseña nueva (olvidó la suya)."""
     user = await db.get(AppUser, user_id)
@@ -101,6 +106,10 @@ async def issue_access_code(db: AsyncSession, user_id: uuid.UUID) -> AccessCodeO
     created = await create_invitation(db, user, roles[0], purpose)
     if created is None:
         raise ApiError(422, "EMAIL_INVALID", "Esta persona no tiene correo")
+    audit.record(
+        db, audit.ACCESS_CODE_ISSUED, actor_id=admin_id, entity_type="USER", entity_id=user.id,
+        detail={"purpose": purpose.value}, ip=ip,
+    )
     await db.commit()
     return created[1]
 
@@ -138,27 +147,39 @@ async def _issue_tokens(
     return out, row
 
 
-async def login(db: AsyncSession, data: LoginIn, user_agent: str | None) -> TokenOut:
+async def login(db: AsyncSession, data: LoginIn, user_agent: str | None, ip: str | None = None) -> TokenOut:
     email = data.email.strip().lower()
+    # primero el límite de intentos: con el correo bloqueado ni siquiera se revisa la contraseña.
+    await throttle.check(db, throttle.LOGIN, email, ip)
     user = await db.scalar(select(AppUser).where(AppUser.email == email))
     # siempre se verifica contra algún hash (el falso si no hay cuenta): tarda igual y no delata qué correos existen.
     valid = await verify_password_async(data.password, user.password_hash if user else None)
     if user is None or (user.password_hash is not None and not valid):
+        locked = await throttle.fail(db, throttle.LOGIN, email, ip)
+        actor_id = user.id if user else None
+        audit.record(db, audit.LOGIN_FAILED, actor_id=actor_id, actor_email=email, ip=ip)
+        if locked:
+            audit.record(db, audit.LOGIN_LOCKED, actor_id=actor_id, actor_email=email, ip=ip)
+        await db.commit()
         raise ApiError(401, "INVALID_CREDENTIALS", "Correo o contraseña incorrectos")
     if user.password_hash is None:
         raise ApiError(403, "ACCOUNT_NOT_ACTIVATED", "Aún no activas tu cuenta; usa el código que te dio la dirección")
     if user.status != UserStatus.ACTIVE:
         raise ApiError(403, "USER_INACTIVE", "Tu acceso a la app está desactivado")
     user.last_login_at = clock.now()
+    await throttle.clear(db, throttle.LOGIN, email)
+    audit.record(db, audit.LOGIN_OK, actor_id=user.id, actor_email=email, ip=ip)
     out, _ = await _issue_tokens(db, user, user_agent=user_agent)
     await db.commit()
     return out
 
 
-async def activate(db: AsyncSession, data: ActivateIn, user_agent: str | None) -> TokenOut:
+async def activate(db: AsyncSession, data: ActivateIn, user_agent: str | None, ip: str | None = None) -> TokenOut:
     """Primer acceso (o contraseña nueva): el código del administrador abre la cuenta y fija la contraseña."""
     email = data.email.strip().lower()
     rules.check_password(data.password, email)
+    # el código es corto, así que también se limitan los intentos para que no se pueda adivinar.
+    await throttle.check(db, throttle.ACTIVATE, email, ip)
     code_hash = tokens.hash_code(data.code)
     pending = (
         await db.scalars(
@@ -169,6 +190,9 @@ async def activate(db: AsyncSession, data: ActivateIn, user_agent: str | None) -
     ).all()
     match = next((invitation for invitation in pending if invitation.code_hash == code_hash), None)
     if match is None:
+        locked = await throttle.fail(db, throttle.ACTIVATE, email, ip)
+        audit.record(db, audit.ACTIVATION_FAILED, actor_email=email, ip=ip, detail={"locked": locked})
+        await db.commit()
         raise ApiError(403, "CODE_INVALID", "El código no es válido")
     if match.expires_at <= clock.now():
         raise ApiError(403, "CODE_EXPIRED", "El código ya venció; pide uno nuevo en la dirección")
@@ -186,6 +210,11 @@ async def activate(db: AsyncSession, data: ActivateIn, user_agent: str | None) -
     if match.purpose == CodePurpose.PASSWORD_RESET:
         # con una contraseña nueva, las sesiones anteriores ya no deben servir.
         await revoke_all_sessions(db, user)
+    await throttle.clear(db, throttle.ACTIVATE, email)
+    audit.record(
+        db, audit.ACCOUNT_ACTIVATED, actor_id=user.id, actor_email=email, ip=ip,
+        detail={"purpose": match.purpose.value},
+    )
     out, _ = await _issue_tokens(db, user, user_agent=user_agent)
     await db.commit()
     return out
@@ -207,6 +236,7 @@ async def refresh(db: AsyncSession, raw: str, user_agent: str | None) -> TokenOu
                 .where(RefreshToken.family_id == row.family_id, RefreshToken.revoked_at.is_(None))
                 .values(revoked_at=now)
             )
+            audit.record(db, audit.TOKEN_REUSE_DETECTED, actor_id=row.user_id, entity_type="SESSION")
             await db.commit()
         raise ApiError(401, "REFRESH_INVALID", "La sesión ya no es válida; vuelve a entrar")
     user = await db.get(AppUser, row.user_id)
@@ -243,6 +273,7 @@ async def change_password(
     user.password_hash = await hash_password_async(data.new_password)
     user.password_changed_at = clock.now()
     await revoke_all_sessions(db, user)
+    audit.record(db, audit.PASSWORD_CHANGED, actor_id=user.id, entity_type="USER", entity_id=user.id)
     out, _ = await _issue_tokens(db, user, user_agent=user_agent)
     await db.commit()
     return out
@@ -250,6 +281,10 @@ async def change_password(
 
 async def close_sessions(db: AsyncSession, current: CurrentUser) -> SessionsOut:
     revoked = await revoke_all_sessions(db, current.user)
+    audit.record(
+        db, audit.SESSIONS_CLOSED, actor_id=current.user.id, entity_type="USER", entity_id=current.user.id,
+        detail={"revoked": revoked},
+    )
     await db.commit()
     return SessionsOut(revoked=revoked)
 
@@ -364,6 +399,10 @@ async def invite(db: AsyncSession, current: CurrentUser, data: InvitationCreate)
     else:
         db.add(role_model(user_id=user.id))
     invitation, access_code = await create_invitation(db, user, data.role)
+    audit.record(
+        db, audit.USER_INVITED, actor_id=current.user.id, entity_type="USER", entity_id=user.id,
+        detail={"role": data.role.value},
+    )
     await db.commit()
     await db.refresh(invitation)
     out = _invitation_out(invitation, user)

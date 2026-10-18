@@ -28,18 +28,23 @@ def _agent(request: Request) -> str | None:
     return request.headers.get("user-agent")
 
 
+def _ip(request: Request) -> str | None:
+    # detrás de un proxy hay que configurarlo para que esta sea la IP real (uvicorn --proxy-headers).
+    return request.client.host if request.client else None
+
+
 @router.post("/auth/login", response_model=TokenOut)
 async def login(db: Db, request: Request, data: LoginIn) -> TokenOut:
     """Correo y contraseña. 401 INVALID_CREDENTIALS (el mismo para correo desconocido y contraseña mal);
-    403 ACCOUNT_NOT_ACTIVATED o USER_INACTIVE."""
-    return await service.login(db, data, _agent(request))
+    403 ACCOUNT_NOT_ACTIVATED o USER_INACTIVE; 429 TOO_MANY_ATTEMPTS tras varios fallos seguidos (trae retry_after_s)."""
+    return await service.login(db, data, _agent(request), _ip(request))
 
 
 @router.post("/auth/activate", response_model=TokenOut)
 async def activate(db: Db, request: Request, data: ActivateIn) -> TokenOut:
     """Primer acceso: correo + código del administrador + contraseña nueva.
-    403 CODE_INVALID, CODE_EXPIRED o USER_INACTIVE; 422 PASSWORD_TOO_SHORT."""
-    return await service.activate(db, data, _agent(request))
+    403 CODE_INVALID, CODE_EXPIRED o USER_INACTIVE; 422 PASSWORD_TOO_SHORT; 429 TOO_MANY_ATTEMPTS."""
+    return await service.activate(db, data, _agent(request), _ip(request))
 
 
 @router.post("/auth/refresh", response_model=TokenOut)
@@ -74,9 +79,9 @@ async def close_sessions(db: Db, current: AnyUser) -> SessionsOut:
 
 
 @router.post("/users/{user_id}/access-code", response_model=AccessCodeOut, status_code=status.HTTP_201_CREATED)
-async def access_code(db: Db, _: AdminUser, user_id: uuid.UUID) -> AccessCodeOut:
+async def access_code(db: Db, request: Request, current: AdminUser, user_id: uuid.UUID) -> AccessCodeOut:
     """Genera un código: INVITATION si la persona nunca entró, PASSWORD_RESET si ya entró (olvidó su contraseña)."""
-    return await service.issue_access_code(db, user_id)
+    return await service.issue_access_code(db, user_id, current.user.id, _ip(request))
 
 
 @router.post("/invitations", response_model=InvitationOut, status_code=status.HTTP_201_CREATED)

@@ -15,11 +15,11 @@ Foto a 2026-10-16 (leyendo el código; las pruebas no se corrieron para esta fot
 | Qué | Requisito | Cómo, dentro del marco |
 |---|---|---|
 | ~~Auth propia con JWT~~ **Hecha** (rama `feature/login-jwt`) | RF-01, RNF01, RNF03 | Ver [`app/modules/auth/README.md`](app/modules/auth/README.md). Falta: límite de intentos, correo real con el código, auditoría de logins |
-| **Bitácora de auditoría** | RF-14 | Tabla `audit_log` (quién, qué, sobre qué, cuándo) escrita desde los `service.py`. |
+| ~~**Bitácora de auditoría**~~ **Hecha** (18 de octubre) | RF-14 | `modules/audit`; falta registrar lectura de fotos y documentos, y `PATCH /center`. |
 | **Avisos con imágenes** (`GET /announcements` ya existe) | HN5 | `media_id` en el aviso; marcar como leído en el servidor (`POST /announcements/{id}/read`), hoy el "leído" vive en el teléfono. |
 | **Resumen semanal** | RF-12 | Endpoint que agregue `daily_summary` por semana y niño. |
 | **Revisar solicitudes de borrado de fotos** | RF-10 | Listar y aprobar/rechazar `media_deletion_request`; borrar el objeto del bucket. |
-| **Endurecimiento** | Rúbrica parte 2 | Rate limiting, bloqueo temporal en endpoints críticos, cabeceras (HSTS, `X-Content-Type-Options`, CSP), CORS explícito, sin secretos por defecto. |
+| **Endurecimiento** (hecho: límite de intentos, cabeceras, CORS cerrado) | Rúbrica parte 2 | Falta: HTTPS real, sin secretos por defecto en `.env.example`, límite en otros endpoints. |
 | **Entrada y salida del niño** | RF-03 | `attendance` guarda solo `PRESENT`/`ABSENT`; agregar hora de entrada y de salida. |
 
 ### Media

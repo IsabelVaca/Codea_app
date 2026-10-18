@@ -7,6 +7,7 @@ from app.core import rules
 from app.core.errors import ApiError
 from app.core.schemas import AccessCodeOut
 from app.core.security import revoke_all_sessions
+from app.modules.audit import service as audit
 from app.modules.auth import service as auth
 from app.modules.auth.models import AppUser, Invitation, Role, UserStatus
 from app.modules.children.models import Child
@@ -109,7 +110,7 @@ async def get_parent(db: AsyncSession, parent_id: uuid.UUID) -> ParentOut:
     return rows[0]
 
 
-async def create_parent(db: AsyncSession, data: ParentCreate) -> ParentOut:
+async def create_parent(db: AsyncSession, data: ParentCreate, actor_id: uuid.UUID | None = None) -> ParentOut:
     """Da de alta a un padre, lo liga a sus hijos y le crea su invitación."""
     name = rules.require_name(data.name)
     phone = rules.check_phone(data.phone)
@@ -136,6 +137,10 @@ async def create_parent(db: AsyncSession, data: ParentCreate) -> ParentOut:
             is_primary=False,
         )
         access_code = access_code or code
+    audit.record(
+        db, audit.USER_CREATED, actor_id=actor_id, entity_type="USER", entity_id=user.id,
+        detail={"role": "PARENT", "children": sorted(set(data.child_ids))},
+    )
     await db.commit()
     out = await get_parent(db, user.id)
     out.access_code = access_code
@@ -148,11 +153,17 @@ async def _get_user(db: AsyncSession, parent_id: uuid.UUID) -> AppUser:
     return await db.get(AppUser, parent_id)
 
 
-async def set_active(db: AsyncSession, parent_id: uuid.UUID, active: bool) -> ParentOut:
+async def set_active(
+    db: AsyncSession, parent_id: uuid.UUID, active: bool, actor_id: uuid.UUID | None = None
+) -> ParentOut:
     user = await _get_user(db, parent_id)
     user.status = UserStatus.ACTIVE if active else UserStatus.INACTIVE
     if not active:
         await revoke_all_sessions(db, user)
+    audit.record(
+        db, audit.USER_REACTIVATED if active else audit.USER_DEACTIVATED, actor_id=actor_id,
+        entity_type="USER", entity_id=parent_id, detail={"role": "PARENT"},
+    )
     await db.commit()
     return await get_parent(db, parent_id)
 

@@ -3,7 +3,7 @@
 Catálogo tomado del tablero de Teams (buckets *Req. de CODEA*, *Req. base*, *Requisitos no funcionales* e *Historias de usuario*). Los requisitos valen el 30 % de la calificación de la aplicación.
 
 **Estado a 2026-10-16**, revisado leyendo el código; no se corrió la app. ✅ = existe en el código · 🟡 = parcial · ❌ = no existe.
-**Avance estimado: 15 ✅ + 8 🟡 + 9 ❌ de 32, es decir ~59 %** (los parciales cuentan medio). Actualizado el 2026-10-17 con el login JWT (rama `feature/login-jwt`, sin subir).
+**Avance estimado: 16 ✅ + 7 🟡 + 9 ❌ de 32, es decir ~61 %** (los parciales cuentan medio). Actualizado el 2026-10-17 con el login JWT (rama `feature/login-jwt`, sin subir).
 
 > Los planes y la referencia de endpoints que ya existían son la fuente para el *cómo*: [`plan/`](plan/README.md) (pantallas, conexión de la app, estado de la API, login con JWT), [`estilo.md`](estilo.md) (convenciones) y [`api/endpoints.md`](api/endpoints.md) (los 65 endpoints). Este archivo solo dice qué requisito cubre cada cosa.
 
@@ -34,7 +34,7 @@ Catálogo tomado del tablero de Teams (buckets *Req. de CODEA*, *Req. base*, *Re
 | RF-11 | Funciona sin internet | ❌ | No hay Room, DataStore ni WorkManager. |
 | RF-12 | Resumen semanal | ❌ | Solo existe `daily_summary` (diario). |
 | RF-13 | Desbloqueo con huella | ❌ | No hay `BiometricPrompt` ([decisión #4](DECISIONES-PENDIENTES.md)). |
-| RF-14 | Registro de quién hizo qué | 🟡 | Hay columnas `created_by`/`marked_by`/`recorded_by` en algunas tablas. No hay bitácora de auditoría. |
+| RF-14 | Registro de quién hizo qué | ✅ | Tabla `audit_log` y `GET /audit-log` (solo admin, solo se agrega): logins, activaciones, cambios de contraseña, códigos de acceso, altas, bajas y cambios de docentes, padres e infantes. Nunca guarda contraseñas ni tokens. Además hay `created_by`/`marked_by`/`recorded_by` en reportes y asistencia. **Límite:** no registra la lectura de fotos y documentos. 23 pruebas en `tests/test_security.py`. |
 
 ## Requisitos no funcionales (RNF)
 

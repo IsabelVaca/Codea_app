@@ -5,8 +5,8 @@ Piezas compartidas: `core/tokens.py` (JWT, refresh, códigos), `core/passwords.p
 
 | Endpoint | Rol | Qué hace |
 |---|---|---|
-| `POST /auth/login` | sin sesión | Correo y contraseña → `TokenOut`. `401 INVALID_CREDENTIALS` (igual para correo desconocido y contraseña mal); `403 ACCOUNT_NOT_ACTIVATED`, `USER_INACTIVE` |
-| `POST /auth/activate` | sin sesión | Primer acceso: correo + código + contraseña nueva → `TokenOut`. `403 CODE_INVALID`, `CODE_EXPIRED`, `USER_INACTIVE`; `422 PASSWORD_TOO_SHORT`, `PASSWORD_TOO_LONG`, `PASSWORD_IS_EMAIL` |
+| `POST /auth/login` | sin sesión | Correo y contraseña → `TokenOut`. `401 INVALID_CREDENTIALS` (igual para correo desconocido y contraseña mal); `403 ACCOUNT_NOT_ACTIVATED`, `USER_INACTIVE`; `429 TOO_MANY_ATTEMPTS` |
+| `POST /auth/activate` | sin sesión | Primer acceso: correo + código + contraseña nueva → `TokenOut`. `403 CODE_INVALID`, `CODE_EXPIRED`, `USER_INACTIVE`; `422 PASSWORD_TOO_SHORT`, `PASSWORD_TOO_LONG`, `PASSWORD_IS_EMAIL`; `429 TOO_MANY_ATTEMPTS` |
 | `POST /auth/refresh` | sin sesión | Cambia un refresh token por un par nuevo (sin `me`); el viejo queda revocado. `401 REFRESH_INVALID` |
 | `POST /auth/logout` | sin sesión | Revoca el refresh token; 204 aunque ya no sirviera |
 | `GET /me` | cualquiera con cuenta | Rol, sala o hijos; si es docente, también turno y centro para el checador |
@@ -28,9 +28,25 @@ Piezas compartidas: `core/tokens.py` (JWT, refresh, códigos), `core/passwords.p
 
 | Hecho | Pendiente (fase de seguridad) |
 |---|---|
-| Login, activar con código, refresh con rotación y detección de reuso, logout, cambio de contraseña, cerrar sesiones, códigos nuevos y de recuperación, baja que corta el acceso | **Límite de intentos y bloqueo temporal** en login, activar y refresh |
-| 31 pruebas en `tests/test_auth.py` | **Correo real** con el código (hoy el admin lo comparte) |
+| Login, activar con código, refresh con rotación y detección de reuso, logout, cambio de contraseña, cerrar sesiones, códigos nuevos y de recuperación, baja que corta el acceso | Límite en `refresh` (los refresh tokens tienen entropía alta, el riesgo es bajo) |
+| **Límite de intentos** (ver abajo) y **auditoría** de logins, códigos y bajas (`modules/audit`) | Lista de sesiones abiertas; segundo factor para el admin |
+| 31 pruebas en `tests/test_auth.py` y 23 en `tests/test_security.py` | **Correo real** con el código (hoy el admin lo comparte) |
 | | Rotación de la llave del JWT (`kid`), tarea que borre refresh tokens y códigos vencidos |
-| | Auditar logins, códigos generados y bajas; lista de sesiones abiertas; segundo factor para el admin |
 
 Diseño y decisiones: [`docs/plan/04-api-login-jwt.md`](../../../../docs/plan/04-api-login-jwt.md). Diferencias con ese plan: `POST /me/password` devuelve `200 TokenOut` (y no 204) para que quien cambia su contraseña siga dentro; el código se acepta con o sin guion y en cualquier mayúscula.
+
+## Límite de intentos (`throttle.py`)
+
+Se cuentan los fallos de `/auth/login` y de `/auth/activate` (el código es corto y se podría adivinar) en una ventana móvil:
+
+| Regla | Valor por omisión | Variable |
+|---|---|---|
+| Fallos por correo antes de bloquearlo | 5 | `AUTH_MAX_FAILURES` |
+| Fallos por IP antes de bloquearla (frena el barrido de muchos correos) | 30 | `AUTH_MAX_FAILURES_IP` |
+| Ventana, y duración del bloqueo | 900 s (15 min) | `AUTH_WINDOW_S` |
+
+- Con el correo bloqueado responde `429 TOO_MANY_ATTEMPTS` con `retry_after_s` (y el encabezado `Retry-After`) **sin revisar la contraseña**, también si era la buena.
+- Los fallos se guardan por correo aunque la cuenta no exista, así el bloqueo no delata qué correos están registrados.
+- Entrar bien borra los fallos de ese correo. Se guarda en Postgres (`auth_attempt`), por eso vale con varios procesos de la API.
+- Riesgo conocido: alguien puede bloquear la cuenta de otra persona 15 minutos fallando a propósito. Se acepta a cambio de frenar la fuerza bruta; la ventana es corta.
+- Detrás de un proxy, `request.client` debe traer la IP real (`uvicorn --proxy-headers` y un proxy de confianza); si no, el límite por IP vería a todos como la misma.

@@ -16,6 +16,13 @@ class Settings(BaseSettings):
     # el access token dura poco; el refresh token se rota en cada uso.
     access_ttl_s: int = 5 * 60
     refresh_ttl_s: int = 7 * 24 * 3600
+    # intentos fallidos de entrada: tantos por correo (o por IP) en la ventana y se bloquea hasta que pase.
+    auth_max_failures: int = 5
+    auth_max_failures_ip: int = 30
+    auth_window_s: int = 15 * 60
+    # orígenes web que pueden llamar a la API desde un navegador, separados por coma. Vacío: ninguno.
+    # la app Android no lo necesita; solo sirve si algún día hay una página web.
+    cors_origins: str = ""
     # contraseña que el seed les pone a las personas de ejemplo (solo para desarrollo).
     seed_password: str = "codea1234"
 

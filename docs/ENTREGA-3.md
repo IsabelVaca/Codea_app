@@ -23,8 +23,8 @@ Estado a 2026-10-16. Los entregables nuevos se guardan en `docs/entrega/` (carpe
 | Sesiones y tokens | ✅ | JWT de 5 min + refresh rotado (hash SHA-256, detección de reuso), `token_version` para cortar acceso al instante, tokens cifrados con Keystore en la app. Falta aprobar formalmente la [decisión #1](DECISIONES-PENDIENTES.md). |
 | Validación de permisos, anti-IDOR | ✅ | RBAC + 404 fuera de alcance; falta documentarlo con pruebas explícitas. |
 | Consultas parametrizadas | ✅ | SQLAlchemy ORM. |
-| Rate limiting y bloqueo | ❌ | Por implementar. |
-| HTTPS, HSTS, cabeceras | ❌ | Por implementar. |
+| Rate limiting y bloqueo | ✅ | 5 fallos por correo y 30 por IP en 15 min en `/auth/login` y `/auth/activate`; `429` con `retry_after_s`. Pruebas en `tests/test_security.py`. Pendiente: límite en endpoints que no son de entrada. |
+| HTTPS, HSTS, cabeceras | 🟡 | Cabeceras listas (`nosniff`, `X-Frame-Options`, CSP, `Referrer-Policy`, `Permissions-Policy`, `Cache-Control: no-store`, CORS cerrado) y HSTS fuera de `ENV=dev`. **Falta HTTPS** (despliegue público). |
 | Secretos fuera del código | 🟡 | `.env` está ignorado; cambiar valores por defecto. |
 | Escaneo dinámico (OWASP ZAP) | ❌ | Correrlo y documentar hallazgos y mitigaciones. |
 

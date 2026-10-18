@@ -27,7 +27,9 @@ def _problem(status: int, code: str, title: str, detail: str | None = None, **ex
     if detail:
         body["detail"] = detail
     body.update(extra)
-    return JSONResponse(body, status_code=status, media_type=PROBLEM_JSON)
+    # un 429 dice cuántos segundos esperar, también en el encabezado estándar.
+    headers = {"Retry-After": str(extra["retry_after_s"])} if "retry_after_s" in extra else None
+    return JSONResponse(body, status_code=status, media_type=PROBLEM_JSON, headers=headers)
 
 
 def install(app: FastAPI) -> None:

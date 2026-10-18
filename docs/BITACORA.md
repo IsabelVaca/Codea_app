@@ -25,6 +25,15 @@ Registro cronológico de lo que se hizo, por qué y cómo se verificó. Lo nuevo
 | Calendario decía "Agosto" | Mes tomado de los datos del calendario | Sí: "Octubre en una línea" |
 | "Documentos" se partía en dos líneas | 11 sp, una línea y sin salto en la barra con 5 tabs | Sí, al abrir la tab |
 
+### Seguridad de la API y bitácora de auditoría (RF-14)
+- **Límite de intentos:** `auth/throttle.py` + tabla `auth_attempt`. 5 fallos por correo y 30 por IP en 15 min en `/auth/login` y `/auth/activate` → `429 TOO_MANY_ATTEMPTS` con `retry_after_s` y `Retry-After`. El bloqueo no revisa la contraseña (tampoco la buena) y cuenta también correos que no existen, para no delatar cuentas. Entrar bien borra los fallos.
+- **Cabeceras de seguridad** en todas las respuestas, también en errores: `nosniff`, `X-Frame-Options: DENY`, CSP `default-src 'none'` (salvo Swagger), `Referrer-Policy`, `Permissions-Policy`, `Cache-Control: no-store` en `/api/`, HSTS fuera de `ENV=dev`. CORS cerrado salvo `CORS_ORIGINS`.
+- **Auditoría:** módulo `audit` (`audit_log`, `GET /audit-log` solo admin, solo se agrega). Registra logins (ok, fallido, bloqueo), activaciones, cambios de contraseña, códigos de acceso, altas, bajas y cambios de docentes, padres e infantes. Nunca guarda contraseñas, códigos ni tokens (prueba incluida).
+- Migración `b41c7d2e9a10` (tablas `audit_log` y `auth_attempt`), aplicada también en Aiven.
+- Verificación: 91 pruebas de la API en verde (68 + 23 nuevas en `tests/test_security.py`); cabeceras confirmadas con `curl` contra la API en vivo.
+- Pendiente: HTTPS real (despliegue), registrar lectura de fotos/documentos y `PATCH /center`, límite en endpoints que no son de entrada.
+- Trabajo delegado: la sesión `codea-app-24` redacta los documentos de la entrega en `docs/entrega/` (ética y legal, clasificación de datos, manuales, implantación, administración). Se revisan antes de hacer commit.
+
 ### Checador con GPS y hora reales
 - Antes: prototipo con datos fijos y `registrar()` mandaba siempre las coordenadas del centro (el servidor nunca rechazaba por distancia).
 - Ahora: `data/DeviceLocation.kt` (LocationManager de Android, sin Play Services; GPS y luego red, con tiempo límite), `domain/GeoMath.kt` (distancia haversine, con 4 pruebas en `GeoMathTest`) y `CheckerViewModel` con estados de ubicación (buscando, sin permiso, sin señal, lista). La fecha y la hora son las del teléfono; la entrada se registra con la posición real.

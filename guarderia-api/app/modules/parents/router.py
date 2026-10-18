@@ -18,9 +18,9 @@ async def list_parents(db: Db, _: AdminUser) -> list[ParentOut]:
 
 
 @router.post("/parents", response_model=ParentOut, status_code=status.HTTP_201_CREATED)
-async def create_parent(db: Db, _: AdminUser, data: ParentCreate) -> ParentOut:
+async def create_parent(db: Db, current: AdminUser, data: ParentCreate) -> ParentOut:
     """Da de alta a un padre y le crea su invitación. Los hijos van por id."""
-    return await service.create_parent(db, data)
+    return await service.create_parent(db, data, current.user.id)
 
 
 @router.get("/parents/{parent_id}", response_model=ParentOut)
@@ -29,15 +29,15 @@ async def get_parent(db: Db, _: AdminUser, parent_id: uuid.UUID) -> ParentOut:
 
 
 @router.post("/parents/{parent_id}/deactivate", response_model=ParentOut)
-async def deactivate_parent(db: Db, _: AdminUser, parent_id: uuid.UUID) -> ParentOut:
+async def deactivate_parent(db: Db, current: AdminUser, parent_id: uuid.UUID) -> ParentOut:
     """Le quita el acceso a la app."""
-    return await service.set_active(db, parent_id, active=False)
+    return await service.set_active(db, parent_id, active=False, actor_id=current.user.id)
 
 
 @router.post("/parents/{parent_id}/reactivate", response_model=ParentOut)
-async def reactivate_parent(db: Db, _: AdminUser, parent_id: uuid.UUID) -> ParentOut:
+async def reactivate_parent(db: Db, current: AdminUser, parent_id: uuid.UUID) -> ParentOut:
     """Le devuelve el acceso."""
-    return await service.set_active(db, parent_id, active=True)
+    return await service.set_active(db, parent_id, active=True, actor_id=current.user.id)
 
 
 @router.post("/parents/{parent_id}/resend-invitation", response_model=ParentOut)

@@ -83,3 +83,16 @@ class RefreshToken(IdMixin, Base):
     replaced_by_id: Mapped[int | None] = mapped_column(ForeignKey("refresh_token.id"))
     last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     user_agent: Mapped[str | None] = mapped_column(Text)
+
+
+class AuthAttempt(IdMixin, Base):
+    """Un intento fallido de entrar (kind LOGIN) o de activar con un código (kind ACTIVATE).
+    Con ellos se limita cuántas veces se puede fallar en poco tiempo (ver throttle.py).
+    Se guarda por correo aunque no exista la cuenta, para que el bloqueo no delate qué correos están registrados."""
+
+    __tablename__ = "auth_attempt"
+
+    kind: Mapped[str] = mapped_column(String(20))
+    email: Mapped[str] = mapped_column(Text, index=True)
+    ip: Mapped[str | None] = mapped_column(String(64), index=True)
+    attempted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)

@@ -40,8 +40,8 @@ Errores comunes a todos los endpoints con sesión: `401 UNAUTHENTICATED` (sin to
 | Método | Ruta | Rol | Envía | Responde | Errores |
 | --- | --- | --- | --- | --- | --- |
 | GET | `/me` | Todos | — | `MeOut`: datos de la persona, `roles` y un bloque por rol: `admin {center}`, `teacher {classroom, is_primary, shift, center}`, `parent {children[]}` | — |
-| POST | `/auth/login` | Sin sesión | `{email, password}` | `TokenOut` | `401 INVALID_CREDENTIALS` (el mismo para correo desconocido y contraseña mal); `403 ACCOUNT_NOT_ACTIVATED`, `USER_INACTIVE` |
-| POST | `/auth/activate` | Sin sesión | `{email, code, password}`: el código lo da el administrador | `TokenOut` | `403 CODE_INVALID`, `CODE_EXPIRED`, `USER_INACTIVE`; `422 PASSWORD_TOO_SHORT` (mínimo 9), `PASSWORD_TOO_LONG` (máximo 128), `PASSWORD_IS_EMAIL` |
+| POST | `/auth/login` | Sin sesión | `{email, password}` | `TokenOut` | `401 INVALID_CREDENTIALS` (el mismo para correo desconocido y contraseña mal); `403 ACCOUNT_NOT_ACTIVATED`, `USER_INACTIVE`; `429 TOO_MANY_ATTEMPTS` (con `retry_after_s` y `Retry-After`) tras 5 fallos seguidos del mismo correo |
+| POST | `/auth/activate` | Sin sesión | `{email, code, password}`: el código lo da el administrador | `TokenOut` | `403 CODE_INVALID`, `CODE_EXPIRED`, `USER_INACTIVE`; `422 PASSWORD_TOO_SHORT` (mínimo 9), `PASSWORD_TOO_LONG` (máximo 128), `PASSWORD_IS_EMAIL`; `429 TOO_MANY_ATTEMPTS` |
 | POST | `/auth/refresh` | Sin sesión | `{refresh_token}` | `TokenOut` sin `me` (el viejo deja de servir) | `401 REFRESH_INVALID` |
 | POST | `/auth/logout` | Sin sesión | `{refresh_token}` | 204 (también si ya no servía) | — |
 | POST | `/me/password` | Todos | `{current_password, new_password}` | `TokenOut`: cierra todas las sesiones y da tokens nuevos para esta | `403 PASSWORD_INCORRECT`; `422 PASSWORD_TOO_SHORT`, `PASSWORD_TOO_LONG`, `PASSWORD_IS_EMAIL` |
@@ -184,6 +184,14 @@ Participantes de una conversación: los padres ligados al niño y las docentes d
 | PATCH | `/center` | `ADMIN` | `{name?, latitude?, longitude?, check_in_radius_m?, timezone?}` (solo cambia lo que se manda; latitud y longitud en `null` quitan la ubicación) | `CenterOut` | `422 LOCATION_INCOMPLETE`, `LOCATION_INVALID`, `RADIUS_INVALID`, `TIMEZONE_INVALID` |
 | POST | `/invitations` | `ADMIN` | `{name, surname?, phone, email, role}` | 201 `InvitationOut` con `access_code {code, purpose, expires_at}` (se muestra una sola vez) | `409 EMAIL_TAKEN`, `ALREADY_HAS_ACCOUNT` |
 | GET | `/invitations?status=&role=` | `ADMIN` | — | `InvitationOut[]`: `status` (`PENDING`, `ACCEPTED` = código usado, `EXPIRED`), `expires_at`, `accepted_at` | — |
+
+## Auditoría
+
+| Método | Ruta | Rol | Respuesta | Errores |
+| --- | --- | --- | --- | --- |
+| GET | `/audit-log?action=&actor_id=&limit=&cursor=` | `ADMIN` | `Page<AuditOut>`: `id`, `created_at`, `action`, `actor_id`, `actor_name`, `actor_email`, `entity_type`, `entity_id`, `detail`, `ip`; lo más nuevo primero, `limit` de 1 a 200 | `403` si no es admin; `422` si `limit` está fuera de rango |
+
+Acciones y qué datos guarda cada una: [`app/modules/audit/README.md`](../../guarderia-api/app/modules/audit/README.md). Solo se agrega; no hay forma de editar ni borrar.
 
 ## Enums
 

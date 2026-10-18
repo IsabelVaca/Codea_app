@@ -1,3 +1,4 @@
+import uuid
 from datetime import date
 
 from sqlalchemy import select
@@ -7,6 +8,7 @@ from app.core import rules
 from app.core.errors import ApiError
 from app.core.schemas import ClassroomRef
 from app.core.security import CurrentUser, get_child_in_scope
+from app.modules.audit import service as audit
 from app.modules.auth.models import AppUser
 from app.modules.classrooms.centers import center_today, get_active_classroom
 from app.modules.classrooms.models import Classroom
@@ -84,7 +86,7 @@ async def get_child(db: AsyncSession, current: CurrentUser, child_id: int) -> Ch
     return await get_detail(db, await get_child_in_scope(db, current, child_id))
 
 
-async def create_child(db: AsyncSession, data: ChildCreate) -> ChildDetail:
+async def create_child(db: AsyncSession, data: ChildCreate, actor_id: uuid.UUID | None = None) -> ChildDetail:
     """Inscribe a un infante; si viene tutor, lo registra y le crea su invitación."""
     name = rules.require_name(data.name)
     rules.check_age(data.birth_date, await center_today(db))
@@ -120,25 +122,41 @@ async def create_child(db: AsyncSession, data: ChildCreate) -> ChildDetail:
             relationship=guardian.relationship,
             is_primary=True,
         )
+    audit.record(
+        db, audit.CHILD_ENROLLED, actor_id=actor_id, entity_type="CHILD", entity_id=child.id,
+        detail={"classroom_id": data.classroom_id, "with_guardian": guardian is not None},
+    )
     await db.commit()
     out = await get_detail(db, child)
     out.access_code = access_code
     return out
 
 
-async def update_child(db: AsyncSession, child_id: int, data: ChildUpdate) -> ChildDetail:
+async def update_child(
+    db: AsyncSession, child_id: int, data: ChildUpdate, actor_id: uuid.UUID | None = None
+) -> ChildDetail:
     """Cambia al infante de sala. Sirve para "Cambiar de sala", "Agregar a esta sala" y "Sacar de la sala"."""
     child = await _get(db, child_id)
     if data.classroom_id is not None:
         await get_active_classroom(db, data.classroom_id)
     child.classroom_id = data.classroom_id
+    audit.record(
+        db, audit.CHILD_UPDATED, actor_id=actor_id, entity_type="CHILD", entity_id=child.id,
+        detail={"classroom_id": data.classroom_id},
+    )
     await db.commit()
     return await get_detail(db, child)
 
 
-async def set_active(db: AsyncSession, child_id: int, active: bool) -> ChildDetail:
+async def set_active(
+    db: AsyncSession, child_id: int, active: bool, actor_id: uuid.UUID | None = None
+) -> ChildDetail:
     child = await _get(db, child_id)
     child.status = ChildStatus.ACTIVE if active else ChildStatus.INACTIVE
+    audit.record(
+        db, audit.CHILD_REACTIVATED if active else audit.CHILD_DEACTIVATED, actor_id=actor_id,
+        entity_type="CHILD", entity_id=child.id,
+    )
     await db.commit()
     return await get_detail(db, child)
 
