@@ -29,4 +29,20 @@ docker compose exec api alembic upgrade head && docker compose exec api python -
 ./gradlew installDebug
 ```
 
+Antes de levantar la API, edita `guarderia-api/.env` y llena `JWT_SECRET` (sin él la API no arranca): `python -c "import secrets; print(secrets.token_urlsafe(48))"`. Cada quien usa su propio `.env`; está en `.gitignore` y nunca se sube. Para usar Aiven en vez del Postgres local, llena `DATABASE_URL` en ese archivo (ver `.env.example`).
+
 Detalles y pruebas en la guía.
+
+## Cómo entrar (cuentas de prueba)
+
+El seed (`python -m app.seed`, solo con `ENV=dev`) crea estas cuentas. Todas usan la contraseña `codea1234` (la de `SEED_PASSWORD` en el `.env`).
+
+| Rol | Correo | Qué ves |
+|---|---|---|
+| Administrador | `admin@oruga.test` | Padres, salas, infantes y personal |
+| Docente | `karla.robles@oruga.test` | Preescolar 2: asistencia, rutina y reportes |
+| Madre | `laura.iglesias@oruga.test` | Su hijo Mateo Iglesias |
+
+- **En la app:** escribe el correo y la contraseña en la pantalla de inicio de sesión.
+- **En Swagger** (`/docs`): `POST /auth/login`, copia el `access_token` y pégalo en **Authorize** (dura 5 minutos).
+- Son datos de prueba. No uses esta contraseña en una base pública: si corres el seed contra Aiven, cambia `SEED_PASSWORD` y compártela por privado.
