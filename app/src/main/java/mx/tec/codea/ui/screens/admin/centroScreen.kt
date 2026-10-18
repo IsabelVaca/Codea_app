@@ -22,10 +22,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.OutlinedTextField
@@ -72,12 +74,20 @@ fun CentroScreen(
     destinoSalaId: String? = null,           // null = todas las salas
     onDestinoChange: (String?) -> Unit = {},
     avisos: List<Aviso> = emptyList(),       // el historial, el más reciente primero
+    onCuentaClick: () -> Unit = {},          // abre Mi cuenta (cambiar contraseña y cerrar sesión)
 ) {
     // si la sala elegida deja de existir, el aviso vuelve a ser para todas.
     val destino = salas.firstOrNull { it.id == destinoSalaId }
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Centro", fontWeight = FontWeight.Bold) })
+            TopAppBar(
+                title = { Text("Centro", fontWeight = FontWeight.Bold) },
+                actions = {
+                    IconButton(onClick = onCuentaClick) {
+                        Icon(Icons.Filled.Person, contentDescription = "Mi cuenta")
+                    }
+                },
+            )
         },
         content = { paddingValues ->
     Column(

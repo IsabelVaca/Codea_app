@@ -166,3 +166,7 @@ data class RutinasAdminDetalleRoute(val rutinaId: String)
 // "agregar momento" abre sobre el detalle de la rutina que lo recibe.
 @Serializable
 data class RutinasAdminAgregarMomentoRoute(val rutinaId: String)
+// "Mi cuenta": perfil, cambiar contraseña y cerrar sesión. la abren el admin (Centro), el padre (Hoy)
+// y la docente (Menú → Mi perfil).
+@Serializable
+data object AccountRoute

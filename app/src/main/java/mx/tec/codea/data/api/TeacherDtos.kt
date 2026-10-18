@@ -52,6 +52,9 @@ data class MeDto(
     val name: String,
     val surname: String = "",
     @SerialName("full_name") val fullName: String,
+    val email: String? = null,
+    // "ADMIN", "TEACHER" y/o "PARENT": con ellos la app decide qué tabs mostrar.
+    val roles: List<String> = emptyList(),
     val teacher: MeTeacherDto? = null,
     val parent: MeParentDto? = null,
 )

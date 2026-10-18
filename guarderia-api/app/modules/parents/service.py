@@ -5,7 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core import rules
 from app.core.errors import ApiError
-from app.core.security import revoke_sessions
+from app.core.schemas import AccessCodeOut
+from app.core.security import revoke_all_sessions
 from app.modules.auth import service as auth
 from app.modules.auth.models import AppUser, Invitation, Role, UserStatus
 from app.modules.children.models import Child
@@ -24,8 +25,9 @@ async def link_guardian(
     email: str,
     relationship: Relationship,
     is_primary: bool,
-) -> AppUser:
-    """Liga un tutor a un niño. Si ya existe alguien con ese correo, se reutiliza."""
+) -> tuple[AppUser, AccessCodeOut | None]:
+    """Liga un tutor a un niño. Si ya existe alguien con ese correo, se reutiliza.
+    Regresa también su código de acceso si se le creó uno (quien ya activó su cuenta no lo necesita)."""
     user = await db.scalar(select(AppUser).where(AppUser.email == email))
     if user is None:
         user = AppUser(name=name, surname=surname, phone=phone, email=email)
@@ -39,10 +41,11 @@ async def link_guardian(
     )
     if linked is None:
         db.add(ParentChildRel(parent_id=user.id, child_id=child.id, relationship=relationship, is_primary=is_primary))
-    pending = user.firebase_uid is None and not await _has_pending_invitation(db, user.id)
-    if pending:
-        await auth.create_invitation(db, user, Role.PARENT)
-    return user
+    access_code = None
+    if user.password_hash is None and not await _has_pending_invitation(db, user.id):
+        created = await auth.create_invitation(db, user, Role.PARENT)
+        access_code = created[1] if created else None
+    return user, access_code
 
 
 async def _has_pending_invitation(db: AsyncSession, user_id: uuid.UUID) -> bool:
@@ -89,7 +92,7 @@ async def _rows(db: AsyncSession, parent_id: uuid.UUID | None = None) -> list[Pa
                     for link, child in mine
                 ],
                 has_access=user.status == UserStatus.ACTIVE,
-                has_account=user.firebase_uid is not None,
+                has_account=user.password_hash is not None,
             )
         )
     return result
@@ -120,9 +123,9 @@ async def create_parent(db: AsyncSession, data: ParentCreate) -> ParentOut:
     if existing is not None and await db.get(Parent, existing.id) is not None:
         raise ApiError(409, "EMAIL_TAKEN", "Ya hay un padre o tutor con ese correo")
 
-    user = None
+    user = access_code = None
     for child in children:
-        user = await link_guardian(
+        user, code = await link_guardian(
             db,
             child,
             name=name,
@@ -132,8 +135,11 @@ async def create_parent(db: AsyncSession, data: ParentCreate) -> ParentOut:
             relationship=data.relationship,
             is_primary=False,
         )
+        access_code = access_code or code
     await db.commit()
-    return await get_parent(db, user.id)
+    out = await get_parent(db, user.id)
+    out.access_code = access_code
+    return out
 
 
 async def _get_user(db: AsyncSession, parent_id: uuid.UUID) -> AppUser:
@@ -145,14 +151,16 @@ async def _get_user(db: AsyncSession, parent_id: uuid.UUID) -> AppUser:
 async def set_active(db: AsyncSession, parent_id: uuid.UUID, active: bool) -> ParentOut:
     user = await _get_user(db, parent_id)
     user.status = UserStatus.ACTIVE if active else UserStatus.INACTIVE
-    await db.commit()
     if not active:
-        revoke_sessions(user.firebase_uid)
+        await revoke_all_sessions(db, user)
+    await db.commit()
     return await get_parent(db, parent_id)
 
 
 async def resend_invitation(db: AsyncSession, parent_id: uuid.UUID) -> ParentOut:
     user = await _get_user(db, parent_id)
-    await auth.renew_invitation(db, user, Role.PARENT)
+    access_code = await auth.renew_invitation(db, user, Role.PARENT)
     await db.commit()
-    return await get_parent(db, parent_id)
+    out = await get_parent(db, parent_id)
+    out.access_code = access_code
+    return out

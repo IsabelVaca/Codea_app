@@ -32,7 +32,7 @@ class DocenteApiRepository {
     }
 
     suspend fun alta(nombre: String, apellido: String, telefono: String, correo: String, sala: String, turno: String) {
-        api.createTeacher(
+        val creada = api.createTeacher(
             TeacherCreateBody(
                 name = nombre.trim(),
                 surname = apellido.trim(),
@@ -42,6 +42,8 @@ class DocenteApiRepository {
                 shiftId = AdminDirectory.shiftId(turno),
             )
         )
+        // la API da el código de acceso una sola vez: el admin lo comparte para que la docente active su cuenta.
+        creada.accessCode?.let { DataEvents.accessCode(AccessCodeNotice(creada.fullName, it.code, shortDateOf(it.expiresAt).orEmpty())) }
     }
 
     // sala vacía = sin sala.
@@ -113,7 +115,7 @@ class PadreApiRepository {
         api.parents().map { it.toPadre() }.sortedBy { it.nombre }
 
     suspend fun inscribir(nombre: String, apellido: String, telefono: String, correo: String, parentesco: String, hijoIds: List<String>) {
-        api.createParent(
+        val creado = api.createParent(
             ParentCreateBody(
                 name = nombre.trim(),
                 surname = apellido.trim(),
@@ -123,14 +125,17 @@ class PadreApiRepository {
                 childIds = hijoIds.map { it.toInt() },
             )
         )
+        creado.accessCode?.let { DataEvents.accessCode(AccessCodeNotice(creado.fullName, it.code, shortDateOf(it.expiresAt).orEmpty())) }
     }
 
     suspend fun setAcceso(padreId: String, conAcceso: Boolean) {
         if (conAcceso) api.reactivateParent(padreId) else api.deactivateParent(padreId)
     }
 
+    // la API genera un código nuevo; se muestra para que el admin lo comparta.
     suspend fun reenviarInvitacion(padreId: String) {
-        api.resendInvitation(padreId)
+        val padre = api.resendInvitation(padreId)
+        padre.accessCode?.let { DataEvents.accessCode(AccessCodeNotice(padre.fullName, it.code, shortDateOf(it.expiresAt).orEmpty())) }
     }
 }
 

@@ -4,9 +4,13 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 
-// dos avisos globales entre los ViewModels de admin:
+// el código que hay que mostrarle al admin para que lo comparta (se muestra una sola vez).
+data class AccessCodeNotice(val personName: String, val code: String, val expiresAt: String)
+
+// tres avisos globales entre los ViewModels:
 // - changed: algo cambió en el servidor, cada lista se vuelve a pedir.
 // - notices: textos para el snackbar (errores de la API, por ejemplo).
+// - accessCodes: el código de acceso de alguien recién dado de alta; CodeaNavHost lo muestra en un diálogo.
 object DataEvents {
 
     private val _changed = MutableSharedFlow<Unit>(extraBufferCapacity = 8)
@@ -14,6 +18,13 @@ object DataEvents {
 
     private val _notices = MutableSharedFlow<String>(extraBufferCapacity = 8)
     val notices: SharedFlow<String> = _notices.asSharedFlow()
+
+    private val _accessCodes = MutableSharedFlow<AccessCodeNotice>(extraBufferCapacity = 8)
+    val accessCodes: SharedFlow<AccessCodeNotice> = _accessCodes.asSharedFlow()
+
+    fun accessCode(notice: AccessCodeNotice) {
+        _accessCodes.tryEmit(notice)
+    }
 
     fun notifyChanged() {
         _changed.tryEmit(Unit)

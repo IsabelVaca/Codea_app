@@ -38,7 +38,7 @@ async def _guardians(db: AsyncSession, child_ids: list[int]) -> dict[int, list[G
                 phone=user.phone,
                 email=user.email,
                 is_primary=link.is_primary,
-                has_account=user.firebase_uid is not None,
+                has_account=user.password_hash is not None,
             )
         )
     return guardians
@@ -108,8 +108,9 @@ async def create_child(db: AsyncSession, data: ChildCreate) -> ChildDetail:
     )
     db.add(child)
     await db.flush()
+    access_code = None
     if guardian is not None:
-        await parents.link_guardian(
+        _, access_code = await parents.link_guardian(
             db,
             child,
             name=guardian.name.strip(),
@@ -120,7 +121,9 @@ async def create_child(db: AsyncSession, data: ChildCreate) -> ChildDetail:
             is_primary=True,
         )
     await db.commit()
-    return await get_detail(db, child)
+    out = await get_detail(db, child)
+    out.access_code = access_code
+    return out
 
 
 async def update_child(db: AsyncSession, child_id: int, data: ChildUpdate) -> ChildDetail:

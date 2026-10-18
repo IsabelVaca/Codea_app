@@ -1,0 +1,32 @@
+# Pruebas de la app
+
+## Hoy
+
+JVM, con JUnit y un servidor falso (`mockwebserver3`). **33 pruebas** (2026-10-17):
+
+| Clase | Pruebas | Qué cubre |
+|---|---|---|
+| `domain/CheckInRulesTest` | 4 | A tiempo, tarde y fuera del radio |
+| `domain/RoutineRulesTest` | 4 | Avance de la rutina |
+| `domain/ReportValidatorTest` | 3 | Reportes sin texto o sin niños |
+| `domain/AuthValidatorTest` | 7 | Contraseña de 8 (no) y 9 (sí) caracteres, tope de 128, ni el correo ni distinta de su confirmación, código obligatorio |
+| `data/TokenAuthenticatorTest` | 8 | El token en cada petición; con el token vencido renueva **una vez** y repite con el nuevo; refresh rechazado = sesión terminada; servidor caído al renovar = sesión conservada; sin ciclo si el token nuevo también falla; `/auth/` no lleva token ni renueva; **4 peticiones simultáneas = un solo refresh**; `USER_INACTIVE` cierra la sesión |
+| `data/SessionRepositoryTest` | 6 | Sin sesión guardada, login que sobrevive a reabrir la app, login fallido, cerrar sesión aunque el servidor falle, llave del Keystore perdida = sin sesión, refrescar conserva nombre y roles |
+| `ExampleUnitTest` | 1 | De plantilla |
+
+Estas pruebas ejercitan el interceptor, el autenticador y el `SessionRepository` **reales** contra un servidor falso, no una copia de la lógica. Se comprobó con una mutación: quitar la guarda del refresh hace fallar justo la prueba de peticiones simultáneas.
+
+```bash
+./gradlew test
+./gradlew test --tests "mx.tec.codea.data.TokenAuthenticatorTest"
+```
+
+Los mismos casos de reglas están en el backend (`guarderia-api/tests/`), para que la misma regla dé la misma respuesta en los dos lados.
+Instrumentadas: `app/src/androidTest/` solo tiene `ExampleInstrumentedTest`. El cifrado real con el Keystore (`KeystoreTokenCipher`) solo se puede probar en un dispositivo; se comprobó a mano en el emulador (los tokens en disco no contienen ningún JWT en claro).
+
+## Pendiente
+
+- Pruebas de los validadores de admin: `SalaValidator`, `DocenteValidator`, `InfanteValidator`, `PadreValidator`.
+- Pruebas de `SessionViewModel` y `AccountViewModel` (el servidor falso y `SessionRepository` ya están listos para armarlas; falta agregar `kotlinx-coroutines-test` y usar `Dispatchers.setMain`).
+- Pruebas de interfaz con **Compose UI Test** de los flujos críticos: check-in, reporte, asistencia, inscribir infante.
+- Registrar los resultados en la matriz de trazabilidad ([`docs/ENTREGA-3.md`](../../../docs/ENTREGA-3.md), parte 3).

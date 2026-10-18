@@ -218,12 +218,4 @@ class CodeaViewModel : ViewModel() {
             }
         }
     }
-
-    // todavía no hay login real: "cerrar sesión" solo cierra el chat y vuelve a pedir el día.
-    fun resetDay() {
-        openChatChildId = null
-        chatMessages = emptyList()
-        selectActiveAfterLoad = true
-        cargar()
-    }
 }

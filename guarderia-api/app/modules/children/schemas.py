@@ -3,7 +3,7 @@ from datetime import date
 
 from pydantic import BaseModel
 
-from app.core.schemas import ClassroomRef
+from app.core.schemas import AccessCodeOut, ClassroomRef
 from app.modules.parents.models import Relationship
 
 from .models import ChildStatus
@@ -63,3 +63,5 @@ class ChildOut(BaseModel):
 
 class ChildDetail(ChildOut):
     guardians: list[GuardianOut]
+    # solo al inscribir con tutor: el código para que el tutor active su cuenta (se muestra una vez).
+    access_code: AccessCodeOut | None = None

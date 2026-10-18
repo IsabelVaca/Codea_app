@@ -29,6 +29,10 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.toRoute
 import kotlinx.coroutines.launch
 import mx.tec.codea.R
+import mx.tec.codea.data.AccessCodeNotice
+import mx.tec.codea.data.SessionRepository
+import mx.tec.codea.ui.components.AccessCodeDialog
+import mx.tec.codea.ui.screens.account.AccountScreen
 import mx.tec.codea.data.DataEvents
 import mx.tec.codea.domain.ReportMethod
 import mx.tec.codea.ui.components.rememberDictation
@@ -78,6 +82,7 @@ import mx.tec.codea.ui.state.AltaAsistenteViewModel
 import mx.tec.codea.ui.state.AvisosViewModel
 import mx.tec.codea.ui.state.CentroViewModel
 import mx.tec.codea.ui.state.CheckerViewModel
+import mx.tec.codea.ui.state.AccountViewModel
 import mx.tec.codea.ui.state.CodeaViewModel
 import mx.tec.codea.ui.state.CrearSalaViewModel
 import mx.tec.codea.ui.state.DocentesAdminViewModel
@@ -102,6 +107,9 @@ fun CodeaNavHost(
     // MyDayGraph for a teacher, AdminCentroGraph for an admin, ParentTodayRoute for a parent.
     startDestination: Any,
     snackbarHostState: SnackbarHostState,
+    // la sesión: Mi cuenta cambia la contraseña con ella, y onLogout la cierra (CodeaApp cambia de pantalla solo).
+    sessions: SessionRepository,
+    onLogout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // shared by all the admin screens.
@@ -113,6 +121,10 @@ fun CodeaNavHost(
     val parentViewModel: ParentViewModel = viewModel()
     // los avisos que le llegan a la asistente (Menú) y al papá (campana de Hoy).
     val avisosViewModel: AvisosViewModel = viewModel()
+    val accountViewModel: AccountViewModel = viewModel(factory = AccountViewModel.Factory(sessions))
+
+    // el código de acceso de alguien recién dado de alta: se muestra una sola vez.
+    var codigoPendiente by remember { mutableStateOf<AccessCodeNotice?>(null) }
 
     // showSnackbar is a suspend function, so it needs a scope.
     val coroutineScope = rememberCoroutineScope()
@@ -121,6 +133,10 @@ fun CodeaNavHost(
     LaunchedEffect(Unit) {
         DataEvents.notices.collect { snackbarHostState.showSnackbar(it) }
     }
+    LaunchedEffect(Unit) {
+        DataEvents.accessCodes.collect { codigoPendiente = it }
+    }
+    codigoPendiente?.let { AccessCodeDialog(notice = it, onDismiss = { codigoPendiente = null }) }
 
     NavHost(
         navController = navController,
@@ -273,14 +289,14 @@ fun CodeaNavHost(
                     onOptionClick = { option ->
                         if (option == MenuOption.NOTICES) {
                             navController.navigate(AvisosFundacionRoute)
+                        } else if (option == MenuOption.PROFILE) {
+                            navController.navigate(AccountRoute)
                         } else {
                             navController.navigate(MenuOptionRoute(option.name))
                         }
                     },
-                    onLogoutConfirm = {
-                        viewModel.resetDay()
-                        navController.navigateToMyDayAfterLogout()
-                    },
+                    // cerrar sesión de verdad: CodeaApp ve que la sesión terminó y dibuja el inicio de sesión.
+                    onLogoutConfirm = onLogout,
                 )
             }
             composable<CheckerRoute> {
@@ -348,6 +364,7 @@ fun CodeaNavHost(
                     destinoSalaId = centroViewModel.destinoSalaId,
                     onDestinoChange = centroViewModel::onDestinoChange,
                     avisos = avisos,
+                    onCuentaClick = { navController.navigate(AccountRoute) },
                     onSalaClick = { sala ->
                         navController.navigate(AdminSalaDetalleRoute(sala.id))
                     },
@@ -591,6 +608,30 @@ fun CodeaNavHost(
             }
         }
 
+        // mi cuenta: perfil, cambiar contraseña y cerrar sesión. la abren los tres roles.
+        composable<AccountRoute> {
+            val context = LocalContext.current
+            AccountScreen(
+                name = accountViewModel.name,
+                email = accountViewModel.email,
+                children = accountViewModel.children,
+                loadError = accountViewModel.loadError,
+                changing = accountViewModel.changing,
+                localError = accountViewModel.localError,
+                remoteError = accountViewModel.remoteError,
+                onChangePassword = { current, new, confirmation ->
+                    accountViewModel.changePassword(current, new, confirmation, onSuccess = {
+                        Toast.makeText(context, context.getString(R.string.account_password_changed), Toast.LENGTH_SHORT).show()
+                    })
+                },
+                onClearPasswordErrors = accountViewModel::clearPasswordErrors,
+                onLogoutConfirm = onLogout,
+                onBackClick = { navController.popBackStack() },
+                passwordChanged = accountViewModel.passwordChanged,
+                onPasswordChangedShown = accountViewModel::passwordChangedShown,
+            )
+        }
+
         // parent tabs. each is only one screen. the data comes from ParentViewModel.
         composable<ParentTodayRoute> {
             val context = LocalContext.current
@@ -602,6 +643,7 @@ fun CodeaNavHost(
                 pendientes = pendientes,
                 notifs = notifs,
                 onAbrirNotif = avisosViewModel::alAbrir,
+                onCuentaClick = { navController.navigate(AccountRoute) },
                 onNavigateToCalendar = {
                     navController.navigateToTopLevel(TopLevelDestination.PARENT_CALENDAR)
                 },

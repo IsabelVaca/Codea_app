@@ -32,6 +32,17 @@ android {
             ?.substringAfter("=")
             .orEmpty()
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
+
+        // la dirección de la API. orden: -PapiBaseUrl=... en la línea de comandos, API_BASE_URL en
+        // local.properties, y por último el emulador (10.0.2.2 es tu Mac vista desde el emulador).
+        // con un celular físico por USB: http://localhost:8000/api/v1/ y adb reverse tcp:8000 tcp:8000
+        val apiBaseUrl = providers.gradleProperty("apiBaseUrl").orNull
+            ?: localProperties.lineSequence()
+                .map { it.trim() }
+                .firstOrNull { it.startsWith("API_BASE_URL=") }
+                ?.substringAfter("=")
+            ?: "http://10.0.2.2:8000/api/v1/"
+        buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
     }
 
     buildTypes {
@@ -39,6 +50,16 @@ android {
             optimization {
                 enable = false
             }
+            // en release la API va por HTTPS. mientras no haya dominio, esta dirección es un recordatorio:
+            // pon la real en local.properties como API_BASE_URL_RELEASE antes de generar el APK de entrega.
+            val localProperties = providers.fileContents(rootProject.layout.projectDirectory.file("local.properties"))
+                .asText.orNull.orEmpty()
+            val releaseUrl = localProperties.lineSequence()
+                .map { it.trim() }
+                .firstOrNull { it.startsWith("API_BASE_URL_RELEASE=") }
+                ?.substringAfter("=")
+                ?: "https://api.codea.invalid/api/v1/"
+            buildConfigField("String", "API_BASE_URL", "\"$releaseUrl\"")
         }
     }
     compileOptions {
@@ -47,6 +68,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -79,4 +101,6 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
     implementation(libs.reorderable)
+    implementation(libs.androidx.datastore.preferences)
+    testImplementation(libs.okhttp.mockwebserver)
 }

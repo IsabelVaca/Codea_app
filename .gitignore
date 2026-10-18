@@ -34,6 +34,7 @@ captures/
 # Claude Code
 CLAUDE.md
 
+.env
 guarderia-api/.env
 __pycache__/
 guarderia-api/.venv/
