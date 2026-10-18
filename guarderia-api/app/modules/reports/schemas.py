@@ -94,3 +94,45 @@ class DayOut(BaseModel):
     summary: DailyEntryOut | None
     timeline: list[TimelineEvent]
     notes: list[NoteOut]
+
+
+class WeekDayStatus(StrEnum):
+    """Cómo estuvo el niño ese día de la semana."""
+
+    ATTENDED = "ATTENDED"
+    ABSENT = "ABSENT"
+    # el día no ha llegado, o ese día no hubo rutina ni registro suyo.
+    NO_RECORD = "NO_RECORD"
+
+
+class WeekDayOut(BaseModel):
+    date: date
+    status: WeekDayStatus
+    mood: Mood | None
+    meals: MealAmount | None
+    diaper_changes: int | None
+    nap_minutes: int | None
+    reports: int
+    family_notes: int
+
+
+class WeeklySummaryOut(BaseModel):
+    """El resumen semanal (RF-12): de lunes a viernes, lo que se vio cada día y los totales."""
+
+    child_id: int
+    child_name: str
+    week_start: date
+    week_end: date
+    days_attended: int
+    days_absent: int
+    # cuántos días hubo cada ánimo y cada cantidad de comida (solo los que aparecieron).
+    moods: dict[Mood, int]
+    meals: dict[MealAmount, int]
+    nap_minutes_average: int | None
+    diaper_changes_total: int
+    reports_by_type: dict[ReportType, int]
+    # lo que la asistente escribió en reportes de logros, para que el papá lo lea de corrido.
+    achievements: list[str]
+    family_notes: int
+    days: list[WeekDayOut]
+

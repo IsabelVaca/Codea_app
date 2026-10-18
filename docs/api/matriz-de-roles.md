@@ -33,6 +33,7 @@ Quién puede llamar a cada endpoint. **Se genera leyendo las dependencias reales
 | PUT | `/children/{child_id}/documents/{document_id}` | ✅ | — | ✅ | Por rol |
 | POST | `/children/{child_id}/notes` | — | — | ✅ | Por rol |
 | POST | `/children/{child_id}/reactivate` | ✅ | — | — | Por rol |
+| GET | `/children/{child_id}/weekly-summary` | ✅ | ✅ | ✅ | Sesión |
 | GET | `/classrooms` | ✅ | — | — | Por rol |
 | POST | `/classrooms` | ✅ | — | — | Por rol |
 | DELETE | `/classrooms/{classroom_id}` | ✅ | — | — | Por rol |
@@ -84,7 +85,7 @@ Quién puede llamar a cada endpoint. **Se genera leyendo las dependencias reales
 | POST | `/teachers/{teacher_id}/reactivate` | ✅ | — | — | Por rol |
 | POST | `/users/{user_id}/access-code` | ✅ | — | — | Por rol |
 
-Total: 75 endpoints (6 públicos, 54 por rol, 15 con alcance por registro).
+Total: 76 endpoints (6 públicos, 54 por rol, 16 con alcance por registro).
 
 ## Cómo se regenera
 

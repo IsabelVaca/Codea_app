@@ -8,7 +8,7 @@ python3 -m venv .venv
 .venv/bin/pytest
 ```
 
-259 pruebas (conteo del 2026-10-18):
+267 pruebas (conteo del 2026-10-18):
 
 | Archivo | Pruebas | Qué cubre |
 |---|---|---|
@@ -21,7 +21,8 @@ python3 -m venv .venv
 | `test_parent_views.py` | 2 | Pantalla Hoy y calendario |
 | `test_security.py` | 23 | Límite de intentos (por correo, por IP, activación, ventana), cabeceras de seguridad, CORS cerrado, bitácora de auditoría (qué registra, quién la lee, que no guarda secretos) |
 | `test_media_deletion.py` | 9 | RF-10: el admin lista, aprueba (borra del bucket y de las galerías) y rechaza solicitudes de borrado; una sola decisión; falla del bucket; auditoría |
-| `test_access_matrix.py` | 157 | Matriz de roles leída de las rutas reales (sin token `401`, rol no permitido `403`), IDOR por registro (padre, docente, chat, fotos), inyección en login, parámetros y texto guardado |
+| `test_weekly_summary.py` | 6 | RF-12: semana completa, cualquier fecha da el mismo lunes, ausencias de semanas pasadas, semana vacía o futura, alcance, fecha inválida |
+| `test_access_matrix.py` | 159 | Matriz de roles leída de las rutas reales (sin token `401`, rol no permitido `403`), IDOR por registro (padre, docente, chat, fotos), inyección en login, parámetros y texto guardado |
 
 Con el login propio, `as_user(correo)` fabrica un access token real de las personas de `world` (que ya tienen contraseña, con el hash calculado una sola vez). Los access tokens de las pruebas duran 30 días para que las que mueven el reloj no los venzan; la de expiración fija su propio TTL.
 

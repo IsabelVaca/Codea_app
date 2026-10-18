@@ -111,6 +111,7 @@ def _child_reads(child_id: int) -> list[str]:
     return [
         f"/children/{child_id}",
         f"/children/{child_id}/day",
+        f"/children/{child_id}/weekly-summary",
         f"/children/{child_id}/attendance?month=2026-10",
         f"/children/{child_id}/authorized-pickups",
         f"/children/{child_id}/documents",

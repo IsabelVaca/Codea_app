@@ -64,6 +64,11 @@ Registro cronológico de lo que se hizo, por qué y cómo se verificó. Lo nuevo
 - Verificado en el teléfono: la tarjeta muestra el valor del servidor (25.65160, −100.28960, radio 60 m, el del seed) y el diálogo de confirmación abre. **No se confirmó el cambio** a propósito: guardaría la ubicación exacta del teléfono en la base compartida de Aiven. Pendiente de decidir con el equipo dónde se hará la demo.
 - Valor anterior del centro, por si hay que restaurarlo: latitud 25.651600, longitud −100.289600, radio 60 m.
 
+### RF-12: resumen semanal (API)
+- `GET /children/{id}/weekly-summary?week_start=`: de lunes a viernes de la semana de esa fecha (sábado y domingo cuentan para la semana que acaba de terminar). Asistencia, ánimo, comida, siesta promedio, cambios, reportes por tipo, logros, notas de la familia y el detalle de cada día. El mismo alcance por registro que el resto del niño (404 fuera de alcance).
+- 6 pruebas nuevas (`test_weekly_summary.py`); la ruta se agregó a la prueba de IDOR y la matriz de roles se regeneró (76 endpoints). Total: **267 pruebas de la API en verde**.
+- Falta mostrarlo en la app del padre.
+
 ### Checador con GPS y hora reales
 - Antes: prototipo con datos fijos y `registrar()` mandaba siempre las coordenadas del centro (el servidor nunca rechazaba por distancia).
 - Ahora: `data/DeviceLocation.kt` (LocationManager de Android, sin Play Services; GPS y luego red, con tiempo límite), `domain/GeoMath.kt` (distancia haversine, con 4 pruebas en `GeoMathTest`) y `CheckerViewModel` con estados de ubicación (buscando, sin permiso, sin señal, lista). La fecha y la hora son las del teléfono; la entrada se registra con la posición real.

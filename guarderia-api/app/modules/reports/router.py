@@ -6,7 +6,7 @@ from app.core.db import Db
 from app.core.security import AnyUser, StaffUser, TeacherUser
 
 from . import service
-from .schemas import DailyEntryIn, DailyEntryOut, DayOut, ReportIn, ReportOut
+from .schemas import DailyEntryIn, DailyEntryOut, DayOut, ReportIn, ReportOut, WeeklySummaryOut
 
 router = APIRouter(tags=["reportes"])
 
@@ -33,3 +33,13 @@ async def save_daily_entry(db: Db, current: StaffUser, child_id: int, data: Dail
 async def child_day(db: Db, current: AnyUser, child_id: int, date: date | None = None) -> DayOut:
     """Pantalla Hoy: resumen del día (ánimo, comida, cambios, siesta y nota) y la línea de tiempo."""
     return await service.child_day(db, current, child_id, date)
+
+
+@router.get("/children/{child_id}/weekly-summary", response_model=WeeklySummaryOut)
+async def weekly_summary(
+    db: Db, current: AnyUser, child_id: int, week_start: date | None = None
+) -> WeeklySummaryOut:
+    """El resumen semanal (lunes a viernes) para el papá. `week_start` es cualquier fecha de esa semana; sin ella, la de hoy.
+    El padre solo ve a sus hijos y la docente a los de su sala (404 si no)."""
+    return await service.weekly_summary(db, current, child_id, week_start)
+

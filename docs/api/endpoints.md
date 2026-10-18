@@ -137,6 +137,7 @@ La API calcula distancia, radio y retardo con su propio reloj; nunca acepta el e
 | POST | `/reports` | `TEACHER` | `{routine_moment_id, type, method, description, child_ids[], media_id?}` | 201 `ReportOut` | `422 DESCRIPTION_TOO_SHORT`, `CHILDREN_REQUIRED`; `409 MOMENT_NOT_STARTED`, `CHILD_ABSENT`, `MEDIA_NOT_READY`; `404 CHILD_NOT_FOUND`, `MEDIA_NOT_FOUND`, `MOMENT_NOT_FOUND` |
 | GET | `/reports?moment_id=` | `ADMIN`, `TEACHER` | — | `ReportOut[]` | `404 MOMENT_NOT_FOUND` |
 | POST | `/children/{id}/daily-entries` | `ADMIN`, `TEACHER` | `{date?, mood?, meals?, diaper_changes?, nap_minutes?, general_note?}`; solo cambia lo que se manda | `DailyEntryOut` | `404 CHILD_NOT_FOUND` |
+| GET | `/children/{id}/weekly-summary?week_start=` | Todos (en su alcance) | — | `WeeklySummaryOut`: lunes a viernes de esa semana (sin fecha, la de hoy): `days_attended`, `days_absent`, `moods`, `meals`, `nap_minutes_average`, `diaper_changes_total`, `reports_by_type`, `achievements`, `family_notes` y `days[]` | `404 CHILD_NOT_FOUND`; `422` si la fecha no es válida |
 | GET | `/children/{id}/day?date=` | Todos (en su alcance) | — | `DayOut`: `attendance`, `summary`, `timeline[]` y `notes[]` (las notas del papá) | `404 CHILD_NOT_FOUND` |
 
 ## Fotos
