@@ -8,7 +8,7 @@ python3 -m venv .venv
 .venv/bin/pytest
 ```
 
-68 pruebas (conteo del 2026-10-17):
+151 pruebas (conteo del 2026-10-18):
 
 | Archivo | Pruebas | Qué cubre |
 |---|---|---|
@@ -19,6 +19,8 @@ python3 -m venv .venv
 | `test_media_documents.py` | 4 | Reglas de subida, foto en un reporte que llega a la familia, galería paginada, documentos y personas autorizadas |
 | `test_messaging.py` | 2 | Chat docente-familia y su alcance |
 | `test_parent_views.py` | 2 | Pantalla Hoy y calendario |
+| `test_security.py` | 23 | Límite de intentos (por correo, por IP, activación, ventana), cabeceras de seguridad, CORS cerrado, bitácora de auditoría (qué registra, quién la lee, que no guarda secretos) |
+| `test_access_matrix.py` | 60 | Matriz de roles leída de las rutas reales (sin token `401`, rol no permitido `403`), IDOR por registro (padre, docente, chat, fotos), inyección en login, parámetros y texto guardado |
 
 Con el login propio, `as_user(correo)` fabrica un access token real de las personas de `world` (que ya tienen contraseña, con el hash calculado una sola vez). Los access tokens de las pruebas duran 30 días para que las que mueven el reloj no los venzan; la de expiración fija su propio TTL.
 

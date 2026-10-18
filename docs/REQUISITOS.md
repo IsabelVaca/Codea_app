@@ -41,7 +41,7 @@ Catálogo tomado del tablero de Teams (buckets *Req. de CODEA*, *Req. base*, *Re
 | ID | Requisito | Estado | Evidencia / qué falta |
 |---|---|---|---|
 | RNF01 | Contraseñas de más de 8 caracteres | ✅ | Mínimo 9 y máximo 128, en la app (`AuthValidator`) y en la API (`rules.check_password`); 8 no pasa. Probado en ambos lados. |
-| RNF02 | Control de acceso por roles (RBAC) | ✅ | `require_role` + permisos por registro. |
+| RNF02 | Control de acceso por roles (RBAC) | ✅ | `require_role` + permisos por registro. Matriz de las 72 rutas en [`api/matriz-de-roles.md`](api/matriz-de-roles.md), generada del código y comprobada en `tests/test_access_matrix.py` (sin token 401, rol no permitido 403, fuera de alcance 404). Probado con una mutación: al romper `can_see_child` fallan 5 pruebas. |
 | RNF03 | Contraseñas almacenadas como hash | ✅ | Argon2id (`pwdlib`) en `app_user.password_hash`; los refresh tokens y los códigos de acceso solo se guardan como SHA-256. |
 | RNF04 | Disponibilidad del 99 % | ❌ | No hay despliegue ni monitoreo. Existen `/health/live` y `/health/ready`. |
 | RNF05 | Consultas de fotos en menos de 4 s | 🟡 | URLs firmadas y paginación por cursor. Nadie lo ha medido. |

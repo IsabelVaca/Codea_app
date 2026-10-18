@@ -34,7 +34,7 @@ Se trabaja en la rama `integracion` (login JWT + chat sobre `main`). Cada bloque
 | 4 | RF-03 | Hora de entrada y de salida en la asistencia. |
 | 5 | RF-12 | Resumen semanal por niño (endpoint y vista del padre). |
 | 6 | HN5 | `media_id` en los avisos. |
-| 7 | Rúbrica, parte 3 | Pruebas explícitas de IDOR, inyección y límites de subida. |
+| 7 ✅ | Rúbrica, parte 3 | Pruebas explícitas de IDOR, inyección y matriz de roles. Hecho el 18/oct (los límites de subida ya estaban en `test_upload_rules`). |
 
 ## Bloque 3: sin conexión (solo si el bloque 2 termina el lunes)
 
