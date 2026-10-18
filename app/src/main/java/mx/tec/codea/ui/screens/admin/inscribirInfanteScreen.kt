@@ -44,8 +44,8 @@ fun InscribirInfanteScreen(
     nombre: String, onNombreChange: (String) -> Unit,
     nombreError: InfanteError?,
     apellido: String = "", onApellidoChange: (String) -> Unit = {},
-    edad: String, onEdadChange: (String) -> Unit,
-    edadError: InfanteError?,
+    nacimiento: String, onNacimientoChange: (String) -> Unit,
+    nacimientoError: InfanteError?,
     alergias: String, onAlergiasChange: (String) -> Unit,
     salas: List<SalaOpcion>,
     onElegirSala: (String) -> Unit,
@@ -107,7 +107,7 @@ fun InscribirInfanteScreen(
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             CampoTexto(nombre, onNombreChange, "Nombre(s)", error = nombreError)
             CampoTexto(apellido, onApellidoChange, "Apellido(s) (opcional)")
-            CampoTexto(edad, onEdadChange, "Edad en años (ej. 3)", KeyboardType.Number, error = edadError)
+            CampoTexto(nacimiento, onNacimientoChange, "Fecha de nacimiento (dd/mm/aaaa)", KeyboardType.Text, error = nacimientoError)
             CampoTexto(alergias, onAlergiasChange, "Alergias o notas médicas (opcional)")
         }
 
@@ -181,7 +181,7 @@ private fun CampoTexto(
 
 private fun InfanteError.message(): String = when (this) {
     InfanteError.NombreVacio -> "Escribe el nombre del niño"
-    InfanteError.EdadInvalida -> "La edad debe ser un número entre 0 y 12"
+    InfanteError.NacimientoInvalido -> "Escribe una fecha real como 14/03/2022 (de 0 a 12 años)"
 }
 
 @Preview(showBackground = true)
@@ -191,8 +191,8 @@ private fun InscribirInfanteScreenPreview() {
         InscribirInfanteScreen(
             nombre = "", onNombreChange = {},
             nombreError = null,
-            edad = "", onEdadChange = {},
-            edadError = null,
+            nacimiento = "", onNacimientoChange = {},
+            nacimientoError = null,
             alergias = "", onAlergiasChange = {},
             salas = listOf(
                 SalaOpcion("Maternal", activo = true),

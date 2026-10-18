@@ -78,12 +78,12 @@ class InfanteApiRepository {
     suspend fun getAll(): List<Infante> =
         api.children().map { it.toInfante() }.sortedBy { it.nombre }
 
-    suspend fun inscribir(nombre: String, apellido: String, edad: Int, sala: String, alergias: String) {
+    suspend fun inscribir(nombre: String, apellido: String, nacimiento: String, sala: String, alergias: String) {
         api.createChild(
             ChildCreateBody(
                 name = nombre.trim(),
                 surname = apellido.trim(),
-                birthDate = nacimientoParaEdad(edad),
+                birthDate = nacimiento,
                 allergies = alergias.trim().ifBlank { null },
                 classroomId = AdminDirectory.classroomId(sala),
             )
@@ -251,18 +251,6 @@ private fun parentescoFromApi(valor: String?): String = when (valor) {
     "FATHER" -> "Papá"
     "LEGAL_GUARDIAN" -> "Tutor"
     else -> "Otro"
-}
-
-// el formulario pide la edad y la API la fecha de nacimiento: se calcula una fecha que dé esa edad.
-// se resta un día de más para que la diferencia de zona horaria con el servidor no cambie la edad.
-private fun nacimientoParaEdad(edad: Int): String {
-    val c = Calendar.getInstance()
-    c.add(Calendar.YEAR, -edad)
-    c.add(Calendar.DAY_OF_YEAR, -1)
-    return String.format(
-        Locale.US, "%04d-%02d-%02d",
-        c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH)
-    )
 }
 
 // "2026-10-14T14:05:00.123+00:00" -> "8:05" en la hora del teléfono. sin checada: "--:--".

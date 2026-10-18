@@ -80,6 +80,12 @@ Registro cronológico de lo que se hizo, por qué y cómo se verificó. Lo nuevo
 - Con la docente ya con entrada, se subió una foto de prueba (por la API, al bucket local), se creó un reporte con foto y la mamá pidió borrarla. En la app del admin: «1 por revisar» → pantalla con la foto real, el niño, quién la pidió y el motivo → «Borrar la foto» → confirmación → «Foto borrada»; la lista se vació en 1–2 s. Por la API: solicitud `APPROVED` sin `photo_url`, galería de la familia vacía y la bitácora registra al admin.
 - Datos de demostración que quedaron en Aiven: la entrada y salida de Karla Robles del 18/oct, el reporte «Prueba: Diego pintó un sol…» (ya sin foto) y la solicitud de borrado aprobada.
 
+### Inscripción con la fecha de nacimiento real (hallazgo de la sesión de documentos)
+- **Hallazgo:** el formulario pedía la **edad** y `nacimientoParaEdad` inventaba una fecha de nacimiento; en la base quedaba una fecha que no era la real.
+- Ahora el formulario pide la **fecha de nacimiento (dd/mm/aaaa)**. `InfanteValidator.parseNacimiento` (dominio puro) valida que exista (incluye 29 de febrero), que no sea futura y que el niño tenga de 0 a 12 años, y la manda a la API en `aaaa-mm-dd`. Se eliminó la función que la inventaba.
+- 8 pruebas JVM nuevas (`InfanteValidatorTest`). **51 pruebas JVM de la app, 0 fallos.**
+- Aclaración: los niños que ya estaban en Aiven conservan la fecha que se les inventó al inscribirlos con la versión anterior; hay que corregirlas a mano si se quiere el dato real.
+
 ### Checador con GPS y hora reales
 - Antes: prototipo con datos fijos y `registrar()` mandaba siempre las coordenadas del centro (el servidor nunca rechazaba por distancia).
 - Ahora: `data/DeviceLocation.kt` (LocationManager de Android, sin Play Services; GPS y luego red, con tiempo límite), `domain/GeoMath.kt` (distancia haversine, con 4 pruebas en `GeoMathTest`) y `CheckerViewModel` con estados de ubicación (buscando, sin permiso, sin señal, lista). La fecha y la hora son las del teléfono; la entrada se registra con la posición real.

@@ -54,12 +54,13 @@ class InfantesAdminViewModel : ViewModel() {
 
     fun inscribirInfante(
         nombre: String,
-        edad: Int,
+        // la fecha de nacimiento real, "aaaa-mm-dd".
+        nacimiento: String,
         sala: String,
         alergias: String = "",
         apellido: String = "",
         onSuccess: () -> Unit = {},
     ) {
-        launchAction(onSuccess) { repository.inscribir(nombre, apellido, edad, sala, alergias) }
+        launchAction(onSuccess) { repository.inscribir(nombre, apellido, nacimiento, sala, alergias) }
     }
 }

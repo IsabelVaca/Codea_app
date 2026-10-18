@@ -38,6 +38,12 @@ fun timeToMinutes(hora: String?): Int? {
     return h * 60 + m
 }
 
+// el día de hoy según el teléfono, para las validaciones que dependen de la fecha.
+fun hoyLocal(): mx.tec.codea.domain.Fecha {
+    val c = Calendar.getInstance()
+    return mx.tec.codea.domain.Fecha(c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH))
+}
+
 // "23 oct": para mostrar cuándo vence algo.
 fun shortDateOf(iso: String?): String? =
     parseIso(iso)?.let { SimpleDateFormat("d MMM", Locale("es", "MX")).format(it) }

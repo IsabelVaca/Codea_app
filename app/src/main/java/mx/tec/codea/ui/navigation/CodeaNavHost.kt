@@ -672,9 +672,9 @@ fun CodeaNavHost(
                     nombreError = uiState.nombreError,
                     apellido = uiState.apellido,
                     onApellidoChange = inscribirInfanteViewModel::onApellidoChange,
-                    edad = uiState.edad,
-                    onEdadChange = inscribirInfanteViewModel::onEdadChange,
-                    edadError = uiState.edadError,
+                    nacimiento = uiState.nacimiento,
+                    onNacimientoChange = inscribirInfanteViewModel::onNacimientoChange,
+                    nacimientoError = uiState.nacimientoError,
                     alergias = uiState.alergias,
                     onAlergiasChange = inscribirInfanteViewModel::onAlergiasChange,
                     salas = salas,
@@ -684,7 +684,7 @@ fun CodeaNavHost(
                         infantesViewModel.inscribirInfante(
                             nombre = uiState.nombre,
                             apellido = uiState.apellido,
-                            edad = uiState.edad.toInt(),
+                            nacimiento = uiState.nacimientoIso ?: return@InscribirInfanteScreen,
                             sala = uiState.salaElegida ?: "",
                             alergias = uiState.alergias,
                             onSuccess = {
