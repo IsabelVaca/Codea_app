@@ -73,6 +73,9 @@ interface OfflineDao {
     @Query("DELETE FROM cached_child")
     suspend fun clearChildren()
 
+    @Query("DELETE FROM cached_room")
+    suspend fun clearRoom()
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertChildren(children: List<CachedChildEntity>)
 

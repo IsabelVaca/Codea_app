@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import mx.tec.codea.data.SessionRepository
+import mx.tec.codea.data.SessionState
 import mx.tec.codea.data.api.ApiClient
 import mx.tec.codea.data.offline.Offline
 import mx.tec.codea.data.local.KeystoreTokenCipher
@@ -31,5 +32,11 @@ class AppContainer(context: Context) {
         ApiClient.init(sessionRepository)
         // lee la sesión guardada; mientras tanto el estado es Loading y la app muestra el arranque.
         appScope.launch { sessionRepository.load() }
+        // sin sesión (se cerró o terminó) no debe quedar en el teléfono la lista de niños de la última sala.
+        appScope.launch {
+            sessionRepository.state.collect { state ->
+                if (state is SessionState.Anonymous) runCatching { Offline.cache.clear() }
+            }
+        }
     }
 }

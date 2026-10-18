@@ -79,6 +79,12 @@ class CachedRoom(
 
 class RoomCache(private val dao: OfflineDao) {
 
+    // la caché tiene nombres de niños: se borra cuando se cierra la sesión. La cola de marcas no (solo lleva ids y estados).
+    suspend fun clear() {
+        dao.clearChildren()
+        dao.clearRoom()
+    }
+
     suspend fun save(room: CachedRoom) {
         dao.replaceRoom(
             CachedRoomEntity(
