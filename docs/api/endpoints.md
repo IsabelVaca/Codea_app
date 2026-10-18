@@ -185,6 +185,19 @@ Participantes de una conversación: los padres ligados al niño y las docentes d
 | POST | `/invitations` | `ADMIN` | `{name, surname?, phone, email, role}` | 201 `InvitationOut` con `access_code {code, purpose, expires_at}` (se muestra una sola vez) | `409 EMAIL_TAKEN`, `ALREADY_HAS_ACCOUNT` |
 | GET | `/invitations?status=&role=` | `ADMIN` | — | `InvitationOut[]`: `status` (`PENDING`, `ACCEPTED` = código usado, `EXPIRED`), `expires_at`, `accepted_at` | — |
 
+## Pagos
+
+Dinero en centavos (`amount_cents`), siempre pesos mexicanos. La docente no tiene acceso (`403`).
+
+| Método | Ruta | Rol | Envía | Responde | Errores |
+| --- | --- | --- | --- | --- | --- |
+| GET | `/children/{id}/payments?status=` | `ADMIN`, `PARENT` (sus hijos; sin cancelados) | — | `PaymentList`: `items` (`PaymentOut`: `concept`, `amount_cents`, `status`, `due_date`, `paid_on`, `method`, `reference`, `notes`, `is_overdue`), `pending_cents`, `overdue_cents`, `paid_cents` | `404 CHILD_NOT_FOUND` |
+| POST | `/children/{id}/payments` | `ADMIN` | `{concept, amount_cents, status? (PENDING o PAID), due_date?, paid_on?, method?, reference?, notes?}` | 201 `PaymentOut` | `422 CONCEPT_REQUIRED`, `CONCEPT_TOO_LONG`, `AMOUNT_INVALID`, `AMOUNT_TOO_LARGE`, `METHOD_REQUIRED`, `STATUS_INVALID`; `404 CHILD_NOT_FOUND` |
+| GET | `/payments?status=&overdue=&cursor=&limit=` | `ADMIN` | — | `Page<PaymentWithChild>` (`PaymentOut` + `child_name`); `overdue=true` = pendientes con fecha límite pasada | — |
+| PATCH | `/payments/{id}` | `ADMIN` | `{concept?, amount_cents?, due_date?, notes?}` (solo cargos pendientes) | `PaymentOut` | `409 PAYMENT_LOCKED`; `404 PAYMENT_NOT_FOUND`; los `422` de arriba |
+| POST | `/payments/{id}/pay` | `ADMIN` | `{method, paid_on?, reference?}` | `PaymentOut` | `409 PAYMENT_NOT_PENDING`; `404 PAYMENT_NOT_FOUND` |
+| POST | `/payments/{id}/cancel` | `ADMIN` | `{reason?}` | `PaymentOut` (no se borra) | `409 PAYMENT_CANCELLED`; `404 PAYMENT_NOT_FOUND` |
+
 ## Enums
 
 | Enum | Valores |
@@ -198,6 +211,8 @@ Participantes de una conversación: los padres ligados al niño y las docentes d
 | `DayAttendanceStatus` | `FULL_DAY`, `WITH_NOTE`, `ABSENT`, `NO_RECORD` |
 | `MomentCategory` | `ARRIVAL`, `MEAL`, `ACTIVITY`, `NAP`, `HYGIENE`, `PICKUP` |
 | `MomentStatus` | `DONE`, `ACTIVE`, `PENDING` |
+| `PaymentStatus` | `PENDING`, `PAID`, `CANCELLED` |
+| `PaymentMethod` | `CASH`, `TRANSFER`, `CARD`, `OTHER` |
 | `ReportType` | `INCIDENT`, `ACHIEVEMENT`, `HEALTH`, `BEHAVIOR` |
 | `ReportMethod` | `WRITTEN`, `DICTATION`, `PHOTO` |
 | `Mood` | `HAPPY`, `CALM`, `TIRED`, `SAD`, `UPSET` |

@@ -8,7 +8,7 @@ python3 -m venv .venv
 .venv/bin/pytest
 ```
 
-68 pruebas (conteo del 2026-10-17):
+73 pruebas (conteo del 2026-10-18):
 
 | Archivo | Pruebas | Qué cubre |
 |---|---|---|
@@ -17,6 +17,7 @@ python3 -m venv .venv
 | `test_admin_extras.py` | 12 | Centro (lectura, edición, validaciones, solo admin), invitaciones, plantillas de rutina |
 | `test_teacher_day.py` | 7 | Check-in a tiempo, tarde y fuera de radio; arranque de la rutina; confirmar momentos; Mi sala y asistencia; reglas de reportes |
 | `test_media_documents.py` | 4 | Reglas de subida, foto en un reporte que llega a la familia, galería paginada, documentos y personas autorizadas |
+| `test_payments.py` | 5 | Cargos y pagos con totales y vencidos, validaciones, pagar/editar/cancelar, permisos por rol y alcance, vista general paginada |
 | `test_messaging.py` | 2 | Chat docente-familia y su alcance |
 | `test_parent_views.py` | 2 | Pantalla Hoy y calendario |
 

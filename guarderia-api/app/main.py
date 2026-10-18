@@ -21,6 +21,7 @@ from .modules.documents.router import router as documents
 from .modules.media.router import router as media
 from .modules.messaging.router import router as messaging
 from .modules.parents.router import router as parents
+from .modules.payments.router import router as payments
 from .modules.reports.router import router as reports
 from .modules.routines.router import router as routines
 from .modules.staff_attendance.router import router as staff_attendance
@@ -85,6 +86,7 @@ for router in (
     media,
     documents,
     messaging,
+    payments,
 ):
     api.include_router(router)
 
