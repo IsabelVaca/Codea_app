@@ -66,7 +66,7 @@ fun CodeaBottomBar(
                             // the selected label is bolder, like in the prototype.
                             fontWeight = if (selected) FontWeight.ExtraBold else FontWeight.Bold,
                             // con cinco tabs "Documentos" no cabe y se partía en dos líneas.
-                            fontSize = if (destinations.size > 4) 11.sp else TextUnit.Unspecified,
+                            fontSize = if (destinations.size > 4) 10.sp else TextUnit.Unspecified,
                             maxLines = 1,
                             softWrap = false,
                         )

@@ -69,6 +69,29 @@ data class CalendarDto(
     val summary: CalendarSummaryDto = CalendarSummaryDto(),
 )
 
+// ---------- resumen semanal ----------
+
+@Serializable
+data class WeekDayDto(
+    val date: String,
+    val status: String,
+)
+
+@Serializable
+data class WeeklySummaryDto(
+    @SerialName("week_start") val weekStart: String,
+    @SerialName("week_end") val weekEnd: String,
+    @SerialName("days_attended") val daysAttended: Int = 0,
+    @SerialName("days_absent") val daysAbsent: Int = 0,
+    val moods: Map<String, Int> = emptyMap(),
+    val meals: Map<String, Int> = emptyMap(),
+    @SerialName("nap_minutes_average") val napMinutesAverage: Int? = null,
+    @SerialName("diaper_changes_total") val diaperChangesTotal: Int = 0,
+    val achievements: List<String> = emptyList(),
+    @SerialName("family_notes") val familyNotes: Int = 0,
+    val days: List<WeekDayDto> = emptyList(),
+)
+
 // ---------- documentos ----------
 
 @Serializable

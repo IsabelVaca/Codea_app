@@ -750,6 +750,7 @@ fun CodeaNavHost(
         composable<ParentCalendarRoute> {
             ParentCalendarScreen(
                 monthData = parentViewModel.monthData,
+                resumenSemana = parentViewModel.weekly,
                 initialSelectedDay = parentViewModel.todayDayNumber,
                 onDaySelected = { day ->
                     parentViewModel.selectDay(day.dayNumber)

@@ -3,7 +3,7 @@
 Catálogo tomado del tablero de Teams (buckets *Req. de CODEA*, *Req. base*, *Requisitos no funcionales* e *Historias de usuario*). Los requisitos valen el 30 % de la calificación de la aplicación.
 
 **Estado a 2026-10-16**, revisado leyendo el código; no se corrió la app. ✅ = existe en el código · 🟡 = parcial · ❌ = no existe.
-**Avance estimado: 17 ✅ + 7 🟡 + 8 ❌ de 32, es decir ~66 %** (los parciales cuentan medio). Actualizado el 2026-10-17 con el login JWT (rama `feature/login-jwt`, sin subir).
+**Avance estimado: 18 ✅ + 6 🟡 + 8 ❌ de 32, es decir ~69 %** (los parciales cuentan medio). Actualizado el 2026-10-17 con el login JWT (rama `feature/login-jwt`, sin subir).
 
 > Los planes y la referencia de endpoints que ya existían son la fuente para el *cómo*: [`plan/`](plan/README.md) (pantallas, conexión de la app, estado de la API, login con JWT), [`estilo.md`](estilo.md) (convenciones) y [`api/endpoints.md`](api/endpoints.md) (los 65 endpoints). Este archivo solo dice qué requisito cubre cada cosa.
 
@@ -32,7 +32,7 @@ Catálogo tomado del tablero de Teams (buckets *Req. de CODEA*, *Req. base*, *Re
 | RF-09 | Fotografía de la actividad | ✅ | `media` (URL firmada), `MediaUploader`, reportes con `media_id`. La cámara usa `TakePicturePreview` (miniatura; ver nota en `ui/components/README.md`). |
 | RF-10 | La familia puede pedir que se borre una foto | ✅ | `POST /media/{id}/deletion-request` y botón en la pantalla de fotos del padre. El admin revisa desde Centro → «Fotos que piden borrar» (`SolicitudesBorradoScreen`): ve la foto, el motivo y los niños; **borra** (sale del bucket y de todas las galerías) o **conserva**. API auditada y con 9 pruebas (`test_media_deletion.py`). **Probado de punta a punta en el teléfono** (18/oct) con una foto de prueba: la familia pide, el admin ve la foto real, confirma «Borrar», la lista se vacía, la galería de la familia queda sin la foto y la bitácora registra quién la borró. |
 | RF-11 | Funciona sin internet | ❌ | No hay Room, DataStore ni WorkManager. |
-| RF-12 | Resumen semanal | 🟡 | **API hecha:** `GET /children/{id}/weekly-summary` agrega la semana (asistencia, ánimo, comida, siesta, reportes, logros, notas) con 6 pruebas en `test_weekly_summary.py` y alcance por registro. Falta mostrarlo en la app del padre. |
+| RF-12 | Resumen semanal | ✅ | `GET /children/{id}/weekly-summary` agrega la semana (asistencia, ánimo, comida, siesta, reportes, logros, notas) con 6 pruebas en `test_weekly_summary.py` y alcance por registro. La app lo muestra en Calendario → «Resumen de la semana» (5 pruebas de los textos en `ResumenSemanaTextosTest`). Probado en el teléfono con la cuenta de una mamá (semana del 12 al 16 de octubre, 2 días asistidos). **Límite:** no se envía ni se imprime; se ve dentro de la app. |
 | RF-13 | Desbloqueo con huella | ❌ | No hay `BiometricPrompt` ([decisión #4](DECISIONES-PENDIENTES.md)). |
 | RF-14 | Registro de quién hizo qué | ✅ | Tabla `audit_log` y `GET /audit-log` (solo admin, solo se agrega): logins, activaciones, cambios de contraseña, códigos de acceso, altas, bajas y cambios de docentes, padres e infantes. Nunca guarda contraseñas ni tokens. Además hay `created_by`/`marked_by`/`recorded_by` en reportes y asistencia. **Límite:** no registra la lectura de fotos y documentos. 23 pruebas en `tests/test_security.py`. |
 

@@ -33,7 +33,7 @@ Se trabaja en la rama `integracion` (login JWT + chat sobre `main`). Cada bloque
 | 2 ✅ | Rúbrica, parte 2 | Límite de intentos y bloqueo temporal en login y activación, cabeceras de seguridad, CORS explícito. Hecho el 18/oct. |
 | 3 ✅ | RF-10 | Listar, aprobar y rechazar solicitudes de borrado de fotos; pantalla del admin. Hecho el 18/oct (API con 9 pruebas y pantalla en Centro). |
 | 4 | RF-03 | Hora de entrada y de salida en la asistencia. |
-| 5 | RF-12 | Resumen semanal por niño (endpoint y vista del padre). **API hecha el 18/oct** (6 pruebas); falta la vista del padre. |
+| 5 ✅ | RF-12 | Resumen semanal por niño (endpoint y vista del padre). Hecho el 18/oct (API con 6 pruebas y tarjeta en Calendario). |
 | 6 | HN5 | `media_id` en los avisos. |
 | 7 ✅ | Rúbrica, parte 3 | Pruebas explícitas de IDOR, inyección y matriz de roles. Hecho el 18/oct (los límites de subida ya estaban en `test_upload_rules`). |
 

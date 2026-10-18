@@ -35,6 +35,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import mx.tec.codea.domain.DiaSemana
+import mx.tec.codea.domain.EstadoDia
+import mx.tec.codea.domain.ResumenSemana
 import mx.tec.codea.ui.components.ScreenHeader
 import mx.tec.codea.ui.theme.Amber
 import mx.tec.codea.ui.theme.CodeaTheme
@@ -49,6 +52,7 @@ fun ParentCalendarScreen(
     monthData: CalendarMonthData = ParentCalendarSampleData.monthData,
     initialSelectedDay: Int = 19,
     onDaySelected: (CalendarDay) -> Unit = {},
+    resumenSemana: ResumenSemana? = null,
 ) {
     var selectedDayNumber by remember { mutableIntStateOf(initialSelectedDay) }
 
@@ -87,6 +91,105 @@ fun ParentCalendarScreen(
                 summaryText = monthData.summaryText,
             )
         }
+
+        if (resumenSemana != null) {
+            item {
+                WeeklySummaryCard(resumen = resumenSemana)
+            }
+        }
+    }
+}
+
+// el resumen de la semana (RF-12): cómo estuvo cada día y los totales, en palabras.
+@Composable
+private fun WeeklySummaryCard(resumen: ResumenSemana) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLowest,
+        shadowElevation = 4.dp,
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                text = "Resumen de la semana",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = resumen.rango,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                resumen.dias.forEach { dia -> DiaDeLaSemana(dia) }
+            }
+            WeeklyLine("Asistió", "${resumen.diasAsistidos} ${if (resumen.diasAsistidos == 1) "día" else "días"}" +
+                if (resumen.diasAusente > 0) " · faltó ${resumen.diasAusente}" else "")
+            WeeklyLine("Ánimo", resumen.animo)
+            WeeklyLine("Comidas", resumen.comidas)
+            WeeklyLine("Siesta promedio", resumen.siesta)
+            if (resumen.cambios > 0) WeeklyLine("Cambios de pañal", resumen.cambios.toString())
+            if (resumen.notasFamilia > 0) WeeklyLine("Tus notas", resumen.notasFamilia.toString())
+            if (resumen.logros.isNotEmpty()) {
+                Text(
+                    text = "Logros de la semana",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+                resumen.logros.forEach { logro ->
+                    Text(
+                        text = "• $logro",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DiaDeLaSemana(dia: DiaSemana) {
+    val (marca, color) = when (dia.estado) {
+        EstadoDia.ASISTIO -> "✓" to Teal
+        EstadoDia.FALTO -> "✗" to Coral
+        EstadoDia.SIN_REGISTRO -> "·" to MaterialTheme.colorScheme.outline
+    }
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = dia.letra,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = marca,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.ExtraBold,
+            color = color,
+        )
+    }
+}
+
+@Composable
+private fun WeeklyLine(label: String, value: String) {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = "$label:",
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
     }
 }
 

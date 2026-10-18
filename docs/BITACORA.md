@@ -86,6 +86,11 @@ Registro cronológico de lo que se hizo, por qué y cómo se verificó. Lo nuevo
 - 8 pruebas JVM nuevas (`InfanteValidatorTest`). **51 pruebas JVM de la app, 0 fallos.**
 - Aclaración: los niños que ya estaban en Aiven conservan la fecha que se les inventó al inscribirlos con la versión anterior; hay que corregirlas a mano si se quiere el dato real.
 
+### RF-12: el resumen semanal en la app del padre
+- Calendario → tarjeta «Resumen de la semana»: rango («12 al 16 de octubre»), cinco días con ✓ / ✗ / ·, días asistidos y faltados, ánimo, comidas, siesta promedio, cambios, notas de la familia y los logros que escribió la asistente. Los textos se arman en el dominio (`ResumenSemanaTextos`) con 5 pruebas JVM (**56 pruebas JVM, 0 fallos**).
+- Probado en el teléfono con la cuenta de la mamá de Mateo: 2 días asistidos; ánimo, comida y siesta salen con «—» porque la base de demostración casi no tiene esos datos.
+- La etiqueta «Documentos» de la barra inferior se achicó a 10 sp porque a 11 sp se cortaba la última letra.
+
 ### Checador con GPS y hora reales
 - Antes: prototipo con datos fijos y `registrar()` mandaba siempre las coordenadas del centro (el servidor nunca rechazaba por distancia).
 - Ahora: `data/DeviceLocation.kt` (LocationManager de Android, sin Play Services; GPS y luego red, con tiempo límite), `domain/GeoMath.kt` (distancia haversine, con 4 pruebas en `GeoMathTest`) y `CheckerViewModel` con estados de ubicación (buscando, sin permiso, sin señal, lista). La fecha y la hora son las del teléfono; la entrada se registra con la posición real.
