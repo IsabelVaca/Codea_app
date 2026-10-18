@@ -79,7 +79,7 @@ Barra inferior: **Mi día · Mi sala · Chats · Menú**.
    - **A tiempo:** toca **«Registrar mi entrada»**.
    - **Tarde:** la app te avisa «Llegaste después de tu hora»; se registra igual con **retardo**. Puedes escribir el **motivo del retardo** (opcional) y luego tocar «Registrar con retardo». El retardo queda marcado en tu registro; la app no tiene aviso a coordinación.
 3. La hora que queda guardada es la del **servidor**, no la del teléfono.
-4. Al registrar te sale «¡Entrada registrada!» y la app te lleva sola a **«Rutina de hoy»**, de solo lectura. Toca **«Comenzar el día»**.
+4. Al registrar te sale «¡Entrada registrada!» y **se queda en pantalla** hasta que toques **«Ir a Mi día»**, que te lleva a **«Rutina de hoy»**, de solo lectura. Toca **«Comenzar el día»**.
 
 **Importante sobre tu privacidad:** el checador guarda solo la **hora de entrada, la hora de salida, el retardo y el motivo** que escribas. **No guarda tu ubicación.** Ver [`aviso-privacidad.md`](aviso-privacidad.md).
 

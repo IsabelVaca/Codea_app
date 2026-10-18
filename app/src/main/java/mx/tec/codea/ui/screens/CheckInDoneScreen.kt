@@ -23,9 +23,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,18 +33,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
 import mx.tec.codea.R
 import mx.tec.codea.domain.CheckInRecord
 import mx.tec.codea.domain.formatTimeOfDay
 import mx.tec.codea.ui.components.ScreenHeader
 import mx.tec.codea.ui.theme.CodeaTheme
 
-// how long the screen waits before it opens "mi día" by itself.
-private const val AUTO_CONTINUE_MILLIS = 2000L
-
 // the feedback after the check-in (screen 3 and e3 of the prototype).
-// it tells the teacher it worked, and after 2 seconds it takes her to "mi día".
+// it tells the teacher it worked and stays until she taps "Ir a Mi día": it does not close by itself.
 @Composable
 fun CheckInDoneScreen(
     record: CheckInRecord,
@@ -55,13 +48,6 @@ fun CheckInDoneScreen(
     onGoToMyDayClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // rememberUpdatedState keeps the newest lambda, but the timer does not start again.
-    val currentOnGoToMyDay by rememberUpdatedState(onGoToMyDayClick)
-    LaunchedEffect(Unit) {
-        delay(AUTO_CONTINUE_MILLIS)
-        currentOnGoToMyDay()
-    }
-
     // late check-ins are amber, the normal ones are green.
     val accent = if (record.isLate) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.tertiary
     val time = formatTimeOfDay(record.arrivalMinutes)
@@ -160,13 +146,6 @@ fun CheckInDoneScreen(
                 fontWeight = FontWeight.Bold,
             )
         }
-        Text(
-            text = stringResource(R.string.checker_done_auto),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.outline,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
-        )
     }
 }
 

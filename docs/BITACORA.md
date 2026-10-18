@@ -151,3 +151,7 @@ Registro cronológico de lo que se hizo, por qué y cómo se verificó. Lo nuevo
 - Ojo: por omisión el centro **no trabaja sábado ni domingo**, así que hasta que el admin los marque, el checador no deja registrar entrada esos días.
 - Pendiente: aplicar `e74f0a5b3d43` y `f85a1b6c4e54` en Aiven (necesita aprobación) y probar la pantalla en el teléfono.
 
+## 2026-10-18 · «¡Entrada registrada!» ya no se cierra sola
+
+- La pantalla de confirmación de la entrada abría Mi día por sí sola a los 2 segundos. Se quitó el temporizador y el texto «La app te lleva sola en 2 segundos»: ahora se queda hasta que la docente toca «Ir a Mi día».
+

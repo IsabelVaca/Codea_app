@@ -224,7 +224,6 @@
     <string name="checker_done_exit">Al terminar tu turno registras tu salida aquí mismo</string>
     <string name="checker_done_day_starts">El día arranca igual, sin perder momentos</string>
     <string name="checker_done_go_to_my_day">Ir a Mi día</string>
-    <string name="checker_done_auto">La app te lleva sola en 2 segundos</string>
 
     <!-- parent documents screen -->
     <string name="parent_documents_overline">Estancia La Oruga · Familia</string>
