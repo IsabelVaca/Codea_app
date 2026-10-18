@@ -20,10 +20,10 @@ Repositorios: lo que las capas de arriba piden y mandan. Convierten DTOs (`data/
 
 ## Repositorios en memoria de la etapa sin backend (heredados)
 
-`ChildRepository`, `ChatRepository`, `CheckInRepository`, `RoutineRepository`, `TeacherRepository`, `SalaRepository`, `DocenteRepository`, `InfanteRepository`, `PadreRepository`.
+`ChildRepository`, `ChatRepository`, `RoutineRepository`, `TeacherRepository`, `SalaRepository`, `DocenteRepository`, `InfanteRepository`, `PadreRepository`.
 
 Devuelven datos escritos a mano. Revisado el 2026-10-16:
-- `ChildRepository`, `ChatRepository`, `CheckInRepository`, `RoutineRepository` y `TeacherRepository` solo los usan los `@Preview` de las pantallas de la docente.
+- `ChildRepository`, `ChatRepository`, `RoutineRepository` y `TeacherRepository` solo los usan los `@Preview` de las pantallas de la docente.
 - `SalaRepository`, `DocenteRepository` e `InfanteRepository` los referencian pantallas de admin (`centroScreen.kt`, `docenteScreenAdmin.kt`, `infanteScreenAdmin.kt`); verifica si es solo en previews.
 - `PadreRepository` no lo usa nadie.
 

@@ -1,7 +1,7 @@
 # App Android (`app/`)
 
 Módulo único. Paquete `mx.tec.codea`, minSdk 24. Kotlin, Jetpack Compose, Material 3, Navigation Compose, Retrofit/OkHttp con kotlinx.serialization y Coil.
-Marco técnico: solo lo de <https://startdroid.pages.dev/> ([`docs/MARCO-TECNICO.md`](../docs/MARCO-TECNICO.md)). La app depende hoy de dos cosas fuera de la lista: Google Maps Compose y `reorderable` ([`docs/DECISIONES-PENDIENTES.md`](../docs/DECISIONES-PENDIENTES.md)).
+Marco técnico: solo lo de <https://startdroid.pages.dev/> ([`docs/MARCO-TECNICO.md`](../docs/MARCO-TECNICO.md)). La app depende hoy de una cosa fuera de la lista: `reorderable` ([`docs/DECISIONES-PENDIENTES.md`](../docs/DECISIONES-PENDIENTES.md)).
 
 ## Comandos
 
@@ -12,7 +12,6 @@ Marco técnico: solo lo de <https://startdroid.pages.dev/> ([`docs/MARCO-TECNICO
 ./gradlew connectedAndroidTest                   # necesita dispositivo; solo hay un ejemplo vacío
 ```
 
-`MAPS_API_KEY=...` en `local.properties` (ignorado por git) para que se vea el mapa del checador.
 
 ## Capas
 
@@ -46,7 +45,7 @@ Marco técnico: solo lo de <https://startdroid.pages.dev/> ([`docs/MARCO-TECNICO
 | Rol | Estado | Falta |
 |---|---|---|
 | Docente | Check-in con GPS, rutina del día, reportes (escrito, dictado, foto), Mi sala con asistencia, chat, avisos, Mi cuenta | Documentos (abre `ComingSoon`); chat en tiempo real; sin conexión |
-| Admin | Centro y salas, docentes, infantes, padres, rutinas y catálogo de momentos, avisos, Mi cuenta, **código de acceso** al dar de alta o reenviar | Radio del checador y turnos (la ubicación ya se fija desde Centro), menú del día |
+| Admin | Centro y salas, docentes, infantes, padres, rutinas y catálogo de momentos, avisos, Mi cuenta, **código de acceso** al dar de alta o reenviar | Turnos, menú del día |
 | Padre | Hoy, calendario, fotos, documentos y personas autorizadas, nota a la asistente, avisos, Mi cuenta | Chat, varios hijos, menú del día, paginación de fotos |
 | Transversal | Compose, Retrofit, Coil, **login con JWT** (tokens cifrados con Keystore en DataStore, renovación automática), DI manual | Room, WorkManager, huella, release firmado, HTTPS y pruebas de interfaz |
 

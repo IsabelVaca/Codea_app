@@ -36,7 +36,6 @@ API en `http://localhost:8000/api/v1`, Swagger en `/docs`.
 ```
 - Emulador: ya apunta a `http://10.0.2.2:8000/api/v1/`.
 - Celular físico por USB: cambia `BASE_URL` en `data/api/ApiConfig.kt` a `http://localhost:8000/api/v1/` y corre `adb reverse tcp:8000 tcp:8000 && adb reverse tcp:9000 tcp:9000`.
-- Mapa: `MAPS_API_KEY=...` en `local.properties` (sin ella compila, pero el mapa sale vacío).
 
 **Pruebas**
 ```bash
@@ -83,7 +82,7 @@ cd guarderia-api && .venv/bin/pytest               # 43 pruebas de la API (Postg
 | `main` | La buena. Última actividad: "Pantallas Rutinas-Admin" (2026-10-15). |
 | `backend` | Ya contenida en `main` (mismo commit). |
 | `documents-tab`, `estructura-curso`, `fotos-padres`, `my-room-and-chats-screens`, `pantallas-admin-checador`, `parent-tabs-scaffolding`, `presentation-build` | Ya contenidas en `main`; se pueden borrar. |
-| `checador-menu` | **No** está en `main`. Su último commit dibuja el mapa del prototipo en lugar de usar Google Maps; es la salida si no se aprueba Google Maps ([decisión #3](DECISIONES-PENDIENTES.md)). |
+| `checador-menu` | **No** está en `main`. Su último commit dibuja el mapa del prototipo; ya no hace falta, porque el checador no usa mapa ni ubicación ([decisión #3](DECISIONES-PENDIENTES.md)). |
 
 Verifícalo tú con `git branch -r --merged origin/main` y `git branch -r --no-merged origin/main`.
 

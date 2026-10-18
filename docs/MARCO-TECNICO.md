@@ -46,7 +46,7 @@ Resumen tomado del sitio el 2026-10-16. Si hay duda, el sitio manda: vuelve a le
 | Aiven como Postgres hospedado | 🟡 | Es dónde corre, no una tecnología nueva. |
 | ~~Firebase Auth~~ | ✅ | **Quitado** en la rama `feature/login-jwt`: el backend ya no depende de `firebase-admin` y la app nunca lo usó. Las tareas de Teams que mencionan Firebase deben cambiarse. |
 | **Notificaciones con Firebase** (tarea pendiente) | ❌ | Excluido. Alternativa: WorkManager + notificaciones locales. |
-| **Google Maps Compose** (mapa del checador) | ⚠️ | Usa Play Services; no está en la lista. **Requiere decisión.** |
+| **Google Maps Compose** (mapa del checador) | ✅ Quitado | Ya no se usa: el checador no pide ubicación ni dibuja mapa (decisión #3 resuelta). |
 | **`reorderable`** (arrastrar momentos de la rutina) | ⚠️ | Librería de terceros fuera de la lista. **Requiere decisión.** |
 | **Redis, Grafana, Cloudflare tunnel** (tareas pendientes) | ⚠️ | No están en la lista. **Requieren decisión.** |
 | **`androidx.biometric`** (huella, RF-13) | ⚠️ | No está en la lista. **Requiere decisión.** |

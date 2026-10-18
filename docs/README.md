@@ -53,20 +53,12 @@ El contrato vivo es el OpenAPI que genera FastAPI: con la API prendida, ábrelo 
 | Mi sala | Chatear con los papás · paso 1 | Asistencia editable (la comparte el reporte) y botón de chat |
 | Chats | Chatear con los papás · paso 2 | Conversación de muestra, todavía no envía mensajes |
 | Menú | Registrar entrada · paso 1 | Perfil, estado de la entrada, checador, opciones («Muy pronto») y cerrar sesión (reinicia el día del prototipo) |
-| Menú → Checador | Registrar entrada · paso 2, E1 y E2 | Chips para simular «a tiempo», «tarde» y «lejos». Fuera del perímetro no registra; tarde registra con motivo opcional |
+| Menú → Checador | Registrar entrada · paso 2 y E2 | Sin ubicación ni mapa: un toque registra la entrada (tarde registra con motivo opcional) y otro la salida; a las 9 pm el servidor cierra solo lo que quedó abierto. El caso E1 («fuera del perímetro») ya no existe |
 | Menú → Entrada registrada | Registrar entrada · paso 3 y E3 | Te lleva sola a Mi día en 2 segundos |
 
 ## Estructura del código
 
 Sigue la de las prácticas del curso: `domain/` (reglas en Kotlin puro), `data/` (repositorios que llaman a la API; quedan algunos en memoria de la etapa anterior), `ui/state/` (ViewModels), `ui/screens/` (pantallas que solo dibujan), `ui/components/` y `ui/navigation/`. Las reglas del dominio tienen pruebas en `app/src/test/java/mx/tec/codea/domain/` (`./gradlew test`).
-
-## Google Maps
-
-El checador usa un mapa de Google. Para que se vea, agrega tu API key (Maps SDK for Android) en `local.properties`, que no se sube a git:
-
-```
-MAPS_API_KEY=tu_key_aquí
-```
 
 Sin la key la app compila, pero el mapa sale vacío.
 

@@ -7,7 +7,7 @@ Estado a 2026-10-16: nada está aprobado todavía.
 |---|---|---|---|---|---|
 | 1 | Login con Firebase Auth | Firebase está excluido del marco. | JWT propio en FastAPI (contraseña con hash, access de 5 min y refresh), guardado con DataStore y Keystore. **Ya diseñado por el equipo en [`plan/04-api-login-jwt.md`](plan/04-api-login-jwt.md)** (Argon2id, PyJWT, refresh rotado). | Seguir ese diseño. Además cierra RF-01, RNF01 y RNF03. | 🟡 **Implementada** en la rama `feature/login-jwt` (sin subir). Falta tu aprobación formal para subirla |
 | 2 | Notificaciones con Firebase | Excluido de forma explícita. | WorkManager + notificaciones locales; [`estilo.md`](estilo.md) ya dice "FCM descartado". | Usar la alternativa. | ⏳ Pendiente |
-| 3 | Google Maps Compose (checador) | Usa Play Services. | Mapa dibujado, como el del prototipo (la rama `checador-menu` ya lo hizo). | Aprobar excepción o usar la rama `checador-menu`. | ⏳ Pendiente |
+| 3 | Google Maps Compose (checador) | Usa Play Services. | Mapa dibujado, como el del prototipo (la rama `checador-menu` ya lo hizo). | Ya no aplica. | ✅ **Resuelta (18/oct, equipo):** el checador dejó de usar ubicación y mapa, se quitó Google Maps (`maps-compose` y `MAPS_API_KEY`). La app ya no depende de Play Services |
 | 4 | Huella (`androidx.biometric`, RF-13) | Librería fuera de la lista. | Ninguna equivalente. | Aprobar excepción o mover RF-13 a "fuera de alcance". | ⏳ Pendiente |
 | 5 | Redis | Fuera de la lista. | Postgres para lo que se necesite. | No usar. | ⏳ Pendiente |
 | 6 | Grafana (monitoreo) | Fuera de la lista. | Endpoints `/health/live` y `/health/ready` ya existentes + logs. | Aprobar solo si se quiere evidencia de disponibilidad (RNF04). | ⏳ Pendiente |

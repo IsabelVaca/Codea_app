@@ -15,7 +15,7 @@ Las pantallas copian el diseño y el texto del prototipo (`docs/prototipos/`) y 
 | `MyRoomScreen.kt` | Mi sala y asistencia | ✅ |
 | `ChatsScreen.kt` | Conversaciones con las familias | ✅ Envía y lee por la API; sin tiempo real |
 | `MenuScreen.kt` | Menú: perfil, checador y otras opciones | 🟡 Documentos abre `ComingSoon`; Avisos abre `AvisosFundacionScreen`; Mi perfil abre Mi cuenta; Cerrar sesión cierra la sesión de verdad |
-| `CheckerScreen.kt` | Checador (GPS y mapa) | ✅ Mapa con Google Maps |
+| `CheckerScreen.kt` | Checador: entrada y salida con un toque, sin ubicación ni mapa; a las 9 pm la salida se cierra sola | ✅ |
 | `CheckInDoneScreen.kt` | "Entrada registrada" | ✅ |
 | `ComingSoonScreen.kt` | Marcador de lo no construido | — |
 

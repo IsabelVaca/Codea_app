@@ -122,3 +122,11 @@ Registro cronológico de lo que se hizo, por qué y cómo se verificó. Lo nuevo
 ### Decisiones de trabajo
 - Commits en `integracion`, sin coautor de Claude y sin `push` hasta que el equipo revise.
 - Lo que depende de [`DECISIONES-PENDIENTES.md`](DECISIONES-PENDIENTES.md) no se implementa.
+
+## 2026-10-18 · Checador sin ubicación y con cierre automático
+
+- Decisión del equipo: el checador ya no usa GPS, radio ni mapa. Registrar la entrada es un toque, la salida otro, y lo que quede abierto se cierra solo a las 9 pm.
+- API: `check-in` y `check-out` no piden coordenadas; se quitan `OUT_OF_RANGE` y `CENTER_LOCATION_MISSING`. `close_stale` cierra las entradas sin salida a las 21:00 hora del centro (corre al inicio de `today`, `check-in` y `check-out`). Migración `e74f0a5b3d43`: quita `latitude`, `longitude`, `distance_m` y las tres columnas `out_*` de `staff_check_in` y agrega `auto_closed`. **No está aplicada en Aiven** (borra las coordenadas ya guardadas). 281 pruebas de la API en verde.
+- App: `CheckerScreen` sin mapa ni distancia; se quitan `DeviceLocation`, `GeoMath`, `CheckInRepository`, los permisos de ubicación, Ajustes → Checador y Google Maps (`maps-compose`, `MAPS_API_KEY`). La decisión #3 queda resuelta.
+- Pendiente: corregir los documentos de `docs/entrega/` (aviso de privacidad, clasificación de datos, ética y legal ETL-05/ETL-06, manual de usuario y de instalación, matriz de trazabilidad, administración y plan de implantación), que todavía hablan de ubicación, radio y mapa.
+

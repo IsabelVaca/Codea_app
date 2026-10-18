@@ -5,7 +5,7 @@ Se trabaja en la rama `integracion` (login JWT + chat sobre `main`). Cada bloque
 ## Reglas de este plan
 
 - **Sin pagos.** El equipo decidió que no hay módulo de pagos (CRF-01 queda fuera de alcance; se documenta como desviación). La rama `feature/pagos` no se integra.
-- **Nada de [`DECISIONES-PENDIENTES.md`](DECISIONES-PENDIENTES.md)** se implementa mientras no esté aprobado: huella, Redis, Grafana, Cloudflare tunnel, Google Maps, etc. Se documentan como no cumplidos.
+- **Nada de [`DECISIONES-PENDIENTES.md`](DECISIONES-PENDIENTES.md)** se implementa mientras no esté aprobado: huella, Redis, Grafana, Cloudflare tunnel, etc. Se documentan como no cumplidos.
 - Commits sin coautor de Claude. Sin `push` ni cambios a `main` hasta que el equipo revise `integracion`.
 - La base de Aiven es la de pruebas manuales (15 usuarios con contraseña `codea1234`). Las pruebas automáticas usan el Postgres local (`guarderia_test`), nunca Aiven.
 - Congelamiento de funciones nuevas: **lunes 19 por la noche**. Martes y miércoles: solo corregir y documentar.

@@ -9,7 +9,7 @@ ViewModels. Las pantallas solo dibujan y llaman funciones de aquí; el estado sa
 | `SessionViewModel.kt` | Todos | **La sesión de la app**: Cargando / Anónimo / Activa, y el estado del formulario de entrada (`AuthFormState`). Se crea con una fábrica a la que `CodeaApp` le da el `SessionRepository` del `AppContainer` | `StateFlow` |
 | `AccountViewModel.kt` | Todos | Mi cuenta: el perfil y cambiar la contraseña | `mutableStateOf` |
 | `CodeaViewModel.kt` | Docente | **El compartido.** Check-in, rutina, momento elegido, reportes, niños y asistencia, chat abierto y mensajes | `mutableStateOf` |
-| `CheckerViewModel.kt` | Docente | Pantalla del checador (ubicación, estado, motivo de retardo) | — |
+| `CheckerViewModel.kt` | Docente | Pantalla del checador (hora, a tiempo o tarde, motivo de retardo, aviso a coordinación) | — |
 | `ReportFormViewModel.kt` | Docente | Formulario de reporte (método, texto, foto, niños elegidos) | — |
 | `ParentViewModel.kt` | Padre | Hoy, calendario, documentos, fotos y personas autorizadas del hijo | `mutableStateOf` |
 | `CentroViewModel.kt` | Admin | Centro, avisos y radio del checador | — |

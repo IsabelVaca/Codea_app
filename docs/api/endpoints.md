@@ -22,7 +22,7 @@ El login con JWT ya está en la rama `feature/login-jwt` (aquí lo reflejan las 
 | Repetir una acción | Checada, pedir borrado de una foto y enviar un mensaje con el mismo `client_id` regresan el registro que ya existía con **200** en vez de duplicarlo |
 
 ```json
-{"type": "about:blank", "title": "Estás fuera del perímetro del centro", "status": 422, "code": "OUT_OF_RANGE",
+{"type": "about:blank", "title": "Primero registra tu entrada de hoy", "status": 409, "code": "NOT_CHECKED_IN",
  "detail": "Estás a 1401 m; el radio permitido es de 60 m", "distance_m": 1401, "allowed_radius_m": 60}
 ```
 
@@ -206,7 +206,7 @@ Acciones y qué datos guarda cada una: [`app/modules/audit/README.md`](../../gua
 | `Relationship` | `MOTHER`, `FATHER`, `LEGAL_GUARDIAN`, `OTHER` |
 | `ChildStatus` | `ACTIVE`, `INACTIVE` |
 | `CheckInStatus` | `ON_TIME`, `LATE` |
-| `CoordinationReason` | `LATE`, `OUT_OF_RANGE` |
+| `CoordinationReason` | `LATE` |
 | `AttendanceStatus` | `PRESENT`, `ABSENT` |
 | `DayAttendanceStatus` | `FULL_DAY`, `WITH_NOTE`, `ABSENT`, `NO_RECORD` |
 | `MomentCategory` | `ARRIVAL`, `MEAL`, `ACTIVITY`, `NAP`, `HYGIENE`, `PICKUP` |
