@@ -77,6 +77,19 @@ interface CodeaApi {
     @POST("children/{id}/reactivate")
     suspend fun reactivateChild(@Path("id") id: Int): ChildDto
 
+    // ----- pagos -----
+    @GET("children/{id}/payments")
+    suspend fun payments(@Path("id") childId: Int): PaymentListDto
+
+    @POST("children/{id}/payments")
+    suspend fun createPayment(@Path("id") childId: Int, @Body body: PaymentBody): PaymentDto
+
+    @POST("payments/{id}/pay")
+    suspend fun payPayment(@Path("id") id: Int, @Body body: PayBody): PaymentDto
+
+    @POST("payments/{id}/cancel")
+    suspend fun cancelPayment(@Path("id") id: Int, @Body body: CancelBody): PaymentDto
+
     // ----- padres -----
     @GET("parents")
     suspend fun parents(): List<ParentDto>

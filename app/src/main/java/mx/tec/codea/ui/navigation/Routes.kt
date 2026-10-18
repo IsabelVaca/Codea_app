@@ -112,6 +112,10 @@ data object AdminInscribirInfanteRoute
 @Serializable
 data class AdminInfanteDetalleRoute(val infanteId: String)
 
+// the payment log of one child, opened from its detail.
+@Serializable
+data class AdminPagosInfanteRoute(val infanteId: String)
+
 // parent tabs. for now each tab has a single screen.
 // if one later gains inner screens, it can be converted into a graph
 // without changing the role-based bottom navigation idea.

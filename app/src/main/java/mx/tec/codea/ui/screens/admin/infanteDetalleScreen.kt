@@ -46,7 +46,8 @@ fun InfanteDetalleScreen(
     onAbrirPadre: (String) -> Unit,
     onSalaSeleccionada: (String) -> Unit,
     onDarBaja: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onVerPagos: () -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -155,6 +156,14 @@ fun InfanteDetalleScreen(
                     }
                 }
             }
+
+            SeccionLabel("Pagos")
+            AccionButton(
+                texto = "Ver pagos y cargos",
+                bg = Color(0xFFF4F1FB),
+                fg = Color(0xFF4A4066),
+                onClick = onVerPagos
+            )
 
             SeccionLabel("Acciones")
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

@@ -63,6 +63,7 @@ import mx.tec.codea.ui.screens.admin.InscribirInfanteScreen
 import mx.tec.codea.ui.screens.admin.OpcionChip
 import mx.tec.codea.ui.screens.admin.InscribirPadreScreen
 import mx.tec.codea.ui.screens.admin.PadreDetalleScreen
+import mx.tec.codea.ui.screens.admin.PagosInfanteScreen
 import mx.tec.codea.ui.screens.admin.AgregarMomentoScreen
 import mx.tec.codea.ui.screens.admin.CatalogoMomentosScreen
 import mx.tec.codea.ui.screens.admin.NuevaRutinaScreen
@@ -91,6 +92,7 @@ import mx.tec.codea.ui.state.InscribirInfanteViewModel
 import mx.tec.codea.ui.state.InscribirPadreViewModel
 import mx.tec.codea.ui.state.NuevaRutinaViewModel
 import mx.tec.codea.ui.state.PadresAdminViewModel
+import mx.tec.codea.ui.state.PagosAdminViewModel
 import mx.tec.codea.ui.state.ParentViewModel
 import mx.tec.codea.ui.state.ReportFormViewModel
 import mx.tec.codea.ui.state.RutinasAdminViewModel
@@ -118,6 +120,7 @@ fun CodeaNavHost(
     val infantesViewModel: InfantesAdminViewModel = viewModel()
     val padresViewModel: PadresAdminViewModel = viewModel()
     val rutinasViewModel: RutinasAdminViewModel = viewModel()
+    val pagosViewModel: PagosAdminViewModel = viewModel()
     val parentViewModel: ParentViewModel = viewModel()
     // los avisos que le llegan a la asistente (Menú) y al papá (campana de Hoy).
     val avisosViewModel: AvisosViewModel = viewModel()
@@ -562,7 +565,25 @@ fun CodeaNavHost(
                         infantesViewModel.cambiarSala(infanteId = infante.id, nuevaSala = nuevaSala)
                     },
                     onDarBaja = { infantesViewModel.darDeBaja(infante.id) },
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    onVerPagos = { navController.navigate(AdminPagosInfanteRoute(infante.id)) },
+                )
+            }
+            composable<AdminPagosInfanteRoute> { backStackEntry ->
+                val route = backStackEntry.toRoute<AdminPagosInfanteRoute>()
+                val infantes by infantesViewModel.infantes.collectAsState()
+                val nombre = infantes.firstOrNull { it.id == route.infanteId }?.nombre.orEmpty()
+                val log by pagosViewModel.log.collectAsState()
+                LaunchedEffect(route.infanteId) { pagosViewModel.abrir(route.infanteId) }
+                PagosInfanteScreen(
+                    nombre = nombre,
+                    log = log,
+                    onRegistrar = { concepto, centavos, fecha, metodo ->
+                        pagosViewModel.registrar(concepto, centavos, fecha, metodo)
+                    },
+                    onMarcarPagado = pagosViewModel::marcarPagado,
+                    onCancelar = pagosViewModel::cancelar,
+                    onBack = { navController.popBackStack() },
                 )
             }
             composable<AdminInscribirInfanteRoute> {

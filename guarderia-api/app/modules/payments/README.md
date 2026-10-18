@@ -18,7 +18,7 @@ Reglas (`rules.py`): concepto obligatorio (hasta 120), monto entre 1 centavo y 1
 
 | Hecho | Pendiente |
 |---|---|
-| Modelo, migración `c3a9e5f1d2b8`, 6 endpoints, 5 pruebas (`tests/test_payments.py`) | Pantalla del admin en la app y vista de solo lectura del padre |
+| Modelo, migración `c3a9e5f1d2b8`, 6 endpoints, 5 pruebas (`tests/test_payments.py`); pantalla del admin en la app | Vista de solo lectura del padre en la app (el admin ya tiene su pantalla) |
 | | Recibos o comprobantes (adjuntar imagen o PDF con `media`) |
 | | Bitácora de auditoría de quién cambió qué (hoy solo `recorded_by` del último cambio) |
 | | Pago en línea: fuera de alcance (la bitácora solo registra) |

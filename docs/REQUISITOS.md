@@ -11,7 +11,7 @@ Catálogo tomado del tablero de Teams (buckets *Req. de CODEA*, *Req. base*, *Re
 
 | ID | Requisito | Estado | Evidencia / qué falta |
 |---|---|---|---|
-| CRF-01 | Bitácora de pagos por infante | 🟡 | **Backend hecho** (módulo `payments`, migración `c3a9e5f1d2b8`, 5 pruebas). Falta la pantalla del admin en `ui/screens/admin/` y la vista de solo lectura del padre. |
+| CRF-01 | Bitácora de pagos por infante | 🟡 | **Backend hecho** (módulo `payments`, migración `c3a9e5f1d2b8`, 5 pruebas). **Pantalla del admin hecha** (`PagosInfanteScreen`, desde la ficha del infante). Falta la vista de solo lectura del padre. |
 | CRF-02 | Administración de perfiles y salas | ✅ | Backend: módulos `classrooms`, `teachers`, `children`, `parents`. App: `ui/screens/admin/*`. |
 | CRF-03 | Calendario de eventos y citas | 🟡 | El calendario del padre muestra asistencia del mes (`GET /children/{id}/attendance`). No existe el modelo de eventos ni de citas. |
 | CRF-04 | Dictado de registro y consulta con IA | 🟡 | **Dictado a texto sí**: `rememberDictation` (en `ui/components/DeviceLaunchers.kt`) usa `RecognizerIntent` del sistema para llenar el reporte. **Consulta con IA no existe.** Ver [decisión #10](DECISIONES-PENDIENTES.md). |

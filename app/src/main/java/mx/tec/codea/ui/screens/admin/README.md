@@ -7,6 +7,7 @@ Pestañas: **Centro, Docentes, Infantes, Padres, Rutinas**. Cada una tiene su Vi
 |---|---|---|---|
 | Centro | `centroScreen.kt`, `crearSalaScreen.kt`, `salaDetalleScreen.kt` | Ver el centro y las salas, crear sala, asignar asistentes y cupo, borrar sala, publicar un aviso | ✅ |
 | Docentes | `docenteScreenAdmin.kt`, `docenteDetalleScreen.kt`, `altaAsistenteScreen.kt` | Listar, dar de alta (la API devuelve un **código de acceso** que se muestra en un diálogo para compartirlo), cambiar de sala, dar de baja y reactivar | ✅ |
+| Pagos del infante | `PagosInfanteScreen.kt` (`PagosAdminViewModel`, `PaymentApiRepository`, `domain/PaymentRules.kt`) | Desde la ficha del infante: resumen (pendiente, vencido, pagado), bitácora, registrar un cargo o un pago, marcar pagado y cancelar | ✅ |
 | Infantes | `infanteScreenAdmin.kt`, `infanteDetalleScreen.kt`, `inscribirInfanteScreen.kt` | Listar, inscribir (con tutor opcional), cambiar de sala, baja y reactivación | ✅ |
 | Padres | `PadresScreen.kt`, `PadreDetalleScreen.kt`, `InscribirPadreScreen.kt` | Listar, inscribir (con código de acceso), quitar o devolver acceso, reenviar invitación (genera un código nuevo y lo muestra) | ✅ |
 | Rutinas | `RutinasAdminScreen.kt`, `RutinaDetalleScreen.kt`, `NuevaRutinaScreen.kt`, `AgregarMomentoScreen.kt`, `CatalogoMomentosScreen.kt`, `OrdenRutinaScreen.kt`, `RutinaComponentes.kt` | Plantillas de rutina, agregar y ordenar momentos, catálogo de momentos, asignar plantilla a una sala | ✅ (la última pantalla agregada; sin probar a fondo) |
@@ -15,7 +16,7 @@ Pestañas: **Centro, Docentes, Infantes, Padres, Rutinas**. Cada una tiene su Vi
 
 - **Avisos con imágenes** (HN5). Publicar (a todo el centro o a una sala) y el historial ya existen en Centro, solo con texto.
 - **Solicitudes de borrado de fotos** (RF-10): la API las recibe de las familias pero no hay endpoint ni pantalla para que el admin las apruebe o rechace.
-- **Pagos por infante** (CRF-01).
+- **Pagos por infante** (CRF-01): falta la vista de solo lectura del padre, recibos adjuntos y elegir la fecha con un selector (hoy se escribe AAAA-MM-DD).
 - **Calendario de eventos y citas** (CRF-03).
 - **Menú del día** (HN3) y **llegada de los padres** (HN2).
 - **Imprimir o descargar bitácoras** (HN1).
