@@ -81,7 +81,11 @@ fun ParentCalendarScreen(
         }
 
         item {
-            MonthlySummaryCard(summaryText = monthData.summaryText)
+            MonthlySummaryCard(
+                // "Octubre 2026" -> "Octubre"
+                monthText = monthData.monthName.substringBefore(' ').ifBlank { "El mes" },
+                summaryText = monthData.summaryText,
+            )
         }
     }
 }
@@ -265,7 +269,7 @@ private fun LegendRow(
 }
 
 @Composable
-private fun MonthlySummaryCard(summaryText: String) {
+private fun MonthlySummaryCard(monthText: String, summaryText: String) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(22.dp),
@@ -276,7 +280,7 @@ private fun MonthlySummaryCard(summaryText: String) {
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                text = "Agosto en una línea",
+                text = "$monthText en una línea",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.ExtraBold,
                 color = TealDeep,

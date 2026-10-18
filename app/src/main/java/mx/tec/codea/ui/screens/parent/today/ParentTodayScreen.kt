@@ -226,7 +226,8 @@ private fun ChildSummaryCard(summary: DaySummary) {
                         text = summary.childFullName,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        // la tarjeta es de un color claro fijo (CoralWash): el texto no sigue el modo oscuro.
+                        color = mx.tec.codea.ui.theme.Ink,
                     )
                     Text(
                         text = summary.childGroup,
@@ -240,7 +241,7 @@ private fun ChildSummaryCard(summary: DaySummary) {
             Text(
                 text = summary.generalNote,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f),
+                color = mx.tec.codea.ui.theme.Ink.copy(alpha = 0.85f),
                 lineHeight = 21.sp,
             )
         }

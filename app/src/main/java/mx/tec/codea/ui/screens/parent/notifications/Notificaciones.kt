@@ -106,7 +106,7 @@ fun HoyHeader(
             )
             Text(
                 titulo, fontFamily = Poppins, fontWeight = FontWeight.Bold,
-                fontSize = 22.sp, color = AvisoColores.Ink, maxLines = 1
+                fontSize = 22.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground, maxLines = 1
             )
         }
         BotonCampana(pendientes, onAbrirNotif)

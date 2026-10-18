@@ -264,6 +264,7 @@ fun CodeaNavHost(
         composable<MyRoomRoute> {
             MyRoomScreen(
                 children = viewModel.children,
+                roomName = viewModel.teacher.roomName,
                 onAttendanceChange = viewModel::setAttendance,
                 onChatClick = { childId ->
                     val conversation = viewModel.conversationOf(childId)

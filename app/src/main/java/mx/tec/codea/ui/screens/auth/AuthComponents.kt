@@ -1,6 +1,7 @@
 package mx.tec.codea.ui.screens.auth
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -54,6 +55,8 @@ fun AuthFrame(
     Column(
         modifier = modifier
             .fillMaxSize()
+            // sin fondo propio se veía el de la ventana (claro) con texto del tema oscuro.
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 28.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.Center,

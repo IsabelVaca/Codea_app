@@ -46,6 +46,8 @@ fun MyRoomScreen(
     onAttendanceChange: (childId: String, status: AttendanceStatus) -> Unit,
     onChatClick: (childId: String) -> Unit,
     modifier: Modifier = Modifier,
+    // el nombre real de la sala de la docente; vacío mientras carga.
+    roomName: String = "",
 ) {
     // derived values: we count them every time, so they are never out of date.
     val presentCount = children.count { it.attendance == AttendanceStatus.PRESENT }
@@ -59,7 +61,11 @@ fun MyRoomScreen(
         item {
             ScreenHeader(
                 overline = stringResource(R.string.my_room_overline),
-                title = stringResource(R.string.my_room_title),
+                title = if (roomName.isBlank()) {
+                    stringResource(R.string.my_room_title_generic)
+                } else {
+                    stringResource(R.string.my_room_title, roomName)
+                },
             )
         }
 
