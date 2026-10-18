@@ -25,6 +25,13 @@ Registro cronológico de lo que se hizo, por qué y cómo se verificó. Lo nuevo
 | Calendario decía "Agosto" | Mes tomado de los datos del calendario | Sí: "Octubre en una línea" |
 | "Documentos" se partía en dos líneas | 11 sp, una línea y sin salto en la barra con 5 tabs | Sí, al abrir la tab |
 
+### Checador con GPS y hora reales
+- Antes: prototipo con datos fijos y `registrar()` mandaba siempre las coordenadas del centro (el servidor nunca rechazaba por distancia).
+- Ahora: `data/DeviceLocation.kt` (LocationManager de Android, sin Play Services; GPS y luego red, con tiempo límite), `domain/GeoMath.kt` (distancia haversine, con 4 pruebas en `GeoMathTest`) y `CheckerViewModel` con estados de ubicación (buscando, sin permiso, sin señal, lista). La fecha y la hora son las del teléfono; la entrada se registra con la posición real.
+- Permisos nuevos en el manifiesto: `ACCESS_FINE_LOCATION` y `ACCESS_COARSE_LOCATION`. Los chips "Simular llegada" solo aparecen en compilaciones debug (`BuildConfig.DEBUG`).
+- Probado en el teléfono: permiso del sistema → "Domingo 18 de octubre", 13:29, "Estás a 842 m", fuera del perímetro, botón bloqueado. Pruebas JVM en verde.
+- Pendiente: probar una entrada dentro del perímetro (hay que ajustar la ubicación del centro con `PATCH /center`; ver [`RECORRIDO.md`](RECORRIDO.md)) y el mapa en blanco (falta `MAPS_API_KEY`).
+
 ### Documentación
 - Se crearon [`PLAN-ACCION.md`](PLAN-ACCION.md), [`RECORRIDO.md`](RECORRIDO.md) y esta bitácora.
 

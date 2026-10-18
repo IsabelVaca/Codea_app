@@ -39,9 +39,14 @@ class CodeaViewModel : ViewModel() {
     private var selectActiveAfterLoad = true
 
     // el lugar del checador: el centro, con sus coordenadas.
-    var centerLatitude: Double? = null
+    // con estado, para que el checador arranque cuando lleguen aunque se abra antes de que termine de cargar.
+    var centerLatitude by mutableStateOf<Double?>(null)
         private set
-    var centerLongitude: Double? = null
+    var centerLongitude by mutableStateOf<Double?>(null)
+        private set
+    var centerRadiusMeters by mutableStateOf(60)
+        private set
+    var centerName by mutableStateOf("")
         private set
 
     var teacher by mutableStateOf(Teacher("", "", "", 8 * 60, 16 * 60))
@@ -84,6 +89,8 @@ class CodeaViewModel : ViewModel() {
                 classroomId = t.classroom?.id
                 centerLatitude = t.center.latitude
                 centerLongitude = t.center.longitude
+                centerRadiusMeters = t.center.checkInRadiusM
+                centerName = t.center.name
                 teacher = Teacher(
                     fullName = me.fullName,
                     greetingName = "miss ${me.name}",

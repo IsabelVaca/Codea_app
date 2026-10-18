@@ -39,6 +39,7 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberUpdatedMarkerState
+import mx.tec.codea.BuildConfig
 import mx.tec.codea.R
 import mx.tec.codea.data.CheckInRepository
 import mx.tec.codea.data.CheckInScenario
@@ -49,6 +50,7 @@ import mx.tec.codea.domain.formatTimeOfDay
 import mx.tec.codea.ui.components.BackHeader
 import mx.tec.codea.ui.components.InfoBox
 import mx.tec.codea.ui.state.CheckerUiState
+import mx.tec.codea.ui.state.LocationState
 import mx.tec.codea.ui.theme.CodeaTheme
 import java.util.Locale
 
@@ -62,6 +64,7 @@ fun CheckerScreen(
     registeredCheckIn: CheckInRecord?,
     onBackClick: () -> Unit,
     onScenarioChange: (CheckInScenario) -> Unit,
+    onGrantLocationClick: () -> Unit,
     onCheckInClick: () -> Unit,
     onRetryClick: () -> Unit,
     onNotifyCoordinationClick: () -> Unit,
@@ -85,12 +88,28 @@ fun CheckerScreen(
 
         if (registeredCheckIn != null) {
             AlreadyRegistered(record = registeredCheckIn)
-            LocationMap(attempt = uiState.attempt, status = CheckInStatus.ON_TIME)
+            if (uiState.locationState == LocationState.READY) {
+                LocationMap(attempt = uiState.attempt, status = CheckInStatus.ON_TIME)
+            }
             return@Column
         }
 
+        // los casos simulados son solo para probar: en la app de entrega no se ven.
         // it goes on top, so changing the case never needs a scroll.
-        ScenarioPicker(selected = uiState.scenario, onScenarioChange = onScenarioChange)
+        if (BuildConfig.DEBUG) {
+            ScenarioPicker(selected = uiState.scenario, onScenarioChange = onScenarioChange)
+        }
+
+        // sin ubicación todavía no hay hora, mapa ni botón que valgan.
+        if (uiState.locationState != LocationState.READY) {
+            LocationPending(
+                state = uiState.locationState,
+                onGrantClick = onGrantLocationClick,
+                onRetryClick = onRetryClick,
+            )
+            return@Column
+        }
+
         CurrentTime(uiState = uiState)
         LocationMap(attempt = uiState.attempt, status = uiState.status)
 
@@ -224,6 +243,50 @@ private fun LocationMap(attempt: CheckInAttempt, status: CheckInStatus) {
                 fontWeight = FontWeight.SemiBold,
                 color = color,
             )
+        }
+    }
+}
+
+// la ubicación del teléfono: buscándola, sin permiso o sin señal.
+@Composable
+private fun LocationPending(state: LocationState, onGrantClick: () -> Unit, onRetryClick: () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        when (state) {
+            LocationState.LOCATING -> InfoBox(
+                title = stringResource(R.string.checker_locating_title),
+                body = stringResource(R.string.checker_locating_body),
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                titleColor = MaterialTheme.colorScheme.onSurface,
+            )
+            LocationState.NEEDS_PERMISSION -> {
+                InfoBox(
+                    title = stringResource(R.string.checker_permission_title),
+                    body = stringResource(R.string.checker_permission_body),
+                    containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.16f),
+                    titleColor = MaterialTheme.colorScheme.onSurface,
+                )
+                CheckInButton(
+                    text = stringResource(R.string.checker_permission_button),
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    onClick = onGrantClick,
+                )
+            }
+            LocationState.UNAVAILABLE -> {
+                InfoBox(
+                    title = stringResource(R.string.checker_unavailable_title),
+                    body = stringResource(R.string.checker_unavailable_body),
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    titleColor = MaterialTheme.colorScheme.onErrorContainer,
+                )
+                CheckInButton(
+                    text = stringResource(R.string.checker_retry),
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    onClick = onRetryClick,
+                )
+            }
+            LocationState.READY -> Unit
         }
     }
 }
@@ -367,6 +430,7 @@ private fun ScenarioPicker(selected: CheckInScenario, onScenarioChange: (CheckIn
 }
 
 private fun CheckInScenario.labelRes(): Int = when (this) {
+    CheckInScenario.REAL -> R.string.checker_scenario_real
     CheckInScenario.ON_TIME -> R.string.checker_scenario_on_time
     CheckInScenario.LATE -> R.string.checker_scenario_late
     CheckInScenario.OUT_OF_RANGE -> R.string.checker_scenario_out
@@ -403,6 +467,7 @@ private fun CheckerScreenLatePreview() {
             registeredCheckIn = null,
             onBackClick = {},
             onScenarioChange = {},
+            onGrantLocationClick = {},
             onCheckInClick = {},
             onRetryClick = {},
             onNotifyCoordinationClick = {},

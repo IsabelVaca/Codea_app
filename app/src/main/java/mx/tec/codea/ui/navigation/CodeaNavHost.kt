@@ -86,6 +86,7 @@ import mx.tec.codea.ui.state.AltaAsistenteViewModel
 import mx.tec.codea.ui.state.AvisosViewModel
 import mx.tec.codea.ui.state.ChatViewModel
 import mx.tec.codea.ui.state.CentroViewModel
+import mx.tec.codea.ui.state.CheckerConfig
 import mx.tec.codea.ui.state.CheckerViewModel
 import mx.tec.codea.ui.state.AccountViewModel
 import mx.tec.codea.ui.state.CodeaViewModel
@@ -318,15 +319,44 @@ fun CodeaNavHost(
                 // this view model lives inside the destination: its owner is this screen,
                 // so the chosen case and the late reason are cleared when the teacher leaves.
                 val checker: CheckerViewModel = viewModel()
+                val locationPermission = rememberLauncherForActivityResult(
+                    ActivityResultContracts.RequestMultiplePermissions(),
+                ) { checker.onPermissionResult() }
+                val requestLocation = {
+                    locationPermission.launch(
+                        arrayOf(
+                            android.Manifest.permission.ACCESS_FINE_LOCATION,
+                            android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                        ),
+                    )
+                }
+                // cuando llegan las coordenadas del centro, el checador busca la ubicación del teléfono.
+                val centerLat = viewModel.centerLatitude
+                val centerLon = viewModel.centerLongitude
+                LaunchedEffect(centerLat, centerLon, viewModel.centerRadiusMeters, viewModel.teacher.shiftStartMinutes) {
+                    if (centerLat != null && centerLon != null) {
+                        if (!checker.hasLocationPermission()) requestLocation()
+                        checker.start(
+                            CheckerConfig(
+                                centerLatitude = centerLat,
+                                centerLongitude = centerLon,
+                                radiusMeters = viewModel.centerRadiusMeters,
+                                shiftStartMinutes = viewModel.teacher.shiftStartMinutes,
+                                placeName = viewModel.centerName.ifBlank { "La Oruga" },
+                            ),
+                        )
+                    }
+                }
                 CheckerScreen(
                     uiState = checker.uiState,
                     registeredCheckIn = viewModel.checkIn,
                     // the menu is right below the check-in, so going back is enough.
                     onBackClick = { navController.popBackStack() },
                     onScenarioChange = checker::onScenarioChange,
+                    onGrantLocationClick = { requestLocation() },
                     onCheckInClick = {
                         // the domain can say "no" (out of range): then nothing happens.
-                        checker.registrar(viewModel.centerLatitude, viewModel.centerLongitude) { record ->
+                        checker.registrar { record ->
                             viewModel.registerCheckIn(record)
                             navController.navigateToCheckInDone()
                         }
