@@ -14,7 +14,7 @@ Pestañas: **Centro, Docentes, Infantes, Padres, Rutinas**. Cada una tiene su Vi
 ## Pendiente
 
 - **Avisos con imágenes** (HN5). Publicar (a todo el centro o a una sala) y el historial ya existen en Centro, solo con texto.
-- **Configuración del centro** (ubicación, radio del checador y turnos): la API ya tiene `PATCH /center`, pero no hay pantalla; hoy la ubicación se cambia por la API.
+- **Configuración del centro:** la ubicación ya se fija desde Centro («Usar mi ubicación actual», con confirmación); faltan el radio del checador y los turnos, que solo se cambian por la API (`PATCH /center`).
 - **Calendario de eventos y citas** (CRF-03).
 - **Menú del día** (HN3) y **llegada de los padres** (HN2).
 - **Imprimir o descargar bitácoras** (HN1).

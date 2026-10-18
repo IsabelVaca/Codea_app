@@ -17,6 +17,14 @@ data class DeletionReviewDto(
     @SerialName("created_at") val createdAt: String = "",
 )
 
+// ---------- centro (solo admin) ----------
+
+@Serializable
+data class CenterUpdateBody(
+    val latitude: Double,
+    val longitude: Double,
+)
+
 @Serializable
 data class DecisionBody(
     val note: String? = null,

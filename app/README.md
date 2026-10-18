@@ -46,7 +46,7 @@ Marco técnico: solo lo de <https://startdroid.pages.dev/> ([`docs/MARCO-TECNICO
 | Rol | Estado | Falta |
 |---|---|---|
 | Docente | Check-in con GPS, rutina del día, reportes (escrito, dictado, foto), Mi sala con asistencia, chat, avisos, Mi cuenta | Documentos (abre `ComingSoon`); chat en tiempo real; sin conexión |
-| Admin | Centro y salas, docentes, infantes, padres, rutinas y catálogo de momentos, avisos, Mi cuenta, **código de acceso** al dar de alta o reenviar | Configuración del centro, menú del día |
+| Admin | Centro y salas, docentes, infantes, padres, rutinas y catálogo de momentos, avisos, Mi cuenta, **código de acceso** al dar de alta o reenviar | Radio del checador y turnos (la ubicación ya se fija desde Centro), menú del día |
 | Padre | Hoy, calendario, fotos, documentos y personas autorizadas, nota a la asistente, avisos, Mi cuenta | Chat, varios hijos, menú del día, paginación de fotos |
 | Transversal | Compose, Retrofit, Coil, **login con JWT** (tokens cifrados con Keystore en DataStore, renovación automática), DI manual | Room, WorkManager, huella, release firmado, HTTPS y pruebas de interfaz |
 

@@ -406,6 +406,12 @@ fun CodeaNavHost(
                 val infantesCentro by infantesViewModel.infantes.collectAsState()
                 val avisos by centroViewModel.avisos.collectAsState()
                 val pendientesBorrado by centroViewModel.pendientesBorrado.collectAsState()
+                // la ubicación del teléfono pide permiso la primera vez; al contestar se fija si lo dieron.
+                val permisoUbicacion = rememberLauncherForActivityResult(
+                    ActivityResultContracts.RequestMultiplePermissions(),
+                ) { resultado ->
+                    if (resultado.values.any { it }) centroViewModel.fijarUbicacionActual()
+                }
                 CentroScreen(
                     salas = salas,
                     infantes = infantesCentro,
@@ -415,6 +421,20 @@ fun CodeaNavHost(
                     onCuentaClick = { navController.navigate(AccountRoute) },
                     solicitudesBorrado = pendientesBorrado,
                     onSolicitudesBorradoClick = { navController.navigate(AdminSolicitudesBorradoRoute) },
+                    ubicacion = centroViewModel.ubicacion,
+                    ubicando = centroViewModel.ubicando,
+                    onUsarMiUbicacion = {
+                        if (centroViewModel.hasLocationPermission()) {
+                            centroViewModel.fijarUbicacionActual()
+                        } else {
+                            permisoUbicacion.launch(
+                                arrayOf(
+                                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                                    android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                                ),
+                            )
+                        }
+                    },
                     onSalaClick = { sala ->
                         navController.navigate(AdminSalaDetalleRoute(sala.id))
                     },

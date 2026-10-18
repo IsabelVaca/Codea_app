@@ -33,4 +33,4 @@ Las pestañas exactas salen de `TopLevelDestination.kt`: ahí es donde se agrega
 - **Partir `CodeaNavHost.kt`:** es el archivo con más conflictos de merge. Separar un archivo por rol (`TeacherNavGraph`, `AdminNavGraph`, `ParentNavGraph`) reduce choques.
 - **Destinos `ComingSoon` de la docente:** documentos (`MenuOption` en `MenuScreen.kt`).
 - **Rutas del padre que faltan:** chat, menú del día, selector de hijo.
-- **Rutas del admin:** `AdminSolicitudesBorradoRoute` (fotos que piden borrar, se abre desde Centro) ya existe. Falta la configuración del centro (ubicación, radio y turnos).
+- **Rutas del admin:** `AdminSolicitudesBorradoRoute` (fotos que piden borrar, se abre desde Centro) ya existe. La ubicación del centro se fija desde Centro; falta cambiar el radio y los turnos.

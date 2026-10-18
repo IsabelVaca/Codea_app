@@ -215,3 +215,23 @@ async def test_templates_are_admin_only(client, world):
         f"/classrooms/{world.room_a.id}/routine-template", headers=world.teacher_a, json={"template_id": None}
     )
     assert denied.status_code == 403
+
+
+async def test_center_changes_are_audited(client, world):
+    changed = await client.patch(
+        "/center", headers=world.admin, json={"latitude": 25.7, "longitude": -100.3, "check_in_radius_m": 120}
+    )
+    assert changed.status_code == 200
+    # una petición que falla no deja rastro de cambio.
+    assert (await client.patch("/center", headers=world.admin, json={"check_in_radius_m": 5})).status_code == 422
+
+    [entry] = (await client.get("/audit-log?action=CENTER_UPDATED", headers=world.admin)).json()["items"]
+    assert entry["actor_name"] == "Directora Prueba"
+    assert entry["entity_type"] == "CENTER" and entry["entity_id"] == str(world.center.id)
+    assert entry["detail"] == {
+        "fields": ["check_in_radius_m", "latitude", "longitude"],
+        "latitude": 25.7,
+        "longitude": -100.3,
+        "check_in_radius_m": 120,
+    }
+

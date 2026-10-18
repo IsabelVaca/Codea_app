@@ -58,6 +58,12 @@ Registro cronológico de lo que se hizo, por qué y cómo se verificó. Lo nuevo
 - También en el teléfono (tema claro esta vez): «Sala · Maternal» y la etiqueta «Nota de la familia hoy» de Mi sala, ya con datos reales.
 - Se quitaron las menciones a pagos de los README y de los documentos (CRF-01 queda como «no cumplido por decisión del equipo»).
 
+### Admin: fijar la ubicación del centro desde el teléfono
+- Centro tiene la tarjeta «Ubicación del checador» (muestra latitud, longitud y radio reales de `GET /center`) y el botón «Usar mi ubicación actual», que pide confirmación («las docentes solo podrán registrar su entrada a menos de N metros de aquí»), pide el permiso de ubicación si falta y manda `PATCH /center`. Sin esto no había forma de poner la estancia donde se hará la demo.
+- Backend: `PATCH /center` ahora queda en la bitácora (`CENTER_UPDATED`, con quién, qué campos y los valores nuevos) y 1 prueba nueva en `test_admin_extras.py`.
+- Verificado en el teléfono: la tarjeta muestra el valor del servidor (25.65160, −100.28960, radio 60 m, el del seed) y el diálogo de confirmación abre. **No se confirmó el cambio** a propósito: guardaría la ubicación exacta del teléfono en la base compartida de Aiven. Pendiente de decidir con el equipo dónde se hará la demo.
+- Valor anterior del centro, por si hay que restaurarlo: latitud 25.651600, longitud −100.289600, radio 60 m.
+
 ### Checador con GPS y hora reales
 - Antes: prototipo con datos fijos y `registrar()` mandaba siempre las coordenadas del centro (el servidor nunca rechazaba por distancia).
 - Ahora: `data/DeviceLocation.kt` (LocationManager de Android, sin Play Services; GPS y luego red, con tiempo límite), `domain/GeoMath.kt` (distancia haversine, con 4 pruebas en `GeoMathTest`) y `CheckerViewModel` con estados de ubicación (buscando, sin permiso, sin señal, lista). La fecha y la hora son las del teléfono; la entrada se registra con la posición real.
