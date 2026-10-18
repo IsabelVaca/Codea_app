@@ -35,10 +35,10 @@ Registro cronológico de lo que se hizo, por qué y cómo se verificó. Lo nuevo
 - Trabajo delegado: la sesión `codea-app-24` redacta los documentos de la entrega en `docs/entrega/` (ética y legal, clasificación de datos, manuales, implantación, administración). Se revisan antes de hacer commit.
 
 ### Pruebas de control de acceso (rúbrica, parte 3)
-- `tests/test_access_matrix.py` (60 pruebas): lee de las 72 rutas reales qué rol exige cada una y comprueba que sin token responde `401` y que cada rol no permitido recibe `403`; IDOR por registro (un padre no lee datos de otro niño, una docente solo los de su sala, chats, fotos, notas y personas autorizadas); inyección en login, filtros y texto guardado.
+- `tests/test_access_matrix.py` (151 pruebas, casi todas parametrizadas por ruta): lee de las 72 rutas reales qué rol exige cada una y comprueba que sin token responde `401` y que cada rol no permitido recibe `403`; IDOR por registro (un padre no lee datos de otro niño, una docente solo los de su sala, chats, fotos, notas y personas autorizadas); inyección en login, filtros y texto guardado.
 - Las pruebas detectan fallos de verdad: se rompió `can_see_child` a propósito (mutación) y fallaron 5; se restauró.
 - Documento nuevo [`api/matriz-de-roles.md`](api/matriz-de-roles.md), generado con `guarderia-api/scripts/roles_matrix.py`.
-- Total: 151 pruebas de la API en verde (68 + 23 + 60).
+- Total: **242 pruebas de la API en verde** (68 + 23 + 151).
 
 ### Checador con GPS y hora reales
 - Antes: prototipo con datos fijos y `registrar()` mandaba siempre las coordenadas del centro (el servidor nunca rechazaba por distancia).
