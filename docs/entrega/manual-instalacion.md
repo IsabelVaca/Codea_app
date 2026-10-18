@@ -29,7 +29,7 @@ Para publicar el backend en un servidor y firmar un APK, ver [`plan-implantacion
 | Dependencias nuevas del modo sin conexión (las descarga Gradle la primera vez; hace falta internet) | **Room 2.8.4** (base local), **WorkManager 2.11.2** (envío de la cola al volver la red) y el plugin **KSP 2.3.12** (genera el código de Room). Al compilar, Room exporta el esquema de la base a `app/schemas/` (se versiona) | `gradle/libs.versions.toml`, `app/build.gradle.kts` |
 | Teléfono con Android 7.0 o más nuevo (`minSdk` 24), o un emulador | Con depuración USB activada si es físico | `app/build.gradle.kts` |
 | `adb` (viene con las herramientas de plataforma del SDK) | Solo para el teléfono físico por USB | `docs/BITACORA.md` |
-| Archivo `local.properties` en la raíz del repo | Android Studio lo crea con `sdk.dir`; está ignorado por git. Opcionalmente lleva `MAPS_API_KEY`, `API_BASE_URL` y `API_BASE_URL_RELEASE` | `.gitignore`, `app/build.gradle.kts` |
+| Archivo `local.properties` en la raíz del repo | Android Studio lo crea con `sdk.dir`; está ignorado por git. Opcionalmente lleva `API_BASE_URL` y `API_BASE_URL_RELEASE` | `.gitignore`, `app/build.gradle.kts` |
 
 ---
 
@@ -94,6 +94,7 @@ Aplica en orden las migraciones de `guarderia-api/migrations/versions/`:
 | `b41c7d2e9a10` | Bitácora de auditoría (`audit_log`) e intentos de acceso (`auth_attempt`) |
 | `c52d8e3f0b21` | Revisión de solicitudes de borrado de fotos (columnas `decided_by`, `decided_at`, `decision_note`) |
 | `d63e9f4a1c32` | Salida de la docente (columnas `checked_out_at`, `out_latitude`, `out_longitude`, `out_distance_m` en `staff_check_in`). Según `docs/BITACORA.md`, la base de Aiven ya está migrada a esta revisión |
+| `e74f0a5b3d43` | Checador sin ubicación: quita `latitude`, `longitude`, `distance_m` y `out_latitude`, `out_longitude`, `out_distance_m` de `staff_check_in` y agrega `auto_closed`. **No está aplicada en Aiven.** Su `downgrade` no recupera las coordenadas borradas |
 
 
 Para comprobar en qué revisión quedó la base: `docker compose exec api alembic current`.
@@ -203,15 +204,9 @@ adb reverse tcp:9000 tcp:9000
 
 Si desconectas y vuelves a conectar el cable, **repite el paso 4**: `adb reverse` se pierde.
 
-### 3.4 Mapa del checador (opcional)
+### 3.4 Mapa del checador
 
-El mapa usa Google Maps. Para que se vea, agrega a `local.properties`:
-
-```
-MAPS_API_KEY=<tu clave>
-```
-
-Sin clave la app compila y funciona, pero **el mapa sale en blanco**. La clave no está en el repositorio. Aprobar el uso de Google Maps sigue abierto (decisión #3 de `docs/DECISIONES-PENDIENTES.md`).
+Ya no hay mapa ni `MAPS_API_KEY`: el checador no usa ubicación (18/oct).
 
 ### 3.5 Pruebas de la app
 
@@ -257,10 +252,8 @@ La base local (`codea.db`) y la cola se guardan en el teléfono; **no** hay prue
 | Las fotos no cargan | `S3_PUBLIC_ENDPOINT_URL` no es la dirección que ve el teléfono | Ajusta el valor (sección 2.1) y reinicia la API |
 | `401 INVALID_CREDENTIALS` con una cuenta del seed | El seed no corrió, o corrió con `ENV` distinto de `dev` | Corre el seed en base vacía; con `ENV` distinto de `dev` usa el código de invitación |
 | `429 TOO_MANY_ATTEMPTS` | 5 fallos seguidos con el mismo correo | Espera 15 minutos |
-| `CENTER_LOCATION_MISSING` o la docente siempre sale «fuera del perímetro» | El seed trae coordenadas de Monterrey, no las del lugar de la demo | El administrador, **estando en el lugar de la demo**, abre Centro → «Ubicación del checador» → «Usar mi ubicación actual» y confirma. El radio (`check_in_radius_m`) solo se cambia con `PATCH /center` |
 | Las pruebas de la API no conectan a la base | Contraseña del `.env` distinta de la del contenedor local | `POSTGRES_PASSWORD=<la del contenedor> .venv/bin/pytest` |
 | `ModuleNotFoundError: pwdlib` al correr pruebas | El `venv` es anterior al login con JWT | `.venv/bin/pip install -r requirements.txt -r requirements-dev.txt` |
-| El mapa del checador sale en blanco | No hay `MAPS_API_KEY` | Sección 3.4. No impide registrar la entrada |
 
 ## 5. Lo que este manual no pudo confirmar
 

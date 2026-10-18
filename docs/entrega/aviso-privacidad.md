@@ -33,7 +33,7 @@ Codea es la aplicación con la que la estancia infantil **La Oruga** (nombre que
 | Dispositivo y aplicación desde donde se inicia sesión (`user_agent`) | Todas las cuentas | Lo manda la app en cada inicio de sesión |
 | Dirección IP y correo escrito en cada intento de entrar, correcto o fallido | Quien intenta entrar (aunque no tenga cuenta) | Los registra el servidor para frenar ataques y para la bitácora |
 | Sala, turno y relación con el niño | Docentes y tutores | Los captura el administrador |
-| Hora de entrada y de salida, **ubicación** (latitud y longitud) del momento de cada registro, distancia al centro, retardo y motivo del retardo | Docentes | Al usar el checador (ver 2.4) |
+| Hora de entrada y de salida (la de salida puede ser la del cierre automático de las 9 pm), retardo y motivo del retardo. **No se guarda la ubicación** | Docentes | Al usar el checador (ver 2.4) |
 | Avisos a coordinación (motivo y mensaje opcional) | Docentes | Los escribe la docente en el checador |
 | Mensajes, notas para la asistente | Docentes y tutores | Los escriben ellos en la app |
 | Persona(s) autorizada(s) para recoger al niño: nombre, parentesco y teléfono | Terceros | Los captura el tutor o el administrador |
@@ -63,16 +63,16 @@ Se comprobó en el manifiesto (`app/src/main/AndroidManifest.xml`) y en las depe
 - **No se guarda audio.** El dictado usa el reconocedor de voz del teléfono y la app solo recibe el texto.
 - **No se pide acceso a contactos, SMS ni almacenamiento general.** Para subir un documento se usa el selector de archivos del sistema.
 
-### 2.4 Ubicación del checador
+### 2.4 El checador y la ubicación
 
-1. La docente abre el checador. Si nunca concedió el permiso, el sistema se lo pide, con un texto que explica que la ubicación se compara con la de la estancia y que **queda guardada junto con la hora**.
-2. El teléfono obtiene su posición **una vez** y la manda junto con la petición de registrar la **entrada** o la **salida**.
-3. El **servidor** calcula la distancia al centro. Si está fuera del radio configurado (60 m por omisión), **rechaza** el registro y **no guarda** la posición de ese intento.
-4. Si está dentro, el servidor **guarda** la latitud, la longitud, la distancia y la hora (la del servidor, no la del teléfono) de la entrada y, cuando la hay, de la salida; en la entrada guarda además si hubo retardo y el motivo que escribió la docente.
-5. No se vuelve a pedir la posición hasta el siguiente registro. Hay una fila por docente y por día. La salida **no es automática**: la docente la registra.
-6. El administrador fija la ubicación del centro desde la app con el botón «Usar mi ubicación actual», que guarda la posición del teléfono del administrador como ubicación de la estancia; el cambio queda en la bitácora.
+Desde el 18 de octubre de 2026 el checador **no usa la ubicación del teléfono**:
 
-> El texto que antes decía «no se guarda» ya se corrigió en la app (commit `f814763`) y coincide con lo que hace el servidor.
+1. La docente abre el checador y toca «Registrar mi entrada». La app **no pide el permiso de ubicación** (ya no está declarado en el manifiesto) ni usa mapas.
+2. El **servidor** guarda la hora (la del servidor, no la del teléfono), si hubo retardo y el motivo que escribió la docente. Hay una fila por docente y por día.
+3. La docente registra su salida con otro toque. Si no la registra, a las **21:00** (hora del centro) el servidor **cierra el día solo**: guarda esa hora como salida y marca el registro como automático.
+4. Las coordenadas y distancias que se guardaron antes de este cambio se **borran** con la migración `e74f0a5b3d43`. Mientras esa migración no se aplique en la base de Aiven, esa base todavía conserva esas columnas.
+5. Como el checador ya no verifica dónde está la docente, el registro prueba la hora de la entrada, no el lugar.
+
 
 ### 2.5 Copia local en el teléfono (modo sin conexión)
 
@@ -126,7 +126,6 @@ El sistema no usa los datos para publicidad ni perfiles comerciales, y no los ve
 | **Aiven** (Postgres alojado) | Guardar la base de datos. Hoy se usa para las **pruebas manuales** del equipo, con datos de ejemplo | Todas las tablas | En uso para pruebas. La base de producción **no está definida** **[completar por el equipo]** |
 | **Almacén de archivos compatible con S3** | Guardar fotos y documentos | Los archivos | En desarrollo corre SeaweedFS en un contenedor local. El de producción **no está decidido** (decisión #9 y plan de implantación) **[completar por el equipo]** |
 | **Google (reconocedor de voz del teléfono)** | Convertir la voz del dictado en texto | La voz que dicta la docente, procesada por el servicio de voz del sistema Android, según su configuración; la decisión #10 de `docs/DECISIONES-PENDIENTES.md` dice que el reconocedor es el de Google y sigue sin confirmarse | Solo si la docente elige «Dictado» |
-| **Google Maps** (mapa del checador) | Dibujar el mapa | Lo que el mapa pida a Google al mostrarse | Hoy **sin clave configurada**, así que el mapa sale en blanco (decisión #3 abierta) |
 
 No se transfieren datos a otros terceros desde el código. No hay envío de correos desde el sistema: los códigos de acceso los entrega el administrador en persona o por el medio que elija.
 

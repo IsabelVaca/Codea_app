@@ -86,7 +86,7 @@ Se llama desviación a lo que el plan, el marco técnico o los requisitos pedía
 | D10 | **Checador: el prototipo se había contado como terminado** | CRF-05 aparecía en ✅ | El 18 de octubre el recorrido en el teléfono mostró que la pantalla era un prototipo con fecha, hora y distancia fijas, y que el servidor nunca podía rechazar por distancia. Se rehízo con GPS y hora reales | Una lección sobre cómo se marcaba el avance; ver la retrospectiva |
 | D11 | **API construida antes de probarse** | Pruebas junto con el código | El commit `c51ac75` se llama «API CONSTRUIDA SIN TESTEAR». Las pruebas llegaron después (de 43 pruebas el 16 de octubre a 276 el 18 de octubre, según `guarderia-api/tests/README.md`) | El riesgo de errores ocultos duró varios días |
 | D12 | **Release sin firmar, sin minificar y sin servidor** | Rúbrica, parte 1: build de release firmado y backend en URL pública | No existe keystore ni `signingConfig`; la minificación está apagada; no hay despliegue ni HTTPS público | Ver [`plan-implantacion.md`](plan-implantacion.md) |
-| D13 | **Mapa del checador en blanco** | Mapa del prototipo | Se usa Google Maps Compose, que necesita `MAPS_API_KEY`. No hay clave en el repositorio ni en `local.properties` entregable, y la decisión #3 sigue sin aprobarse | El mapa sale en blanco; registrar la entrada sí funciona |
+| D13 | ~~Mapa del checador en blanco~~ | Mapa del prototipo | **Resuelto (18/oct):** el checador ya no usa mapa ni ubicación; se quitó Google Maps | — |
 | D14 | **Pruebas de interfaz inexistentes** | Rúbrica, parte 3 | Solo hay `ExampleInstrumentedTest`. Pruebas JVM de dominio y de sesión sí hay | El marco pide Compose UI Test |
 | D15 | **Estado de los ViewModels** | Marco: `StateFlow` | `CodeaViewModel` y `ParentViewModel` siguen usando `mutableStateOf` (`MARCO-TECNICO.md`, 🟡). La inyección de dependencias es manual y está a medias | Deuda técnica |
 | D16 | **Fotos de baja calidad** | Marco: Photo Picker, FileProvider, EXIF y compresión | La cámara usa `TakePicturePreview`, que devuelve una miniatura. No hay compresión previa | Las fotos de los reportes son miniaturas |
@@ -100,7 +100,7 @@ El marco técnico del curso (<https://startdroid.pages.dev/>) manda; lo que se s
 |---|---|---|---|
 | 1 | Login con JWT propio | ✅ Sí | Implementado en `integracion`; falta la aprobación formal |
 | 2 | Notificaciones con Firebase | ❌ No | No implementado. La alternativa dentro del marco (WorkManager y notificaciones locales) tampoco |
-| 3 | Google Maps Compose | ✅ Sí | **En el código sin aprobación.** Sin clave, el mapa sale en blanco |
+| 3 | Google Maps Compose | ✅ Resuelta | **Quitado del código (18/oct).** El checador ya no usa mapa ni ubicación |
 | 4 | Huella (`androidx.biometric`) | ❌ No | No implementado (RF-13) |
 | 5 | Redis | ❌ No | No se usa; el límite de intentos usa Postgres |
 | 6 | Grafana | ❌ No | No implementado; hay `/health/live` y `/health/ready` |
@@ -147,8 +147,7 @@ Probabilidad e impacto: **A**lta, **M**edia, **B**aja (juicio del documento, a c
 | R1 | **No hay backend desplegado ni HTTPS**: la rúbrica pide una URL pública o instrucciones para levantarlo | A | A | Si no hay despliegue, entregar las instrucciones de [`manual-instalacion.md`](manual-instalacion.md) y el video de respaldo; decidir #7 y #9 | **[completar]** | Abierto |
 | R2 | **No hay APK de release firmado**: sin keystore no se puede instalar | A | A | Crear el keystore (una persona del equipo, fuera de git), configurar `signingConfig`, probar el APK en un teléfono limpio | **[completar]** | Abierto |
 | R3 | **Pérdida del keystore** una vez creado | B | A | Respaldo en dos lugares privados; sin él no se puede actualizar la app | **[completar]** | Preventivo |
-| R4 | **Demo en dispositivo físico**: el checador compara con las coordenadas del seed (Monterrey); donde se haga la demo la docente saldrá «fuera del perímetro» | M | M | El administrador puede fijar la ubicación del centro desde la app («Usar mi ubicación actual», estando en el lugar). Registrar una entrada dentro del perímetro **todavía no se probó en el teléfono** (`RECORRIDO.md`) | **[completar]** | Abierto |
-| R5 | **Mapa en blanco** por falta de `MAPS_API_KEY` | A | B | Obtener una clave o aprobar el mapa dibujado de la rama `checador-menu` (decisión #3). No impide registrar la entrada | **[completar]** | Abierto |
+| R4 | ~~Demo en dispositivo físico con el radio del checador~~ y ~~mapa en blanco~~ | — | — | **Resuelto (18/oct):** el checador ya no usa ubicación ni mapa | — | Cerrado |
 | R6 | **Textos de la app que prometen lo que no se hace** («la ubicación no se guarda», «la salida se registra sola») | B | M | **Corregidos** en `f814763`. Queda hacer una revisión completa de los textos de la interfaz ([`etica-legal.md`](etica-legal.md), ETL-03) | **[completar]** | Mitigado |
 | R7 | **Datos de menores sin política de retención, sin respaldo y sin consentimiento registrado** | M | A | Aprobar la política de [`clasificacion-datos.md`](clasificacion-datos.md), responsable y canal en el aviso, y el procedimiento ante filtraciones | **[completar]** | Abierto |
 | R8 | **Base de Aiven compartida con contraseña conocida** (`codea1234`, 15 usuarios de prueba) y valores débiles por omisión en `.env.example` | M | M | No poner datos reales en esa base; cambiar contraseñas antes de cualquier uso fuera de las pruebas | **[completar]** | Abierto |

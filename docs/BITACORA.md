@@ -128,5 +128,12 @@ Registro cronológico de lo que se hizo, por qué y cómo se verificó. Lo nuevo
 - Decisión del equipo: el checador ya no usa GPS, radio ni mapa. Registrar la entrada es un toque, la salida otro, y lo que quede abierto se cierra solo a las 9 pm.
 - API: `check-in` y `check-out` no piden coordenadas; se quitan `OUT_OF_RANGE` y `CENTER_LOCATION_MISSING`. `close_stale` cierra las entradas sin salida a las 21:00 hora del centro (corre al inicio de `today`, `check-in` y `check-out`). Migración `e74f0a5b3d43`: quita `latitude`, `longitude`, `distance_m` y las tres columnas `out_*` de `staff_check_in` y agrega `auto_closed`. **No está aplicada en Aiven** (borra las coordenadas ya guardadas). 281 pruebas de la API en verde.
 - App: `CheckerScreen` sin mapa ni distancia; se quitan `DeviceLocation`, `GeoMath`, `CheckInRepository`, los permisos de ubicación, Ajustes → Checador y Google Maps (`maps-compose`, `MAPS_API_KEY`). La decisión #3 queda resuelta.
-- Pendiente: corregir los documentos de `docs/entrega/` (aviso de privacidad, clasificación de datos, ética y legal ETL-05/ETL-06, manual de usuario y de instalación, matriz de trazabilidad, administración y plan de implantación), que todavía hablan de ubicación, radio y mapa.
+- Documentos corregidos: `REQUISITOS.md` (CRF-05), `DECISIONES-PENDIENTES.md` (#3 resuelta), `MARCO-TECNICO.md`, `ESTADO.md`, `RECORRIDO.md`, `api/endpoints.md` y, en `docs/entrega/`, aviso de privacidad (2.4), clasificación de datos (3.5), ética y legal (ETL-05, ETL-06 y el dilema de ubicación), manual de usuario (2.1 y 3), manual de instalación, matriz de trazabilidad, administración y plan de implantación.
+- Pendiente: aplicar la migración `e74f0a5b3d43` en Aiven (necesita aprobación) y probar el checador nuevo en el teléfono.
+
+## 2026-10-18 · Pestañas del administrador: Familias y Ajustes
+
+- **Familias** reemplaza a Infantes y Padres: una lista con selector «Infantes» / «Padres y tutores». El detalle y el inscribir de cada uno cuelgan del mismo grafo de navegación (`AdminFamiliasGraph`).
+- **Ajustes** reemplaza a Rutinas: un menú con **Rutinas** (la lista de siempre, ahora con título y botón de volver) y **Mi cuenta**. Mi cuenta ya no se abre desde el avatar de Centro. La ubicación del checador salió de Centro y, con el checador sin ubicación, desapareció.
+- Barra inferior del admin: **Centro · Docentes · Familias · Ajustes**. Subido a `main` en `26515d4`.
 

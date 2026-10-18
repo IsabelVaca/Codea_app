@@ -104,7 +104,6 @@ Hay tres puntos que **el repositorio no resuelve** y que hay que decidir antes d
 | Minificación | — | **Pendiente:** hoy `optimization.enable = false`; activar y probar que no rompe la serialización ni la navegación |
 | Modo sin conexión (asistencia) | WorkManager envía la cola con la restricción de red conectada y reintento con espera creciente; Room guarda la cola y la caché en `codea.db` | Igual |
 | Botones «Simular llegada» del checador | Visibles (solo `BuildConfig.DEBUG`) | Ocultos |
-| Clave de Google Maps | `MAPS_API_KEY` en `local.properties` | Igual; **sin ella el mapa sale en blanco** |
 | `allowBackup` | `false` | `false` |
 
 El **keystore y sus contraseñas** los crea y guarda el equipo, fuera del repositorio; el asistente de trabajo no debe inventarlos (`PLAN-ACCION.md`). Si se pierde el keystore, **no se puede publicar una actualización que instale sobre la anterior**.
@@ -150,7 +149,7 @@ El repositorio **no tiene un comando para crear solo al administrador**. La úni
 
 | Opción | Costo |
 |---|---|
-| Correr el seed y luego dar de baja o eliminar a mano los datos de ejemplo | Quedan filas ficticias en producción y en la bitácora; las coordenadas hay que cambiarlas (desde la app, con «Usar mi ubicación actual», o con `PATCH /center`) |
+| Correr el seed y luego dar de baja o eliminar a mano los datos de ejemplo | Quedan filas ficticias en producción y en la bitácora |
 | Escribir un script `create_admin` (nuevo) | Pequeño, pero **no existe**; requiere código y prueba |
 
 **[Decisión del equipo.]** Recomendación: la segunda opción antes del despliegue real.
@@ -204,6 +203,7 @@ Revisiones con cuidado especial (`migrations/README.md`):
 |---|---|
 | `98306224d8b5` (login con JWT) | **Elimina `app_user.firebase_uid`**: el dato no se recupera (el `downgrade` recrea la columna vacía). Después de migrar, **nadie tiene contraseña** hasta que el administrador les genere un código; las invitaciones pendientes se dan por vencidas. Solo aplica a una base creada antes del login propio |
 | `d63e9f4a1c32` (salida de la docente) | Agrega cuatro columnas a `staff_check_in`. Su `downgrade` las elimina y **se pierden las salidas ya registradas** (hora y ubicación de salida) |
+| `e74f0a5b3d43` (checador sin ubicación) | Quita seis columnas de `staff_check_in` y agrega `auto_closed`. Su `downgrade` las recrea vacías: **las coordenadas y distancias ya guardadas se pierden para siempre** y no se recuperan. Aplicarla en Aiven requiere aprobación |
 | `c52d8e3f0b21` (revisión de borrado de fotos) | Agrega `decided_by`, `decided_at` y `decision_note` a `media_deletion_request`. Su `downgrade` las elimina y **se pierden las decisiones ya tomadas**. El valor `DELETED` de `media.status` no necesita cambio de esquema, pero las fotos ya marcadas así seguirían marcadas tras bajar de versión |
 
 ### 6.3 Archivos (fotos y documentos)

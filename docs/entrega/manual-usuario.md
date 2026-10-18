@@ -75,18 +75,15 @@ Barra inferior: **Mi día · Mi sala · Chats · Menú**.
 ### 2.1 Antes de empezar el día: Mi día y el Checador
 
 1. **Mi día** dice «Aún el día no comienza»: «Ve al checador a registrar tu entrada cuando estés en la estancia». Toca **Checador** (también está en **Menú**).
-2. El teléfono te pide el **permiso de ubicación**. Es necesario: la entrada solo se registra si estás dentro de la estancia. Toca «Permitir ubicación». Si tienes el GPS apagado, la app te dice «No pudimos ubicarte: activa el GPS, acércate a una ventana y vuelve a intentar».
-3. La pantalla «Registrar entrada» muestra la fecha y la hora del teléfono, tu turno, a qué distancia estás y si estás dentro o fuera del perímetro.
-   - **Dentro y a tiempo:** toca **«Registrar mi entrada»**.
-   - **Dentro pero tarde:** la app te avisa «Llegaste después de tu hora»; se registra igual con **retardo** y coordinación lo verá. Puedes escribir el **motivo del retardo** (opcional) y tocar «Registrar con retardo».
-   - **Fuera del perímetro** (60 m por omisión; el administrador puede cambiarlo): el botón queda bloqueado («Bloqueado hasta que llegues»). Acércate y toca «Volver a intentar», o toca **«Avisar a coordinación»**. Ese aviso se guarda, pero **hoy nadie lo puede leer desde la app** (Próximamente).
+2. La pantalla «Registrar entrada» muestra la fecha y la hora del teléfono y tu turno. **No pide ubicación ni permisos**: el checador no usa GPS ni mapa.
+   - **A tiempo:** toca **«Registrar mi entrada»**.
+   - **Tarde:** la app te avisa «Llegaste después de tu hora»; se registra igual con **retardo**. Puedes escribir el **motivo del retardo** (opcional), tocar **«Avisar a coordinación»** y luego «Registrar con retardo». Ese aviso se guarda, pero **hoy nadie lo puede leer desde la app** (Próximamente).
+3. La hora que queda guardada es la del **servidor**, no la del teléfono.
 4. Al registrar te sale «¡Entrada registrada!» y la app te lleva sola a **«Rutina de hoy»**, de solo lectura. Toca **«Comenzar el día»**.
 
-**Importante sobre tu privacidad:** al registrar la entrada (y después la salida), el servidor **guarda tu ubicación de ese momento** (latitud y longitud), la distancia y la hora; en la entrada, además, el retardo. No hay rastreo. La pantalla de permiso de la app lo dice: la ubicación «queda guardada junto con la hora». Ver [`aviso-privacidad.md`](aviso-privacidad.md).
+**Importante sobre tu privacidad:** el checador guarda solo la **hora de entrada, la hora de salida, el retardo y el motivo** que escribas. **No guarda tu ubicación.** Ver [`aviso-privacidad.md`](aviso-privacidad.md).
 
-**Salida.** Al terminar tu turno vuelve al checador: la pantalla se llama **«Tu jornada de hoy»** y muestra el botón **«Registrar mi salida»**. Aplica la misma regla de ubicación que la entrada: solo se registra dentro de la estancia («Todavía no estás en la estancia. Tu salida solo se puede registrar dentro de La Oruga»). Al registrarla dice «Salida registrada a las …». **La salida no es automática**: si no la registras, no queda. En **Menú**, la tarjeta del checador dice «Entrada 13:59 · falta registrar tu salida» y, después, «Entrada 13:59 · Salida 14:01». Una salida repetida no cambia la hora ya registrada.
-
-El **mapa** del checador usa Google Maps y **sale en blanco** si la compilación no tiene la clave `MAPS_API_KEY` (hoy no la tiene). Eso no impide registrar la entrada.
+**Salida.** Al terminar tu turno vuelve al checador: la pantalla se llama **«Tu jornada de hoy»** y muestra el botón **«Registrar mi salida»**. Al registrarla dice «Salida registrada a las …». Una salida repetida no cambia la hora ya registrada. **Si se te olvida, a las 9:00 pm el servidor cierra tu día solo:** la salida queda a las 9:00 pm y la pantalla dice «Salida automática a las 21:00». En **Menú**, la tarjeta del checador dice «Entrada 13:59 · falta registrar tu salida» y, después, «Entrada 13:59 · Salida 14:01».
 
 ### 2.2 Mi día: la rutina
 
@@ -144,7 +141,7 @@ La **bandeja** lista una conversación por niño (familia de …), con no leído
 | Opción | Qué hace hoy |
 |---|---|
 | Tu tarjeta | Nombre, turno y si ya registraste entrada |
-| **Checador** | Abre el checador (entrada, y después salida). Su tarjeta muestra la entrada y, si ya la hay, la salida |
+| **Checador** | Abre el checador (entrada, y después salida; si no la registras, se cierra sola a las 9 pm). Su tarjeta muestra la entrada y, si ya la hay, la salida |
 | **Mis documentos** (contrato, constancias) | **Próximamente.** Abre «Muy pronto» |
 | **Mi perfil** | Abre Mi cuenta (ver 1.4) |
 | **Avisos de la fundación** | Lista los avisos del centro y de tu sala, en «Nuevos» y «Anteriores». Muestra un contador de nuevos |
@@ -154,7 +151,7 @@ La **bandeja** lista una conversación por niño (familia de …), con no leído
 
 ## 3. Administrador
 
-Barra inferior: **Centro · Docentes · Infantes · Padres · Rutinas**.
+Barra inferior: **Centro · Docentes · Familias · Ajustes**.
 
 > El administrador **ve a todos los niños y a todo el personal**. No puede leer los chats entre familias y docentes (no tiene pestaña de chat).
 
@@ -164,8 +161,6 @@ Barra inferior: **Centro · Docentes · Infantes · Padres · Rutinas**.
 - **Crear sala:** «Define su nombre, cupo y quién la atiende» (se elige una asistente).
 - **Publicar aviso:** escribe el texto y elige a quién va: **«Para todos · todas las salas»** o **«Solo» una sala**. Debajo ves el **historial** de avisos. Los avisos **no se pueden borrar** ni llevar imágenes **[Próximamente]**.
 - **Fotos que piden borrar:** una tarjeta que dice cuántas solicitudes de las familias esperan decisión («N por revisar» o «No hay solicitudes pendientes»). Toca **«Ver»**: para cada solicitud ves la foto, los niños etiquetados, quién la pidió, la fecha y el motivo (si lo escribió). Elige **«Borrar la foto»** (pide confirmación: «Se borra del servidor y desaparece de las galerías de todas las familias. No se puede deshacer») o **«Conservar»**. Si la foto sale con varios niños, al borrarla desaparece para **todas** esas familias. Esta pantalla es nueva y no se ha probado en un teléfono con una foto real.
-- **Ubicación del checador:** una tarjeta que muestra la latitud, la longitud y el radio actuales del centro («Sin ubicación: las docentes no pueden registrar su entrada» si no hay). El botón **«Usar mi ubicación actual»** pide el permiso de ubicación del teléfono y una confirmación («La estancia quedará donde estás ahora. Las docentes solo podrán registrar su entrada a menos de N metros de aquí»). **Haz esto estando en la estancia.** Cada cambio queda en la bitácora de auditoría. Cambiar el **radio** (por omisión 60 m) no tiene pantalla **[No disponible hoy]**: se cambia con `PATCH /center` en la API. Sin ubicación configurada, las docentes reciben el error «El centro todavía no tiene ubicación registrada» al checar.
-- El avatar abre **Mi cuenta**.
 
 ### 3.2 Docentes
 
@@ -174,37 +169,42 @@ Barra inferior: **Centro · Docentes · Infantes · Padres · Rutinas**.
 3. La app muestra un **código de acceso** en una ventana: **solo se ve ahora**. Toca **«Compartir»** (WhatsApp, en persona…) y **«Listo»**. La persona lo usa en «Activar mi cuenta». La app **no manda correos**.
 4. **Detalle de una docente:** cambiar de sala, **dar de baja** (le corta el acceso al instante) o **reactivar**.
 
-### 3.3 Infantes
+### 3.3 Familias
+
+Una sola pestaña para los niños y para quienes los recogen. Arriba hay un resumen («N infantes · N padres y tutores») y un selector: **Infantes** o **Padres y tutores**.
+
+**Infantes**
 
 1. Lista de infantes inscritos.
-2. **«+ Inscribir a un infante»:** nombre(s), apellido(s) (opcional), **fecha de nacimiento real en formato dd/mm/aaaa** (por ejemplo 14/03/2022; la app valida que exista, que no sea futura y que el niño tenga de 0 a 12 años), alergias o notas médicas (opcional) y **sala asignada**. Al guardar queda inscrito y «listo para vincular a su padre o tutor»: el tutor se da de alta aparte en la pestaña **Padres** (3.4). Los niños inscritos con la versión anterior de la app conservan una fecha de nacimiento inventada desde su edad; hay que corregirla a mano si se quiere el dato real.
+2. **«+ Inscribir a un infante»:** nombre(s), apellido(s) (opcional), **fecha de nacimiento real en formato dd/mm/aaaa** (por ejemplo 14/03/2022; la app valida que exista, que no sea futura y que el niño tenga de 0 a 12 años), alergias o notas médicas (opcional) y **sala asignada**. Al guardar queda inscrito y «listo para vincular» a un tutor.
 3. **Detalle:** cambiar de sala (también «Sacar de la sala»), **dar de baja** o **reactivar la inscripción**, y ver los datos del tutor con **«Consultar info»**.
 
 Corregir el nombre, la fecha de nacimiento o las alergias de un infante ya inscrito: **No disponible hoy** (solo cambia la sala).
 
-### 3.4 Padres
+**Padres y tutores**
 
 1. Lista de padres y tutores («familias con acceso a la app»).
 2. **«+ Inscribir a un padre o tutor»:** nombre, teléfono de contacto, correo electrónico, parentesco (Mamá, Papá, Tutor o Tutora) y uno o más hijos que ya estén inscritos. Se muestra su código de acceso.
 3. **Detalle:** **quitar o devolver el acceso**, y **«Reenviar invitación»**, que genera un **código nuevo** y lo muestra.
 4. El botón **«Abrir chat»** del detalle apunta a la pestaña Chats, que el administrador no tiene: **no funciona para este perfil** (según la lectura del código; no se probó).
 
-### 3.5 Rutinas
+### 3.4 Ajustes
 
-- Lista de **plantillas de rutina** con su número de momentos y las salas que las usan.
-- **«+ Nueva rutina»:** nombre y momentos. Cada momento tiene una categoría (llegada, comida, actividad, siesta, higiene, entrega). Hay un **catálogo de momentos** y se puede agregar uno propio.
-- **Ordenar** los momentos (la pantalla de arrastre usa una librería que está pendiente de aprobar; ver `DECISIONES-PENDIENTES.md`, decisión #8).
-- **Asignar una plantilla a una sala.** Cambiar una plantilla **no modifica un día que ya empezó**: la rutina del día se copia cuando la docente checa.
-- La pantalla no tiene título arriba (detalle conocido, falla 9 de `RECORRIDO.md`).
+El menú de lo que el administrador configura. Cada fila abre su pantalla:
 
-### 3.6 Lo que el administrador todavía no puede hacer desde la app
+- **Rutinas:** lista de **plantillas de rutina** con su número de momentos. **«+ Nueva rutina»** pide nombre y momentos; cada momento tiene una categoría (llegada, comida, actividad, siesta, higiene, entrega) y hay un **catálogo de momentos** (también se puede agregar uno propio). Se pueden **ordenar** los momentos (la pantalla de arrastre usa una librería pendiente de aprobar; ver `DECISIONES-PENDIENTES.md`, decisión #8) y **asignar una plantilla a una sala**. Cambiar una plantilla **no modifica un día que ya empezó**: la rutina del día se copia cuando la docente checa.
+- **Mi cuenta:** perfil, cambiar contraseña y cerrar sesión (ver 1.4).
+
+El checador **ya no tiene ajustes**: no usa ubicación ni radio.
+
+### 3.5 Lo que el administrador todavía no puede hacer desde la app
 
 | Función | Estado |
 |---|---|
 | Quitar solo a un niño de una foto de grupo; revisar solicitudes de borrado de **documentos** | **Próximamente** (la revisión de solicitudes de fotos ya existe, ver 3.1) |
 | Ver la **bitácora de auditoría** | No hay pantalla; existe `GET /audit-log` en la API |
 | Ver los **avisos a coordinación** de las docentes | **Próximamente** |
-| Editar datos de docentes, infantes y padres; cambiar el radio del checador, el nombre del centro y los turnos | **Próximamente** |
+| Editar datos de docentes, infantes y padres; cambiar el nombre del centro y los turnos | **Próximamente** |
 | Pedir documentos a una familia (la lista de cada niño sale hoy del seed) | **Próximamente** |
 | Menú del día, llegada de padres, eventos y citas, imprimir reportes | **Próximamente** |
 
@@ -270,7 +270,7 @@ Conversación con las asistentes de la sala de tu hijo. Si tienes varios hijos, 
 | Área | Docente | Administrador | Padre |
 |---|---|---|---|
 | Entrar, activar cuenta, cambiar contraseña, cerrar sesión | ✅ | ✅ | ✅ |
-| Checador con GPS | ✅ (entrada y salida, manuales) | — | — |
+| Checador (entrada y salida, sin ubicación; cierre automático a las 9 pm) | ✅ | — | — |
 | Rutina del día | ✅ | ✅ (plantillas) | ✅ (resumen) |
 | Reportes con texto, dictado y foto a varios niños | ✅ | — | ✅ (los ve) |
 | Asistencia del día | ✅ (también sin conexión) | — | ✅ (calendario) |

@@ -7,7 +7,7 @@ App de la rama `integracion` en un teléfono Android real con **modo oscuro acti
 | Rol | Resultado |
 |---|---|
 | Login | Los tres roles entran con correo y contraseña; "Mi cuenta" → "Cerrar sesión" pide confirmación y regresa al login. |
-| Admin | Centro (ocupación de salas, avisos), Docentes (8), Infantes (12), Padres (7) y Rutinas (2) cargan datos reales. |
+| Admin | Centro (ocupación de salas, avisos), Docentes (8), Familias (infantes 12 y padres 7) y Ajustes (rutinas 2) cargan datos reales. Las pestañas Infantes y Padres se unieron en Familias, y Rutinas pasó a Ajustes (18/oct). |
 | Docente | Mi día, Mi sala (con Presente/Falta y chat), Chats, Menú y Avisos de la fundación (contador de 2 nuevos). |
 | Padre | Hoy (con campana de avisos), Calendario, Fotos y Chat con la asistente. |
 
@@ -23,13 +23,13 @@ App de la rama `integracion` en un teléfono Android real con **modo oscuro acti
 | 6 | Padre → Calendario | El resumen dice "Agosto en una línea" aunque el mes es octubre. | Baja | Corregido: usa el mes de los datos (`ParentCalendarScreen.kt`) |
 | 7 | Docente → Menú | "Mis documentos" y "Mi perfil" son pantallas de "Próximamente". | Media | Pendiente |
 | 8 | Padre | La tab "Documentos" se corta en el borde derecho de la barra inferior. | Baja | Corregido: etiquetas en una línea y 11 sp con 5 tabs (`CodeaBottomBar.kt`) |
-| 9 | Admin → Rutinas | La pantalla no tiene título arriba. | Baja | Pendiente |
+| 9 | Admin → Rutinas | La pantalla no tiene título arriba. | Baja | Corregido: ahora es una opción de Ajustes y lleva título y botón de volver |
 | 10 | Padre → Fotos | Sin fotos en la base de pruebas, así que no se pudo probar la galería ni la solicitud de borrado. Fondo claro fijo con barra superior oscura. | Media | Pendiente de probar con una foto subida |
 
 ## Pendientes que salieron de las correcciones
 
-- **Ubicación del centro para la demo:** la base trae las coordenadas del seed (Monterrey, sin relación con el lugar real). Para registrar una entrada de verdad, el admin debe poner la ubicación donde se hará la demo con `PATCH /center` (`latitude`, `longitude`, `check_in_radius_m`). La app todavía no tiene pantalla para eso (en [`PLAN-ACCION.md`](PLAN-ACCION.md), bloque 1).
-- La entrada y la salida **sí registradas** se probaron en el teléfono con el simulador de pruebas (el servidor recibe coordenadas del centro y las valida): entrada con retardo a las 13:59 y salida a las 14:01. Con la ubicación real del teléfono (a 842 m del centro del seed) la app bloquea la entrada y la salida como debe.
+- ~~Ubicación del centro para la demo~~ **Ya no aplica (18/oct):** el checador no usa ubicación, así que no hay que fijar el centro para registrar una entrada.
+- Historia: la entrada y la salida se probaron en el teléfono con el simulador de pruebas y la ubicación real a 842 m. Desde el 18/oct el checador no usa ubicación; **la versión nueva (sin GPS, con cierre a las 9 pm) se probó contra la API local con `curl` y con las pruebas automáticas, pero no en el teléfono.**
 
 ## Cosas del entorno (no son fallas de la app)
 

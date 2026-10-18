@@ -11,7 +11,7 @@ Documentos hermanos: [`REQUISITOS.md`](REQUISITOS.md) · [`ENTREGA-3.md`](ENTREG
 |---|---|---|---|
 | Requisitos (30 % de la app) | ~59 % | 15 de 32 completos y 8 parciales | Ver [`REQUISITOS.md`](REQUISITOS.md) |
 | App: docente | Alto | Check-in con GPS, rutina, reportes (escrito, dictado, foto), Mi sala, chat | Documentos y perfil (`ComingSoon`); tiempo real; sin conexión |
-| App: admin | Alto | Salas, docentes, infantes, padres, rutinas y catálogo de momentos, centro y avisos (publicar e historial) | Radio del checador y turnos, menú del día |
+| App: admin | Alto | Pestañas Centro, Docentes, **Familias** (infantes y padres juntos) y **Ajustes** (rutinas, catálogo de momentos y Mi cuenta); salas, avisos (publicar e historial) y fotos que piden borrar | Turnos, menú del día |
 | App: padre | Medio | Hoy, calendario, fotos, documentos, personas autorizadas, nota a la asistente | Chat, varios hijos, paginación de fotos, menú del día |
 | Backend | Alto | 13 módulos, migraciones, seed, 68 pruebas, login JWT | Resumen semanal, HTTPS, endurecimiento restante |
 | Seguridad | Medio | RBAC, alcance por registro (404), ORM parametrizado, **login JWT** (Argon2id, refresh rotado con detección de reuso, baja que corta el acceso al instante), tokens cifrados con Keystore | HTTPS, rate limiting y bloqueo, cabeceras, escaneo ZAP, auditoría |

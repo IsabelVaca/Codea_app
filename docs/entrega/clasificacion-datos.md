@@ -124,7 +124,7 @@ Solo el administrador la lee (`GET /audit-log`). Una bitácora que se borra pier
 | Campo | Nivel | Protección propia | Se conserva hoy | Retención propuesta |
 |---|---|---|---|---|
 | `name` | Bajo | — | Sin borrado | — |
-| `latitude`, `longitude` | Medio | Solo el administrador las edita (`PATCH /center`; en la app, con el botón «Usar mi ubicación actual», que guarda la posición del teléfono del administrador); cada cambio queda en la bitácora (`CENTER_UPDATED`). Las docentes las reciben en `GET /me` para el checador | Sin borrado | — |
+| `latitude`, `longitude` | Bajo | Siguen en `daycare_center` y las edita el administrador por la API (`PATCH /center`), pero **el checador ya no las usa** y la app ya no las pide ni las muestra | Sin borrado | — |
 | `check_in_radius_m`, `timezone` | Bajo | Validadas (`RADIUS_INVALID`, `TIMEZONE_INVALID`) | Sin borrado | — |
 
 #### `classroom`
@@ -180,15 +180,14 @@ Solo el administrador la lee (`GET /audit-log`). Una bitácora que se borra pier
 | Campo | Nivel | Protección propia | Se conserva hoy | Retención propuesta |
 |---|---|---|---|---|
 | `teacher_id`, `date`, `checked_in_at` | Medio | Única por docente y día; la hora la pone el reloj del servidor, nunca el teléfono | Sin borrado | Mientras dure la relación laboral + `[decidir]` (dato de asistencia laboral) |
-| `latitude`, `longitude` | **Alto** (ubicación) | El servidor calcula la distancia y **rechaza** la checada fuera del radio (`OUT_OF_RANGE`, que no se guarda). Solo se guarda **un punto**, el del momento de registrar la entrada: no hay rastreo | **Sin borrado** | Considerar guardar solo `distance_m` y no las coordenadas `[decidir]` |
-| `checked_out_at` | Medio | La hora de la salida la pone el reloj del servidor; vacía hasta que la docente registra su salida (`POST /staff-attendance/check-out`) | Sin borrado | Como la fila |
-| `out_latitude`, `out_longitude` | **Alto** (ubicación) | Un segundo punto, el del momento de la salida, con la misma regla de radio que la entrada. Vacíos hasta que hay salida | **Sin borrado** | Igual que la entrada `[decidir]` |
-| `out_distance_m` | Alto | Calculada en el servidor | Sin borrado | Igual |
-| `distance_m` | Alto | Calculada en el servidor | Sin borrado | Igual |
+| `checked_out_at` | Medio | La hora de la salida: la pone el servidor cuando la docente registra su salida (`POST /staff-attendance/check-out`) o el cierre automático de las 21:00; vacía hasta entonces | Sin borrado | Como la fila |
+| `auto_closed` | Bajo | `true` si la salida la puso el cierre automático y no la docente | Sin borrado | Como la fila |
 | `status`, `minutes_late` | Medio | El servidor calcula el retardo; no acepta el que mande el teléfono | Sin borrado | Como la fila |
 | `late_reason` | Medio | Texto libre opcional de la docente | Sin borrado | Igual |
 
-> **Texto de la app corregido (commit `f814763`).** El permiso de ubicación del checador decía «no se guarda»; ahora dice que se compara con la ubicación de la estancia y que, al registrar la entrada o la salida, «queda guardada junto con la hora», y que no se sigue a la persona. Coincide con lo que hace el servidor.
+> **Ubicación (18/oct).** El checador ya no guarda ubicación: la migración `e74f0a5b3d43` quita `latitude`, `longitude`, `distance_m` y las columnas `out_*` de `staff_check_in`. Hasta que se aplique en Aiven, esa base las conserva.
+>
+> **Nota histórica (commit `f814763`).** El permiso de ubicación del checador decía «no se guarda»; ahora dice que se compara con la ubicación de la estancia y que, al registrar la entrada o la salida, «queda guardada junto con la hora», y que no se sigue a la persona. Coincide con lo que hace el servidor.
 
 #### `coordination_notice`: aviso a coordinación
 
@@ -348,7 +347,7 @@ Que el bucket **no** sea legible sin URL firmada depende de la configuración de
 | `access_token` y `refresh_token` | **Crítico** | DataStore (`SessionStore`) | AES-GCM de 256 bits con llave en el Android Keystore; si la llave se pierde, la sesión se descarta | Hasta cerrar sesión (se borran) o hasta que vence el refresh (7 días) |
 | `user_id`, nombre y roles | Medio | DataStore, **sin cifrar** | Almacenamiento privado de la app; `allowBackup="false"` | Hasta cerrar sesión |
 | Avisos ya leídos | Bajo | SharedPreferences `leidos` (`LeidosStore`) | Almacenamiento privado de la app | **No se borra al cerrar sesión** (solo se separa por usuario); cambiar de teléfono los vuelve «nuevos» |
-| Ubicación del teléfono (checador) | **Alto** | Solo en memoria durante la checada; se manda una vez a `POST /staff-attendance/check-in` y otra a `POST /staff-attendance/check-out` | Permiso de ubicación del sistema; sin rastreo continuo | No se guarda en el teléfono |
+| Ubicación del teléfono (checador) | — | **Ya no se usa:** el checador no pide ubicación | — | — |
 | Fotos que ve el padre | **Alto** | Las descarga Coil desde las URLs firmadas | **Por confirmar:** el código no configura el `ImageLoader`, así que se usa el comportamiento por omisión de Coil, que puede dejar una caché en disco dentro del almacenamiento privado de la app | Por confirmar |
 | Cámara y dictado | Alto | La app usa la cámara y el reconocedor de voz **del sistema** (`TakePicturePreview`, `RecognizerIntent`) | El audio lo procesa el reconocedor del teléfono (la decisión #10 dice que usa el de Google); la app solo recibe el texto | La app no guarda el audio |
 

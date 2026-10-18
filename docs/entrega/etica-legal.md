@@ -29,8 +29,8 @@ Cada requisito dice **cómo se comprueba** (una prueba, un comando, una inspecci
 
 | ID | Requisito | Cómo se verifica | Estado | Evidencia o hueco |
 |---|---|---|---|---|
-| ETL-05 | La ubicación solo se toma al registrar la entrada; no hay rastreo continuo ni en segundo plano. | Inspección: `grep -n "BACKGROUND_LOCATION" app/src/main/AndroidManifest.xml` no debe encontrar nada; `staff_check_in` tiene una restricción única por docente y día. | ✅ | El manifiesto solo declara `ACCESS_FINE_LOCATION` y `ACCESS_COARSE_LOCATION`. |
-| ETL-06 | Una checada fuera del radio del centro **no** guarda la posición del intento. | Pruebas: `tests/test_teacher_day.py` (`test_check_in_out_of_range` y `test_check_out_must_be_inside_the_radius`): la respuesta es `422 OUT_OF_RANGE`. Inspección: en `staff_attendance/service.py::check_in` el error se lanza antes de `db.add(record)`. | ✅ | `CheckInStatus` documenta que `OUT_OF_RANGE` nunca se guarda. La prueba existente comprueba el código de error; no se verificó que además cuente las filas. |
+| ETL-05 | El checador no toma la ubicación del teléfono ni hay rastreo en segundo plano. | Inspección: `grep -n "LOCATION" app/src/main/AndroidManifest.xml` no debe encontrar nada; `staff_check_in` tiene una restricción única por docente y día y ya no tiene columnas de ubicación. | ✅ | Desde el 18/oct el manifiesto no declara permisos de ubicación y la migración `e74f0a5b3d43` borra las coordenadas. En Aiven la migración **todavía no está aplicada**. |
+| ETL-06 | El checador no guarda la posición de la docente en ningún caso. | Pruebas: `tests/test_teacher_day.py::test_check_in_ignores_any_location`: aunque el teléfono mande coordenadas, la respuesta no las trae ni se guardan. | ✅ | El servidor ya no recibe coordenadas (el cuerpo de `check-in` solo trae `late_reason`). |
 | ETL-07 | No hay herramientas de analítica, publicidad ni Firebase en la app ni en el servidor. | Inspección de `app/build.gradle.kts` y `guarderia-api/requirements.txt`. | ✅ | Las dependencias no incluyen ninguna. |
 | ETL-08 | Ningún menor tiene cuenta propia. | Inspección: el `enum Role` solo tiene `ADMIN`, `TEACHER` y `PARENT`. | ✅ | `app/modules/auth/models.py`. |
 | ETL-09 | La bitácora y los registros no guardan contraseñas, códigos ni tokens. | Prueba: `tests/test_security.py::test_the_log_never_stores_passwords_codes_or_tokens`. | ✅ | Existe la prueba; no se corrió en esta sesión. |
@@ -147,12 +147,11 @@ Eso cumple la postura para una foto de **un solo niño**. **Sigue sin resolver:*
 2. Tomar la ubicación de forma continua.
 3. Tomar **un solo punto, en el momento de checar, comparado en el servidor, y guardar lo mínimo**.
 
-**Postura propuesta: opción 3, con tres reglas.**
+**Postura adoptada (18/oct, equipo): no guardar ubicación.** El equipo eligió la salida más simple: el checador deja de usar GPS y mapa, registra la hora de entrada y de salida, y cierra solo a las 9 pm lo que quedó abierto. Con eso:
 
-- **Un punto por registro, sin rastreo.** La app lo hace así hoy (ETL-05): la posición se pide al abrir el checador, se manda una vez con la entrada y otra con la salida, y no hay servicio en segundo plano.
-- **Transparencia total.** La docente debe saber, antes de aceptar, que su posición queda guardada. La app decía lo contrario («no se guarda»), lo cual era un fallo ético y legal; **se corrigió** (commit `f814763`): ahora dice que la ubicación queda guardada junto con la hora de la entrada o de la salida. Es peor decir «no se guarda» y guardarlo que no pedir la ubicación. Sigue pendiente la **aceptación del aviso** en la app (ETL-01).
-- **Guardar lo mínimo.** Basta con guardar la **distancia** y el resultado; las coordenadas exactas no son necesarias para el fin declarado. Propuesta: dejar de guardar `latitude` y `longitude`, o borrarlas pasado un plazo corto **[decidir]**. El uso de esos datos se limita a verificar asistencia: no se usan para evaluar desempeño ni para ubicar a la persona en otros momentos.
-- **Salida para fallos.** Si el GPS falla o no hay señal, la docente puede avisar a coordinación en lugar de quedar bloqueada (existe «Avisar a coordinación»). Pero hoy esos avisos **no tienen pantalla de lectura**: nadie los ve, así que la salida no funciona de punta a punta.
+- **No hay dato de ubicación** que proteger: no se pide el permiso, no se guarda nada y la migración `e74f0a5b3d43` borra lo que ya había (pendiente de aplicar en Aiven).
+- **Se pierde la verificación del lugar:** el registro prueba la hora, no que la docente estuviera en la estancia. Si más adelante hace falta, habría que volver a plantear el dilema con el aviso de privacidad por delante.
+- **Aviso a coordinación:** sigue existiendo para llegadas tarde, pero esos avisos **no tienen pantalla de lectura**: nadie los ve.
 
 ### Dilema 3: acceso del administrador a los chats
 

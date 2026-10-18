@@ -67,7 +67,7 @@ Para leerlos, la API regresa URLs firmadas de 10 minutos. Se firman con `S3_PUBL
 Todos los errores salen con el mismo formato (Problem Details) y un `code` estable que la app traduce, igual que hoy traduce `SalaError` o `InfanteError`:
 
 ```json
-{"type": "about:blank", "title": "Estás fuera del perímetro del centro", "status": 422, "code": "OUT_OF_RANGE",
+{"type": "about:blank", "title": "Primero registra tu entrada de hoy", "status": 409, "code": "NOT_CHECKED_IN",
  "detail": "Estás a 1401 m; el radio permitido es de 60 m", "distance_m": 1401, "allowed_radius_m": 60}
 ```
 
