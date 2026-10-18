@@ -12,29 +12,17 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import mx.tec.codea.data.AvisoApiRepository
-import mx.tec.codea.data.CentroApiRepository
 import mx.tec.codea.data.DataEvents
-import mx.tec.codea.data.DeviceLocation
 import mx.tec.codea.data.SolicitudBorradoApiRepository
 import mx.tec.codea.data.api.ApiConfig
 import mx.tec.codea.data.api.toUserMessage
 import mx.tec.codea.domain.Aviso
-import mx.tec.codea.domain.UbicacionCentro
 
 // vive solo en la pantalla Centro.
 class CentroViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = AvisoApiRepository()
-    private val centroRepository = CentroApiRepository()
-    private val location = DeviceLocation(application)
 
-    // dónde cree el servidor que está la estancia; null mientras carga.
-    var ubicacion by mutableStateOf<UbicacionCentro?>(null)
-        private set
-
-    // mientras se busca la ubicación del teléfono, el botón se apaga.
-    var ubicando by mutableStateOf(false)
-        private set
     private val borradoRepository = SolicitudBorradoApiRepository()
 
     // cuántas fotos esperan la decisión del admin (el contador de Centro).
@@ -65,51 +53,10 @@ class CentroViewModel(application: Application) : AndroidViewModel(application) 
             DataEvents.changed.collect {
                 cargarAvisos()
                 cargarPendientesBorrado()
-                cargarUbicacion()
             }
         }
         cargarAvisos()
         cargarPendientesBorrado()
-        cargarUbicacion()
-    }
-
-    private fun cargarUbicacion() {
-        if (!ApiConfig.isAdmin) return
-        viewModelScope.launch {
-            try {
-                ubicacion = centroRepository.ubicacion()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                // si falla se queda sin mostrar; el resto de Centro sigue sirviendo.
-            }
-        }
-    }
-
-    fun hasLocationPermission(): Boolean = location.hasPermission()
-
-    // toma la ubicación del teléfono y la manda como la ubicación de la estancia.
-    // el aviso de cómo salió va al snackbar.
-    fun fijarUbicacionActual() {
-        if (ubicando) return
-        ubicando = true
-        viewModelScope.launch {
-            try {
-                val punto = location.current()
-                if (punto == null) {
-                    DataEvents.notice("No pudimos ubicarte: activa el GPS y vuelve a intentar")
-                    return@launch
-                }
-                ubicacion = centroRepository.fijarUbicacion(punto.latitude, punto.longitude)
-                DataEvents.notice("Ubicación de la estancia actualizada")
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                DataEvents.notice(e.toUserMessage())
-            } finally {
-                ubicando = false
-            }
-        }
     }
 
     private fun cargarPendientesBorrado() {

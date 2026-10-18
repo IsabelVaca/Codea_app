@@ -105,13 +105,13 @@ data object AdminAltaAsistenteRoute
 // detalle de un docente: viaja el id, no el objeto.
 @Serializable
 data class AdminDocenteDetalleRoute(val docenteId: String)
-// "infantes" is a graph too, for the same reason as "centro": "inscribir
-// infante" opens on top of it and the bottom bar stays on "infantes".
+// "familias" junta infantes y padres en una sola pestaña: la lista tiene un selector
+// y todo lo que abre (detalle, inscribir) deja la barra inferior en "Familias".
 @Serializable
-data object AdminInfantesGraph
+data object AdminFamiliasGraph
 
 @Serializable
-data object AdminInfantesRoute
+data object AdminFamiliasRoute
 
 @Serializable
 data object AdminInscribirInfanteRoute
@@ -140,22 +140,24 @@ data object ParentDocumentsRoute
 
 
 @Serializable
-data object PadresAdminGraph
-
-@Serializable
-data object PadresAdminRoute
-
-@Serializable
 data class PadresAdminDetalleRoute(val padreId: String)
 
 @Serializable
 data object PadresAdminInscribirRoute
 
-// "rutinas" is a graph too: the list, "nueva rutina" and the detail of one
-// routine all keep the bottom bar on the "rutinas" tab.
+// "ajustes" es el menú de todo lo que el admin puede configurar. cada opción abre su
+// pantalla encima y la barra inferior se queda en "Ajustes".
 @Serializable
-data object RutinasAdminGraph
+data object AjustesAdminGraph
 
+@Serializable
+data object AjustesAdminRoute
+
+// ubicación y radio del checador.
+@Serializable
+data object AjustesChecadorRoute
+
+// las rutinas son una opción de Ajustes: la lista, "nueva rutina" y el detalle de una rutina.
 @Serializable
 data object RutinasAdminRoute
 

@@ -2,17 +2,16 @@ package mx.tec.codea.ui.navigation
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.FamilyRestroom
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavDestination
@@ -87,26 +86,18 @@ enum class TopLevelDestination(
         isLocked = false,
         roles = setOf(Role.ADMIN),
     ),
-    INFANTES(
-        route = AdminInfantesGraph,
-        icon = Icons.Filled.Groups,
-        labelRes = R.string.nav_admin_infantes,
+    FAMILIAS(
+        route = AdminFamiliasGraph,
+        icon = Icons.Filled.FamilyRestroom,
+        labelRes = R.string.nav_admin_familias,
         isLocked = false,
         roles = setOf(Role.ADMIN),
     ),
 
-    PADRES(
-        route = PadresAdminGraph,
-        icon = Icons.Filled.Person,
-        labelRes = R.string.nav_padres,
-        isLocked = false,
-        roles = setOf(Role.ADMIN),
-    ),
-
-    RUTINAS(
-        route = RutinasAdminGraph,
-        icon = Icons.Filled.Checklist,
-        labelRes = R.string.nav_admin_rutinas,
+    AJUSTES(
+        route = AjustesAdminGraph,
+        icon = Icons.Filled.Settings,
+        labelRes = R.string.nav_admin_ajustes,
         isLocked = false,
         roles = setOf(Role.ADMIN),
     ),

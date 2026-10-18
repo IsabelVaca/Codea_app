@@ -21,8 +21,10 @@ data class DeletionReviewDto(
 
 @Serializable
 data class CenterUpdateBody(
-    val latitude: Double,
-    val longitude: Double,
+    // solo se manda lo que cambia: lo que queda en null no se serializa (encodeDefaults está apagado).
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+    @SerialName("check_in_radius_m") val checkInRadiusM: Int? = null,
 )
 
 @Serializable

@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.sp
 import mx.tec.codea.domain.Padre
 import mx.tec.codea.ui.theme.Poppins
 
-private val avatarColores = listOf(
+internal val avatarColores = listOf(
     Color(0xFFEFE9FF) to Color(0xFF5B3FE0),
     Color(0xFFFFEDE7) to Color(0xFFC4432A),
     Color(0xFFE8FBF6) to Color(0xFF0F7A6C),
@@ -42,77 +42,8 @@ private val avatarColores = listOf(
     Color(0xFFF4F1FB) to Color(0xFF6B6183)
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PadresScreen(
-    totalPadres: Int,
-    padres: List<Padre>,
-    onAbrirPadre: (Int) -> Unit,
-    onInscribirPadre: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Padres registrados", fontWeight = FontWeight.Bold) })
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = modifier
-                .padding(paddingValues)
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            // Resumen
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(Color(0xFFEFE9FF))
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
-                Text("$totalPadres", fontFamily = Poppins, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF5B3FE0))
-                Text("familias con acceso a la app", fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF5B4B8A))
-            }
-
-            SeccionLabel("PADRES Y TUTORES")
-
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                padres.forEachIndexed { i, p ->
-                    val (bg, fg) = avatarColores[i % avatarColores.size]
-                    PadreFila(p, bg, fg) { onAbrirPadre(i) }
-                }
-            }
-
-            // Inscribir
-            Button(
-                onClick = onInscribirPadre,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                shape = RoundedCornerShape(20.dp),
-                border = BorderStroke(2.dp, Color(0xFFEDE9FE)),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFEDE9FE),
-                    contentColor = Color(0xFF6D28D9)
-                ),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
-            ) {
-                Text(
-                    text = "+ Inscribir a un padre o tutor",
-                    fontSize = 15.sp,
-                    fontFamily = Poppins,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun PadreFila(p: Padre, avatarBg: Color, avatarFg: Color, onClick: () -> Unit) {
+internal fun PadreFila(p: Padre, avatarBg: Color, avatarFg: Color, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

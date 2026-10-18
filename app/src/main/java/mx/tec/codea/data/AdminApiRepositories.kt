@@ -162,7 +162,11 @@ class CentroApiRepository {
 
     // la ubicación nueva es donde está el admin ahora; el radio se queda como estaba.
     suspend fun fijarUbicacion(latitud: Double, longitud: Double): UbicacionCentro =
-        ApiClient.api.updateCenter(CenterUpdateBody(latitud, longitud)).toUbicacion()
+        ApiClient.api.updateCenter(CenterUpdateBody(latitude = latitud, longitude = longitud)).toUbicacion()
+
+    // el radio nuevo no mueve la ubicación.
+    suspend fun fijarRadio(metros: Int): UbicacionCentro =
+        ApiClient.api.updateCenter(CenterUpdateBody(checkInRadiusM = metros)).toUbicacion()
 }
 
 private fun CenterDto.toUbicacion() = UbicacionCentro(

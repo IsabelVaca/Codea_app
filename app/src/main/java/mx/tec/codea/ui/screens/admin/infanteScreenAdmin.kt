@@ -38,90 +38,6 @@ import mx.tec.codea.data.InfanteRepository
 import mx.tec.codea.domain.Infante
 import androidx.compose.ui.draw.shadow
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun InfanteScreen(
-    infantes: List<Infante>,
-    onInfanteClick: (Infante) -> Unit = {},
-    onInscribirInfante: () -> Unit = {},
-    totalSalas: Int
-){
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Infantes inscritos", fontWeight = FontWeight.Bold) })
-        },
-        content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .fillMaxSize()
-            ) {
-                Surface(
-                    modifier = Modifier.fillMaxWidth(1f).padding(vertical = 3.dp, horizontal = 15.dp),
-                    color = Color(red = 254, green = 245, blue = 217),
-                    shape = RoundedCornerShape(18.dp)
-                ){
-                    Column {
-                        Text(
-                            text = "${infantes.size}",
-                            modifier = Modifier.padding(
-                                horizontal = 14.dp,
-                                vertical = 5.dp
-                            ).padding(top = 12.dp),
-                            color = Color(red = 171, green = 129, blue = 44),
-                            fontSize = 24.sp,
-                            fontFamily = Poppins,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Text(
-                            text = "Niños inscritos en $totalSalas salas",
-                            modifier = Modifier.padding(
-                                horizontal = 14.dp,
-                                vertical = 2.dp
-
-                            ).padding(bottom = 12.dp),
-                            color = Color(red = 143, green = 125, blue = 82),
-                            fontSize = 14.sp,
-                            fontFamily = Poppins,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-
-
-                }
-
-                Text(text = "INFANTES INSCRITOS",
-                    modifier = Modifier.padding(
-                        horizontal = 19.dp,
-                        vertical = 2.dp
-
-                    ).padding(top = 7.dp, bottom = 7.dp), color = Color(red = 138, green = 128, blue = 165),
-                    fontSize = 14.sp,
-                    fontFamily = Poppins,
-                    fontWeight = FontWeight.Bold)
-
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(infantes) { infante ->
-                        InfanteCard(infante = infante, onClick = { onInfanteClick(infante) })
-                    }
-
-                    item {
-                        InscribirInfanteButton(
-                            onClick = onInscribirInfante,
-                            modifier = Modifier.padding(horizontal = 15.dp, vertical = 8.dp)
-                        )
-                    }
-
-                }
-            }
-        }
-    )
-}
-
 @Composable
 fun InfanteCard(infante: Infante, onClick: () -> Unit = {}) {
     Surface(modifier = Modifier.fillMaxWidth(1f).padding(vertical = 5.dp, horizontal = 15.dp).shadow(
@@ -229,13 +145,5 @@ fun InscribirInfanteButton(
             fontFamily = Poppins,
             fontWeight = FontWeight.Bold
         )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun InfanteScreenPreview() {
-    CodeaTheme {
-        InfanteScreen(infantes = InfanteRepository().getAll(), totalSalas = 3)
     }
 }
