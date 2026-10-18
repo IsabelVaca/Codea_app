@@ -2,6 +2,7 @@ package mx.tec.codea.ui.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,6 +51,7 @@ fun MyRoomScreen(
     roomName: String = "",
     // marcas de asistencia que esperan conexión para llegar al servidor.
     pendingChanges: Int = 0,
+    onSummaryClick: (childId: String) -> Unit = {},
 ) {
     // derived values: we count them every time, so they are never out of date.
     val presentCount = children.count { it.attendance == AttendanceStatus.PRESENT }
@@ -105,6 +107,7 @@ fun MyRoomScreen(
                 child = child,
                 onAttendanceSelected = { newStatus -> onAttendanceChange(child.id, newStatus) },
                 onChatClick = { onChatClick(child.id) },
+                onSummaryClick = { onSummaryClick(child.id) },
             )
         }
     }
@@ -171,6 +174,7 @@ private fun ChildCard(
     child: Child,
     onAttendanceSelected: (AttendanceStatus) -> Unit,
     onChatClick: () -> Unit,
+    onSummaryClick: () -> Unit,
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -204,6 +208,14 @@ private fun ChildCard(
                             .padding(horizontal = 10.dp, vertical = 4.dp),
                     )
                 }
+
+                Text(
+                    text = "Resumen del día ›",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.clickable(onClick = onSummaryClick),
+                )
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),

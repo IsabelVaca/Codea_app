@@ -33,12 +33,30 @@ data class TimelineEventDto(
     val description: String = "",
 )
 
+// una nota que la familia le dejó a la asistente para ese día.
+@Serializable
+data class FamilyNoteDto(
+    val id: Int,
+    val text: String,
+)
+
 @Serializable
 data class DayDto(
     val child: DayChildDto,
     val date: String,
     val summary: DailyEntryDto? = null,
     val timeline: List<TimelineEventDto> = emptyList(),
+    val notes: List<FamilyNoteDto> = emptyList(),
+)
+
+// lo que manda la docente: solo lo que llenó (la API no toca lo demás).
+@Serializable
+data class DailyEntryBody(
+    val mood: String? = null,
+    val meals: String? = null,
+    @SerialName("diaper_changes") val diaperChanges: Int? = null,
+    @SerialName("nap_minutes") val napMinutes: Int? = null,
+    @SerialName("general_note") val generalNote: String? = null,
 )
 
 @Serializable

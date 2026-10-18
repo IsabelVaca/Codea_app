@@ -10,10 +10,14 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.first
 import mx.tec.codea.CodeaApplication
 import mx.tec.codea.data.DataEvents
+import mx.tec.codea.data.SessionRepository
 import mx.tec.codea.data.SessionState
 import mx.tec.codea.data.api.ApiClient
 import mx.tec.codea.data.api.AttendanceBody
@@ -36,28 +40,49 @@ object Offline {
     lateinit var scheduler: SyncScheduler
         private set
 
-    fun init(context: Context) {
-        val db = Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, "codea.db").build()
+    fun init(context: Context, sessions: SessionRepository) {
+        val db = Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, "codea.db")
+            .addMigrations(AppDatabase.MIGRATION_1_2)
+            .build()
         val dao = db.dao()
-        attendance = OfflineAttendance(RoomPendingStore(dao), RetrofitAttendanceRemote(), OfflineErrors::kindOf)
+        attendance = OfflineAttendance(RoomPendingStore(dao, sessions), RetrofitAttendanceRemote(), OfflineErrors::kindOf)
         cache = RoomCache(dao)
         scheduler = SyncScheduler(context.applicationContext)
     }
 }
 
-private class RoomPendingStore(private val dao: OfflineDao) : PendingStore {
+// la cola de quien tiene la sesión abierta: cada persona ve y manda solo lo suyo.
+private class RoomPendingStore(private val dao: OfflineDao, private val sessions: SessionRepository) : PendingStore {
+
+    private fun userId(): String? = sessions.current()?.userId
+
     override suspend fun add(childId: Int, status: String, date: String) {
-        dao.insertPending(PendingAttendanceEntity(childId = childId, status = status, date = date, createdAt = System.currentTimeMillis()))
+        // sin sesión no hay a nombre de quién guardarla.
+        val owner = userId() ?: throw IllegalStateException("No hay una sesión abierta")
+        dao.insertPending(
+            PendingAttendanceEntity(
+                childId = childId, status = status, date = date, createdAt = System.currentTimeMillis(), userId = owner,
+            ),
+        )
     }
 
-    override suspend fun all(): List<PendingAttendance> =
-        dao.pending().map { PendingAttendance(it.id, it.childId, it.status, it.date) }
+    override suspend fun all(): List<PendingAttendance> {
+        val owner = userId() ?: return emptyList()
+        return dao.pending(owner).map { PendingAttendance(it.id, it.childId, it.status, it.date) }
+    }
 
     override suspend fun remove(ids: List<Long>) = dao.deletePending(ids)
 
-    override suspend fun removeFor(childId: Int, date: String) = dao.deletePendingFor(childId, date)
+    override suspend fun removeFor(childId: Int, date: String) {
+        val owner = userId() ?: return
+        dao.deletePendingFor(childId, date, owner)
+    }
 
-    override fun count(): Flow<Int> = dao.pendingCount()
+    // se vuelve a calcular cuando cambia la sesión: al entrar otra persona, el contador es el suyo.
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun count(): Flow<Int> = sessions.state.flatMapLatest { state ->
+        if (state is SessionState.Active) dao.pendingCount(state.session.userId) else flowOf(0)
+    }
 }
 
 private class RetrofitAttendanceRemote : AttendanceRemote {

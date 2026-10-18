@@ -28,7 +28,7 @@ class AppContainer(context: Context) {
     val sessionRepository = SessionRepository(store, ApiClient.createAuthApi())
 
     init {
-        Offline.init(context)
+        Offline.init(context, sessionRepository)
         ApiClient.init(sessionRepository)
         // lee la sesión guardada; mientras tanto el estado es Loading y la app muestra el arranque.
         appScope.launch { sessionRepository.load() }

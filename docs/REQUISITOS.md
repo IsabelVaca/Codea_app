@@ -3,7 +3,7 @@
 Catálogo tomado del tablero de Teams (buckets *Req. de CODEA*, *Req. base*, *Requisitos no funcionales* e *Historias de usuario*). Los requisitos valen el 30 % de la calificación de la aplicación.
 
 **Estado a 2026-10-18.** ✅ = funciona y tiene evidencia (prueba automática o prueba en el teléfono, que se cita en cada fila) · 🟡 = parcial o con una parte sin probar · ❌ = no existe. Las filas ya no se marcan ✅ solo porque el código exista: lo que no se ha probado se dice en la fila.
-**Avance estimado: 15 ✅ + 11 🟡 + 6 ❌ de 32, es decir ~64 %** (los parciales cuentan medio). El 18/oct se revisó cada fila contra su evidencia real (con ayuda de una revisión independiente de otra sesión): RF-04, RF-05 y RF-09 bajaron a 🟡 por partes sin probar, y RF-11 y RNF07 subieron a 🟡 con la asistencia sin conexión.
+**Avance estimado: 16 ✅ + 10 🟡 + 6 ❌ de 32, es decir ~66 %** (los parciales cuentan medio). El 18/oct se revisó cada fila contra su evidencia real (con ayuda de una revisión independiente de otra sesión): RF-04, RF-05 y RF-09 bajaron a 🟡 por partes sin probar, y RF-11 y RNF07 subieron a 🟡 con la asistencia sin conexión.
 
 > Los planes y la referencia de endpoints que ya existían son la fuente para el *cómo*: [`plan/`](plan/README.md) (pantallas, conexión de la app, estado de la API, login con JWT), [`estilo.md`](estilo.md) (convenciones) y [`api/endpoints.md`](api/endpoints.md) (los 65 endpoints). Este archivo solo dice qué requisito cubre cada cosa.
 
@@ -24,8 +24,8 @@ Catálogo tomado del tablero de Teams (buckets *Req. de CODEA*, *Req. base*, *Re
 | RF-01 | Acceso con dos tipos de perfil | ✅ | Login con correo y contraseña (JWT) en `guarderia-api` y en la app (`ui/screens/auth/`); el rol sale de `GET /me`. Probado en el emulador con los tres roles. Rama `feature/login-jwt`. |
 | RF-02 | Lista de niños de la sala | ✅ | `GET /classrooms/{id}/children` y `MyRoomScreen`. |
 | RF-03 | Registro de entrada y salida | 🟡 | Solo hay asistencia `PRESENT`/`ABSENT` por día (`PUT /attendance/{child_id}`). No hay hora de entrada ni de salida. |
-| RF-04 | Bitácora del día | 🟡 | La rutina por momentos, los reportes (`POST /reports`) y la pantalla Hoy del padre (`GET /children/{id}/day`) existen y se probaron. **Falta la pantalla de la docente para capturar el resumen del día** (ánimo, comida, pañales, siesta y nota): solo existe `POST /children/{id}/daily-entries` en la API. Por eso Hoy y el resumen semanal salen con «—» en la base de demostración. |
-| RF-05 | Registro para varios niños a la vez | 🟡 | `report_child` (muchos a muchos) y `SelectStudentsScreen` existen. **Sin probar:** ninguna prueba de la API crea un reporte con dos o más niños y el flujo de la pantalla no se ha recorrido en el teléfono. |
+| RF-04 | Bitácora del día | ✅ | La rutina por momentos, los reportes y la pantalla Hoy del padre existen. La docente captura el resumen de cada niño en **Mi sala → «Resumen del día»** (ánimo, comida, pañales, siesta y nota; ve además la nota que dejó la familia). **Probado de punta a punta en el teléfono:** la docente guardó el resumen de un niño y la mamá lo vio en Hoy («Contento», «Casi todo», «2 cambios», «45 minutos», la nota y el reporte del momento). Pruebas: `test_parent_views.py` (API) y `ResumenDelDiaTest` (JVM). |
+| RF-05 | Registro para varios niños a la vez | 🟡 | `report_child` (muchos a muchos) y `SelectStudentsScreen` existen. **API probada** (`test_teacher_day.py`: un reporte para dos niños lo ven sus papás y no otros; no se puede incluir a un niño de otra sala). **Sin probar:** el flujo de la pantalla de selección de niños no se ha recorrido en el teléfono. |
 | RF-06 | Vista del familiar | ✅ | `ui/screens/parent/*` (Hoy, Calendario, Fotos, Documentos). |
 | RF-07 | Cada familia ve solo a sus hijos | ✅ | `can_see_child` / `get_child_in_scope` en `core/security.py`; fuera de alcance responde 404. |
 | RF-08 | Avisos del centro | ✅ | `POST` y `GET /announcements` (con alcance por rol). El admin publica y ve el historial en Centro; la docente los lee en Menú → Avisos (`AvisosFundacionScreen`); el padre, en la campana de Hoy. Limitación: el estado de "leído" vive solo en el teléfono (`LeidosStore`). |
@@ -45,7 +45,7 @@ Catálogo tomado del tablero de Teams (buckets *Req. de CODEA*, *Req. base*, *Re
 | RNF03 | Contraseñas almacenadas como hash | ✅ | Argon2id (`pwdlib`) en `app_user.password_hash`; los refresh tokens y los códigos de acceso solo se guardan como SHA-256. |
 | RNF04 | Disponibilidad del 99 % | ❌ | No hay despliegue ni monitoreo. Existen `/health/live` y `/health/ready`. |
 | RNF05 | Consultas de fotos en menos de 4 s | 🟡 | URLs firmadas y paginación por cursor. Nadie lo ha medido. |
-| RNF06 | Segundo plano mínimo y respetando ahorro de energía | ✅ | La app no usa trabajo en segundo plano todavía. Al agregar WorkManager, respetar restricciones del sistema. |
+| RNF06 | Segundo plano mínimo y respetando ahorro de energía | ✅ | La app solo usa trabajo en segundo plano para mandar la cola de asistencia sin conexión (WorkManager, solo con red y con espera creciente); no hay sondeos ni servicios permanentes. Se respeta el ahorro de energía porque el sistema decide cuándo corre. |
 | RNF07 | Funciones principales sin conexión | 🟡 | Igual que RF-11: solo la asistencia de Mi sala (y ver lo último que se cargó) funciona sin conexión. |
 | RNF08 | Código con Jetpack Compose (Kotlin) | ✅ | |
 

@@ -8,14 +8,14 @@ python3 -m venv .venv
 .venv/bin/pytest
 ```
 
-274 pruebas (conteo del 2026-10-18):
+276 pruebas (conteo del 2026-10-18):
 
 | Archivo | Pruebas | Qué cubre |
 |---|---|---|
 | `test_auth.py` | 31 | Token (falta, basura, vencido, de otra persona, refresh usado como access), `/me` por rol, login (bien, mal, sin activar, de baja), activar con código (uso único, vencido, reglas de contraseña, código nuevo, recuperación), refresh con rotación y reuso, logout, baja que corta el acceso, cambio de contraseña y cerrar sesiones |
 | `test_admin.py` | 10 | Reglas de salas, ocupación y asistentes, bajas, inscripción de infantes con y sin tutor, alcance, padres, aviso |
 | `test_admin_extras.py` | 13 | Centro (lectura, edición, validaciones, solo admin, auditoría de cambios), invitaciones, plantillas de rutina |
-| `test_teacher_day.py` | 14 | Check-in a tiempo, tarde y fuera de radio; **salida** (necesita entrada, mismo radio, repetida no pisa la hora); arranque de la rutina; confirmar momentos; Mi sala y asistencia; niños con nota de la familia hoy; reglas de reportes |
+| `test_teacher_day.py` | 16 | Check-in a tiempo, tarde y fuera de radio; reportes para varios niños (RF-05); **salida** (necesita entrada, mismo radio, repetida no pisa la hora); arranque de la rutina; confirmar momentos; Mi sala y asistencia; niños con nota de la familia hoy; reglas de reportes |
 | `test_media_documents.py` | 4 | Reglas de subida, foto en un reporte que llega a la familia, galería paginada, documentos y personas autorizadas |
 | `test_messaging.py` | 2 | Chat docente-familia y su alcance |
 | `test_parent_views.py` | 2 | Pantalla Hoy y calendario |

@@ -2,7 +2,7 @@
 
 ## Hoy
 
-JVM, con JUnit y un servidor falso (`mockwebserver3`). **69 pruebas, 0 fallos** (2026-10-18):
+JVM, con JUnit y un servidor falso (`mockwebserver3`). **74 pruebas, 0 fallos** (2026-10-18):
 
 | Clase | Pruebas | Qué cubre |
 |---|---|---|
@@ -14,6 +14,7 @@ JVM, con JUnit y un servidor falso (`mockwebserver3`). **69 pruebas, 0 fallos** 
 | `domain/GeoMathTest` | 4 | Distancia entre dos puntos (checador): mismo punto, un grado de latitud, caso del prototipo, simetría |
 | `domain/ChatRulesTest` | 4 | Reglas del chat docente-familia |
 | `domain/ResumenSemanaTextosTest` | 5 | Resumen semanal: lo más frecuente primero, empates, sin registros, valores desconocidos, siesta y estado del día |
+| `domain/ResumenDelDiaTest` | 5 | Resumen del día de la docente: ánimo y comida por código de la API, códigos desconocidos, límites de pañales y siesta, texto de la siesta |
 | `domain/InfanteValidatorTest` | 8 | Fecha de nacimiento real al inscribir: formato, día y mes de un dígito, fechas que no existen, 29 de febrero, futuras, de 0 a 12 años, año completo |
 | `domain/AuthValidatorTest` | 7 | Contraseña de 8 (no) y 9 (sí) caracteres, tope de 128, ni el correo ni distinta de su confirmación, código obligatorio |
 | `data/TokenAuthenticatorTest` | 8 | El token en cada petición; con el token vencido renueva **una vez** y repite con el nuevo; refresh rechazado = sesión terminada; servidor caído al renovar = sesión conservada; sin ciclo si el token nuevo también falla; `/auth/` no lleva token ni renueva; **4 peticiones simultáneas = un solo refresh**; `USER_INACTIVE` cierra la sesión |

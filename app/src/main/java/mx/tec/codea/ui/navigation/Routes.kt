@@ -38,6 +38,10 @@ data class SelectStudentsRoute(val subprocessNumber: Int)
 @Serializable
 data object MyRoomRoute
 
+// el resumen del día de un niño (ánimo, comida, pañales, siesta y nota) que captura la docente. se abre desde Mi sala.
+@Serializable
+data class ResumenDelDiaRoute(val childId: String)
+
 // the conversations with the families.
 @Serializable
 data object ChatsRoute

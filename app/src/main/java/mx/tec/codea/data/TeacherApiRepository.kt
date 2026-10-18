@@ -7,6 +7,8 @@ import mx.tec.codea.data.api.ApiClient
 import mx.tec.codea.data.api.AttendanceBody
 import mx.tec.codea.data.api.CheckInBody
 import mx.tec.codea.data.api.CheckInDto
+import mx.tec.codea.data.api.DailyEntryBody
+import mx.tec.codea.data.api.DayDto
 import mx.tec.codea.data.api.MeDto
 import mx.tec.codea.data.api.NotifyBody
 import mx.tec.codea.data.api.ReportBody
@@ -52,6 +54,13 @@ class TeacherApiRepository {
     // ----- mi sala -----
 
     suspend fun roomChildren(classroomId: Int): List<RoomChildDto> = api.roomChildren(classroomId)
+
+    // el resumen de hoy del niño (lo que ya se capturó) y las notas de la familia.
+    suspend fun day(childId: Int): DayDto = api.childDay(childId, null)
+
+    suspend fun saveDailyEntry(childId: Int, body: DailyEntryBody) {
+        api.saveDailyEntry(childId, body)
+    }
 
     suspend fun setAttendance(childId: String, status: AttendanceStatus) {
         api.setAttendance(childId.toInt(), AttendanceBody(status.name))

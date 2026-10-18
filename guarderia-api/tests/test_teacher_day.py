@@ -207,3 +207,49 @@ async def test_check_out_is_per_teacher(client, world):
     assert response.status_code == 409
     assert (await client.get("/staff-attendance/today", headers=world.teacher_b)).json() is None
 
+
+
+async def test_one_report_can_be_for_several_children(client, world):
+    """RF-05: un solo reporte para varios niños; cada papá lo ve en su Hoy y no en el de otro."""
+    routine = (await client.get(f"/classrooms/{world.room_a.id}/routine", headers=world.teacher_a)).json()
+    moment = routine["moments"][0]["id"]
+    created = await client.post(
+        "/reports",
+        headers=world.teacher_a,
+        json={
+            "routine_moment_id": moment,
+            "type": "ACHIEVEMENT",
+            "method": "WRITTEN",
+            "description": "Armaron juntos una torre de bloques.",
+            "child_ids": [world.sofia.id, world.diego.id],
+        },
+    )
+    assert created.status_code == 201
+    assert sorted(created.json()["child_ids"]) == sorted([world.sofia.id, world.diego.id])
+
+    # el contador del momento es uno solo, aunque el reporte sea de dos niños.
+    listed = (await client.get("/reports", params={"moment_id": moment}, headers=world.teacher_a)).json()
+    assert len(listed) == 1
+
+    # la mamá de Sofía lo ve en su Hoy.
+    day = (await client.get(f"/children/{world.sofia.id}/day", headers=world.mom)).json()
+    assert any("torre de bloques" in event["description"] for event in day["timeline"])
+    # Renata (otra sala) no aparece en ese reporte.
+    other = (await client.get(f"/children/{world.renata.id}/day", headers=world.dad)).json()
+    assert not any("torre de bloques" in event["description"] for event in other["timeline"])
+
+
+async def test_a_report_cannot_include_a_child_from_another_room(client, world):
+    routine = (await client.get(f"/classrooms/{world.room_a.id}/routine", headers=world.teacher_a)).json()
+    response = await client.post(
+        "/reports",
+        headers=world.teacher_a,
+        json={
+            "routine_moment_id": routine["moments"][0]["id"],
+            "type": "ACHIEVEMENT",
+            "method": "WRITTEN",
+            "description": "Intento con un niño que no es de mi sala.",
+            "child_ids": [world.sofia.id, world.renata.id],
+        },
+    )
+    assert response.status_code in (404, 422)

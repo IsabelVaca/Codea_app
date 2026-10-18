@@ -174,6 +174,9 @@ interface CodeaApi {
     @GET("children/{id}/attendance")
     suspend fun childAttendance(@Path("id") id: Int, @Query("month") month: String): CalendarDto
 
+    @POST("children/{id}/daily-entries")
+    suspend fun saveDailyEntry(@Path("id") id: Int, @Body body: DailyEntryBody): DailyEntryDto
+
     @GET("children/{id}/weekly-summary")
     suspend fun weeklySummary(@Path("id") id: Int): WeeklySummaryDto
 

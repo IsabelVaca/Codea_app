@@ -21,7 +21,8 @@ Se trabaja en la rama `integracion` (login JWT + chat sobre `main`). Cada bloque
 - [x] `has_note_today` en `GET /classrooms/{id}/children` y marca en Mi sala (18/oct; falta verlo en el teléfono).
 - [ ] Selector de hijo en las tabs del padre (HN4); la API ya devuelve la lista en `GET /me`.
 - [x] Salida de la docente en el checador (la app prometía una salida automática que no existía; 18/oct).
-- [ ] Pantallas P1 que falten de [`plan/01-app-pantallas.md`](plan/01-app-pantallas.md).
+- [x] Día del niño: la docente captura el resumen del día (P1 #12; 18/oct).
+- [ ] Pantallas P1 que falten de [`plan/01-app-pantallas.md`](plan/01-app-pantallas.md): selector de hijo, agregar persona autorizada (formulario).
 - [ ] Documentos por defecto al inscribir a un infante.
 - [ ] Quitar de la app los repositorios y datos de ejemplo que ya no se usan.
 

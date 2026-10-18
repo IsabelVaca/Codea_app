@@ -56,6 +56,7 @@ import mx.tec.codea.ui.screens.ReportScreen
 import mx.tec.codea.ui.screens.SelectReportMethodScreen
 import mx.tec.codea.ui.screens.SelectStudentsScreen
 import mx.tec.codea.ui.screens.admin.AltaAsistenteScreen
+import mx.tec.codea.ui.screens.ResumenDelDiaScreen
 import mx.tec.codea.ui.screens.admin.CentroScreen
 import mx.tec.codea.ui.screens.admin.SolicitudesBorradoScreen
 import mx.tec.codea.ui.screens.admin.CrearSalaScreen
@@ -90,6 +91,7 @@ import mx.tec.codea.ui.state.CentroViewModel
 import mx.tec.codea.ui.state.SolicitudesBorradoViewModel
 import mx.tec.codea.ui.state.CheckerConfig
 import mx.tec.codea.ui.state.CheckerViewModel
+import mx.tec.codea.ui.state.ResumenDelDiaViewModel
 import mx.tec.codea.ui.state.AccountViewModel
 import mx.tec.codea.ui.state.CodeaViewModel
 import mx.tec.codea.ui.state.CrearSalaViewModel
@@ -269,6 +271,7 @@ fun CodeaNavHost(
                 children = viewModel.children,
                 roomName = viewModel.teacher.roomName,
                 pendingChanges = viewModel.pendingChanges,
+                onSummaryClick = { childId -> navController.navigate(ResumenDelDiaRoute(childId)) },
                 onAttendanceChange = viewModel::setAttendance,
                 onChatClick = { childId ->
                     val conversation = viewModel.conversationOf(childId)
@@ -278,6 +281,20 @@ fun CodeaNavHost(
                         chatViewModel.open(conversation)
                         navController.navigateToTopLevel(TopLevelDestination.CHATS)
                     }
+                },
+            )
+        }
+
+        composable<ResumenDelDiaRoute> { backStackEntry ->
+            val route = backStackEntry.toRoute<ResumenDelDiaRoute>()
+            val resumenViewModel: ResumenDelDiaViewModel = viewModel()
+            LaunchedEffect(route.childId) { route.childId.toIntOrNull()?.let(resumenViewModel::cargar) }
+            ResumenDelDiaScreen(
+                viewModel = resumenViewModel,
+                onBackClick = { navController.popBackStack() },
+                onGuardado = {
+                    coroutineScope.launch { snackbarHostState.showSnackbar("Resumen guardado") }
+                    navController.popBackStack()
                 },
             )
         }
