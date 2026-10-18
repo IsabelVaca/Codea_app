@@ -124,11 +124,6 @@ fun CheckInDoneScreen(
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            DoneItem(
-                icon = Icons.Filled.Check,
-                text = stringResource(R.string.checker_done_location),
-                color = MaterialTheme.colorScheme.tertiary,
-            )
             if (record.isLate) {
                 DoneItem(
                     icon = Icons.Filled.Info,

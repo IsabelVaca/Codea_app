@@ -22,17 +22,9 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // the google maps key is secret, so it lives in local.properties (not in git)
-        // as MAPS_API_KEY=... and the manifest reads it from here.
-        // without a key the app still builds, but the map shows empty.
+        // local.properties no está en git: ahí van los valores de cada máquina (por ejemplo API_BASE_URL).
         val localProperties = providers.fileContents(rootProject.layout.projectDirectory.file("local.properties"))
             .asText.orNull.orEmpty()
-        val mapsApiKey = localProperties.lineSequence()
-            .map { it.trim() }
-            .firstOrNull { it.startsWith("MAPS_API_KEY=") }
-            ?.substringAfter("=")
-            .orEmpty()
-        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
 
         // la dirección de la API. orden: -PapiBaseUrl=... en la línea de comandos, API_BASE_URL en
         // local.properties, y por último el emulador (10.0.2.2 es tu Mac vista desde el emulador).
@@ -86,7 +78,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.google.maps.compose)
     implementation(libs.compose.material.icons)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

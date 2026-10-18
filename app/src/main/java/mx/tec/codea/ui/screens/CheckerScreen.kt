@@ -3,17 +3,14 @@ package mx.tec.codea.ui.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -22,7 +19,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -30,19 +26,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.Circle
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberUpdatedMarkerState
-import mx.tec.codea.BuildConfig
+import kotlinx.coroutines.delay
 import mx.tec.codea.R
-import mx.tec.codea.data.CheckInRepository
-import mx.tec.codea.data.CheckInScenario
 import mx.tec.codea.domain.CheckInAttempt
 import mx.tec.codea.domain.CheckInRecord
 import mx.tec.codea.domain.CheckInStatus
@@ -50,29 +35,38 @@ import mx.tec.codea.domain.formatTimeOfDay
 import mx.tec.codea.ui.components.BackHeader
 import mx.tec.codea.ui.components.InfoBox
 import mx.tec.codea.ui.state.CheckerUiState
-import mx.tec.codea.ui.state.LocationState
 import mx.tec.codea.ui.theme.CodeaTheme
-import java.util.Locale
 
-// the "checador" screen: the hour, a map that shows where the teacher is,
-// and the button to register the start of the shift.
-// it follows screen 2 and the error cases e1 and e2 of "registrar entrada" in the prototype.
-// when the check-in is already saved (registeredCheckIn), it only shows that.
+// la hora del reloj se vuelve a leer cada tanto para que no se quede en la de cuando abrió la pantalla.
+private const val CLOCK_REFRESH_MS = 20_000L
+
+// the "checador" screen: the hour and the button to register the start of the shift.
+// sin ubicación: la docente registra su entrada con un toque, y la salida igual.
+// si olvida la salida, a las 9 pm el servidor la cierra solo.
+// when the check-in is already saved (registeredCheckIn), it shows the exit instead.
 @Composable
 fun CheckerScreen(
     uiState: CheckerUiState,
     registeredCheckIn: CheckInRecord?,
     onBackClick: () -> Unit,
-    onScenarioChange: (CheckInScenario) -> Unit,
-    onGrantLocationClick: () -> Unit,
+    onRefreshTime: () -> Unit,
     onCheckOutClick: () -> Unit,
     onCheckInClick: () -> Unit,
-    onRetryClick: () -> Unit,
     onNotifyCoordinationClick: () -> Unit,
     onWriteLateReasonClick: () -> Unit,
     onLateReasonChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // sin registrar, el reloj de la pantalla se mantiene al día.
+    if (registeredCheckIn == null) {
+        LaunchedEffect(Unit) {
+            while (true) {
+                delay(CLOCK_REFRESH_MS)
+                onRefreshTime()
+            }
+        }
+    }
+
     // the content can be taller than a small phone, so the column can scroll.
     Column(
         modifier = modifier
@@ -88,38 +82,21 @@ fun CheckerScreen(
             onBackClick = onBackClick,
         )
 
-        // los casos simulados son solo para probar: en la app de entrega no se ven.
-        // it goes on top, so changing the case never needs a scroll.
-        if (BuildConfig.DEBUG) {
-            ScenarioPicker(selected = uiState.scenario, onScenarioChange = onScenarioChange)
-        }
-
         if (registeredCheckIn != null) {
             AlreadyRegistered(record = registeredCheckIn)
-            // la salida: se registra desde aquí, con la misma regla de ubicación que la entrada.
             if (registeredCheckIn.departureMinutes != null) {
+                // la salida la puso la docente o el cierre automático de las 9 pm.
                 InfoBox(
-                    title = stringResource(R.string.checker_exit_done, formatTimeOfDay(registeredCheckIn.departureMinutes)),
-                    body = stringResource(R.string.checker_exit_done_body),
+                    title = stringResource(
+                        if (registeredCheckIn.autoClosed) R.string.checker_exit_auto else R.string.checker_exit_done,
+                        formatTimeOfDay(registeredCheckIn.departureMinutes),
+                    ),
+                    body = stringResource(
+                        if (registeredCheckIn.autoClosed) R.string.checker_exit_auto_body else R.string.checker_exit_done_body,
+                    ),
                     containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                     titleColor = MaterialTheme.colorScheme.onTertiaryContainer,
                 )
-            } else if (uiState.locationState != LocationState.READY) {
-                LocationPending(
-                    state = uiState.locationState,
-                    onGrantClick = onGrantLocationClick,
-                    onRetryClick = onRetryClick,
-                )
-            } else if (uiState.status == CheckInStatus.OUT_OF_RANGE) {
-                InfoBox(
-                    title = stringResource(R.string.checker_exit_out_title),
-                    body = stringResource(R.string.checker_exit_out_body),
-                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                    titleColor = MaterialTheme.colorScheme.onErrorContainer,
-                )
-                OutlinedButton(onClick = onRetryClick, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.checker_retry))
-                }
             } else {
                 CheckInButton(
                     text = stringResource(R.string.checker_exit_button),
@@ -128,26 +105,10 @@ fun CheckerScreen(
                     onClick = onCheckOutClick,
                 )
             }
-            if (uiState.locationState == LocationState.READY) {
-                // para la salida solo importa la distancia: no hay "retardo" que mostrar en el mapa.
-                val salidaStatus = if (uiState.status == CheckInStatus.OUT_OF_RANGE) CheckInStatus.OUT_OF_RANGE else CheckInStatus.ON_TIME
-                LocationMap(attempt = uiState.attempt, status = salidaStatus)
-            }
-            return@Column
-        }
-
-        // sin ubicación todavía no hay hora, mapa ni botón que valgan.
-        if (uiState.locationState != LocationState.READY) {
-            LocationPending(
-                state = uiState.locationState,
-                onGrantClick = onGrantLocationClick,
-                onRetryClick = onRetryClick,
-            )
             return@Column
         }
 
         CurrentTime(uiState = uiState)
-        LocationMap(attempt = uiState.attempt, status = uiState.status)
 
         // each status has its own message and its own buttons.
         when (uiState.status) {
@@ -160,13 +121,9 @@ fun CheckerScreen(
             CheckInStatus.LATE -> LateActions(
                 uiState = uiState,
                 onCheckInClick = onCheckInClick,
+                onNotifyCoordinationClick = onNotifyCoordinationClick,
                 onWriteLateReasonClick = onWriteLateReasonClick,
                 onLateReasonChange = onLateReasonChange,
-            )
-            CheckInStatus.OUT_OF_RANGE -> OutOfRangeActions(
-                coordinationNotified = uiState.coordinationNotified,
-                onRetryClick = onRetryClick,
-                onNotifyCoordinationClick = onNotifyCoordinationClick,
             )
         }
     }
@@ -184,7 +141,6 @@ private fun CurrentTime(uiState: CheckerUiState) {
             stringResource(R.string.checker_on_time)
         }
         CheckInStatus.LATE -> stringResource(R.string.checker_late_note, shiftStart, uiState.minutesLate)
-        CheckInStatus.OUT_OF_RANGE -> stringResource(R.string.checker_shift_starts, shiftStart)
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -213,125 +169,12 @@ private fun CurrentTime(uiState: CheckerUiState) {
     }
 }
 
-// a real google map with the school area (a circle) and a pin where the teacher is.
-@Composable
-private fun LocationMap(attempt: CheckInAttempt, status: CheckInStatus) {
-    val teacherLocation = LatLng(attempt.teacherLatitude, attempt.teacherLongitude)
-    val cameraPositionState = rememberCameraPositionState { position = cameraFor(attempt) }
-    // when the situation changes, the camera moves to show the school and the teacher.
-    LaunchedEffect(attempt) {
-        cameraPositionState.animate(CameraUpdateFactory.newCameraPosition(cameraFor(attempt)))
-    }
-    val areaColor = MaterialTheme.colorScheme.tertiary
-
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        GoogleMap(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(250.dp)
-                .clip(RoundedCornerShape(16.dp)),
-            cameraPositionState = cameraPositionState,
-            // the map only shows the place. we turn off the gestures, because
-            // dragging the map would fight with the scroll of the screen.
-            uiSettings = MapUiSettings(
-                zoomControlsEnabled = false,
-                mapToolbarEnabled = false,
-                scrollGesturesEnabled = false,
-                zoomGesturesEnabled = false,
-                rotationGesturesEnabled = false,
-                tiltGesturesEnabled = false,
-            ),
-        ) {
-            // the area where the check-in is allowed.
-            Circle(
-                center = LatLng(attempt.schoolLatitude, attempt.schoolLongitude),
-                radius = attempt.allowedRadiusMeters.toDouble(),
-                fillColor = areaColor.copy(alpha = 0.15f),
-                strokeColor = areaColor,
-                strokeWidth = 3f,
-            )
-            Marker(state = rememberUpdatedMarkerState(position = teacherLocation))
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = if (status == CheckInStatus.OUT_OF_RANGE) {
-                    stringResource(R.string.checker_you_are_at, formatDistance(attempt.distanceMeters))
-                } else {
-                    stringResource(R.string.checker_place_distance, attempt.placeName, formatDistance(attempt.distanceMeters))
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            val (label, color) = when (status) {
-                CheckInStatus.ON_TIME ->
-                    stringResource(R.string.checker_location_verified) to MaterialTheme.colorScheme.onTertiaryContainer
-                CheckInStatus.LATE ->
-                    stringResource(R.string.checker_out_of_schedule) to MaterialTheme.colorScheme.secondary
-                CheckInStatus.OUT_OF_RANGE ->
-                    stringResource(R.string.checker_out_of_range) to MaterialTheme.colorScheme.error
-            }
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.SemiBold,
-                color = color,
-            )
-        }
-    }
-}
-
-// la ubicación del teléfono: buscándola, sin permiso o sin señal.
-@Composable
-private fun LocationPending(state: LocationState, onGrantClick: () -> Unit, onRetryClick: () -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        when (state) {
-            LocationState.LOCATING -> InfoBox(
-                title = stringResource(R.string.checker_locating_title),
-                body = stringResource(R.string.checker_locating_body),
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                titleColor = MaterialTheme.colorScheme.onSurface,
-            )
-            LocationState.NEEDS_PERMISSION -> {
-                InfoBox(
-                    title = stringResource(R.string.checker_permission_title),
-                    body = stringResource(R.string.checker_permission_body),
-                    containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.16f),
-                    titleColor = MaterialTheme.colorScheme.onSurface,
-                )
-                CheckInButton(
-                    text = stringResource(R.string.checker_permission_button),
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                    onClick = onGrantClick,
-                )
-            }
-            LocationState.UNAVAILABLE -> {
-                InfoBox(
-                    title = stringResource(R.string.checker_unavailable_title),
-                    body = stringResource(R.string.checker_unavailable_body),
-                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                    titleColor = MaterialTheme.colorScheme.onErrorContainer,
-                )
-                CheckInButton(
-                    text = stringResource(R.string.checker_retry),
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                    onClick = onRetryClick,
-                )
-            }
-            LocationState.READY -> Unit
-        }
-    }
-}
-
 // e2: the teacher arrived after her hour. she can check in, but it shows as late.
 @Composable
 private fun LateActions(
     uiState: CheckerUiState,
     onCheckInClick: () -> Unit,
+    onNotifyCoordinationClick: () -> Unit,
     onWriteLateReasonClick: () -> Unit,
     onLateReasonChange: (String) -> Unit,
 ) {
@@ -348,6 +191,17 @@ private fun LateActions(
             contentColor = MaterialTheme.colorScheme.onSecondary,
             onClick = onCheckInClick,
         )
+        OutlinedButton(
+            onClick = onNotifyCoordinationClick,
+            enabled = !uiState.coordinationNotified,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                stringResource(
+                    if (uiState.coordinationNotified) R.string.checker_coordination_notified else R.string.checker_notify_coordination,
+                ),
+            )
+        }
         // the reason is optional, so the field only opens when the teacher asks for it.
         if (uiState.isWritingLateReason) {
             OutlinedTextField(
@@ -360,53 +214,6 @@ private fun LateActions(
         } else {
             TextButton(onClick = onWriteLateReasonClick) {
                 Text(stringResource(R.string.checker_write_late_reason))
-            }
-        }
-    }
-}
-
-// e1: the teacher is not at the school. the button does nothing: she can only
-// try again or tell coordination.
-@Composable
-private fun OutOfRangeActions(
-    coordinationNotified: Boolean,
-    onRetryClick: () -> Unit,
-    onNotifyCoordinationClick: () -> Unit,
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        InfoBox(
-            title = stringResource(R.string.checker_out_title),
-            body = stringResource(R.string.checker_out_body),
-            containerColor = MaterialTheme.colorScheme.errorContainer,
-            titleColor = MaterialTheme.colorScheme.onErrorContainer,
-        )
-        Button(
-            onClick = {},
-            enabled = false,
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            contentPadding = PaddingValues(16.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.checker_check_in_blocked),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            OutlinedButton(onClick = onRetryClick, modifier = Modifier.weight(1f)) {
-                Text(stringResource(R.string.checker_retry))
-            }
-            OutlinedButton(
-                onClick = onNotifyCoordinationClick,
-                enabled = !coordinationNotified,
-                modifier = Modifier.weight(1f),
-            ) {
-                Text(
-                    stringResource(
-                        if (coordinationNotified) R.string.checker_coordination_notified else R.string.checker_notify_coordination,
-                    ),
-                )
             }
         }
     }
@@ -444,69 +251,25 @@ private fun CheckInButton(text: String, containerColor: Color, contentColor: Col
     }
 }
 
-// there is no real gps in the prototype, so these chips let us show each case.
-@Composable
-private fun ScenarioPicker(selected: CheckInScenario, onScenarioChange: (CheckInScenario) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(
-            text = stringResource(R.string.checker_simulate),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.outline,
-        )
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            CheckInScenario.entries.forEach { scenario ->
-                FilterChip(
-                    selected = scenario == selected,
-                    onClick = { onScenarioChange(scenario) },
-                    label = { Text(stringResource(scenario.labelRes())) },
-                )
-            }
-        }
-    }
-}
-
-private fun CheckInScenario.labelRes(): Int = when (this) {
-    CheckInScenario.REAL -> R.string.checker_scenario_real
-    CheckInScenario.ON_TIME -> R.string.checker_scenario_on_time
-    CheckInScenario.LATE -> R.string.checker_scenario_late
-    CheckInScenario.OUT_OF_RANGE -> R.string.checker_scenario_out
-}
-
-// close to the school when she is inside; farther away when she is not, so both points fit.
-private fun cameraFor(attempt: CheckInAttempt): CameraPosition {
-    val isFar = attempt.distanceMeters > attempt.allowedRadiusMeters
-    val center = if (isFar) {
-        LatLng(
-            (attempt.schoolLatitude + attempt.teacherLatitude) / 2,
-            (attempt.schoolLongitude + attempt.teacherLongitude) / 2,
-        )
-    } else {
-        LatLng(attempt.schoolLatitude, attempt.schoolLongitude)
-    }
-    return CameraPosition.fromLatLngZoom(center, if (isFar) 13.5f else 17f)
-}
-
-// 12 -> "12 m", 1400 -> "1.4 km".
-private fun formatDistance(meters: Int): String =
-    if (meters < 1000) "$meters m" else String.format(Locale.getDefault(), "%.1f km", meters / 1000.0)
-
-// the map does not draw in the preview, only in the app.
-@Preview(showBackground = true, heightDp = 900)
+// the preview shows the screen with the check-in not registered yet.
+@Preview(showBackground = true, heightDp = 700)
 @Composable
 private fun CheckerScreenLatePreview() {
     CodeaTheme {
         CheckerScreen(
             uiState = CheckerUiState(
-                scenario = CheckInScenario.LATE,
-                attempt = CheckInRepository().attemptFor(CheckInScenario.LATE),
+                attempt = CheckInAttempt(
+                    date = "Miércoles 14 de octubre",
+                    arrivalMinutes = 8 * 60 + 19,
+                    shiftStartMinutes = 8 * 60,
+                    placeName = "La Oruga",
+                ),
             ),
             registeredCheckIn = null,
             onBackClick = {},
-            onScenarioChange = {},
-            onGrantLocationClick = {},
+            onRefreshTime = {},
             onCheckOutClick = {},
             onCheckInClick = {},
-            onRetryClick = {},
             onNotifyCoordinationClick = {},
             onWriteLateReasonClick = {},
             onLateReasonChange = {},

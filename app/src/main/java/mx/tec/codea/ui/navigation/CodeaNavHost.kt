@@ -76,7 +76,6 @@ import mx.tec.codea.ui.screens.admin.DocenteScreen
 import mx.tec.codea.ui.screens.admin.InfanteDetalleScreen
 import mx.tec.codea.ui.screens.admin.FamiliasScreen
 import mx.tec.codea.ui.screens.admin.AjustesScreen
-import mx.tec.codea.ui.screens.admin.AjustesChecadorScreen
 import mx.tec.codea.ui.screens.admin.InscribirInfanteScreen
 import mx.tec.codea.ui.screens.admin.OpcionChip
 import mx.tec.codea.ui.screens.admin.InscribirPadreScreen
@@ -106,7 +105,6 @@ import mx.tec.codea.ui.state.ResumenDelDiaViewModel
 import mx.tec.codea.ui.state.AccountViewModel
 import mx.tec.codea.ui.state.CodeaViewModel
 import mx.tec.codea.ui.state.CrearSalaViewModel
-import mx.tec.codea.ui.state.AjustesChecadorViewModel
 import mx.tec.codea.ui.state.DocentesAdminViewModel
 import mx.tec.codea.ui.state.InfantesAdminViewModel
 import mx.tec.codea.ui.state.InscribirInfanteViewModel
@@ -350,52 +348,30 @@ fun CodeaNavHost(
             }
             composable<CheckerRoute> {
                 // this view model lives inside the destination: its owner is this screen,
-                // so the chosen case and the late reason are cleared when the teacher leaves.
+                // so the late reason is cleared when the teacher leaves.
                 val checker: CheckerViewModel = viewModel()
-                val locationPermission = rememberLauncherForActivityResult(
-                    ActivityResultContracts.RequestMultiplePermissions(),
-                ) { checker.onPermissionResult() }
-                val requestLocation = {
-                    locationPermission.launch(
-                        arrayOf(
-                            android.Manifest.permission.ACCESS_FINE_LOCATION,
-                            android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                // el turno y el nombre del centro llegan de GET /me; si cambian, el checador los vuelve a leer.
+                LaunchedEffect(viewModel.centerName, viewModel.teacher.shiftStartMinutes) {
+                    checker.start(
+                        CheckerConfig(
+                            shiftStartMinutes = viewModel.teacher.shiftStartMinutes,
+                            placeName = viewModel.centerName.ifBlank { "La Oruga" },
                         ),
                     )
-                }
-                // cuando llegan las coordenadas del centro, el checador busca la ubicación del teléfono.
-                val centerLat = viewModel.centerLatitude
-                val centerLon = viewModel.centerLongitude
-                LaunchedEffect(centerLat, centerLon, viewModel.centerRadiusMeters, viewModel.teacher.shiftStartMinutes) {
-                    if (centerLat != null && centerLon != null) {
-                        if (!checker.hasLocationPermission()) requestLocation()
-                        checker.start(
-                            CheckerConfig(
-                                centerLatitude = centerLat,
-                                centerLongitude = centerLon,
-                                radiusMeters = viewModel.centerRadiusMeters,
-                                shiftStartMinutes = viewModel.teacher.shiftStartMinutes,
-                                placeName = viewModel.centerName.ifBlank { "La Oruga" },
-                            ),
-                        )
-                    }
                 }
                 CheckerScreen(
                     uiState = checker.uiState,
                     registeredCheckIn = viewModel.checkIn,
                     // the menu is right below the check-in, so going back is enough.
                     onBackClick = { navController.popBackStack() },
-                    onScenarioChange = checker::onScenarioChange,
-                    onGrantLocationClick = { requestLocation() },
+                    onRefreshTime = checker::refreshTime,
                     onCheckOutClick = { checker.registrarSalida { record -> viewModel.registerCheckOut(record) } },
                     onCheckInClick = {
-                        // the domain can say "no" (out of range): then nothing happens.
                         checker.registrar { record ->
                             viewModel.registerCheckIn(record)
                             navController.navigateToCheckInDone()
                         }
                     },
-                    onRetryClick = checker::onRetry,
                     onNotifyCoordinationClick = checker::onNotifyCoordination,
                     onWriteLateReasonClick = checker::onWriteLateReasonClick,
                     onLateReasonChange = checker::onLateReasonChange,
@@ -896,8 +872,8 @@ fun CodeaNavHost(
         }
 
 
-        // la pestaña "ajustes": el menú de lo que el admin puede configurar. rutinas y checador
-        // abren encima y la barra inferior se queda en "Ajustes".
+        // la pestaña "ajustes": el menú de lo que el admin puede configurar. rutinas abre
+        // encima y la barra inferior se queda en "Ajustes".
         navigation<AjustesAdminGraph>(startDestination = AjustesAdminRoute) {
             composable<AjustesAdminRoute> {
                 // al entrar se piden las rutinas otra vez, para el contador.
@@ -906,39 +882,7 @@ fun CodeaNavHost(
                 AjustesScreen(
                     totalRutinas = rutinas.size,
                     onRutinasClick = { navController.navigate(RutinasAdminRoute) },
-                    onChecadorClick = { navController.navigate(AjustesChecadorRoute) },
                     onCuentaClick = { navController.navigate(AccountRoute) },
-                )
-            }
-            composable<AjustesChecadorRoute> {
-                val checadorViewModel: AjustesChecadorViewModel = viewModel()
-                // la ubicación del teléfono pide permiso la primera vez; al contestar se fija si lo dieron.
-                val permisoUbicacion = rememberLauncherForActivityResult(
-                    ActivityResultContracts.RequestMultiplePermissions(),
-                ) { resultado ->
-                    if (resultado.values.any { it }) checadorViewModel.fijarUbicacionActual()
-                }
-                AjustesChecadorScreen(
-                    ubicacion = checadorViewModel.ubicacion,
-                    ubicando = checadorViewModel.ubicando,
-                    onUsarMiUbicacion = {
-                        if (checadorViewModel.hasLocationPermission()) {
-                            checadorViewModel.fijarUbicacionActual()
-                        } else {
-                            permisoUbicacion.launch(
-                                arrayOf(
-                                    android.Manifest.permission.ACCESS_FINE_LOCATION,
-                                    android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                                ),
-                            )
-                        }
-                    },
-                    radioTexto = checadorViewModel.radioTexto,
-                    onRadioChange = checadorViewModel::onRadioChange,
-                    radioInvalido = checadorViewModel.radioInvalido,
-                    canGuardarRadio = checadorViewModel.canGuardarRadio,
-                    onGuardarRadio = checadorViewModel::guardarRadio,
-                    onBack = { navController.popBackStack() },
                 )
             }
             composable<RutinasAdminRoute> {

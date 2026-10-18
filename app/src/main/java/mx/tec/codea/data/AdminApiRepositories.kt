@@ -5,7 +5,6 @@ import mx.tec.codea.data.api.ApiClient
 import mx.tec.codea.data.api.ChildClassroomBody
 import mx.tec.codea.data.api.ChildCreateBody
 import mx.tec.codea.data.api.CenterDto
-import mx.tec.codea.data.api.CenterUpdateBody
 import mx.tec.codea.data.api.ChildDto
 import mx.tec.codea.data.api.ParentCreateBody
 import mx.tec.codea.data.api.ParentDto
@@ -17,7 +16,6 @@ import mx.tec.codea.domain.Docente
 import mx.tec.codea.domain.Infante
 import mx.tec.codea.domain.Padre
 import mx.tec.codea.domain.SolicitudBorrado
-import mx.tec.codea.domain.UbicacionCentro
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -152,27 +150,6 @@ private fun ParentDto.toPadre() = Padre(
     telefono = phone ?: "",
     correo = email ?: "",
     conAcceso = hasAccess,
-)
-
-// ubicación del centro
-
-class CentroApiRepository {
-
-    suspend fun ubicacion(): UbicacionCentro = ApiClient.api.center().toUbicacion()
-
-    // la ubicación nueva es donde está el admin ahora; el radio se queda como estaba.
-    suspend fun fijarUbicacion(latitud: Double, longitud: Double): UbicacionCentro =
-        ApiClient.api.updateCenter(CenterUpdateBody(latitude = latitud, longitude = longitud)).toUbicacion()
-
-    // el radio nuevo no mueve la ubicación.
-    suspend fun fijarRadio(metros: Int): UbicacionCentro =
-        ApiClient.api.updateCenter(CenterUpdateBody(checkInRadiusM = metros)).toUbicacion()
-}
-
-private fun CenterDto.toUbicacion() = UbicacionCentro(
-    latitud = latitude,
-    longitud = longitude,
-    radioMetros = checkInRadiusM,
 )
 
 // solicitudes de borrado de fotos

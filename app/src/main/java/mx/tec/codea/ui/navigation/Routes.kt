@@ -153,10 +153,6 @@ data object AjustesAdminGraph
 @Serializable
 data object AjustesAdminRoute
 
-// ubicación y radio del checador.
-@Serializable
-data object AjustesChecadorRoute
-
 // las rutinas son una opción de Ajustes: la lista, "nueva rutina" y el detalle de una rutina.
 @Serializable
 data object RutinasAdminRoute

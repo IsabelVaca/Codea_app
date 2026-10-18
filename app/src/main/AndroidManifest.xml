@@ -6,10 +6,6 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- el checador compara tu ubicación con la del centro al registrar la entrada. -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 
     <application
         android:name=".CodeaApplication"
@@ -22,11 +18,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Codea">
-
-        <!-- the google maps key comes from local.properties, see app/build.gradle.kts -->
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="${MAPS_API_KEY}" />
 
         <activity
             android:name=".MainActivity"

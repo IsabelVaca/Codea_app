@@ -1,43 +1,52 @@
 package mx.tec.codea.domain
 
-import mx.tec.codea.data.CheckInRepository
-import mx.tec.codea.data.CheckInScenario
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CheckInRulesTest {
 
-    private val repository = CheckInRepository()
+    // turno de las 8:00; cada prueba cambia solo la hora de llegada.
+    private fun attempt(arrivalMinutes: Int) = CheckInAttempt(
+        date = "Miércoles 14 de octubre",
+        arrivalMinutes = arrivalMinutes,
+        shiftStartMinutes = 8 * 60,
+        placeName = "La Oruga",
+    )
 
     @Test
-    fun onTime_insideTheSchoolAndEarly() {
-        val attempt = repository.attemptFor(CheckInScenario.ON_TIME)
+    fun onTime_beforeTheShift() {
+        val attempt = attempt(7 * 60 + 52)
 
         assertEquals(CheckInStatus.ON_TIME, CheckInRules.statusOf(attempt))
         assertEquals(8, CheckInRules.minutesEarly(attempt))
+        assertEquals(0, CheckInRules.minutesLate(attempt))
+    }
+
+    @Test
+    fun exactlyAtTheStart_isOnTime() {
+        assertEquals(CheckInStatus.ON_TIME, CheckInRules.statusOf(attempt(8 * 60)))
     }
 
     @Test
     fun late_registersButMarksTheDelay() {
-        val attempt = repository.attemptFor(CheckInScenario.LATE)
+        val attempt = attempt(8 * 60 + 19)
         val record = CheckInRules.register(attempt, lateReason = "  tráfico  ")
 
         assertEquals(CheckInStatus.LATE, CheckInRules.statusOf(attempt))
-        assertNotNull(record)
-        assertEquals(19, record!!.minutesLate)
+        assertEquals(19, record.minutesLate)
         assertTrue(record.isLate)
         assertEquals("tráfico", record.lateReason)
     }
 
     @Test
-    fun outOfRange_doesNotRegister() {
-        val attempt = repository.attemptFor(CheckInScenario.OUT_OF_RANGE)
+    fun onTime_recordIsNotLateAndHasNoExit() {
+        val record = CheckInRules.register(attempt(7 * 60 + 52), lateReason = "")
 
-        assertEquals(CheckInStatus.OUT_OF_RANGE, CheckInRules.statusOf(attempt))
-        assertNull(CheckInRules.register(attempt, lateReason = ""))
+        assertFalse(record.isLate)
+        assertEquals(null, record.departureMinutes)
+        assertFalse(record.autoClosed)
     }
 
     @Test

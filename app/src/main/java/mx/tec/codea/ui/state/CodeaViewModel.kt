@@ -45,14 +45,8 @@ class CodeaViewModel : ViewModel() {
     private var conversationIds: Map<String, Int> = emptyMap() // id del niño -> id de la conversación
     private var selectActiveAfterLoad = true
 
-    // el lugar del checador: el centro, con sus coordenadas.
-    // con estado, para que el checador arranque cuando lleguen aunque se abra antes de que termine de cargar.
-    var centerLatitude by mutableStateOf<Double?>(null)
-        private set
-    var centerLongitude by mutableStateOf<Double?>(null)
-        private set
-    var centerRadiusMeters by mutableStateOf(60)
-        private set
+    // el nombre del centro, para el checador. con estado, para que se vea cuando llegue aunque
+    // el checador se abra antes de que termine de cargar.
     var centerName by mutableStateOf("")
         private set
 
@@ -101,9 +95,6 @@ class CodeaViewModel : ViewModel() {
                 val me = repository.me()
                 val t = me.teacher ?: return@launch
                 classroomId = t.classroom?.id
-                centerLatitude = t.center.latitude
-                centerLongitude = t.center.longitude
-                centerRadiusMeters = t.center.checkInRadiusM
                 centerName = t.center.name
                 teacher = Teacher(
                     fullName = me.fullName,

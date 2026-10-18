@@ -17,9 +17,6 @@ data class ShiftTimesDto(
 data class CenterDto(
     val id: Int,
     val name: String,
-    val latitude: Double? = null,
-    val longitude: Double? = null,
-    @SerialName("check_in_radius_m") val checkInRadiusM: Int = 60,
     val timezone: String = "",
 )
 
@@ -115,10 +112,9 @@ data class ReportBody(
 
 // ---------- checador ----------
 
+// la entrada no manda ubicación: solo el motivo del retardo, si lo hay.
 @Serializable
 data class CheckInBody(
-    val latitude: Double,
-    val longitude: Double,
     @SerialName("late_reason") val lateReason: String? = null,
 )
 
@@ -129,10 +125,9 @@ data class CheckInDto(
     val status: String,
     @SerialName("minutes_late") val minutesLate: Int = 0,
     @SerialName("late_reason") val lateReason: String? = null,
-    @SerialName("distance_m") val distanceM: Int = 0,
-    @SerialName("allowed_radius_m") val allowedRadiusM: Int = 0,
     @SerialName("place_name") val placeName: String = "",
     @SerialName("checked_out_at") val checkedOutAt: String? = null,
+    @SerialName("auto_closed") val autoClosed: Boolean = false,
 )
 
 @Serializable

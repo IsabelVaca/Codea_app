@@ -1,47 +1,33 @@
 package mx.tec.codea.ui.state
 
-import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
-import mx.tec.codea.data.CheckInRepository
-import mx.tec.codea.data.CheckInScenario
 import mx.tec.codea.data.DataEvents
-import mx.tec.codea.data.DeviceLocation
-import mx.tec.codea.data.GeoPoint
 import mx.tec.codea.data.TeacherApiRepository
 import mx.tec.codea.data.api.toUserMessage
 import mx.tec.codea.domain.CheckInAttempt
 import mx.tec.codea.domain.CheckInRecord
 import mx.tec.codea.domain.CheckInRules
 import mx.tec.codea.domain.CheckInStatus
-import mx.tec.codea.domain.GeoMath
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-// lo que el checador necesita saber del centro y del turno. sale de GET /me.
+// lo que el checador necesita saber del turno y del centro. sale de GET /me.
 data class CheckerConfig(
-    val centerLatitude: Double,
-    val centerLongitude: Double,
-    val radiusMeters: Int,
     val shiftStartMinutes: Int,
     val placeName: String,
 )
 
-// en qué va la búsqueda de la ubicación del teléfono (solo importa en modo real).
-enum class LocationState { READY, LOCATING, NEEDS_PERMISSION, UNAVAILABLE }
-
 // what the check-in screen shows right now.
 data class CheckerUiState(
-    val scenario: CheckInScenario,
     val attempt: CheckInAttempt,
-    val locationState: LocationState = LocationState.READY,
     val isWritingLateReason: Boolean = false,
     val lateReason: String = "",
     val coordinationNotified: Boolean = false,
@@ -54,76 +40,32 @@ data class CheckerUiState(
 
 // the state of the check-in screen only. the saved check-in goes to the
 // shared CodeaViewModel, because menú and mi día also need it.
-class CheckerViewModel(application: Application) : AndroidViewModel(application) {
+// el checador no usa ubicación: la hora y la fecha son las del teléfono (el servidor pone la suya al guardar).
+class CheckerViewModel : ViewModel() {
 
-    private val repository = CheckInRepository()
     private val api = TeacherApiRepository()
-    private val location = DeviceLocation(application)
 
-    private var config: CheckerConfig? = null
+    private var config = CheckerConfig(shiftStartMinutes = 8 * 60, placeName = "La Oruga")
 
-    // se arranca en modo real: la posición y la hora salen del teléfono. los casos simulados
-    // (los chips "A tiempo / Tarde / Lejos") solo existen en las compilaciones de prueba.
-    var uiState by mutableStateOf(
-        CheckerUiState(
-            scenario = CheckInScenario.REAL,
-            attempt = repository.attemptFor(CheckInScenario.REAL),
-            locationState = LocationState.LOCATING,
-        ),
-    )
+    var uiState by mutableStateOf(CheckerUiState(attempt = attemptNow(config)))
         private set
 
-    fun hasLocationPermission(): Boolean = location.hasPermission()
-
-    // la pantalla avisa cuando ya conoce el centro. solo la primera vez busca la ubicación.
+    // la pantalla avisa cuando ya conoce el turno y el centro.
     fun start(newConfig: CheckerConfig) {
-        if (config == newConfig) return
         config = newConfig
-        if (uiState.scenario == CheckInScenario.REAL) refreshLocation()
+        refreshTime()
     }
 
-    fun onScenarioChange(scenario: CheckInScenario) {
-        if (scenario == CheckInScenario.REAL) {
-            uiState = uiState.copy(scenario = scenario, locationState = LocationState.LOCATING)
-            refreshLocation()
-        } else {
-            uiState = stateFor(scenario)
-        }
+    // vuelve a leer la hora del teléfono: la pantalla lo pide cada cierto tiempo para que el reloj no se quede atrás.
+    fun refreshTime() {
+        uiState = uiState.copy(attempt = attemptNow(config))
     }
 
-    // "volver a intentar": en modo real vuelve a pedir la ubicación y la hora de ahora.
-    fun onRetry() {
-        if (uiState.scenario == CheckInScenario.REAL) refreshLocation() else onScenarioChange(CheckInScenario.ON_TIME)
-    }
-
-    // la pantalla llama esto cuando el usuario contestó el cuadro de permisos.
-    fun onPermissionResult() = refreshLocation()
-
-    private fun refreshLocation() {
-        val config = config ?: return
-        if (!location.hasPermission()) {
-            uiState = uiState.copy(locationState = LocationState.NEEDS_PERMISSION)
-            return
-        }
-        uiState = uiState.copy(locationState = LocationState.LOCATING)
-        viewModelScope.launch {
-            val point = location.current()
-            // el usuario pudo cambiar a un caso simulado mientras se buscaba: ya no importa la respuesta.
-            if (uiState.scenario != CheckInScenario.REAL) return@launch
-            uiState = if (point == null) {
-                uiState.copy(locationState = LocationState.UNAVAILABLE)
-            } else {
-                uiState.copy(attempt = realAttempt(config, point), locationState = LocationState.READY)
-            }
-        }
-    }
-
-    // avisa a coordinación; solo se marca como avisado si la API lo guardó.
+    // avisa a coordinación que llegará tarde; solo se marca como avisado si la API lo guardó.
     fun onNotifyCoordination() {
-        val reason = if (uiState.status == CheckInStatus.OUT_OF_RANGE) "OUT_OF_RANGE" else "LATE"
         viewModelScope.launch {
             try {
-                api.notifyCoordination(reason)
+                api.notifyCoordination("LATE")
                 uiState = uiState.copy(coordinationNotified = true)
             } catch (e: CancellationException) {
                 throw e
@@ -141,23 +83,13 @@ class CheckerViewModel(application: Application) : AndroidViewModel(application)
         uiState = uiState.copy(lateReason = text)
     }
 
-    // registra la entrada en la API con la posición del teléfono; la hora la pone el servidor.
-    // en los casos simulados (solo pruebas) la posición se arma a partir del centro.
+    // registra la entrada en la API; la hora la pone el servidor.
     // el registro que regresa la API es el que se guarda; si el servidor dice "no", sale el error.
     fun registrar(onDone: (CheckInRecord) -> Unit) {
-        val config = config ?: return
-        if (uiState.locationState != LocationState.READY) return
-        if (!CheckInRules.canRegister(uiState.attempt)) return
-        val attempt = uiState.attempt
-        val (latitude, longitude) = if (uiState.scenario == CheckInScenario.REAL) {
-            attempt.teacherLatitude to attempt.teacherLongitude
-        } else {
-            (config.centerLatitude + 0.0001) to config.centerLongitude
-        }
         val reason = uiState.lateReason
         viewModelScope.launch {
             try {
-                onDone(api.checkIn(latitude, longitude, reason))
+                onDone(api.checkIn(reason))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -166,20 +98,11 @@ class CheckerViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    // registra la salida con la posición del teléfono; la API la rechaza si no hay entrada o si está fuera del radio.
+    // registra la salida; la API la rechaza si no hay entrada hoy.
     fun registrarSalida(onDone: (CheckInRecord) -> Unit) {
-        val config = config ?: return
-        if (uiState.locationState != LocationState.READY) return
-        if (uiState.status == CheckInStatus.OUT_OF_RANGE) return
-        val attempt = uiState.attempt
-        val (latitude, longitude) = if (uiState.scenario == CheckInScenario.REAL) {
-            attempt.teacherLatitude to attempt.teacherLongitude
-        } else {
-            (config.centerLatitude + 0.0001) to config.centerLongitude
-        }
         viewModelScope.launch {
             try {
-                onDone(api.checkOut(latitude, longitude))
+                onDone(api.checkOut())
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -188,25 +111,14 @@ class CheckerViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    private fun stateFor(scenario: CheckInScenario) =
-        CheckerUiState(scenario = scenario, attempt = repository.attemptFor(scenario))
-
-    // la hora y la fecha son las del teléfono; la distancia, la de su posición al centro.
-    private fun realAttempt(config: CheckerConfig, point: GeoPoint): CheckInAttempt {
+    // la hora y la fecha son las del teléfono.
+    private fun attemptNow(config: CheckerConfig): CheckInAttempt {
         val now = Calendar.getInstance()
         return CheckInAttempt(
             date = dateText(now.time),
             arrivalMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE),
             shiftStartMinutes = config.shiftStartMinutes,
             placeName = config.placeName,
-            distanceMeters = GeoMath.distanceMeters(
-                point.latitude, point.longitude, config.centerLatitude, config.centerLongitude,
-            ),
-            allowedRadiusMeters = config.radiusMeters,
-            schoolLatitude = config.centerLatitude,
-            schoolLongitude = config.centerLongitude,
-            teacherLatitude = point.latitude,
-            teacherLongitude = point.longitude,
         )
     }
 

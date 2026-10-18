@@ -189,44 +189,23 @@
     </plurals>
     <string name="checker_on_time">Llegas justo a tiempo</string>
     <string name="checker_late_note">Tu turno empezaba %1$s · %2$d min de retardo</string>
-    <string name="checker_shift_starts">Tu turno empieza a las %1$s</string>
-    <string name="checker_place_distance">%1$s · %2$s</string>
-    <string name="checker_you_are_at">Estás a %1$s</string>
-    <string name="checker_location_verified">Ubicación verificada</string>
     <string name="checker_out_of_schedule">Fuera de horario</string>
-    <string name="checker_out_of_range">Fuera del perímetro</string>
     <string name="checker_check_in">Registrar mi entrada</string>
     <string name="checker_check_in_late">Registrar con retardo</string>
-    <string name="checker_check_in_blocked">Bloqueado hasta que llegues</string>
     <string name="checker_late_title">Llegaste después de tu hora</string>
     <string name="checker_late_body">Se registra igual, pero queda marcado como retardo y coordinación lo verá.</string>
     <string name="checker_write_late_reason">+ Escribir el motivo del retardo (opcional)</string>
     <string name="checker_late_reason_label">Motivo del retardo</string>
-    <string name="checker_out_title">Todavía no estás en la estancia</string>
-    <string name="checker_out_body">Tu entrada solo se puede registrar dentro de La Oruga. Acércate y vuelve a intentar.</string>
-    <string name="checker_retry">Volver a intentar</string>
     <string name="checker_notify_coordination">Avisar a coordinación</string>
     <string name="checker_coordination_notified">Aviso enviado</string>
     <string name="checker_already_registered">Ya registraste tu entrada a las %1$s</string>
     <string name="checker_already_registered_late">Ya registraste tu entrada con retardo a las %1$s</string>
-    <string name="checker_exit_is_automatic">Cuando termines tu turno, vuelve aquí a registrar tu salida.</string>
+    <string name="checker_exit_is_automatic">Cuando termines tu turno, vuelve aquí a registrar tu salida. Si se te olvida, se cierra sola a las 9:00 pm.</string>
     <string name="checker_exit_button">Registrar mi salida</string>
     <string name="checker_exit_done">Salida registrada a las %1$s</string>
     <string name="checker_exit_done_body">Ya quedó tu día completo. ¡Buen descanso!</string>
-    <string name="checker_exit_out_title">Todavía no estás en la estancia</string>
-    <string name="checker_exit_out_body">Tu salida solo se puede registrar dentro de La Oruga. Acércate y vuelve a intentar.</string>
-    <string name="checker_simulate">Simular llegada (solo pruebas)</string>
-    <string name="checker_scenario_real">Real</string>
-    <string name="checker_locating_title">Buscando tu ubicación…</string>
-    <string name="checker_locating_body">Estamos comparando dónde estás con la estancia. Puede tardar unos segundos.</string>
-    <string name="checker_permission_title">Necesitamos tu ubicación</string>
-    <string name="checker_permission_body">La entrada solo se registra si estás dentro de la estancia. Se compara tu ubicación con la de la estancia y, al registrar tu entrada o tu salida, queda guardada junto con la hora. No se te sigue ni se guarda en otro momento.</string>
-    <string name="checker_permission_button">Permitir ubicación</string>
-    <string name="checker_unavailable_title">No pudimos ubicarte</string>
-    <string name="checker_unavailable_body">Activa el GPS de tu teléfono, acércate a una ventana y vuelve a intentar.</string>
-    <string name="checker_scenario_on_time">A tiempo</string>
-    <string name="checker_scenario_late">Tarde</string>
-    <string name="checker_scenario_out">Lejos</string>
+    <string name="checker_exit_auto">Salida automática a las %1$s</string>
+    <string name="checker_exit_auto_body">No registraste tu salida, así que se cerró sola a las 9:00 pm.</string>
 
     <!-- check-in done screen (inside menú) -->
     <string name="checker_done_overline">Checador</string>
@@ -240,7 +219,6 @@
         <item quantity="one">%1$d minuto después de tu hora.</item>
         <item quantity="other">%1$d minutos después de tu hora.</item>
     </plurals>
-    <string name="checker_done_location">Ubicación verificada en la estancia</string>
     <string name="checker_done_no_paper">Sin papel ni firma · queda en tu expediente</string>
     <string name="checker_done_coordination">Coordinación recibe el aviso de retardo</string>
     <string name="checker_done_exit">Al terminar tu turno registras tu salida aquí mismo</string>

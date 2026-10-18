@@ -17,16 +17,6 @@ data class DeletionReviewDto(
     @SerialName("created_at") val createdAt: String = "",
 )
 
-// ---------- centro (solo admin) ----------
-
-@Serializable
-data class CenterUpdateBody(
-    // solo se manda lo que cambia: lo que queda en null no se serializa (encodeDefaults está apagado).
-    val latitude: Double? = null,
-    val longitude: Double? = null,
-    @SerialName("check_in_radius_m") val checkInRadiusM: Int? = null,
-)
-
 @Serializable
 data class DecisionBody(
     val note: String? = null,
