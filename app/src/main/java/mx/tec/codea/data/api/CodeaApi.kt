@@ -29,6 +29,16 @@ interface CodeaApi {
     @DELETE("classrooms/{id}")
     suspend fun deleteClassroom(@Path("id") id: Int)
 
+    // ----- solicitudes de borrado de fotos (solo admin) -----
+    @GET("media/deletion-requests")
+    suspend fun deletionRequests(@Query("status") status: String = "PENDING"): List<DeletionReviewDto>
+
+    @POST("media/deletion-requests/{id}/approve")
+    suspend fun approveDeletion(@Path("id") id: Int, @Body body: DecisionBody = DecisionBody()): DeletionReviewDto
+
+    @POST("media/deletion-requests/{id}/reject")
+    suspend fun rejectDeletion(@Path("id") id: Int, @Body body: DecisionBody = DecisionBody()): DeletionReviewDto
+
     // ----- plantillas de rutina (solo admin) -----
     @GET("routine-templates")
     suspend fun routineTemplates(): List<TemplateDto>

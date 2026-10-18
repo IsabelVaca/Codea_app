@@ -3,7 +3,7 @@
 Catálogo tomado del tablero de Teams (buckets *Req. de CODEA*, *Req. base*, *Requisitos no funcionales* e *Historias de usuario*). Los requisitos valen el 30 % de la calificación de la aplicación.
 
 **Estado a 2026-10-16**, revisado leyendo el código; no se corrió la app. ✅ = existe en el código · 🟡 = parcial · ❌ = no existe.
-**Avance estimado: 16 ✅ + 7 🟡 + 9 ❌ de 32, es decir ~61 %** (los parciales cuentan medio). Actualizado el 2026-10-17 con el login JWT (rama `feature/login-jwt`, sin subir).
+**Avance estimado: 17 ✅ + 6 🟡 + 9 ❌ de 32, es decir ~62 %** (los parciales cuentan medio). Actualizado el 2026-10-17 con el login JWT (rama `feature/login-jwt`, sin subir).
 
 > Los planes y la referencia de endpoints que ya existían son la fuente para el *cómo*: [`plan/`](plan/README.md) (pantallas, conexión de la app, estado de la API, login con JWT), [`estilo.md`](estilo.md) (convenciones) y [`api/endpoints.md`](api/endpoints.md) (los 65 endpoints). Este archivo solo dice qué requisito cubre cada cosa.
 
@@ -11,7 +11,7 @@ Catálogo tomado del tablero de Teams (buckets *Req. de CODEA*, *Req. base*, *Re
 
 | ID | Requisito | Estado | Evidencia / qué falta |
 |---|---|---|---|
-| CRF-01 | Bitácora de pagos por infante | ❌ | No hay tabla, endpoint ni pantalla. Hacer: módulo `payments` en el backend (`models`, `schemas`, `service`, `router`, migración, pruebas) y pantalla de admin en `ui/screens/admin/`. |
+| CRF-01 | Bitácora de pagos por infante | ❌ | **No cumplido: el equipo decidió no hacerlo** (18/oct); queda como desviación del alcance. No hay tabla, endpoint ni pantalla, y no hay que integrar `feature/pagos`. |
 | CRF-02 | Administración de perfiles y salas | ✅ | Backend: módulos `classrooms`, `teachers`, `children`, `parents`. App: `ui/screens/admin/*`. |
 | CRF-03 | Calendario de eventos y citas | 🟡 | El calendario del padre muestra asistencia del mes (`GET /children/{id}/attendance`). No existe el modelo de eventos ni de citas. |
 | CRF-04 | Dictado de registro y consulta con IA | 🟡 | **Dictado a texto sí**: `rememberDictation` (en `ui/components/DeviceLaunchers.kt`) usa `RecognizerIntent` del sistema para llenar el reporte. **Consulta con IA no existe.** Ver [decisión #10](DECISIONES-PENDIENTES.md). |
@@ -30,7 +30,7 @@ Catálogo tomado del tablero de Teams (buckets *Req. de CODEA*, *Req. base*, *Re
 | RF-07 | Cada familia ve solo a sus hijos | ✅ | `can_see_child` / `get_child_in_scope` en `core/security.py`; fuera de alcance responde 404. |
 | RF-08 | Avisos del centro | ✅ | `POST` y `GET /announcements` (con alcance por rol). El admin publica y ve el historial en Centro; la docente los lee en Menú → Avisos (`AvisosFundacionScreen`); el padre, en la campana de Hoy. Limitación: el estado de "leído" vive solo en el teléfono (`LeidosStore`). |
 | RF-09 | Fotografía de la actividad | ✅ | `media` (URL firmada), `MediaUploader`, reportes con `media_id`. La cámara usa `TakePicturePreview` (miniatura; ver nota en `ui/components/README.md`). |
-| RF-10 | La familia puede pedir que se borre una foto | 🟡 | `POST /media/{id}/deletion-request` y botón en la pantalla de fotos del padre. **API de revisión hecha** (`GET /media/deletion-requests`, `approve` borra del bucket, `reject`; auditada; 9 pruebas en `test_media_deletion.py`). Falta la pantalla del admin en la app. |
+| RF-10 | La familia puede pedir que se borre una foto | ✅ | `POST /media/{id}/deletion-request` y botón en la pantalla de fotos del padre. El admin revisa desde Centro → «Fotos que piden borrar» (`SolicitudesBorradoScreen`): ve la foto, el motivo y los niños; **borra** (sale del bucket y de todas las galerías) o **conserva**. API auditada y con 9 pruebas (`test_media_deletion.py`). **Límite:** la pantalla se probó en el teléfono con la lista vacía; falta verla con una solicitud real (no hay fotos en la base de pruebas). |
 | RF-11 | Funciona sin internet | ❌ | No hay Room, DataStore ni WorkManager. |
 | RF-12 | Resumen semanal | ❌ | Solo existe `daily_summary` (diario). |
 | RF-13 | Desbloqueo con huella | ❌ | No hay `BiometricPrompt` ([decisión #4](DECISIONES-PENDIENTES.md)). |

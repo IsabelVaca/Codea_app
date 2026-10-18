@@ -52,6 +52,12 @@ Registro cronológico de lo que se hizo, por qué y cómo se verificó. Lo nuevo
 - 9 pruebas nuevas (`test_media_deletion.py`). Total: **259 pruebas de la API en verde**. La matriz de roles se regeneró sola con las 3 rutas nuevas (75 endpoints).
 - Falta la pantalla del admin en la app (siguiente paso).
 
+### RF-10: pantalla del admin y limpieza de pagos
+- App: Centro tiene la tarjeta «Fotos que piden borrar» (con contador de pendientes) que abre `SolicitudesBorradoScreen`: foto con Coil, niños, quién la pidió, motivo, «Borrar la foto» (con confirmación, no se puede deshacer) y «Conservar». ViewModel `SolicitudesBorradoViewModel`, repositorio `SolicitudBorradoApiRepository`, ruta `AdminSolicitudesBorradoRoute`.
+- Verificado en el teléfono: la tarjeta y la pantalla abren y piden la lista a la API real (estado vacío). **No se pudo ver una solicitud real**: no hay fotos en Aiven y crear una exige registrar la entrada de la docente dentro del perímetro del centro. El flujo completo lo cubren las 9 pruebas de la API.
+- También en el teléfono (tema claro esta vez): «Sala · Maternal» y la etiqueta «Nota de la familia hoy» de Mi sala, ya con datos reales.
+- Se quitaron las menciones a pagos de los README y de los documentos (CRF-01 queda como «no cumplido por decisión del equipo»).
+
 ### Checador con GPS y hora reales
 - Antes: prototipo con datos fijos y `registrar()` mandaba siempre las coordenadas del centro (el servidor nunca rechazaba por distancia).
 - Ahora: `data/DeviceLocation.kt` (LocationManager de Android, sin Play Services; GPS y luego red, con tiempo límite), `domain/GeoMath.kt` (distancia haversine, con 4 pruebas en `GeoMathTest`) y `CheckerViewModel` con estados de ubicación (buscando, sin permiso, sin señal, lista). La fecha y la hora son las del teléfono; la entrada se registra con la posición real.

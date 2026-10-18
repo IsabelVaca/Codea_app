@@ -57,6 +57,7 @@ import mx.tec.codea.ui.screens.SelectReportMethodScreen
 import mx.tec.codea.ui.screens.SelectStudentsScreen
 import mx.tec.codea.ui.screens.admin.AltaAsistenteScreen
 import mx.tec.codea.ui.screens.admin.CentroScreen
+import mx.tec.codea.ui.screens.admin.SolicitudesBorradoScreen
 import mx.tec.codea.ui.screens.admin.CrearSalaScreen
 import mx.tec.codea.ui.screens.admin.DocenteDetalleScreen
 import mx.tec.codea.ui.screens.admin.DocenteOpcion
@@ -86,6 +87,7 @@ import mx.tec.codea.ui.state.AltaAsistenteViewModel
 import mx.tec.codea.ui.state.AvisosViewModel
 import mx.tec.codea.ui.state.ChatViewModel
 import mx.tec.codea.ui.state.CentroViewModel
+import mx.tec.codea.ui.state.SolicitudesBorradoViewModel
 import mx.tec.codea.ui.state.CheckerConfig
 import mx.tec.codea.ui.state.CheckerViewModel
 import mx.tec.codea.ui.state.AccountViewModel
@@ -403,6 +405,7 @@ fun CodeaNavHost(
                 val salas by salasViewModel.salas.collectAsState()
                 val infantesCentro by infantesViewModel.infantes.collectAsState()
                 val avisos by centroViewModel.avisos.collectAsState()
+                val pendientesBorrado by centroViewModel.pendientesBorrado.collectAsState()
                 CentroScreen(
                     salas = salas,
                     infantes = infantesCentro,
@@ -410,6 +413,8 @@ fun CodeaNavHost(
                     onDestinoChange = centroViewModel::onDestinoChange,
                     avisos = avisos,
                     onCuentaClick = { navController.navigate(AccountRoute) },
+                    solicitudesBorrado = pendientesBorrado,
+                    onSolicitudesBorradoClick = { navController.navigate(AdminSolicitudesBorradoRoute) },
                     onSalaClick = { sala ->
                         navController.navigate(AdminSalaDetalleRoute(sala.id))
                     },
@@ -463,6 +468,27 @@ fun CodeaNavHost(
                         })
                     },
                     onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<AdminSolicitudesBorradoRoute> {
+                val borradoViewModel: SolicitudesBorradoViewModel = viewModel()
+                val solicitudes by borradoViewModel.solicitudes.collectAsState()
+                val cargandoBorrado by borradoViewModel.cargando.collectAsState()
+                SolicitudesBorradoScreen(
+                    solicitudes = solicitudes,
+                    cargando = cargandoBorrado,
+                    onBackClick = { navController.popBackStack() },
+                    onAprobar = { solicitud ->
+                        borradoViewModel.aprobar(solicitud.id) {
+                            coroutineScope.launch { snackbarHostState.showSnackbar("Foto borrada") }
+                        }
+                    },
+                    onRechazar = { solicitud ->
+                        borradoViewModel.rechazar(solicitud.id) {
+                            coroutineScope.launch { snackbarHostState.showSnackbar("La foto se conserva") }
+                        }
+                    },
                 )
             }
 

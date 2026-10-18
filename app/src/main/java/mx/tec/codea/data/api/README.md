@@ -30,7 +30,7 @@ Todo lo que sabe de HTTP.
 ## Pendiente
 
 - **HTTPS en release:** definir `API_BASE_URL_RELEASE` cuando haya dominio.
-- **Endpoints que faltan en `CodeaApi`** porque la API tampoco los tiene: pagos, eventos y citas, resumen semanal, revisión de solicitudes de borrado.
+- **Endpoints que faltan en `CodeaApi`** porque la API tampoco los tiene: eventos y citas, resumen semanal.
 - **Tiempo real del chat:** hoy se consulta con `?after=`; el marco permite SSE o WebSocket.
 - **Traducir `code`** de los errores a mensajes propios cuando el texto de la API no sirva.
 - **Fijar el certificado (pinning)** del servidor, si se pide en la parte de seguridad.

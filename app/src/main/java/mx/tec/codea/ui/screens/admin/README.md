@@ -14,8 +14,7 @@ Pestañas: **Centro, Docentes, Infantes, Padres, Rutinas**. Cada una tiene su Vi
 ## Pendiente
 
 - **Avisos con imágenes** (HN5). Publicar (a todo el centro o a una sala) y el historial ya existen en Centro, solo con texto.
-- **Solicitudes de borrado de fotos** (RF-10): la API las recibe de las familias pero no hay endpoint ni pantalla para que el admin las apruebe o rechace.
-- **Pagos por infante** (CRF-01).
+- **Configuración del centro** (ubicación, radio del checador y turnos): la API ya tiene `PATCH /center`, pero no hay pantalla; hoy la ubicación se cambia por la API.
 - **Calendario de eventos y citas** (CRF-03).
 - **Menú del día** (HN3) y **llegada de los padres** (HN2).
 - **Imprimir o descargar bitácoras** (HN1).

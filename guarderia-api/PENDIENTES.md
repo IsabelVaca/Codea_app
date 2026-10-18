@@ -26,7 +26,6 @@ Foto a 2026-10-16 (leyendo el código; las pruebas no se corrieron para esta fot
 
 | Qué | Requisito |
 |---|---|
-| Módulo de pagos por infante | CRF-01 |
 | Eventos y citas (calendario) | CRF-03 |
 | Menú del día | HN3 |
 | Llegada de los padres | HN2 |

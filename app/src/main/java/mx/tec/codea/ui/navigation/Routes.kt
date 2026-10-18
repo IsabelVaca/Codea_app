@@ -79,6 +79,10 @@ data object AdminCentroRoute
 @Serializable
 data object AdminCrearSalaRoute
 
+// las fotos que las familias piden borrar; el admin decide (se abre desde Centro).
+@Serializable
+data object AdminSolicitudesBorradoRoute
+
 // detalle de una sala: viaja el id, no el objeto.
 @Serializable
 data class AdminSalaDetalleRoute(val salaId: String)

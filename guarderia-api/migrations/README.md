@@ -29,6 +29,6 @@ docker compose exec api alembic downgrade -1                               # rol
 
 ## Pendiente
 
-- Migraciones para lo que viene: `audit_log`, pagos, eventos y citas, menú del día, imágenes en avisos.
+- Migraciones para lo que viene: eventos y citas, menú del día, imágenes en avisos.
 - Probar `downgrade` de cada versión (rollback), que pide el plan de implantación.
 - Estrategia de respaldo y restauración antes de migrar en producción.

@@ -14,6 +14,7 @@ import mx.tec.codea.domain.Aviso
 import mx.tec.codea.domain.Docente
 import mx.tec.codea.domain.Infante
 import mx.tec.codea.domain.Padre
+import mx.tec.codea.domain.SolicitudBorrado
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -150,6 +151,32 @@ private fun ParentDto.toPadre() = Padre(
     conAcceso = hasAccess,
 )
 
+// solicitudes de borrado de fotos
+
+class SolicitudBorradoApiRepository {
+
+    suspend fun pendientes(): List<SolicitudBorrado> = ApiClient.api.deletionRequests("PENDING").map {
+        SolicitudBorrado(
+            id = it.id.toString(),
+            solicitante = it.requestedByName,
+            ninos = it.childNames,
+            motivo = it.reason,
+            fotoUrl = it.photoUrl,
+            fecha = formatearFecha(it.createdAt),
+        )
+    }
+
+    // borra la foto del servidor y de las galerías de las familias.
+    suspend fun aprobar(id: String) {
+        ApiClient.api.approveDeletion(id.toInt())
+    }
+
+    // la foto se queda.
+    suspend fun rechazar(id: String) {
+        ApiClient.api.rejectDeletion(id.toInt())
+    }
+}
+
 // avisos
 
 class AvisoApiRepository {
@@ -175,7 +202,7 @@ class AvisoApiRepository {
 
 // "2026-10-16T22:30:12.123Z" (UTC) -> "16 oct · 16:30" en la hora del teléfono.
 // no se usa java.time porque la app soporta Android 7 (API 24).
-private fun formatearFecha(iso: String): String = try {
+internal fun formatearFecha(iso: String): String = try {
     val utc = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).apply { timeZone = TimeZone.getTimeZone("UTC") }
     val fecha = utc.parse(iso.take(19))!!
     SimpleDateFormat("d MMM · HH:mm", Locale("es", "MX")).format(fecha)

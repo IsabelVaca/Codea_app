@@ -22,5 +22,5 @@ Modelos y reglas de negocio en **Kotlin puro**: sin imports de Android ni de Ret
 
 ## Pendiente
 
-- Reglas para lo que aún no existe: pagos, eventos y citas, resumen semanal, menú del día, entrada y salida del niño.
+- Reglas para lo que aún no existe: eventos y citas, resumen semanal, menú del día, entrada y salida del niño.
 - Pruebas para los validadores de admin (`Sala`, `Docente`, `Infante`, `Padre`): hoy solo hay pruebas de check-in, rutina y reportes.

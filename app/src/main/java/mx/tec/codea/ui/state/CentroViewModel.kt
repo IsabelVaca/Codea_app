@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import mx.tec.codea.data.AvisoApiRepository
 import mx.tec.codea.data.DataEvents
+import mx.tec.codea.data.SolicitudBorradoApiRepository
 import mx.tec.codea.data.api.ApiConfig
 import mx.tec.codea.data.api.toUserMessage
 import mx.tec.codea.domain.Aviso
@@ -20,6 +21,11 @@ import mx.tec.codea.domain.Aviso
 class CentroViewModel : ViewModel() {
 
     private val repository = AvisoApiRepository()
+    private val borradoRepository = SolicitudBorradoApiRepository()
+
+    // cuántas fotos esperan la decisión del admin (el contador de Centro).
+    private val _pendientesBorrado = MutableStateFlow(0)
+    val pendientesBorrado: StateFlow<Int> = _pendientesBorrado.asStateFlow()
 
     var avisoTexto by mutableStateOf("")
         private set
@@ -41,8 +47,27 @@ class CentroViewModel : ViewModel() {
 
     init {
         // cada vez que algo cambia en el servidor (por ejemplo, un aviso nuevo), se vuelve a pedir.
-        viewModelScope.launch { DataEvents.changed.collect { cargarAvisos() } }
+        viewModelScope.launch {
+            DataEvents.changed.collect {
+                cargarAvisos()
+                cargarPendientesBorrado()
+            }
+        }
         cargarAvisos()
+        cargarPendientesBorrado()
+    }
+
+    private fun cargarPendientesBorrado() {
+        if (!ApiConfig.isAdmin) return
+        viewModelScope.launch {
+            try {
+                _pendientesBorrado.value = borradoRepository.pendientes().size
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // el contador es un detalle: si falla no se molesta con un aviso, se queda como estaba.
+            }
+        }
     }
 
     fun cargarAvisos() {

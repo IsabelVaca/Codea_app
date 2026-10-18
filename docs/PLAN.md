@@ -42,7 +42,7 @@ Regla: todo dentro de [`MARCO-TECNICO.md`](MARCO-TECNICO.md); lo que dependa de 
 
 ## Qué se recorta (y se documenta como desviación)
 
-Consulta con IA (CRF-04), Redis, Grafana, bloqueo de capturas y objetos perdidos. Si el tiempo falta: en la app, sin conexión se reduce a solo asistencia; los pagos (CRF-01) y los eventos y citas (CRF-03) quedan en versión mínima o fuera.
+Consulta con IA (CRF-04), Redis, Grafana, bloqueo de capturas y objetos perdidos. Si el tiempo falta: en la app, sin conexión se reduce a solo asistencia; los eventos y citas (CRF-03) quedan en versión mínima o fuera. Los pagos (CRF-01) quedaron fuera por decisión del equipo.
 
 ## Riesgos
 

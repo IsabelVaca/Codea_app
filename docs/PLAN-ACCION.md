@@ -30,7 +30,7 @@ Se trabaja en la rama `integracion` (login JWT + chat sobre `main`). Cada bloque
 |---|---|---|
 | 1 ✅ | RF-14 | Tabla `audit_log` y escritura desde los `service.py` (logins, activaciones, códigos, altas, bajas y cambios). Hecho el 18/oct; falta la lectura de fotos y documentos. |
 | 2 ✅ | Rúbrica, parte 2 | Límite de intentos y bloqueo temporal en login y activación, cabeceras de seguridad, CORS explícito. Hecho el 18/oct. |
-| 3 | RF-10 | Listar, aprobar y rechazar solicitudes de borrado de fotos; pantalla del admin. **API hecha el 18/oct** (9 pruebas); falta la pantalla. |
+| 3 ✅ | RF-10 | Listar, aprobar y rechazar solicitudes de borrado de fotos; pantalla del admin. Hecho el 18/oct (API con 9 pruebas y pantalla en Centro). |
 | 4 | RF-03 | Hora de entrada y de salida en la asistencia. |
 | 5 | RF-12 | Resumen semanal por niño (endpoint y vista del padre). |
 | 6 | HN5 | `media_id` en los avisos. |
@@ -47,7 +47,7 @@ Se trabaja en la rama `integracion` (login JWT + chat sobre `main`). Cada bloque
 - [ ] Manual de usuario, manual de instalación, arquitectura (diagrama), plan de implantación.
 - [ ] Administración: bitácora, desviaciones, riesgos, distribución (con el historial de git) y retrospectiva.
 - [ ] Guion de la presentación de 15 minutos.
-- [ ] Poner al día [`REQUISITOS.md`](REQUISITOS.md), [`ESTADO.md`](ESTADO.md), [`plan/`](plan/README.md) y [`api/endpoints.md`](api/endpoints.md), y quitar los pagos de todos.
+- [ ] Poner al día [`REQUISITOS.md`](REQUISITOS.md), [`ESTADO.md`](ESTADO.md), [`plan/`](plan/README.md) y [`api/endpoints.md`](api/endpoints.md) (los pagos ya se quitaron de los documentos el 18/oct).
 
 ## Fuera de lo que puedo hacer solo (queda para el equipo)
 
