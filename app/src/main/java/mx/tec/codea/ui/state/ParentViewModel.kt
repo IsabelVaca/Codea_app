@@ -12,21 +12,23 @@ import mx.tec.codea.data.ParentApiRepository
 import mx.tec.codea.data.api.ApiConfig
 import mx.tec.codea.data.api.CalendarDto
 import mx.tec.codea.data.api.DayDto
-import mx.tec.codea.data.api.DocumentDto
 import mx.tec.codea.data.api.FeedItemDto
 import mx.tec.codea.data.api.toUserMessage
 import mx.tec.codea.data.clockOf
 import mx.tec.codea.data.api.WeeklySummaryDto
+import mx.tec.codea.data.api.ChildDetailDto
+import mx.tec.codea.data.hoyLocal
 import mx.tec.codea.data.parseIso
+import mx.tec.codea.data.toContact
+import mx.tec.codea.domain.ChildHealth
+import mx.tec.codea.domain.ChildProfileRules
+import mx.tec.codea.domain.MyChild
 import mx.tec.codea.domain.DiaSemana
 import mx.tec.codea.domain.ResumenSemana
 import mx.tec.codea.domain.ResumenSemanaTextos
 import mx.tec.codea.ui.screens.parent.calendar.CalendarDay
 import mx.tec.codea.ui.screens.parent.calendar.CalendarMonthData
 import mx.tec.codea.ui.screens.parent.calendar.DayAttendanceStatus
-import mx.tec.codea.ui.screens.parent.documents.AuthorizedPerson
-import mx.tec.codea.ui.screens.parent.documents.DocumentStatus
-import mx.tec.codea.ui.screens.parent.documents.RequestedDocument
 import mx.tec.codea.ui.screens.parent.photos.Categoria
 import mx.tec.codea.ui.screens.parent.photos.Foto
 import mx.tec.codea.ui.screens.parent.photos.Tono
@@ -37,7 +39,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-// el estado de las pantallas del padre: hoy, calendario, fotos y documentos de su hijo.
+// el estado de las pantallas del padre: hoy, calendario, fotos y "Mi hijo" (sus datos y su salud).
 // un padre puede tener varios hijos; por ahora se usa el primero.
 class ParentViewModel : ViewModel() {
 
@@ -78,10 +80,12 @@ class ParentViewModel : ViewModel() {
     var weekly by mutableStateOf<ResumenSemana?>(null)
         private set
 
-    var documents by mutableStateOf<List<RequestedDocument>>(emptyList())
+    // los datos de su hijo para "Mi hijo"; null mientras carga.
+    var myChild by mutableStateOf<MyChild?>(null)
         private set
 
-    var authorizedPeople by mutableStateOf<List<AuthorizedPerson>>(emptyList())
+    // true mientras se guardan los datos de salud.
+    var savingHealth by mutableStateOf(false)
         private set
 
     var photos by mutableStateOf<List<Foto>>(emptyList())
@@ -114,7 +118,7 @@ class ParentViewModel : ViewModel() {
             parte("el día") { cargarDia() }
             parte("el calendario") { cargarMes() }
             parte("el resumen semanal") { cargarSemana() }
-            parte("los documentos") { cargarDocumentos() }
+            parte("los datos de tu hijo") { cargarHijo() }
             parte("las fotos") { cargarFotos() }
         }
     }
@@ -194,28 +198,43 @@ class ParentViewModel : ViewModel() {
         },
     )
 
-    // ---------------- documentos ----------------
+    // ---------------- mi hijo ----------------
 
-    private suspend fun cargarDocumentos() {
+    private suspend fun cargarHijo() {
         val id = childId ?: return
-        documents = repository.documents(id).map { it.toRequested() }
-        authorizedPeople = repository.pickups(id).map { AuthorizedPerson(it.id.toString(), it.fullName) }
+        myChild = repository.child(id).toMyChild()
     }
 
-    fun uploadDocument(documentId: String, bytes: ByteArray, contentType: String) {
+    // la familia escribe la salud de su hijo. la API regresa el expediente ya guardado y eso es lo que se ve.
+    fun saveHealth(health: ChildHealth) {
         val id = childId ?: return
-        launchAction { repository.uploadDocument(id, documentId.toInt(), bytes, contentType) }
+        if (savingHealth) return
+        savingHealth = true
+        launchAction(onSuccess = { DataEvents.notice("Datos de tu hijo guardados") }) {
+            try {
+                myChild = repository.saveHealth(id, health).toMyChild()
+            } finally {
+                savingHealth = false
+            }
+        }
     }
 
-    fun addAuthorized(name: String) {
-        val id = childId ?: return
-        if (name.isBlank()) return
-        launchAction { repository.addPickup(id, name) }
-    }
-
-    fun removeAuthorized(person: AuthorizedPerson) {
-        val id = childId ?: return
-        launchAction { repository.removePickup(id, person.id.toInt()) }
+    private fun ChildDetailDto.toMyChild(): MyChild {
+        val fecha = SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(birthDate.orEmpty())
+        return MyChild(
+            fullName = fullName,
+            birthDateText = fecha?.let { SimpleDateFormat("d 'de' MMMM 'de' yyyy", es).format(it) },
+            ageText = ChildProfileRules.ageText(birthDate, hoyLocal()),
+            classroomName = classroom?.name,
+            guardians = guardians.sortedByDescending { it.isPrimary }.map { it.toContact() },
+            health = ChildHealth(
+                allergies = allergies.orEmpty(),
+                medicalConditions = medicalConditions.orEmpty(),
+                intolerances = intolerances.orEmpty(),
+                medications = medications.orEmpty(),
+                otherNotes = otherNotes.orEmpty(),
+            ),
+        )
     }
 
     // ---------------- fotos ----------------
@@ -312,22 +331,6 @@ class ParentViewModel : ViewModel() {
         "WITH_NOTE" -> DayAttendanceStatus.WITH_NOTE
         "ABSENT" -> DayAttendanceStatus.ABSENT
         else -> DayAttendanceStatus.NO_RECORD
-    }
-
-    private fun DocumentDto.toRequested(): RequestedDocument {
-        val vigente = status == "CURRENT"
-        val detalle = if (vigente) {
-            parseIso(uploadedAt)?.let { "Subido el ${SimpleDateFormat("d 'de' MMMM", es).format(it)}" }
-        } else {
-            dueDate?.let { "Se solicita para el ${fechaLarga(it)}" }
-        }
-        return RequestedDocument(
-            id = id.toString(),
-            title = title,
-            detail = detalle,
-            status = if (vigente) DocumentStatus.CURRENT else DocumentStatus.MISSING,
-            actionLabel = if (vigente) "Reemplazar documento" else "Subir documento",
-        )
     }
 
     private fun FeedItemDto.toFoto(): Foto {

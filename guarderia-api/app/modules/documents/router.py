@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status
 
 from app.core.db import Db
-from app.core.security import AdminOrParent, AnyUser
+from app.core.security import AdminOrParent, AdminUser, AnyUser
 from app.core.storage import StorageDep
 
 from . import service
@@ -31,12 +31,12 @@ async def list_pickups(db: Db, current: AnyUser, child_id: int) -> list[PickupOu
 
 
 @router.post("/authorized-pickups", response_model=PickupOut, status_code=status.HTTP_201_CREATED)
-async def add_pickup(db: Db, current: AdminOrParent, child_id: int, data: PickupIn) -> PickupOut:
-    """Agrega una persona autorizada para recoger al niño."""
+async def add_pickup(db: Db, current: AdminUser, child_id: int, data: PickupIn) -> PickupOut:
+    """Agrega una persona autorizada para recoger al niño. Solo el administrador: la familia se lo pide a la dirección."""
     return await service.add_pickup(db, current, child_id, data)
 
 
 @router.delete("/authorized-pickups/{person_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def remove_pickup(db: Db, current: AdminOrParent, child_id: int, person_id: int) -> None:
-    """Quita a una persona autorizada."""
+async def remove_pickup(db: Db, current: AdminUser, child_id: int, person_id: int) -> None:
+    """Quita a una persona autorizada. Solo el administrador."""
     await service.remove_pickup(db, current, child_id, person_id)

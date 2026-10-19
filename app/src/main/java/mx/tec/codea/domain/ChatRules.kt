@@ -3,6 +3,16 @@ package mx.tec.codea.domain
 // pure rules of the chat list, so they can be tested without Android.
 object ChatRules {
 
+    // de quién es el chat: "Mamá: Laura Iglesias · Papá: Jorge Flores". sin parentesco va solo el nombre;
+    // sin tutores registrados, null (la pantalla no muestra la línea).
+    fun guardiansLabel(guardians: List<ChatGuardian>): String? =
+        guardians
+            .filter { it.name.isNotBlank() }
+            .joinToString(" · ") { guardian ->
+                guardian.relationship?.let { "$it: ${guardian.name.trim()}" } ?: guardian.name.trim()
+            }
+            .ifBlank { null }
+
     // mixes what the server sent with what we already show.
     // - a server message replaces our pending one with the same clientId.
     // - the same id never appears twice.

@@ -24,13 +24,16 @@ Quién puede llamar a cada endpoint. **Se genera leyendo las dependencias reales
 | PATCH | `/children/{child_id}` | ✅ | — | — | Por rol |
 | GET | `/children/{child_id}/attendance` | ✅ | ✅ | ✅ | Sesión |
 | GET | `/children/{child_id}/authorized-pickups` | ✅ | ✅ | ✅ | Sesión |
-| POST | `/children/{child_id}/authorized-pickups` | ✅ | — | ✅ | Por rol |
-| DELETE | `/children/{child_id}/authorized-pickups/{person_id}` | ✅ | — | ✅ | Por rol |
+| POST | `/children/{child_id}/authorized-pickups` | ✅ | — | — | Por rol |
+| DELETE | `/children/{child_id}/authorized-pickups/{person_id}` | ✅ | — | — | Por rol |
 | POST | `/children/{child_id}/daily-entries` | ✅ | ✅ | — | Por rol |
 | GET | `/children/{child_id}/day` | ✅ | ✅ | ✅ | Sesión |
 | POST | `/children/{child_id}/deactivate` | ✅ | — | — | Por rol |
+| DELETE | `/children/{child_id}/departure` | — | ✅ | — | Por rol |
+| POST | `/children/{child_id}/departure` | — | ✅ | — | Por rol |
 | GET | `/children/{child_id}/documents` | ✅ | — | ✅ | Por rol |
 | PUT | `/children/{child_id}/documents/{document_id}` | ✅ | — | ✅ | Por rol |
+| PATCH | `/children/{child_id}/health` | ✅ | — | ✅ | Por rol |
 | POST | `/children/{child_id}/notes` | — | — | ✅ | Por rol |
 | POST | `/children/{child_id}/reactivate` | ✅ | — | — | Por rol |
 | GET | `/children/{child_id}/weekly-summary` | ✅ | ✅ | ✅ | Sesión |
@@ -40,6 +43,7 @@ Quién puede llamar a cada endpoint. **Se genera leyendo las dependencias reales
 | GET | `/classrooms/{classroom_id}` | ✅ | — | — | Por rol |
 | PATCH | `/classrooms/{classroom_id}` | ✅ | — | — | Por rol |
 | GET | `/classrooms/{classroom_id}/children` | ✅ | ✅ | — | Por rol |
+| GET | `/classrooms/{classroom_id}/departures` | ✅ | ✅ | — | Por rol |
 | GET | `/classrooms/{classroom_id}/routine` | ✅ | ✅ | — | Por rol |
 | PUT | `/classrooms/{classroom_id}/routine-template` | ✅ | — | — | Por rol |
 | PUT | `/classrooms/{classroom_id}/staff` | ✅ | — | — | Por rol |
@@ -86,7 +90,7 @@ Quién puede llamar a cada endpoint. **Se genera leyendo las dependencias reales
 | POST | `/teachers/{teacher_id}/reactivate` | ✅ | — | — | Por rol |
 | POST | `/users/{user_id}/access-code` | ✅ | — | — | Por rol |
 
-Total: 77 endpoints (6 públicos, 55 por rol, 16 con alcance por registro).
+Total: 81 endpoints (6 públicos, 59 por rol, 16 con alcance por registro).
 
 ## Cómo se regenera
 

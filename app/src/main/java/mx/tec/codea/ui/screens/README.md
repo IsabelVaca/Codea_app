@@ -17,6 +17,8 @@ Las pantallas copian el diseño y el texto del prototipo (`docs/prototipos/`) y 
 | `MenuScreen.kt` | Menú: perfil, checador y otras opciones | ✅ Avisos abre `AvisosFundacionScreen`; Mi perfil abre Mi cuenta; Cerrar sesión cierra la sesión de verdad |
 | `CheckerScreen.kt` | Checador: entrada y salida con un toque, sin ubicación ni mapa; a las 9 pm la salida se cierra sola | ✅ |
 | `CheckInDoneScreen.kt` | "Entrada registrada" | ✅ |
+| `DeparturePassScreen.kt` | **Pase de salida:** con la rutina terminada, la docente registra la hora de salida de cada niño y quién lo recoge (personas autorizadas y tutores); con todos fuera aparece «Finalizar día» | 🟡 sin probar en el teléfono; necesita conexión |
+| `DayFinishedScreen.kt` | «Día finalizado»: reemplaza a la rutina en Mi día después de finalizar el día (o del cierre automático de las 9 pm) | 🟡 sin probar en el teléfono |
 
 ## Pantallas borradas el 18/oct
 
@@ -24,7 +26,6 @@ Se quitaron `checadorScreen.kt`, `miDiaScreen.kt`, `miDiaEnCursoScreen.kt`, `con
 
 ## Pendiente
 
-- **"Finalizar día"** al terminar la rutina (tarea abierta en Teams).
 - **Mandar fotos** desde el chat (tarea abierta en Teams).
 - **Foto de calidad:** `TakePicturePreview` devuelve una miniatura; para fotos de verdad usar `TakePicture` con `FileProvider`, y comprimir y orientar según EXIF como pide el marco.
 - **Sin conexión:** que Mi día, Mi sala y el reporte funcionen sin internet (RF-11).

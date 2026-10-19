@@ -74,8 +74,6 @@ fun CentroScreen(
     destinoSalaId: String? = null,           // null = todas las salas
     onDestinoChange: (String?) -> Unit = {},
     avisos: List<Aviso> = emptyList(),       // el historial, el más reciente primero
-    solicitudesBorrado: Int = 0,             // fotos que las familias piden borrar y esperan decisión
-    onSolicitudesBorradoClick: () -> Unit = {},
 ) {
     // si la sala elegida deja de existir, el aviso vuelve a ser para todas.
     val destino = salas.firstOrNull { it.id == destinoSalaId }
@@ -96,7 +94,6 @@ fun CentroScreen(
             modifier = Modifier.verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            SolicitudesBorradoCard(pendientes = solicitudesBorrado, onClick = onSolicitudesBorradoClick)
             SeccionLabel("Ocupación de salas")
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 salas.forEach { sala ->
@@ -333,33 +330,6 @@ fun CrearSalaButton(
             fontFamily = Poppins,
             fontWeight = FontWeight.Bold
         )
-    }
-}
-
-// la entrada a las solicitudes de borrado de fotos; se pinta de color de alerta si hay pendientes.
-@Composable
-private fun SolicitudesBorradoCard(pendientes: Int, onClick: () -> Unit) {
-    val hayPendientes = pendientes > 0
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(22.dp))
-            .background(if (hayPendientes) Color(0xFFFFEDE7) else Color(0xFFF4F1FB))
-            .clickable(onClick = onClick)
-            .padding(14.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text("Fotos que piden borrar", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
-            Text(
-                if (hayPendientes) "$pendientes por revisar" else "No hay solicitudes pendientes",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = if (hayPendientes) Color(0xFFC4432A) else Color(0xFF6B6485),
-            )
-        }
-        Text("Ver", fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF5B3FE0))
     }
 }
 

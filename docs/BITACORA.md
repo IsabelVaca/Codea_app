@@ -180,3 +180,17 @@ Propuesta y decisiones en [`plan/06-mi-sala-propuesta.md`](plan/06-mi-sala-propu
 - Quedan para decidir: el 6 (arrastrar para ordenar rutinas, librería `reorderable`) y el 7 (avisos a coordinación en el servidor).
 - Compila y las 77 pruebas JVM pasan.
 
+## 2026-10-18 · Mi hijo, personas autorizadas del admin y pase de salida
+
+- **Pedido del equipo:** el tab «Documentos» del padre pasa a ser «Mi hijo» con datos del niño y salud editable; las personas autorizadas para recoger las administra el admin; la docente cierra el día con un pase de salida.
+- **API:** `PATCH /children/{id}/health` (padre o admin; alergias, condiciones médicas, intolerancias, medicamentos y otras indicaciones, hasta 1000 caracteres; la auditoría guarda qué campos cambiaron, no su contenido). `authorized-pickups` POST y DELETE pasan a solo admin, con auditoría. Módulo nuevo `departures`: `GET /classrooms/{id}/departures`, `POST` y `DELETE /children/{id}/departure`. Migración `a07c3d8e6f76` (cuatro columnas en `child` y la tabla `child_departure`). **No está aplicada en Aiven.** 308 pruebas de la API en verde (las pruebas de personas autorizadas se ajustaron al nuevo permiso).
+- **App padre:** `MyChildScreen` reemplaza a `ParentDocumentsScreen`; se borran `AddAuthorizedDialog` y `ParentDocumentsSampleData`. Los documentos siguen dentro de «Mi hijo».
+- **App admin:** Ajustes → Personas autorizadas (lista de niños y detalle por niño con agregar y quitar).
+- **App docente:** tarjeta «Pase de salida» en Mi día al terminar todos los momentos; `DeparturePassScreen` con «Registrar salida», «Corregir» y «Finalizar día»; `DayFinishedScreen` cuando el turno terminó. La ficha del niño muestra lo que escribió la familia.
+- **Decisiones mías, por confirmar:** los tutores salen siempre como opción en el pase (si no, un niño sin personas autorizadas bloquearía «Finalizar día»); solo salen los niños con pase de lista; la hora la pone el servidor; el pase necesita conexión.
+- **Verificado:** compila, 106 pruebas JVM en verde (14 nuevas) y el APK de debug se arma. **No se probó en el teléfono.**
+- **Pendiente:** aplicar `a07c3d8e6f76` en Aiven (necesita aprobación), probar los tres flujos en el teléfono, y que la familia vea la hora de salida de su hijo.
+- **Ajustes posteriores (misma noche):** el pase de salida pasó a ser el último paso de la rutina en Mi día (fila gris con candado y, al terminar, tarjeta violeta «SIGUIENTE PASO» a la que la pantalla baja sola) y, con la rutina terminada, ya no queda ningún momento seleccionado con el botón de reporte. Centro del admin ya no muestra «Fotos que piden borrar»; su pantalla y endpoints quedan sin forma de llegar a ellos. Visto en el emulador; sin registrar salidas de punta a punta.
+- **«Mi hijo» sin documentos:** se quitó la subida de documentos de la pestaña (`RequestedDocument`, el selector de archivos y las llamadas del padre). La API de documentos (`GET` y `PUT /children/{id}/documents`) sigue en el backend sin pantalla; el CRF-02 y los manuales de `docs/entrega/` que mencionen documentos del padre hay que revisarlos.
+- **Chats de la docente:** la bandeja y el encabezado de la conversación muestran al niño y a sus tutores (`GET /conversations` ahora trae `child.guardians[]`; `ChatRules.guardiansLabel`). 309 pruebas de la API y 109 JVM en verde. Sin verlo en pantalla. Con el seed, solo Mateo Iglesias y Valentina Ruiz tienen tutor registrado; en los demás chats la línea no aparece.
+

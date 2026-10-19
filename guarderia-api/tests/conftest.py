@@ -241,6 +241,7 @@ async def world(db) -> SimpleNamespace:
         teacher_b=as_user(teacher_b.email),
         mom=as_user(mom.email),
         dad=as_user(dad.email),
+        admin_id=admin.id,
         teacher_a_id=teacher_a.id,
         teacher_b_id=teacher_b.id,
         mom_id=mom.id,

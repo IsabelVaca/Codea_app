@@ -12,11 +12,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -24,8 +26,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -60,9 +64,23 @@ fun MyDayScreen(
     rollCallPresent: Int = 0,
     rollCallTotal: Int = 0,
     onRollCallClick: () -> Unit = {},
+    // con todos los momentos hechos aparece el pase de salida: lo último del día. se muestra con cuántos niños están hoy.
+    departureReady: Boolean = false,
+    departurePresent: Int = 0,
+    onDepartureClick: () -> Unit = {},
 ) {
+    // al terminar la rutina la pantalla se mueve sola hasta el pase de salida (el último paso) y lo deja a media pantalla:
+    // así se nota que es lo que sigue.
+    val listState = rememberLazyListState()
+    LaunchedEffect(departureReady) {
+        if (departureReady) {
+            val last = listState.layoutInfo.totalItemsCount - 1
+            if (last >= 0) listState.animateScrollToItem(last, scrollOffset = -(listState.layoutInfo.viewportSize.height / 3))
+        }
+    }
     // a lazy column only draws the rows that fit on the screen, and it can scroll.
     LazyColumn(
+        state = listState,
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 22.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(11.dp),
@@ -102,6 +120,93 @@ fun MyDayScreen(
                     onClick = { onSubprocessClick(subprocess.number) },
                     modifier = Modifier.animateItem(),
                 )
+            }
+        }
+        // lo que sigue después de la rutina: el pase de salida. mientras falten momentos se ve como el paso que viene;
+        // con la rutina terminada se destaca y es lo que hay que hacer.
+        item(key = "departure") {
+            DepartureStep(
+                ready = departureReady,
+                present = departurePresent,
+                onClick = onDepartureClick,
+                modifier = Modifier.padding(top = 8.dp),
+            )
+        }
+    }
+}
+
+// el último paso del día. antes de terminar la rutina es una fila gris con candado ("se abre al terminar los momentos");
+// con la rutina terminada se vuelve una tarjeta destacada que lleva a registrar quién recoge a cada niño y a finalizar el día.
+@Composable
+private fun DepartureStep(ready: Boolean, present: Int, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val colors = MaterialTheme.colorScheme
+    if (!ready) {
+        Surface(
+            modifier = modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(18.dp),
+            color = colors.surfaceVariant,
+            contentColor = colors.onSurfaceVariant,
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(11.dp),
+            ) {
+                Icon(Icons.Filled.Lock, contentDescription = null, modifier = Modifier.size(22.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.departure_title),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        text = stringResource(R.string.departure_locked_hint),
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                }
+            }
+        }
+        return
+    }
+    Surface(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(26.dp),
+        color = colors.primary,
+        contentColor = colors.onPrimary,
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.departure_next_step),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.ExtraBold,
+                modifier = Modifier.alpha(0.8f),
+            )
+            Text(
+                text = stringResource(R.string.departure_title),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.ExtraBold,
+            )
+            Text(
+                text = pluralStringResource(R.plurals.departure_card_body, present, present),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End,
+            ) {
+                Text(
+                    text = stringResource(R.string.departure_card_action),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.ExtraBold,
+                )
+                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
             }
         }
     }

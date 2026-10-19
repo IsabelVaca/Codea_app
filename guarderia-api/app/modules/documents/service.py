@@ -5,6 +5,7 @@ from app.core import clock, rules
 from app.core.errors import ApiError
 from app.core.security import CurrentUser, get_child_in_scope
 from app.core.storage import Storage
+from app.modules.audit import service as audit
 from app.modules.media import service as media_service
 from app.modules.media.models import Media, MediaStatus
 
@@ -73,6 +74,11 @@ async def add_pickup(db: AsyncSession, current: CurrentUser, child_id: int, data
         added_by=current.id,
     )
     db.add(pickup)
+    await db.flush()
+    audit.record(
+        db, audit.PICKUP_ADDED, actor_id=current.id, entity_type="CHILD", entity_id=child.id,
+        detail={"pickup_id": pickup.id},
+    )
     await db.commit()
     await db.refresh(pickup)
     return PickupOut.model_validate(pickup)
@@ -84,4 +90,8 @@ async def remove_pickup(db: AsyncSession, current: CurrentUser, child_id: int, p
     if pickup is None or pickup.child_id != child.id:
         raise ApiError(404, "PICKUP_NOT_FOUND", "No existe esa persona autorizada")
     await db.delete(pickup)
+    audit.record(
+        db, audit.PICKUP_REMOVED, actor_id=current.id, entity_type="CHILD", entity_id=child.id,
+        detail={"pickup_id": person_id},
+    )
     await db.commit()

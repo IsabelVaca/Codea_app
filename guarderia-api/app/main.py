@@ -19,6 +19,7 @@ from .modules.attendance.router import router as attendance
 from .modules.auth.router import router as auth
 from .modules.children.router import router as children
 from .modules.classrooms.router import router as classrooms
+from .modules.departures.router import router as departures
 from .modules.documents.router import router as documents
 from .modules.media.router import router as media
 from .modules.messaging.router import router as messaging
@@ -122,6 +123,7 @@ for router in (
     reports,
     media,
     documents,
+    departures,
     messaging,
 ):
     api.include_router(router)

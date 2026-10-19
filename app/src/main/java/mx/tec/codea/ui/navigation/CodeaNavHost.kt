@@ -3,8 +3,6 @@ package mx.tec.codea.ui.navigation
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection
 import androidx.compose.material3.SnackbarHostState
@@ -56,6 +54,9 @@ import mx.tec.codea.ui.components.rememberTakePhoto
 import mx.tec.codea.ui.screens.ChatsScreen
 import mx.tec.codea.ui.screens.CheckInDoneScreen
 import mx.tec.codea.ui.screens.CheckerScreen
+import mx.tec.codea.ui.screens.DayFinishedScreen
+import mx.tec.codea.ui.screens.DeparturePassScreen
+import mx.tec.codea.domain.DepartureRules
 import mx.tec.codea.ui.screens.DayNotStartedScreen
 import mx.tec.codea.ui.screens.MenuOption
 import mx.tec.codea.ui.screens.AvisosFundacionScreen
@@ -85,6 +86,8 @@ import mx.tec.codea.ui.screens.admin.InscribirInfanteScreen
 import mx.tec.codea.ui.screens.admin.OpcionChip
 import mx.tec.codea.ui.screens.admin.InscribirPadreScreen
 import mx.tec.codea.ui.screens.admin.PadreDetalleScreen
+import mx.tec.codea.ui.screens.admin.PersonasAutorizadasDetalleScreen
+import mx.tec.codea.ui.screens.admin.PersonasAutorizadasScreen
 import mx.tec.codea.ui.screens.admin.AgregarMomentoScreen
 import mx.tec.codea.ui.screens.admin.CatalogoMomentosScreen
 import mx.tec.codea.ui.screens.admin.NuevaRutinaScreen
@@ -94,8 +97,7 @@ import mx.tec.codea.ui.screens.admin.RutinasAdminScreen
 import mx.tec.codea.ui.screens.admin.SalaAdminDetalleScreen
 import mx.tec.codea.ui.screens.admin.SalaOpcion
 import mx.tec.codea.ui.screens.parent.calendar.ParentCalendarScreen
-import mx.tec.codea.ui.screens.parent.documents.AddAuthorizedDialog
-import mx.tec.codea.ui.screens.parent.documents.ParentDocumentsScreen
+import mx.tec.codea.ui.screens.parent.child.MyChildScreen
 import mx.tec.codea.ui.screens.parent.photos.ParentPhotosScreen
 import mx.tec.codea.ui.screens.parent.today.ParentTodayScreen
 import mx.tec.codea.ui.state.AgregarMomentoViewModel
@@ -118,6 +120,8 @@ import mx.tec.codea.ui.state.InscribirInfanteViewModel
 import mx.tec.codea.ui.state.InscribirPadreViewModel
 import mx.tec.codea.ui.state.NuevaRutinaViewModel
 import mx.tec.codea.ui.state.PadresAdminViewModel
+import mx.tec.codea.ui.state.PersonasAutorizadasViewModel
+import mx.tec.codea.ui.state.DeparturePassViewModel
 import mx.tec.codea.ui.state.ParentViewModel
 import mx.tec.codea.ui.state.ReportFormViewModel
 import mx.tec.codea.ui.state.RutinasAdminViewModel
@@ -187,7 +191,11 @@ fun CodeaNavHost(
             // the routine after it. with only one route, the back button, the tab and
             // the report flow always come back to the right screen.
             composable<MyDayRoute> {
-                if (viewModel.hasCheckedIn && viewModel.routine.subprocesses.isNotEmpty()) {
+                val checkIn = viewModel.checkIn
+                if (checkIn?.departureMinutes != null) {
+                    // ya finalizó el día (o el cierre automático de las 9 pm lo hizo por ella): su turno terminó.
+                    DayFinishedScreen(record = checkIn, teacherName = viewModel.teacher.greetingName)
+                } else if (viewModel.hasCheckedIn && viewModel.routine.subprocesses.isNotEmpty()) {
                     MyDayScreen(
                         routine = viewModel.routine,
                         selectedSubprocessNumber = viewModel.selectedSubprocessNumber,
@@ -200,6 +208,9 @@ fun CodeaNavHost(
                         rollCallPresent = viewModel.presentCount,
                         rollCallTotal = viewModel.children.size,
                         onRollCallClick = { navController.navigate(RollCallRoute) },
+                        departureReady = DepartureRules.routineFinished(viewModel.routine),
+                        departurePresent = viewModel.presentCount,
+                        onDepartureClick = { navController.navigate(DeparturePassRoute) },
                     )
                 } else {
                     DayNotStartedScreen(
@@ -218,6 +229,32 @@ fun CodeaNavHost(
                     },
                     onMarkAllPresent = viewModel::markAllPresent,
                     onDoneClick = { navController.popBackStack() },
+                    onBackClick = { navController.popBackStack() },
+                )
+            }
+
+            // el pase de salida: al terminar la rutina se registra a qué hora se fue cada niño y con quién.
+            // con todos fuera, "Finalizar día" registra la salida de la docente y Mi día pasa a "Día finalizado".
+            composable<DeparturePassRoute> {
+                val departureViewModel: DeparturePassViewModel = viewModel()
+                val room = viewModel.classroomId
+                LaunchedEffect(room) { room?.let(departureViewModel::load) }
+                DeparturePassScreen(
+                    entries = departureViewModel.entries,
+                    loading = departureViewModel.loading,
+                    failed = departureViewModel.failed,
+                    busyChildId = departureViewModel.busyChildId,
+                    finishing = departureViewModel.finishing,
+                    canFinishDay = departureViewModel.canFinishDay,
+                    onRegister = departureViewModel::register,
+                    onUndo = departureViewModel::undo,
+                    onFinishDay = {
+                        departureViewModel.finishDay { record ->
+                            viewModel.registerCheckOut(record)
+                            navController.popBackStack(MyDayRoute, inclusive = false)
+                        }
+                    },
+                    onRetry = departureViewModel::retry,
                     onBackClick = { navController.popBackStack() },
                 )
             }
@@ -494,15 +531,12 @@ fun CodeaNavHost(
                 val salas by salasViewModel.salas.collectAsState()
                 val infantesCentro by infantesViewModel.infantes.collectAsState()
                 val avisos by centroViewModel.avisos.collectAsState()
-                val pendientesBorrado by centroViewModel.pendientesBorrado.collectAsState()
                 CentroScreen(
                     salas = salas,
                     infantes = infantesCentro,
                     destinoSalaId = centroViewModel.destinoSalaId,
                     onDestinoChange = centroViewModel::onDestinoChange,
                     avisos = avisos,
-                    solicitudesBorrado = pendientesBorrado,
-                    onSolicitudesBorradoClick = { navController.navigate(AdminSolicitudesBorradoRoute) },
                     onSalaClick = { sala ->
                         navController.navigate(AdminSalaDetalleRoute(sala.id))
                     },
@@ -913,42 +947,14 @@ fun CodeaNavHost(
             )
         }
 
-        composable<ParentDocumentsRoute> {
-            val context = LocalContext.current
-            var documentoElegido by remember { mutableStateOf<String?>(null) }
-            var mostrarAgregar by remember { mutableStateOf(false) }
-            // el selector de archivos del teléfono: PDF o imagen.
-            val selector = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-                val documentoId = documentoElegido
-                if (uri != null && documentoId != null) {
-                    val tipo = context.contentResolver.getType(uri) ?: "application/pdf"
-                    val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
-                    if (bytes != null) parentViewModel.uploadDocument(documentoId, bytes, tipo)
-                }
-                documentoElegido = null
-            }
-            ParentDocumentsScreen(
-                childName = parentViewModel.childName.substringBefore(" "),
-                documents = parentViewModel.documents,
-                authorizedPeople = parentViewModel.authorizedPeople,
-                onDocumentAction = { documento ->
-                    documentoElegido = documento.id
-                    selector.launch("*/*")
-                },
-                onAddAuthorized = { mostrarAgregar = true },
-                onRemoveAuthorized = parentViewModel::removeAuthorized,
+        // "Mi hijo": sus datos y la salud que la familia escribe.
+        composable<ParentChildRoute> {
+            MyChildScreen(
+                child = parentViewModel.myChild,
+                saving = parentViewModel.savingHealth,
+                onSaveHealth = parentViewModel::saveHealth,
             )
-            if (mostrarAgregar) {
-                AddAuthorizedDialog(
-                    onConfirm = { nombre ->
-                        parentViewModel.addAuthorized(nombre)
-                        mostrarAgregar = false
-                    },
-                    onDismiss = { mostrarAgregar = false },
-                )
-            }
         }
-
 
         // la pestaña "ajustes": el menú de lo que el admin puede configurar. rutinas abre
         // encima y la barra inferior se queda en "Ajustes".
@@ -961,7 +967,33 @@ fun CodeaNavHost(
                     totalRutinas = rutinas.size,
                     onRutinasClick = { navController.navigate(RutinasAdminRoute) },
                     onHorarioClick = { navController.navigate(AjustesHorarioRoute) },
+                    onPersonasAutorizadasClick = { navController.navigate(AjustesPersonasAutorizadasRoute) },
                     onCuentaClick = { navController.navigate(AccountRoute) },
+                )
+            }
+            // las personas que pueden recoger a cada niño: la lista de niños y, al tocar uno, las suyas.
+            composable<AjustesPersonasAutorizadasRoute> {
+                val infantes by infantesViewModel.infantes.collectAsState()
+                PersonasAutorizadasScreen(
+                    infantes = infantes,
+                    onInfanteClick = { infante -> navController.navigate(AjustesPersonasAutorizadasDetalleRoute(infante.id)) },
+                    onBackClick = { navController.popBackStack() },
+                )
+            }
+            composable<AjustesPersonasAutorizadasDetalleRoute> { backStackEntry ->
+                val route = backStackEntry.toRoute<AjustesPersonasAutorizadasDetalleRoute>()
+                val personasViewModel: PersonasAutorizadasViewModel = viewModel()
+                val infantes by infantesViewModel.infantes.collectAsState()
+                LaunchedEffect(route.infanteId) { personasViewModel.cargar(route.infanteId) }
+                PersonasAutorizadasDetalleScreen(
+                    nombreNino = infantes.firstOrNull { it.id == route.infanteId }?.nombre.orEmpty(),
+                    personas = personasViewModel.personas,
+                    cargando = personasViewModel.cargando,
+                    fallo = personasViewModel.fallo,
+                    onReintentar = personasViewModel::reintentar,
+                    onAgregar = { nombre, parentesco, telefono -> personasViewModel.agregar(nombre, parentesco, telefono) },
+                    onQuitar = personasViewModel::quitar,
+                    onBackClick = { navController.popBackStack() },
                 )
             }
             composable<AjustesHorarioRoute> {

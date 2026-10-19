@@ -5,6 +5,7 @@ import mx.tec.codea.data.api.ConversationDto
 import mx.tec.codea.data.api.MessageBody
 import mx.tec.codea.data.api.MessageDto
 import mx.tec.codea.domain.ChatMessage
+import mx.tec.codea.domain.ChatGuardian
 import mx.tec.codea.domain.Conversation
 
 // el chat entre docentes y familias. lo usan la docente y el papá.
@@ -46,4 +47,5 @@ private fun ConversationDto.toConversation() = Conversation(
     unreadCount = unreadCount,
     lastText = lastMessage?.text,
     lastTime = lastMessage?.createdAt?.let { clockOf(it) },
+    guardians = child.guardians.map { ChatGuardian(it.fullName, parentesco(it.relationship)) },
 )

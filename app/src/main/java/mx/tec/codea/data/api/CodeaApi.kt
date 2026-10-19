@@ -123,6 +123,10 @@ interface CodeaApi {
     @GET("children/{id}")
     suspend fun childDetail(@Path("id") id: Int): ChildDetailDto
 
+    // la familia (o el admin) escribe la salud del niño: alergias, condiciones médicas, intolerancias…
+    @PATCH("children/{id}/health")
+    suspend fun updateHealth(@Path("id") id: Int, @Body body: HealthBody): ChildDetailDto
+
     @PUT("attendance/{id}")
     suspend fun setAttendance(@Path("id") id: Int, @Body body: AttendanceBody)
 
@@ -135,6 +139,16 @@ interface CodeaApi {
 
     @POST("reports")
     suspend fun createReport(@Body body: ReportBody)
+
+    // ----- pase de salida de la docente -----
+    @GET("classrooms/{id}/departures")
+    suspend fun departures(@Path("id") id: Int): DepartureSheetDto
+
+    @POST("children/{id}/departure")
+    suspend fun registerDeparture(@Path("id") id: Int, @Body body: DepartureBody): DepartureDto
+
+    @DELETE("children/{id}/departure")
+    suspend fun undoDeparture(@Path("id") id: Int)
 
     // ----- checador -----
     // la API manda null si todavía no checa; por eso llega como JsonElement.
@@ -181,7 +195,7 @@ interface CodeaApi {
     @POST("children/{id}/notes")
     suspend fun sendNote(@Path("id") id: Int, @Body body: NoteBody)
 
-    // ----- padre: documentos y autorizados -----
+    // ----- documentos y personas autorizadas (las autorizadas las administra el admin) -----
     @GET("children/{id}/documents")
     suspend fun documents(@Path("id") id: Int): List<DocumentDto>
 

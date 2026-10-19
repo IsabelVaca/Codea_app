@@ -21,4 +21,12 @@ data class Conversation(
     val unreadCount: Int,
     val lastText: String?,
     val lastTime: String?,
+    // los tutores del niño, para saber con quién se habla en este chat.
+    val guardians: List<ChatGuardian> = emptyList(),
+)
+
+// un tutor del niño: su nombre y su parentesco ("Mamá", "Papá"); null cuando no se sabe.
+data class ChatGuardian(
+    val name: String,
+    val relationship: String?,
 )

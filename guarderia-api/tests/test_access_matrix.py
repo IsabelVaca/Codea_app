@@ -175,10 +175,13 @@ async def test_a_teacher_cannot_list_another_rooms_children_or_routine(client, w
 async def test_a_parent_cannot_write_for_a_child_that_is_not_theirs(client, world):
     note = await client.post(f"/children/{world.renata.id}/notes", headers=world.mom, json={"text": "Hola"})
     assert note.status_code == 404
+    health = await client.patch(f"/children/{world.renata.id}/health", headers=world.mom, json={"allergies": "Nueces"})
+    assert health.status_code == 404
+    # las personas autorizadas ya no las agrega la familia sino el admin.
     pickup = await client.post(
         f"/children/{world.renata.id}/authorized-pickups", headers=world.mom, json={"full_name": "Intruso"}
     )
-    assert pickup.status_code == 404
+    assert pickup.status_code == 403
 
 
 async def test_conversations_are_private_to_the_family_and_the_room(client, world):

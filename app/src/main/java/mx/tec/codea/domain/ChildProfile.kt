@@ -15,6 +15,8 @@ data class ChildProfile(
     val ageText: String?,
     val guardians: List<Contact>,
     val pickups: List<Contact>,
+    // condiciones médicas, intolerancias, medicamentos y otras indicaciones que escribió la familia.
+    val health: ChildHealth = ChildHealth(),
 )
 
 object ChildProfileRules {

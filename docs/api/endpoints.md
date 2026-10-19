@@ -82,10 +82,11 @@ Errores comunes a todos los endpoints con sesión: `401 UNAUTHENTICATED` (sin to
 | --- | --- | --- | --- | --- | --- |
 | GET | `/children` | `ADMIN` | — | `ChildOut[]`: `birth_date`, `age`, `allergies`, `classroom`, `status`, `guardian` | — |
 | POST | `/children` | `ADMIN` | `{name, surname?, birth_date, allergies?, classroom_id?, guardian: {name, surname?, relationship, phone, email}}` | 201 `ChildDetail`; registra al tutor y crea su invitación | `422 NAME_REQUIRED`, `GUARDIAN_REQUIRED`, `AGE_INVALID`, `PHONE_INVALID`, `EMAIL_INVALID` |
-| GET | `/children/{id}` | Todos (en su alcance) | — | `ChildDetail`: lo de la lista + `guardians[]` | `404 CHILD_NOT_FOUND` |
+| GET | `/children/{id}` | Todos (en su alcance) | — | `ChildDetail`: lo de la lista (con `allergies`, `medical_conditions`, `intolerances`, `medications` y `other_notes`) + `guardians[]` | `404 CHILD_NOT_FOUND` |
 | PATCH | `/children/{id}` | `ADMIN` | `{classroom_id}` (`null` = sin sala) | `ChildDetail` | `404 CHILD_NOT_FOUND`, `CLASSROOM_NOT_FOUND` |
 | POST | `/children/{id}/deactivate` | `ADMIN` | — | `ChildDetail` | `404 CHILD_NOT_FOUND` |
 | POST | `/children/{id}/reactivate` | `ADMIN` | — | `ChildDetail` | `404 CHILD_NOT_FOUND` |
+| PATCH | `/children/{id}/health` | `ADMIN`, `PARENT` (sus hijos) | `{allergies?, medical_conditions?, intolerances?, medications?, other_notes?}`; solo cambia lo que se manda y `""` borra un dato | `ChildDetail` | `404 CHILD_NOT_FOUND`; `422 TEXT_TOO_LONG` (más de 1000 caracteres) |
 
 `PATCH /children/{id}` sirve para tres botones de la app: cambiar de sala, "Agregar a esta sala" y "Sacar de la sala".
 
@@ -162,8 +163,20 @@ Subida: después de `/media/uploads`, la app manda un POST multipart a `url` con
 | GET | `/children/{id}/documents` | `ADMIN`, `PARENT` (sus hijos) | — | `DocumentOut[]`: `title`, `due_date`, `status` (`CURRENT`, `MISSING`), `url` firmada | `404 CHILD_NOT_FOUND` |
 | PUT | `/children/{id}/documents/{doc_id}` | `ADMIN`, `PARENT` | `{media_id}` | `DocumentOut` | `404 DOCUMENT_NOT_FOUND`, `MEDIA_NOT_FOUND`; `409 MEDIA_NOT_READY` |
 | GET | `/children/{id}/authorized-pickups` | Todos (en su alcance) | — | `PickupOut[]` | `404 CHILD_NOT_FOUND` |
-| POST | `/children/{id}/authorized-pickups` | `ADMIN`, `PARENT` | `{full_name, relationship?, phone?}` | 201 `PickupOut` | `404 CHILD_NOT_FOUND` |
-| DELETE | `/children/{id}/authorized-pickups/{person_id}` | `ADMIN`, `PARENT` | — | 204 | `404 PICKUP_NOT_FOUND` |
+| POST | `/children/{id}/authorized-pickups` | `ADMIN` | `{full_name, relationship?, phone?}` | 201 `PickupOut` | `422 NAME_REQUIRED`; `404 CHILD_NOT_FOUND` |
+| DELETE | `/children/{id}/authorized-pickups/{person_id}` | `ADMIN` | — | 204 | `404 PICKUP_NOT_FOUND` |
+
+Las personas autorizadas las administra solo el admin (la familia ya no puede agregarlas ni quitarlas). La docente las elige en el pase de salida.
+
+### Pase de salida (docente)
+
+| Método | Ruta | Rol | Entrada | Salida | Errores |
+|---|---|---|---|---|---|
+| GET | `/classrooms/{id}/departures` | `ADMIN`, `TEACHER` (su sala) | — | `DepartureSheet`: los niños presentes hoy, cada uno con `choices[]` (las personas autorizadas y sus tutores) y su `departure` si ya salió; `pending` y `all_done` | `404 CLASSROOM_NOT_FOUND` |
+| POST | `/children/{id}/departure` | `TEACHER` | `{pickup_id}` o `{guardian_id}` (solo uno) | 201 `DepartureOut`: `departed_at` (hora del servidor) y `picked_up_by` | `409 CHILD_NOT_PRESENT`, `ALREADY_DEPARTED`; `404 PICKUP_NOT_FOUND`, `CHILD_NOT_FOUND`; `422 PICKUP_REQUIRED` |
+| DELETE | `/children/{id}/departure` | `TEACHER` | — | 204 (quita la salida de hoy, por si se eligió a la persona equivocada) | `404 DEPARTURE_NOT_FOUND` |
+
+Después de que `all_done` es `true`, la docente finaliza el día con `POST /staff-attendance/check-out`. La API no obliga a registrar todas las salidas antes de eso: la regla vive en la app.
 
 Hoy no hay endpoint para pedir documentos: la lista de cada niño la crea el seed.
 
@@ -173,7 +186,7 @@ Hoy no hay endpoint para pedir documentos: la lista de cada niño la crea el see
 | --- | --- | --- | --- | --- | --- |
 | POST | `/announcements` | `ADMIN` | `{text, classroom_id?}` (sin sala = todo el centro) | 201 `AnnouncementOut`: `id`, `text`, `classroom_id`, `classroom_name`, `created_at` | `422 TEXT_REQUIRED`; `404 CLASSROOM_NOT_FOUND` |
 | GET | `/announcements?limit=` | Todos | — | `AnnouncementOut[]`, el más reciente primero (50 por omisión, máximo 200). `ADMIN`: todos los del centro. `TEACHER`: los del centro y los de su sala. `PARENT`: los del centro y los de las salas de sus hijos | — |
-| GET | `/conversations` | `TEACHER`, `PARENT` (al `ADMIN` le regresa lista vacía) | — | `ConversationOut[]`: una por niño, con `child`, `unread_count` y `last_message` | — |
+| GET | `/conversations` | `TEACHER`, `PARENT` (al `ADMIN` le regresa lista vacía) | — | `ConversationOut[]`: una por niño, con `child` (con `guardians[]`: nombre, parentesco y si es el principal), `unread_count` y `last_message` | — |
 | GET | `/conversations/{id}/messages?cursor=&after=&limit=` | Participantes | — | `{items: MessageOut[], next_cursor}`; con `after=<id>` solo los nuevos. Cada mensaje trae `author_name`, `is_mine` e `is_read` | `404 CONVERSATION_NOT_FOUND` |
 | POST | `/conversations/{id}/messages` | Participantes | `{text, client_id?}` | 201 `MessageOut`; mismo `client_id`: 200 con el que ya existía | `422 TEXT_REQUIRED`; `404 CONVERSATION_NOT_FOUND` |
 | POST | `/conversations/{id}/read` | Participantes | — | 204 | `404 CONVERSATION_NOT_FOUND` |

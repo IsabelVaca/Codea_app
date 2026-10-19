@@ -1,13 +1,13 @@
 # `ui/screens/parent/`
 
-Pantallas del padre. Pestañas: **Hoy, Calendario, Fotos, Documentos**. Todas leen de `ParentViewModel` (`ui/state/`), que carga de la API. Los archivos `*SampleData.kt` conservan los **modelos de interfaz** (`TimelineEvent`, `DaySummary`, `CalendarDay`, `RequestedDocument`, `AuthorizedPerson`…) y, además, objetos con datos de ejemplo de la etapa sin backend.
+Pantallas del padre. Pestañas: **Hoy, Calendario, Fotos, Chat, Mi hijo**. Todas leen de `ParentViewModel` (`ui/state/`), que carga de la API. Los archivos `*SampleData.kt` conservan los **modelos de interfaz** (`TimelineEvent`, `DaySummary`, `CalendarDay`, `RequestedDocument`…) y, además, objetos con datos de ejemplo de la etapa sin backend.
 
 | Carpeta | Pantalla | Estado |
 |---|---|---|
 | `today/` | Hoy: resumen del día (ánimo, comida, cambios, siesta, nota) y línea de tiempo; elegir otro día; mandar una nota a la asistente; botón de Mi cuenta junto a la campana | ✅ |
 | `calendar/` | Calendario del mes con la asistencia de cada día | 🟡 Solo asistencia; faltan eventos y citas (CRF-03) |
 | `photos/` | Fotos por categoría y botón "Pedir que se borre" (usa Coil) | 🟡 Sin paginación en pantalla; el backend ya pagina |
-| `documents/` | Documentos pedidos (vigente o faltante), subir o reemplazar, y personas autorizadas a recoger (`AddAuthorizedDialog`) | ✅ |
+| `child/` | **Mi hijo** (`MyChildScreen`): los datos del niño, la salud que la familia escribe y edita (alergias, condiciones médicas, intolerancias, medicamentos y otras indicaciones; la maestra los ve en la ficha del niño). Ya no se suben documentos desde aquí (se quitó el 18/oct; el backend conserva `GET` y `PUT /children/{id}/documents`). Las personas autorizadas para recoger **ya no se manejan aquí**: las administra el admin en Ajustes | 🟡 sin probar en el teléfono |
 
 ## Pendiente
 

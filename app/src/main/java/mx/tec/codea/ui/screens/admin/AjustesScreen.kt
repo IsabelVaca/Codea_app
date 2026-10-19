@@ -36,6 +36,7 @@ fun AjustesScreen(
     totalRutinas: Int,
     onRutinasClick: () -> Unit,
     onHorarioClick: () -> Unit,
+    onPersonasAutorizadasClick: () -> Unit,
     onCuentaClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -60,6 +61,11 @@ fun AjustesScreen(
                 titulo = "Horario",
                 detalle = "Entrada, salida, cierre automático y días de trabajo",
                 onClick = onHorarioClick,
+            )
+            AjusteFila(
+                titulo = "Personas autorizadas",
+                detalle = "Quién puede recoger a cada niño; la maestra las elige en el pase de salida",
+                onClick = onPersonasAutorizadasClick,
             )
             SeccionLabel("MI SESIÓN")
             AjusteFila(

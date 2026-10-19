@@ -32,6 +32,16 @@ class ChildUpdate(BaseModel):
     classroom_id: int | None
 
 
+class ChildHealthUpdate(BaseModel):
+    """Lo que la familia (o el admin) escribe en "Mi hijo". Un campo ausente no se toca; "" o null lo borra."""
+
+    allergies: str | None = None
+    medical_conditions: str | None = None
+    intolerances: str | None = None
+    medications: str | None = None
+    other_notes: str | None = None
+
+
 class GuardianOut(BaseModel):
     id: uuid.UUID
     name: str
@@ -54,6 +64,10 @@ class ChildOut(BaseModel):
     birth_date: date | None
     age: int | None
     allergies: str | None
+    medical_conditions: str | None
+    intolerances: str | None
+    medications: str | None
+    other_notes: str | None
     classroom: ClassroomRef | None
     status: ChildStatus
     active: bool
