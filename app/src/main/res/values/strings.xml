@@ -251,7 +251,13 @@
     <string name="chats_no_messages">Aún no hay mensajes en esta conversación.</string>
     <string name="chats_message_hint">Escribe un mensaje…</string>
     <string name="chats_message_read">%1$s · leído</string>
-    <string name="chats_attach">Adjuntar archivo</string>
+    <string name="chats_attach">Adjuntar foto</string>
+    <string name="chats_attach_camera">Cámara</string>
+    <string name="chats_attach_gallery">Galería</string>
+    <string name="chats_photo_close">Cerrar</string>
+    <string name="chats_photo_caption_hint">Añade un texto… (opcional)</string>
+    <string name="chats_photo_failed">No se pudo preparar la foto</string>
+    <string name="chats_photo_description">Foto del mensaje</string>
     <string name="chats_send">Enviar mensaje</string>
 
     <!-- menu screen -->

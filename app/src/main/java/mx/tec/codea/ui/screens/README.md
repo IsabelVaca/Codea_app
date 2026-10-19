@@ -13,7 +13,7 @@ Las pantallas copian el diseño y el texto del prototipo (`docs/prototipos/`) y 
 | `ReportScreen.kt` | Formulario de reporte | ✅ Dictado con `RecognizerIntent`; la foto usa `TakePicturePreview` |
 | `SelectStudentsScreen.kt` | Elegir niños del reporte | ✅ |
 | `MyRoomScreen.kt` | Mi sala y asistencia | ✅ |
-| `ChatsScreen.kt` | Conversaciones con las familias | ✅ Envía y lee por la API; sin tiempo real |
+| `ChatsScreen.kt` | Conversaciones con las familias | ✅ Envía y lee por la API (texto y fotos: cámara con `TakePicture`+`FileProvider`, Photo Picker, EXIF y compresión antes de subir); sin tiempo real |
 | `MenuScreen.kt` | Menú: perfil, checador y otras opciones | ✅ Avisos abre `AvisosFundacionScreen`; Mi perfil abre Mi cuenta; Cerrar sesión cierra la sesión de verdad |
 | `CheckerScreen.kt` | Checador: entrada y salida con un toque, sin ubicación ni mapa; a las 9 pm la salida se cierra sola | ✅ |
 | `CheckInDoneScreen.kt` | "Entrada registrada" | ✅ |
@@ -25,7 +25,6 @@ Se quitaron `checadorScreen.kt`, `miDiaScreen.kt`, `miDiaEnCursoScreen.kt`, `con
 ## Pendiente
 
 - **"Finalizar día"** al terminar la rutina (tarea abierta en Teams).
-- **Mandar fotos** desde el chat (tarea abierta en Teams).
 - **Foto de calidad:** `TakePicturePreview` devuelve una miniatura; para fotos de verdad usar `TakePicture` con `FileProvider`, y comprimir y orientar según EXIF como pide el marco.
 - **Sin conexión:** que Mi día, Mi sala y el reporte funcionen sin internet (RF-11).
 - **Huella al abrir la app** (RF-13).

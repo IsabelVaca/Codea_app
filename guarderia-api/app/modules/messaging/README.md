@@ -18,10 +18,9 @@ El `client_id` del mensaje hace que enviar sin conexión y reintentar después n
 
 | Hecho | Pendiente |
 |---|---|
-| Chat docente-familia con no leídos, notas y publicación de avisos | Marcar avisos como leídos en el servidor (hoy el "leído" vive en el teléfono) |
+| Chat docente-familia con no leídos, **fotos en el mensaje** (`media_id` → URL firmada `media_url`), notas y publicación de avisos | Marcar avisos como leídos en el servidor (hoy el "leído" vive en el teléfono) |
 | | **Avisos con imágenes** (HN5, `media_id` en `announcement`) y **historial** para el admin |
 | | **Mensajes en tiempo real** ("Agregar funcionalidad mensajes tiempo real", tarea abierta): hoy se consulta con `?after=`; el marco permite SSE o WebSocket, no Firebase |
-| | **Mandar fotos** por el chat (rol padre y asistente, tarea abierta) |
 | | **Notificaciones**: sin Firebase; WorkManager + notificaciones locales en la app |
 | | Chat del lado del padre en la app (la API ya lo permite) |
 

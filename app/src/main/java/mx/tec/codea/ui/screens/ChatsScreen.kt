@@ -1,5 +1,31 @@
 package mx.tec.codea.ui.screens
 
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
+import mx.tec.codea.data.ImageCompressor
+import mx.tec.codea.ui.components.rememberCapturePhoto
+import mx.tec.codea.ui.components.rememberPickPhoto
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -58,6 +84,7 @@ fun ChatsScreen(
     modifier: Modifier = Modifier,
     onSend: (String) -> Unit = {},
     onRetry: (String) -> Unit = {},
+    onSendPhoto: (ByteArray, String) -> Unit = { _, _ -> },
 ) {
     if (openConversation == null) {
         InboxScreen(
@@ -77,6 +104,7 @@ fun ChatsScreen(
         onBackClick = onBackClick,
         onSend = onSend,
         onRetry = onRetry,
+        onSendPhoto = onSendPhoto,
         modifier = modifier,
     )
 }
@@ -199,8 +227,18 @@ private fun ConversationScreen(
     onBackClick: () -> Unit,
     onSend: (String) -> Unit,
     onRetry: (String) -> Unit,
+    onSendPhoto: (ByteArray, String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val photoFailed = stringResource(R.string.chats_photo_failed)
+    // the photo chosen but not sent yet; while it is not null the preview covers the chat.
+    var previewUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+    var showAttach by rememberSaveable { mutableStateOf(false) }
+    val pickPhoto = rememberPickPhoto { previewUri = it }
+    val capturePhoto = rememberCapturePhoto { previewUri = it }
+
     val listState = rememberLazyListState()
     // when a message arrives or is sent, the list goes to the bottom.
     LaunchedEffect(messages.size) {
@@ -251,7 +289,150 @@ private fun ConversationScreen(
             }
         }
 
-        MessageComposer(conversationId = conversation.id, onSend = onSend)
+        MessageComposer(
+            conversationId = conversation.id,
+            onSend = onSend,
+            onAttach = { showAttach = true },
+        )
+    }
+
+    if (showAttach) {
+        AttachSheet(
+            onDismiss = { showAttach = false },
+            onCamera = { showAttach = false; capturePhoto() },
+            onGallery = { showAttach = false; pickPhoto() },
+        )
+    }
+
+    previewUri?.let { uri ->
+        PhotoPreview(
+            uri = uri,
+            onClose = { previewUri = null },
+            onSend = { caption ->
+                previewUri = null
+                scope.launch {
+                    try {
+                        onSendPhoto(ImageCompressor.compress(context.contentResolver, uri), caption)
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        Toast.makeText(context, photoFailed, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            },
+        )
+    }
+}
+
+// the "+" button: the two ways to add a photo.
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AttachSheet(onDismiss: () -> Unit, onCamera: () -> Unit, onGallery: () -> Unit) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 22.dp, end = 22.dp, bottom = 32.dp),
+            horizontalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterHorizontally),
+        ) {
+            AttachOption(
+                icon = Icons.Filled.PhotoCamera,
+                label = stringResource(R.string.chats_attach_camera),
+                tint = MaterialTheme.colorScheme.tertiary,
+                onClick = onCamera,
+            )
+            AttachOption(
+                icon = Icons.Filled.PhotoLibrary,
+                label = stringResource(R.string.chats_attach_gallery),
+                tint = MaterialTheme.colorScheme.primary,
+                onClick = onGallery,
+            )
+        }
+    }
+}
+
+@Composable
+private fun AttachOption(icon: ImageVector, label: String, tint: Color, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier.clickable(onClick = onClick),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(56.dp)
+                .background(tint.copy(alpha = 0.14f), RoundedCornerShape(18.dp)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(imageVector = icon, contentDescription = null, tint = tint)
+        }
+        Text(text = label, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+    }
+}
+
+// the photo full screen, with an optional caption, before it is sent.
+@Composable
+private fun PhotoPreview(uri: Uri, onClose: () -> Unit, onSend: (String) -> Unit) {
+    var caption by rememberSaveable { mutableStateOf("") }
+    BackHandler(onBack = onClose)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF15111F))
+            .statusBarsPadding()
+            .imePadding()
+            .padding(bottom = 14.dp),
+    ) {
+        IconButton(onClick = onClose, modifier = Modifier.padding(8.dp)) {
+            Icon(
+                imageVector = Icons.Filled.Close,
+                contentDescription = stringResource(R.string.chats_photo_close),
+                tint = Color.White,
+            )
+        }
+        AsyncImage(
+            model = uri,
+            contentDescription = stringResource(R.string.chats_photo_description),
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 14.dp, end = 14.dp, top = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            OutlinedTextField(
+                value = caption,
+                onValueChange = { caption = it },
+                modifier = Modifier.weight(1f),
+                placeholder = { Text(stringResource(R.string.chats_photo_caption_hint)) },
+                shape = RoundedCornerShape(18.dp),
+                maxLines = 3,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedPlaceholderColor = Color.White.copy(alpha = 0.6f),
+                    unfocusedPlaceholderColor = Color.White.copy(alpha = 0.6f),
+                    focusedBorderColor = Color.White.copy(alpha = 0.6f),
+                    unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
+                    cursorColor = Color.White,
+                ),
+            )
+            IconButton(
+                onClick = { onSend(caption) },
+                modifier = Modifier.background(MaterialTheme.colorScheme.tertiary, RoundedCornerShape(14.dp)),
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Send,
+                    contentDescription = stringResource(R.string.chats_send),
+                    tint = MaterialTheme.colorScheme.onTertiary,
+                )
+            }
+        }
     }
 }
 
@@ -291,6 +472,14 @@ private fun MessageBubble(
             )
         }
 
+    // the photo follows the corners of the bubble, 4 dp inside it.
+    val imageShape =
+        if (message.isMine) {
+            RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 16.dp, bottomEnd = 4.dp)
+        } else {
+            RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 4.dp, bottomEnd = 16.dp)
+        }
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement =
@@ -307,26 +496,95 @@ private fun MessageBubble(
                 .clickable(enabled = message.status == MessageStatus.FAILED && message.clientId != null) {
                     message.clientId?.let(onRetry)
                 }
-                .padding(horizontal = 14.dp, vertical = 12.dp),
+                .padding(
+                    horizontal = if (message.hasImage) 4.dp else 14.dp,
+                    vertical = if (message.hasImage) 4.dp else 12.dp,
+                ),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            Text(
-                text = message.text,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = contentColor,
-            )
+            val statusText = when {
+                message.status == MessageStatus.SENDING -> stringResource(R.string.chats_sending)
+                message.status == MessageStatus.FAILED -> stringResource(R.string.chats_failed_retry)
+                message.isRead && message.isMine -> stringResource(R.string.chats_message_read, message.time)
+                else -> message.time
+            }
 
+            if (message.hasImage) {
+                MessageImage(
+                    message = message,
+                    shape = imageShape,
+                    // without a caption the time goes over the photo, like WhatsApp.
+                    overlay = if (message.text.isBlank()) statusText else null,
+                )
+            }
+
+            if (message.text.isNotBlank()) {
+                Text(
+                    text = message.text,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = contentColor,
+                    modifier = if (message.hasImage) Modifier.padding(horizontal = 10.dp, vertical = 2.dp) else Modifier,
+                )
+            }
+
+            if (!message.hasImage || message.text.isNotBlank()) {
+                Text(
+                    text = statusText,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = contentColor.copy(alpha = 0.7f),
+                    modifier = if (message.hasImage) {
+                        Modifier
+                            .align(Alignment.End)
+                            .padding(horizontal = 10.dp, vertical = 2.dp)
+                    } else {
+                        Modifier
+                    },
+                )
+            }
+        }
+    }
+}
+
+// the photo inside the bubble. while it is sending we show the file we just compressed.
+@Composable
+private fun MessageImage(message: ChatMessage, shape: Shape, overlay: String?) {
+    val context = LocalContext.current
+    // the signed URL changes every time, so the cache is keyed by the message to avoid downloading it again.
+    val request = ImageRequest.Builder(context)
+        .data(message.localImage ?: message.imageUrl)
+        .apply {
+            if (message.localImage == null && message.id > 0) {
+                memoryCacheKey("chat-photo-${message.id}")
+                diskCacheKey("chat-photo-${message.id}")
+            }
+        }
+        .build()
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(4f / 3f)
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+    ) {
+        AsyncImage(
+            model = request,
+            contentDescription = stringResource(R.string.chats_photo_description),
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize(),
+        )
+        if (overlay != null) {
             Text(
-                text = when {
-                    message.status == MessageStatus.SENDING -> stringResource(R.string.chats_sending)
-                    message.status == MessageStatus.FAILED -> stringResource(R.string.chats_failed_retry)
-                    message.isRead && message.isMine -> stringResource(R.string.chats_message_read, message.time)
-                    else -> message.time
-                },
+                text = overlay,
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
-                color = contentColor.copy(alpha = 0.7f),
+                color = Color.White,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(8.dp)
+                    .background(Color.Black.copy(alpha = 0.4f), RoundedCornerShape(10.dp))
+                    .padding(horizontal = 7.dp, vertical = 1.dp),
             )
         }
     }
@@ -336,6 +594,7 @@ private fun MessageBubble(
 private fun MessageComposer(
     conversationId: Int,
     onSend: (String) -> Unit,
+    onAttach: () -> Unit,
 ) {
     var messageText by rememberSaveable(conversationId) {
         mutableStateOf("")
@@ -349,9 +608,7 @@ private fun MessageComposer(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         IconButton(
-            onClick = {
-                // File selection will be added in a later delivery.
-            },
+            onClick = onAttach,
             modifier = Modifier.background(
                 color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.18f),
                 shape = RoundedCornerShape(14.dp),

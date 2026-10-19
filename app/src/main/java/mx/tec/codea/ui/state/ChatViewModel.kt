@@ -47,6 +47,9 @@ class ChatViewModel : ViewModel() {
 
     private var openJob: Job? = null
 
+    // fotos que ya se subieron pero cuyo mensaje no llegó: un reintento no las sube otra vez.
+    private val uploadedMedia = mutableMapOf<String, Int>()
+
     init {
         // otro usuario entra o algo cambió en el servidor: se vuelve a pedir la bandeja.
         viewModelScope.launch { DataEvents.changed.collect { loadConversations() } }
@@ -146,22 +149,47 @@ class ChatViewModel : ViewModel() {
         deliver(id, text.trim(), clientId)
     }
 
+    // la foto ya viene comprimida (ImageCompressor); el texto es opcional.
+    fun sendPhoto(jpeg: ByteArray, caption: String) {
+        val id = openId ?: return
+        val clientId = UUID.randomUUID().toString()
+        messages = messages + ChatMessage(
+            id = 0,
+            clientId = clientId,
+            text = caption.trim(),
+            time = "",
+            isMine = true,
+            status = MessageStatus.SENDING,
+            localImage = jpeg,
+        )
+        deliver(id, caption.trim(), clientId, jpeg)
+    }
+
     // el mismo clientId: si el mensaje sí había llegado, la API no lo duplica.
     fun retry(clientId: String) {
         val id = openId ?: return
         val pending = messages.firstOrNull { it.clientId == clientId && it.status == MessageStatus.FAILED }
             ?: return
         replace(clientId) { it.copy(status = MessageStatus.SENDING) }
-        deliver(id, pending.text, clientId)
+        deliver(id, pending.text, clientId, pending.localImage)
     }
 
-    private fun deliver(conversationId: Int, text: String, clientId: String) {
+    private fun deliver(conversationId: Int, text: String, clientId: String, jpeg: ByteArray? = null) {
         viewModelScope.launch {
             try {
-                val sent = repository.send(conversationId, text, clientId)
+                val sent = if (jpeg == null) {
+                    repository.send(conversationId, text, clientId)
+                } else {
+                    val mediaId = uploadedMedia.getOrPut(clientId) { repository.uploadPhoto(jpeg) }
+                    repository.sendPhoto(conversationId, mediaId, text, clientId).also { uploadedMedia.remove(clientId) }
+                }
                 if (conversationId == openId) messages = ChatRules.merge(messages, listOf(sent))
                 conversations = conversations.map {
-                    if (it.id == conversationId) it.copy(lastText = sent.text, lastTime = sent.time) else it
+                    if (it.id == conversationId) {
+                        it.copy(lastText = ChatRules.preview(sent.text, sent.hasImage), lastTime = sent.time)
+                    } else {
+                        it
+                    }
                 }
             } catch (e: CancellationException) {
                 throw e

@@ -57,3 +57,51 @@ async def test_chat_scope(client, world):
     assert (await client.get(f"/conversations/{chat}/messages", headers=world.teacher_b)).status_code == 404
     empty = await client.post(f"/conversations/{chat}/messages", headers=world.mom, json={"text": "  "})
     assert empty.json()["code"] == "TEXT_REQUIRED"
+
+
+async def _upload(client, storage, headers, kind, content_type="image/jpeg", complete=True) -> int:
+    permit = (
+        await client.post("/media/uploads", headers=headers, json={"content_type": content_type, "size_bytes": 2048, "kind": kind})
+    ).json()
+    if complete:
+        storage.put(permit["fields"]["key"])
+        assert (await client.post(f"/media/{permit['media_id']}/complete", headers=headers)).status_code == 200
+    return permit["media_id"]
+
+
+async def test_chat_photo(client, world, storage):
+    chat = await _sofia_chat(client, world)
+    # la mamá sube su foto como documento (los papás no pueden subir PHOTO); la miss, como foto.
+    mom_media = await _upload(client, storage, world.mom, "DOCUMENT")
+    sent = await client.post(
+        f"/conversations/{chat}/messages",
+        headers=world.mom,
+        json={"text": "", "media_id": mom_media, "client_id": str(uuid.uuid4())},
+    )
+    assert sent.status_code == 201
+    assert sent.json()["text"] == "" and sent.json()["media_url"].startswith("http://storage.test/")
+
+    teacher_media = await _upload(client, storage, world.teacher_a, "PHOTO")
+    reply = await client.post(
+        f"/conversations/{chat}/messages", headers=world.teacher_a, json={"text": "Así quedó", "media_id": teacher_media}
+    )
+    assert reply.status_code == 201 and reply.json()["text"] == "Así quedó"
+
+    page = (await client.get(f"/conversations/{chat}/messages", headers=world.mom)).json()
+    assert [bool(m["media_url"]) for m in page["items"]] == [True, True]
+    assert (await client.get("/conversations", headers=world.mom)).json()[0]["last_message"]["media_url"]
+
+
+async def test_chat_photo_rules(client, world, storage):
+    chat = await _sofia_chat(client, world)
+    url = f"/conversations/{chat}/messages"
+    pending = await _upload(client, storage, world.teacher_a, "PHOTO", complete=False)
+    not_ready = await client.post(url, headers=world.teacher_a, json={"media_id": pending})
+    assert not_ready.status_code == 422 and not_ready.json()["code"] == "MEDIA_NOT_VALID"
+
+    pdf = await _upload(client, storage, world.mom, "DOCUMENT", content_type="application/pdf")
+    assert (await client.post(url, headers=world.mom, json={"media_id": pdf})).json()["code"] == "MEDIA_NOT_VALID"
+
+    # la foto de otra persona no se puede usar.
+    ready = await _upload(client, storage, world.teacher_a, "PHOTO")
+    assert (await client.post(url, headers=world.mom, json={"media_id": ready})).status_code == 404

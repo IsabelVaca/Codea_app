@@ -3,6 +3,7 @@ from fastapi import APIRouter, Query, Response, status
 from app.core.db import Db
 from app.core.pagination import Page, parse_cursor
 from app.core.security import AdminUser, AnyUser, ParentUser
+from app.core.storage import StorageDep
 
 from . import service
 from .schemas import AnnouncementIn, AnnouncementOut, ConversationOut, MessageIn, MessageOut, NoteIn, NoteOut
@@ -24,30 +25,32 @@ async def list_announcements(db: Db, current: AnyUser, limit: int = Query(50, ge
 
 
 @router.get("/conversations", response_model=list[ConversationOut])
-async def list_conversations(db: Db, current: AnyUser) -> list[ConversationOut]:
+async def list_conversations(db: Db, current: AnyUser, storage: StorageDep) -> list[ConversationOut]:
     """Las conversaciones (una por niño), cada una con su conteo de mensajes sin leer."""
-    return await service.list_conversations(db, current)
+    return await service.list_conversations(db, current, storage)
 
 
 @router.get("/conversations/{conversation_id}/messages", response_model=Page[MessageOut])
 async def list_messages(
     db: Db,
     current: AnyUser,
+    storage: StorageDep,
     conversation_id: int,
     cursor: str | None = None,
     after: int | None = None,
     limit: int = Query(30, ge=1, le=100),
 ) -> Page[MessageOut]:
     """Los mensajes de una conversación, paginados. Con ?after=<id> trae solo los nuevos."""
-    return await service.list_messages(db, current, conversation_id, parse_cursor(cursor), after, limit)
+    return await service.list_messages(db, current, storage, conversation_id, parse_cursor(cursor), after, limit)
 
 
 @router.post("/conversations/{conversation_id}/messages", response_model=MessageOut, status_code=status.HTTP_201_CREATED)
 async def send_message(
-    db: Db, current: AnyUser, conversation_id: int, data: MessageIn, response: Response
+    db: Db, current: AnyUser, storage: StorageDep, conversation_id: int, data: MessageIn, response: Response
 ) -> MessageOut:
-    """Envía un mensaje. Si el client_id ya se usó, regresa el mensaje existente con 200."""
-    message, created = await service.send_message(db, current, conversation_id, data)
+    """Envía un mensaje con texto, con foto (media_id) o con ambos. Si el client_id ya se usó,
+    regresa el mensaje existente con 200."""
+    message, created = await service.send_message(db, current, storage, conversation_id, data)
     if not created:
         response.status_code = status.HTTP_200_OK
     return message

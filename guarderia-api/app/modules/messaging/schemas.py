@@ -22,7 +22,10 @@ class AnnouncementOut(Schema):
 
 
 class MessageIn(BaseModel):
-    text: str
+    # puede ir vacío si el mensaje trae una foto.
+    text: str = ""
+    # la foto ya subida al bucket (POST /media/uploads y /media/{id}/complete).
+    media_id: int | None = None
     # un UUID que genera la app; si reintenta con el mismo, no se duplica el mensaje.
     client_id: uuid.UUID | None = None
 
@@ -36,6 +39,8 @@ class MessageOut(BaseModel):
     author_name: str
     text: str
     client_id: uuid.UUID | None
+    # URL firmada de 10 minutos de la foto; vacía si el mensaje no trae foto o ya se borró.
+    media_url: str | None = None
     created_at: datetime
     is_mine: bool
     # para los míos: si ya lo leyó alguien más. Para los de otros: si ya lo leí yo.
