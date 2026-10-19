@@ -68,6 +68,14 @@ TEST_HASH = hash_password(TEST_PASSWORD)
 _USERS: dict[str, tuple[uuid.UUID, int]] = {}
 
 
+async def mark_present(client, world, *children, day: str | None = None) -> None:
+    """Pasa lista como la docente de la sala A: sin registro, un niño cuenta como ausente."""
+    for child in children:
+        body = {"status": "PRESENT", **({"date": day} if day else {})}
+        response = await client.put(f"/attendance/{child.id}", headers=world.teacher_a, json=body)
+        assert response.status_code == 200
+
+
 def bearer(token: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
 

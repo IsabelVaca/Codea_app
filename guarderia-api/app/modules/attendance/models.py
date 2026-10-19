@@ -9,7 +9,7 @@ from app.core.db import Base, IdMixin, str_enum
 
 
 class AttendanceStatus(StrEnum):
-    """AttendanceStatus de la app. Sin registro, el niño cuenta como presente."""
+    """AttendanceStatus de la app. Sin registro, el niño cuenta como ausente: la docente pasa lista en Mi día."""
 
     PRESENT = "PRESENT"
     ABSENT = "ABSENT"

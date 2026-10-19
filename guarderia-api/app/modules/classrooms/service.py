@@ -7,11 +7,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core import clock, rules
 from app.core.errors import ApiError
 from app.core.security import CurrentUser, ensure_classroom_access
-from app.modules.attendance.models import Attendance, AttendanceStatus
+from app.modules.attendance.models import AttendanceStatus
+from app.modules.attendance.queries import present_child_ids
 from app.modules.auth.models import AppUser
 from app.modules.children.models import Child, ChildStatus
 from app.modules.messaging import service as messaging
 from app.modules.messaging.models import ParentNote
+from app.modules.reports.models import DailySummary
 from app.modules.teachers.models import Teacher
 
 from .centers import center_today, get_active_classroom
@@ -23,6 +25,7 @@ from .schemas import (
     ClassroomOut,
     ClassroomUpdate,
     RoomChild,
+    RoomNote,
     StaffMember,
     StaffUpdate,
 )
@@ -218,26 +221,17 @@ async def room_children(
         )
     ).all()
     ids = [child.id for child in children]
-    absent = set(
-        (
-            await db.scalars(
-                select(Attendance.child_id).where(
-                    Attendance.child_id.in_(ids),
-                    Attendance.date == day,
-                    Attendance.status == AttendanceStatus.ABSENT,
-                )
-            )
-        ).all()
-    )
+    present = await present_child_ids(db, ids, day)
     chats = await messaging.unread_by_child(db, current.id, ids)
-    notes = dict(
-        (
-            await db.execute(
-                select(ParentNote.child_id, func.count())
-                .where(ParentNote.child_id.in_(ids), ParentNote.date == day)
-                .group_by(ParentNote.child_id)
-            )
-        ).all()
+    notes: dict[int, list[RoomNote]] = {}
+    for note in (
+        await db.scalars(
+            select(ParentNote).where(ParentNote.child_id.in_(ids), ParentNote.date == day).order_by(ParentNote.id)
+        )
+    ).all():
+        notes.setdefault(note.child_id, []).append(RoomNote(id=note.id, text=note.text, created_at=note.created_at))
+    summarized = set(
+        (await db.scalars(select(DailySummary.child_id).where(DailySummary.child_id.in_(ids), DailySummary.date == day))).all()
     )
     result = []
     for child in children:
@@ -248,12 +242,14 @@ async def room_children(
                 name=child.name,
                 surname=child.surname,
                 full_name=child.full_name,
-                attendance=AttendanceStatus.ABSENT if child.id in absent else AttendanceStatus.PRESENT,
+                attendance=AttendanceStatus.PRESENT if child.id in present else AttendanceStatus.ABSENT,
                 conversation_id=conversation_id,
                 has_unread_chat=unread > 0,
                 unread_count=unread,
-                notes_today=notes.get(child.id, 0),
-                has_note_today=notes.get(child.id, 0) > 0,
+                notes_today=len(notes.get(child.id, [])),
+                has_note_today=child.id in notes,
+                notes=notes.get(child.id, []),
+                has_summary_today=child.id in summarized,
             )
         )
     return result

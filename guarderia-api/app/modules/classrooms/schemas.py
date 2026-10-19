@@ -1,5 +1,5 @@
 import uuid
-from datetime import date, time
+from datetime import date, datetime, time
 
 from pydantic import BaseModel
 
@@ -76,8 +76,19 @@ class StaffUpdate(BaseModel):
     primary_teacher_id: uuid.UUID | None = None
 
 
+class RoomNote(BaseModel):
+    """Un aviso que el papá mandó desde casa: se lee completo en Mi sala."""
+
+    id: int
+    text: str
+    created_at: datetime
+
+
 class RoomChild(BaseModel):
-    """Un niño en Mi sala (Child en la app): su asistencia del día y si tiene chat sin leer."""
+    """Un niño en Mi sala (Child en la app): su asistencia del día y si tiene chat sin leer.
+
+    La asistencia es PRESENT solo si la docente le pasó lista hoy; sin registro, ABSENT.
+    """
 
     id: int
     name: str
@@ -90,3 +101,7 @@ class RoomChild(BaseModel):
     # notas que el papá le dejó a la asistente hoy (POST /children/{id}/notes): marcan al niño en Mi sala.
     notes_today: int = 0
     has_note_today: bool = False
+    # los avisos de hoy con su texto, del más viejo al más nuevo.
+    notes: list[RoomNote] = []
+    # true cuando la docente ya guardó el resumen del día de este niño.
+    has_summary_today: bool = False

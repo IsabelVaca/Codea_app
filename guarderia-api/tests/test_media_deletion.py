@@ -3,10 +3,12 @@
 from sqlalchemy import select
 
 from app.modules.media.models import Media, MediaStatus
+from tests.conftest import mark_present
 
 
 async def _photo_of_sofia(client, world, storage) -> tuple[int, str]:
     """Una foto de Sofía en un reporte; regresa su id y su llave en el bucket."""
+    await mark_present(client, world, world.sofia)
     routine = (await client.get(f"/classrooms/{world.room_a.id}/routine", headers=world.teacher_a)).json()
     permit = await client.post(
         "/media/uploads", headers=world.teacher_a, json={"content_type": "image/jpeg", "size_bytes": 2048}
