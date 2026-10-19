@@ -1,5 +1,7 @@
 # API: estado actual
 
+> **Documento histórico (16–17 de octubre).** Describe el plan de entonces; el login, la conexión con la API y casi todas las pantallas que aquí figuran como pendientes ya se hicieron. Lo vigente está en [`../FALTANTES.md`](../FALTANTES.md) (qué falta), [`../ESTADO.md`](../ESTADO.md) (dónde estamos), [`../REQUISITOS.md`](../REQUISITOS.md) y [`../api/endpoints.md`](../api/endpoints.md).
+
 La API ya tiene **todos los endpoints de la primera entrega** del PDF y algunos más: 65 en 13 módulos (a los 56 del 16 de octubre se sumaron `GET /announcements`, las plantillas de rutina, `/center` y `/invitations`), con su lista en [`../api/endpoints.md`](../api/endpoints.md). Las 30 pruebas del 16 de octubre pasaron contra Postgres real; hoy hay **43 pruebas escritas** y las nuevas todavía no se han corrido contra Postgres. Lo que falta no son endpoints de la entrega, sino lo que hay alrededor: el login propio, las invitaciones con código, el worker y lo que piden las pantallas nuevas.
 
 ## Lo que está hecho

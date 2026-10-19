@@ -36,23 +36,25 @@ Codea es la aplicación con la que la estancia infantil **La Oruga** (nombre que
 | Hora de entrada y de salida (la de salida puede ser la del cierre automático de las 9 pm), retardo y motivo del retardo. **No se guarda la ubicación** | Docentes | Al usar el checador (ver 2.4) |
 | Avisos a coordinación (motivo y mensaje opcional) | Docentes | **La app ya no los genera** (se quitó el botón el 18/oct); la tabla y el endpoint siguen en el servidor |
 | Mensajes, notas para la asistente | Docentes y tutores | Los escriben ellos en la app |
-| Persona(s) autorizada(s) para recoger al niño: nombre, parentesco y teléfono | Terceros | Los captura el tutor o el administrador |
+| Persona(s) autorizada(s) para recoger al niño: nombre, parentesco y teléfono | Terceros | **Solo el administrador** las captura y las quita (desde el 18/oct la familia ya no puede). Se registran por niño |
 
 ### 2.2 De los menores
 
 | Dato | Cómo se obtiene |
 |---|---|
 | Nombre, apellido y fecha de nacimiento | Los captura el administrador al inscribir (la app pide la fecha real, dd/mm/aaaa). Los niños inscritos con una versión anterior de la app conservan una fecha aproximada calculada desde su edad |
-| **Alergias** (dato de salud) | Las captura el administrador |
+| **Alergias** (dato de salud) | Las captura el administrador al inscribir y las puede editar el tutor desde «Mi hijo» |
+| **Condiciones médicas, intolerancias, medicamentos y otras indicaciones** (datos de salud, hasta 1,000 caracteres cada uno) | El tutor (o el administrador) desde «Mi hijo». La docente de la sala los ve en la ficha del niño. La bitácora de auditoría guarda **qué campos** cambiaron, no su contenido |
 | Sala, y si está activo o dado de baja | El administrador |
-| Asistencia diaria (presente o falta) | La docente o el administrador |
+| Asistencia diaria (presente o falta). **Sin pase de lista, el niño cuenta como ausente** | La docente o el administrador |
+| **Salida del niño:** hora, y quién lo recogió (nombre de la persona autorizada o del tutor, guardado como texto) | La docente, en el pase de salida; la hora la pone el servidor |
 | Resumen del día: ánimo, cuánto comió, cambios de pañal, minutos de siesta y nota general | La docente |
 | **Reportes** de incidente, logro, salud o conducta, con su descripción | La docente |
 | **Fotografías** de las actividades en las que aparece | La docente, con la cámara del teléfono |
-| **Documentos** que pide el centro (por ejemplo, certificado de alergias o informe de discapacidad, que son los que trae el ejemplo del sistema) | El tutor los sube desde la app |
-| Mensajes de la familia sobre el niño | El tutor |
+| **Documentos** que pide el centro (por ejemplo, certificado de alergias o informe de discapacidad, que son los que trae el ejemplo del sistema) | Antes el tutor los subía desde la app; **desde el 18/oct la app ya no tiene esa pantalla**. La API de documentos sigue en el servidor y conserva los que ya existían |
+| Mensajes de la familia sobre el niño, y **fotos que se mandan por el chat** | El tutor y la docente |
 
-Los datos de **salud** (alergias, reportes de salud, certificados) se tratan como **sensibles**. Los datos de **menores** se tratan con el nivel de protección más alto que define este proyecto.
+Los datos de **salud** (alergias, condiciones médicas, medicamentos, reportes de salud, certificados) se tratan como **sensibles**. Los datos de **menores** se tratan con el nivel de protección más alto que define este proyecto.
 
 ### 2.3 Lo que la app no recaba
 
@@ -115,7 +117,7 @@ El sistema no usa los datos para publicidad ni perfiles comerciales, y no los ve
 | Quién | Qué puede ver |
 |---|---|
 | **Tutor (padre o madre)** | Solo a **sus** hijos: resumen del día, calendario de asistencia, fotos donde aparecen, documentos, personas autorizadas, mensajes con las docentes de la sala y avisos de sus salas o del centro. **Una foto etiquetada con varios niños la ven las familias de todos ellos** |
-| **Docente** | Solo a los niños de **su** sala: lista, asistencia, rutina, reportes, mensajes con sus familias y la lista de personas autorizadas. Ve los avisos del centro y de su sala |
+| **Docente** | Solo a los niños de **su** sala: lista, asistencia, rutina, reportes, los datos de salud que la familia escribió, las salidas del día, mensajes con sus familias y la lista de personas autorizadas. Ve los avisos del centro y de su sala |
 | **Administrador** | Todos los niños, las salas, las docentes, los tutores, los documentos, las fotos, los avisos, la bitácora de auditoría y el centro. **No puede leer los mensajes** entre familias y docentes a través de la API: es una regla del sistema, no un cifrado |
 | **Persona con acceso técnico a la base de datos o al almacén** | Todo lo que no esté cifrado: es decir, casi todo (ver 6) |
 
@@ -192,7 +194,7 @@ Como titular (o como madre, padre o tutor de un menor) tienes derecho a **conoce
 | Derecho | Lo que existe hoy | Lo que **falta** |
 |---|---|---|
 | **Acceso** | El tutor ve en la app el resumen del día, el calendario, las fotos, los documentos y las personas autorizadas de sus hijos. El administrador ve los expedientes | No hay una exportación de «todos mis datos». Hay que pedirla al administrador, que no tiene una función para generarla |
-| **Rectificación** | El administrador puede cambiar de sala a un niño; el tutor puede agregar o quitar personas autorizadas y reemplazar documentos | **No hay pantalla ni endpoint para corregir** nombre, fecha de nacimiento, alergias, correo o teléfono de una cuenta (está como «editar datos» en `docs/plan/01-app-pantallas.md`, prioridad P2). Hoy solo se corrige con acceso directo a la base |
+| **Rectificación** | El administrador puede cambiar de sala a un niño y administra las personas autorizadas; el tutor puede corregir las alergias y demás datos de salud de su hijo desde «Mi hijo» | **No hay pantalla ni endpoint para corregir** nombre, fecha de nacimiento, alergias, correo o teléfono de una cuenta (está como «editar datos» en `docs/plan/01-app-pantallas.md`, prioridad P2). Hoy solo se corrige con acceso directo a la base |
 | **Cancelación** | El administrador puede **dar de baja** una cuenta o un niño (se desactiva el acceso). El tutor puede **pedir que se borre una foto** desde la pantalla Fotos; el administrador la ve en «Fotos que piden borrar» y puede **borrarla** (se elimina del almacén y de las galerías de todas las familias etiquetadas) o **conservarla** | **La baja no borra datos.** No hay forma de borrar un expediente completo desde la app. No se pueden borrar documentos por esa vía (solo fotos). En una foto de grupo no se puede quitar solo la etiqueta de un niño: al aprobar, desaparece para todos. No hay plazo de atención definido |
 | **Oposición** | Se puede pedir la baja de la cuenta | Igual que cancelación |
 | **Revocar el consentimiento** | Igual que cancelación | Igual |

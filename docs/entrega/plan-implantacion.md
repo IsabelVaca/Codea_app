@@ -1,6 +1,6 @@
 # Plan de implantación
 
-Canal, versión, configuración, despliegue, migración de datos y rollback. Estado a **2026-10-18**, rama `integracion`, commit `22c0008`.
+Canal, versión, configuración, despliegue, migración de datos y rollback. Estado a **2026-10-18**, `main` con los PR #7 a #9 y la invitación por WhatsApp (puesto al día el 18/oct por la noche; en esa revisión se corrió `pytest` de la API: 318 pruebas en verde).
 
 > **Léelo así:** hoy **no existe ningún despliegue** del backend ni un APK de release firmado. Este plan dice qué hay en el repositorio, qué falta y qué proponemos. Lo que es una **propuesta** o necesita una decisión del equipo se marca como tal; no se afirma que algo funcione si no se probó. Se sustenta en `guarderia-api/README.md`, `docker-compose.yml`, `Dockerfile`, `.env.example`, `app/build.gradle.kts`, `guarderia-api/migrations/README.md`, `guarderia-api/PENDIENTES.md`, `docs/DECISIONES-PENDIENTES.md` y `docs/ENTREGA-3.md`.
 

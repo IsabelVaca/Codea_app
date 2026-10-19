@@ -15,7 +15,7 @@ App de la rama `integracion` en un teléfono Android real con **modo oscuro acti
 
 | # | Dónde | Falla | Gravedad | Estado |
 |---|---|---|---|---|
-| 1 | Padre → Documentos | **La app se cierra** al abrir la tab: `Key "1" was already used` en el `LazyColumn` (documentos y personas autorizadas usan el mismo `id` como clave). | Alta | Corregido: claves con prefijo (`ParentDocumentsScreen.kt`) |
+| 1 | Padre → Documentos | **La app se cierra** al abrir la tab: `Key "1" was already used` en el `LazyColumn` (documentos y personas autorizadas usan el mismo `id` como clave). | Alta | Corregido (y la pestaña desapareció: ahora es «Mi hijo») |
 | 2 | Login, Activar cuenta | Con el teléfono en modo oscuro, el título "Inicia sesión" y los iconos de la barra de estado salen blancos sobre fondo claro: casi no se leen. | Media | Corregido: `AuthFrame` pinta el fondo del tema (`AuthComponents.kt`) |
 | 3 | Padre → Hoy | En modo oscuro, "El día de Mateo" (oscuro sobre oscuro) y el nombre del niño y "Todavía no hay notas" (blanco sobre durazno) no se leen. | Media | Corregido: título con `onBackground` y tarjeta con texto `Ink` (`Notificaciones.kt`, `ParentTodayScreen.kt`) |
 | 4 | Docente → Checador | **Era un prototipo:** botones "Simular llegada", fecha fija ("19 de agosto"), hora fija 07:52 y distancia fija ("12 m"); además `registrar()` mandaba siempre las coordenadas del centro, así que el servidor nunca podía rechazar por distancia. | Alta (CRF-05 figuraba como cumplido) | Corregido: GPS y hora reales (`DeviceLocation`, `CheckerViewModel`); probado en el teléfono: "Domingo 18 de octubre", 13:29, "Estás a 842 m", fuera del perímetro y botón bloqueado. Los casos simulados solo salen en compilaciones debug. **El mapa de Google sigue en blanco:** falta `MAPS_API_KEY` en `local.properties` (decisión #3 abierta). |
@@ -36,3 +36,16 @@ App de la rama `integracion` en un teléfono Android real con **modo oscuro acti
 - El `venv` de `guarderia-api/` no tenía las dependencias del login (`pwdlib`); se reinstalaron con `requirements.txt`.
 - Las pruebas de la API (68, todas pasan) usan el Postgres local (`guarderia_test`), cuya contraseña es la anterior del `.env`. Se corren con `POSTGRES_PASSWORD=<la del contenedor local> .venv/bin/pytest`.
 - La base de Aiven estaba en la migración anterior al login; se migró y los 15 usuarios quedaron con la contraseña del seed.
+
+## Falta recorrer (todo lo que llegó después de este recorrido)
+
+El recorrido de arriba es de la mañana del 18/oct. Desde entonces se agregó esto, que **no se ha recorrido en un teléfono** (lo que sí se vio está en [`BITACORA.md`](BITACORA.md)):
+
+| Rol | Qué recorrer |
+|---|---|
+| Docente | Pase de lista en Mi día («Marcar a todos presentes»); Mi sala nueva (De casa hoy, «Ya lo vi», filtros, ausentes plegados, «Capturar resúmenes» con varios niños); ficha del niño (alergias, Llamar, quién lo recoge, Corregir asistencia); pase de salida de punta a punta (registrar, «Corregir», «Finalizar día», «Día finalizado»); chats con tutores y con fotos; sin conexión con los campos nuevos; modo oscuro |
+| Padre | «Mi hijo» (guardar salud y verla en la ficha de la docente); chat con foto (galería y cámara); abrir el enlace de invitación; Fotos con una foto real (falla #10 sigue sin probar) |
+| Admin | «Enviar por WhatsApp» (chat abierto con el mensaje); Ajustes → Personas autorizadas; Horario |
+| Los tres | `adb shell am start -a android.intent.action.VIEW -d "codea://invitar?email=…&code=…" mx.tec.codea` con la sesión cerrada (debe abrir «Activar mi cuenta» con correo y código puestos) y con la sesión abierta (debe ignorarlo) |
+
+Antes de recorrer: aplicar en Aiven `a96b2c7d5f65` y `a07c3d8e6f76` (sin ellas el login da 500) y compilar con `-PapiBaseUrl=http://localhost:8000/api/v1/` más `adb reverse` 8000 y 9000.

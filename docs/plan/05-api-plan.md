@@ -1,5 +1,7 @@
 # API: plan de trabajo
 
+> **Documento histórico (16–17 de octubre).** Describe el plan de entonces; el login, la conexión con la API y casi todas las pantallas que aquí figuran como pendientes ya se hicieron. Lo vigente está en [`../FALTANTES.md`](../FALTANTES.md) (qué falta), [`../ESTADO.md`](../ESTADO.md) (dónde estamos), [`../REQUISITOS.md`](../REQUISITOS.md) y [`../api/endpoints.md`](../api/endpoints.md).
+
 Cinco bloques en el mismo orden que las fases de la app ([README](README.md#orden-de-trabajo)). Cada bloque termina con sus pruebas en verde y con [`../api/endpoints.md`](../api/endpoints.md) actualizado.
 
 ## 1. Login con JWT

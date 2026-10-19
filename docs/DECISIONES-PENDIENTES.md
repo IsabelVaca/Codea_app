@@ -1,7 +1,7 @@
 # Decisiones pendientes y excepciones al marco
 
 Todo lo que se salga de [`MARCO-TECNICO.md`](MARCO-TECNICO.md) se registra aquí. **No se implementa hasta que el responsable apruebe.**
-Estado a 2026-10-16: nada está aprobado todavía.
+Estado a 2026-10-18 (revisado): nada está aprobado todavía por el responsable. Lo que ya está en el código sin aprobación: #1 (login JWT), #8 (`reorderable`), #9 (SeaweedFS en desarrollo) y #10 (dictado).
 
 | # | Tema | Por qué importa | Alternativa dentro del marco | Recomendación | Estado |
 |---|---|---|---|---|---|

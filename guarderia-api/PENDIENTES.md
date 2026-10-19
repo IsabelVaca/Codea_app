@@ -1,26 +1,40 @@
 # Backend: estado y pendientes
 
-Foto a 2026-10-16 (leyendo el código; las pruebas no se corrieron para esta foto). Contexto general: [`../docs/ESTADO.md`](../docs/ESTADO.md). Marco técnico: [`../docs/MARCO-TECNICO.md`](../docs/MARCO-TECNICO.md).
+Foto a 2026-10-18 por la noche, sobre `main`. Las pruebas sí se corrieron para esta foto: `POSTGRES_PASSWORD=123456 .venv/bin/pytest` → **318 pasaron**. Contexto general: [`../docs/ESTADO.md`](../docs/ESTADO.md). Qué falta en toda la app: [`../docs/FALTANTES.md`](../docs/FALTANTES.md). Marco técnico: [`../docs/MARCO-TECNICO.md`](../docs/MARCO-TECNICO.md).
 
 ## Qué hay
 
-- 13 módulos en `app/modules/` (ver [`app/modules/README.md`](app/modules/README.md)), migraciones Alembic (2), seed con datos de ejemplo y 43 pruebas con pytest contra Postgres real.
+- 15 módulos en `app/modules/` (ver [`app/modules/README.md`](app/modules/README.md)), 11 migraciones Alembic, 33 tablas, 83 endpoints (matriz en [`../docs/api/matriz-de-roles.md`](../docs/api/matriz-de-roles.md), comprobada por `tests/test_access_matrix.py`) y seed con datos de ejemplo.
 - Errores uniformes (Problem Details con `code` estable), paginación por cursor, reloj reemplazable en pruebas, subida de archivos con URL firmada.
 - Permisos por rol (`require_role`) y por registro (404 fuera de alcance).
+- Login propio con JWT, límite de intentos, auditoría (`audit_log`), cabeceras de seguridad y CORS cerrado.
+- Regla de asistencia: **sin registro de asistencia = ausente** (`attendance/queries.py::present_child_ids`); la usan Mi sala, los reportes (`409 CHILD_ABSENT`), el calendario del padre y el resumen semanal.
+- Pase de salida (`departures`), datos de salud del niño que edita la familia (`PATCH /children/{id}/health`), foto en el chat y personas autorizadas administradas solo por el admin.
+- Invitación por enlace: `access_code.link`, página pública `GET /invitar` y `GET /.well-known/assetlinks.json`.
+
+## Hecho (ya no es pendiente)
+
+| Qué | Requisito |
+|---|---|
+| Auth propia con JWT; límite de intentos; invitación por enlace de WhatsApp (el correo real ya no aplica) | RF-01, RNF01, RNF03 |
+| Bitácora de auditoría (`modules/audit`) | RF-14 (falta registrar lectura de fotos y documentos, y `PATCH /center`) |
+| Resumen semanal (`GET /children/{id}/weekly-summary`) | RF-12 |
+| Revisión de solicitudes de borrado de fotos (`media/deletion-requests`) | RF-10 (ver abajo: el equipo pidió cambiarla) |
+| Hora de **salida** del niño y con quién (pase de salida) | RF-03, solo la salida |
+| Endurecimiento: límite de intentos, cabeceras, CORS cerrado, pruebas de IDOR, inyección y matriz de roles | Rúbrica, partes 2 y 3 |
 
 ## Pendiente, por prioridad
 
-### Alta (rúbrica y requisitos)
+### Alta (rúbrica, requisitos y pedidos del equipo)
 
 | Qué | Requisito | Cómo, dentro del marco |
 |---|---|---|
-| ~~Auth propia con JWT~~ **Hecha** (rama `feature/login-jwt`) | RF-01, RNF01, RNF03 | Ver [`app/modules/auth/README.md`](app/modules/auth/README.md). Falta: límite de intentos, correo real con el código, auditoría de logins |
-| ~~**Bitácora de auditoría**~~ **Hecha** (18 de octubre) | RF-14 | `modules/audit`; falta registrar lectura de fotos y documentos, y `PATCH /center`. |
-| **Avisos con imágenes** (`GET /announcements` ya existe) | HN5 | `media_id` en el aviso; marcar como leído en el servidor (`POST /announcements/{id}/read`), hoy el "leído" vive en el teléfono. |
-| **Resumen semanal** | RF-12 | Endpoint que agregue `daily_summary` por semana y niño. |
-| **Revisar solicitudes de borrado de fotos** | RF-10 | Listar y aprobar/rechazar `media_deletion_request`; borrar el objeto del bucket. |
-| **Endurecimiento** (hecho: límite de intentos, cabeceras, CORS cerrado) | Rúbrica parte 2 | Falta: HTTPS real, sin secretos por defecto en `.env.example`, límite en otros endpoints. |
-| **Entrada y salida del niño** | RF-03 | `attendance` guarda solo `PRESENT`/`ABSENT`; agregar hora de entrada y de salida. |
+| **Borrado directo de fotos por el padre** | RF-10 (cambio del 18/oct) | Endpoint con el que el padre borre la foto (hoy solo `POST /media/{id}/deletion-request`); definir qué pasa si la foto sale con varios niños; decidir si se quitan los endpoints de revisión (`GET /media/deletion-requests`, `…/approve`, `…/reject`), que hoy la app no usa |
+| **Aplicar las migraciones en Aiven** | — | `a96b2c7d5f65` (foto en el chat) y `a07c3d8e6f76` (salud del niño y pase de salida), con `alembic upgrade head`. `alembic current` dice cuáles faltan. Sin ellas el login da 500 |
+| **Hora de entrada del niño** | RF-03 | `attendance` guarda solo `PRESENT`/`ABSENT`; agregar hora de entrada. La salida ya está |
+| **Que la familia vea la salida** | RF-03 | `GET` del pase de salida para el padre (hoy solo admin y docente de la sala) |
+| **Avisos con imágenes** | HN5 | `media_id` en `announcement` (hoy solo lo tiene `message`); marcar como leído en el servidor (`POST /announcements/{id}/read`); hoy el "leído" vive en el teléfono |
+| **Despliegue con HTTPS y URL pública** | RNF04 y enlace de invitación | Configurar `PUBLIC_BASE_URL` y `ANDROID_CERT_SHA256` (en `.env`) para que el enlace abra la app |
 
 ### Media
 
@@ -30,9 +44,10 @@ Foto a 2026-10-16 (leyendo el código; las pruebas no se corrieron para esta fot
 | Menú del día | HN3 |
 | Llegada de los padres | HN2 |
 | Exportar reportes (PDF/CSV) | HN1 |
-| Varios hijos por padre en las respuestas de la API | HN4 (el modelo ya lo permite) |
-| Chat en tiempo real | SSE o WebSocket (el marco los permite); hoy se consulta con `?after=` |
-| Correo real de invitación | **Ya no aplica:** el admin manda el enlace por WhatsApp. Falta una URL pública con HTTPS para que el enlace funcione fuera de la red local (`PUBLIC_BASE_URL`) |
+| Varios hijos por padre: `GET /me` ya devuelve la lista; falta que la app la use | HN4 |
+| Chat en tiempo real | SSE o WebSocket (el marco los permite); hoy se consulta con `?after=` cada 10 s |
+| Decidir si se quitan los turnos (`shift`), `POST /staff-attendance/notify-coordination` y `coordination_notice`, que la app ya no usa | — |
+| Documentos al inscribir (la API de documentos sigue, pero la app ya no tiene pantalla) | — |
 
 ### Infra y operación
 
@@ -42,7 +57,7 @@ Foto a 2026-10-16 (leyendo el código; las pruebas no se corrieron para esta fot
 | Respaldos de la base | Tarea abierta |
 | Monitoreo | `/health/live` y `/health/ready` ya existen; Grafana en duda ([decisión #6](../docs/DECISIONES-PENDIENTES.md)) |
 | Redis | Fuera del marco ([decisión #5](../docs/DECISIONES-PENDIENTES.md)) |
-| Documentar la API | Tarea abierta; el contrato vivo es `/docs`.  Referencia vigente: [`docs/api/endpoints.md`](../docs/api/endpoints.md) |
+| Documentar la API | El contrato vivo es `/docs`. Referencia vigente: [`docs/api/endpoints.md`](../docs/api/endpoints.md) |
 | Cambiar contraseñas de `.env.example` | `POSTGRES_PASSWORD=123456`, `S3_SECRET_KEY=cambia-esta-clave` |
 | Almacén | SeaweedFS en lugar de RustFS ([decisión #9](../docs/DECISIONES-PENDIENTES.md)) |
 
@@ -52,4 +67,5 @@ Foto a 2026-10-16 (leyendo el código; las pruebas no se corrieron para esta fot
 - `core/rules.py` duplica reglas de la app: si cambia una, cambiar las dos.
 - No hay índices más allá de los de las migraciones; revisar con datos reales (fotos, mensajes).
 - No hay pruebas de carga ni de tiempos (RNF05: consultas de fotos en menos de 4 s).
-- No hay pruebas explícitas de IDOR, inyección ni límites de tamaño de subida más allá de `test_upload_rules`.
+- Hay pruebas de IDOR, de inyección y de límites de subida (`test_access_matrix.py`, `test_upload_rules`), pero no un escaneo automático (ZAP).
+- Tras un proxy, el límite de intentos necesita la IP real del cliente (`uvicorn --proxy-headers`; ver `app/modules/auth/README.md`).

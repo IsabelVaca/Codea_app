@@ -1,10 +1,10 @@
 # Endpoints de la API (estado actual)
 
-Lista sacada del código el 16 de octubre de 2026 (rama `backend`, commit `12da735`) y puesta al día el 17 de octubre con lo que se agregó después (centro, invitaciones, plantillas de rutina y avisos): rutas y roles de cada `router.py`, cuerpos y respuestas del OpenAPI que genera FastAPI, y códigos de error de cada `service.py`. Reemplaza a `Endpoints_API_Codea.docx.pdf` y a [`endpoints-api-codea.pdf`](endpoints-api-codea.pdf), que tienen el mismo contenido y ya no coinciden en varios detalles (ver [qué cambió](#qué-cambió-respecto-al-pdf)).
+Lista sacada del código el 16 de octubre de 2026 (rama `backend`, commit `12da735`), puesta al día el 17 de octubre y revisada contra `main` el 18 de octubre (la matriz [`matriz-de-roles.md`](matriz-de-roles.md) cuenta 83 rutas y se genera del código) con lo que se agregó después (centro, invitaciones, plantillas de rutina y avisos): rutas y roles de cada `router.py`, cuerpos y respuestas del OpenAPI que genera FastAPI, y códigos de error de cada `service.py`. Reemplaza a `Endpoints_API_Codea.docx.pdf` y a [`endpoints-api-codea.pdf`](endpoints-api-codea.pdf), que tienen el mismo contenido y ya no coinciden en varios detalles (ver [qué cambió](#qué-cambió-respecto-al-pdf)).
 
-Son **65 endpoints en 13 módulos**. El contrato exacto, con todos los campos, sigue siendo el OpenAPI: con la API prendida, `http://localhost:8000/docs`.
+Son **83 endpoints en 15 módulos** (81 bajo `/api/v1` y 2 públicos fuera de él: `/invitar` y `/.well-known/assetlinks.json`). El contrato exacto, con todos los campos, sigue siendo el OpenAPI: con la API prendida, `http://localhost:8000/docs`.
 
-El login con JWT ya está en la rama `feature/login-jwt` (aquí lo reflejan las secciones *Cuenta* y la convención de autenticación). Lo que falta vive en [`../plan/05-api-plan.md`](../plan/05-api-plan.md).
+El login con JWT ya está en `main` (aquí lo reflejan las secciones *Cuenta* y la convención de autenticación). Lo que falta de la API vive en [`../../guarderia-api/PENDIENTES.md`](../../guarderia-api/PENDIENTES.md).
 
 ## Convenciones
 

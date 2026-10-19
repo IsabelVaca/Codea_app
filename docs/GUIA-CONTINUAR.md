@@ -35,12 +35,12 @@ API en `http://localhost:8000/api/v1`, Swagger en `/docs`.
 ./gradlew installDebug
 ```
 - Emulador: ya apunta a `http://10.0.2.2:8000/api/v1/`.
-- Celular físico por USB: cambia `BASE_URL` en `data/api/ApiConfig.kt` a `http://localhost:8000/api/v1/` y corre `adb reverse tcp:8000 tcp:8000 && adb reverse tcp:9000 tcp:9000`.
+- Celular físico por USB: compila con `-PapiBaseUrl=http://localhost:8000/api/v1/` (o ponlo en `local.properties`) y corre `adb reverse tcp:8000 tcp:8000 && adb reverse tcp:9000 tcp:9000`; sin eso la app apunta a `10.0.2.2` (emulador). Detalle en [`entrega/manual-instalacion.md`](entrega/manual-instalacion.md).
 
 **Pruebas**
 ```bash
-./gradlew test                                     # 11 pruebas de dominio
-cd guarderia-api && .venv/bin/pytest               # 43 pruebas de la API (Postgres real)
+./gradlew test                                     # 121 pruebas JVM
+cd guarderia-api && .venv/bin/pytest               # 318 pruebas de la API (Postgres real; con POSTGRES_PASSWORD si cambiaste la contraseña)
 ```
 
 ## 3. Mapa del repo
@@ -88,6 +88,7 @@ Verifícalo tú con `git branch -r --merged origin/main` y `git branch -r --no-m
 
 ## 7. Qué hacer primero (si no sabes por dónde empezar)
 
-1. Resolver [`DECISIONES-PENDIENTES.md`](DECISIONES-PENDIENTES.md) (sobre todo #1, el login).
-2. Seguir [`PLAN.md`](PLAN.md).
-3. Llenar la matriz de trazabilidad y la parte 6 (ética y legal) de [`ENTREGA-3.md`](ENTREGA-3.md): casi no hay nada y pesan mucho.
+1. Lee [`FALTANTES.md`](FALTANTES.md): lista lo que falta de la app, por rol, con el orden sugerido antes del congelamiento.
+2. Aplica las migraciones pendientes en Aiven y recorre los tres roles en un teléfono; anota las fallas en [`RECORRIDO.md`](RECORRIDO.md).
+3. Resuelve [`DECISIONES-PENDIENTES.md`](DECISIONES-PENDIENTES.md): nada de eso se implementa sin aprobación.
+4. Completa los huecos **[completar por el equipo]** de `docs/entrega/` y la [lista de la rúbrica](ENTREGA-3.md).

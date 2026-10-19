@@ -1,5 +1,7 @@
 # App: plan técnico para conectarla a la API
 
+> **Documento histórico (16–17 de octubre).** Describe el plan de entonces; el login, la conexión con la API y casi todas las pantallas que aquí figuran como pendientes ya se hicieron. Lo vigente está en [`../FALTANTES.md`](../FALTANTES.md) (qué falta), [`../ESTADO.md`](../ESTADO.md) (dónde estamos), [`../REQUISITOS.md`](../REQUISITOS.md) y [`../api/endpoints.md`](../api/endpoints.md).
+
 Los repositorios en memoria son el único lugar donde entra la API: las pantallas siguen recibiendo datos y lambdas, y los ViewModels conservan su forma, pero pasan a llamar funciones `suspend` dentro de `viewModelScope`. Hoy la app no tiene cliente HTTP, ni permiso de `INTERNET`, ni sesión.
 
 Todo sigue los patrones de las prácticas del curso, resumidos en [`../estilo.md`](../estilo.md): la red como la práctica 4, la sesión como la 6, Hilt como la 9 y las imágenes como la 10.

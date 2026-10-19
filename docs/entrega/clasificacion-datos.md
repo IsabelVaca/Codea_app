@@ -1,8 +1,8 @@
 # Clasificación de datos por campo
 
-Parte 6 de la rúbrica (ética y legal), punto 3. Estado a **2026-10-18**, rama `integracion`, commit `22c0008`. Incluye la revisión de solicitudes de borrado de fotos (migración `c52d8e3f0b21`: columnas `decided_by`, `decided_at` y `decision_note` en `media_deletion_request` y estado `DELETED` en `media`) y la salida de la docente (migración `d63e9f4a1c32`: `checked_out_at`, `out_latitude`, `out_longitude` y `out_distance_m` en `staff_check_in`) y la base **local** del teléfono para la asistencia sin conexión (sección 4.2.1).
+Parte 6 de la rúbrica (ética y legal), punto 3. Estado a **2026-10-18**, puesto al día contra `main` (11 migraciones; se agregan los datos de salud del niño, `child_departure` y la foto del chat; las personas autorizadas pasan al administrador). Incluye la revisión de solicitudes de borrado de fotos (migración `c52d8e3f0b21`: columnas `decided_by`, `decided_at` y `decision_note` en `media_deletion_request` y estado `DELETED` en `media`) y la salida de la docente (migración `d63e9f4a1c32`: `checked_out_at`, `out_latitude`, `out_longitude` y `out_distance_m` en `staff_check_in`) y la base **local** del teléfono para la asistencia sin conexión (sección 4.2.1).
 
-Cada campo de cada tabla sale de los `models.py` de `guarderia-api/app/modules/*` (las 32 tablas de las 4 migraciones de `guarderia-api/migrations/versions/`). Lo que vive fuera de Postgres (bucket de archivos, teléfono, variables de entorno, registros del servidor) está en la sección 4. Nada de lo que dice este documento se probó en un servidor de producción: no hay despliegue (ver [`plan-implantacion.md`](plan-implantacion.md)).
+Cada campo de cada tabla sale de los `models.py` de `guarderia-api/app/modules/*` (las 33 tablas de las 11 migraciones de `guarderia-api/migrations/versions/`). Lo que vive fuera de Postgres (bucket de archivos, teléfono, variables de entorno, registros del servidor) está en la sección 4. Nada de lo que dice este documento se probó en un servidor de producción: no hay despliegue (ver [`plan-implantacion.md`](plan-implantacion.md)).
 
 ## 1. Cómo leer las tablas
 
@@ -156,7 +156,8 @@ Solo el administrador la lee (`GET /audit-log`). Una bitácora que se borra pier
 |---|---|---|---|---|
 | `name`, `surname` | **Alto** | Alcance por registro: solo sus tutores, su docente y el administrador | Sin borrado. La baja solo pone `status = INACTIVE` y se puede reactivar | Mientras esté inscrito + un periodo `[decidir]`; después, borrado o anonimización |
 | `birth_date` | **Alto** | Igual; la API calcula la edad. Desde el commit `38bc8fa` el formulario de la app pide la **fecha de nacimiento real** (dd/mm/aaaa) y la valida. **Los niños inscritos antes de ese cambio conservan una fecha inventada** a partir de su edad (lo dice `docs/BITACORA.md`) y hay que corregirla a mano si se quiere el dato real | Igual | Igual |
-| `allergies` | **Alto** (salud) | Igual | Igual | Igual |
+| `allergies` | **Alto** (salud) | Igual. La puede editar el tutor desde «Mi hijo» (`PATCH /children/{id}/health`) | Igual | Igual |
+| `medical_conditions`, `intolerances`, `medications`, `other_notes` | **Alto** (salud) | Texto libre de hasta 1,000 caracteres que escribe el tutor o el administrador; la docente de la sala los ve en la ficha. La bitácora de auditoría guarda **qué campos** cambiaron, no el contenido. Texto en claro en la base | Igual | Igual |
 | `classroom_id` | Medio | — | Igual | Igual |
 | `status` | Medio | — | Igual | Igual |
 
@@ -297,9 +298,21 @@ Además, al crear el aviso el servidor escribe en su registro (`log.warning`) el
 
 | Campo | Nivel | Protección propia | Se conserva hoy | Retención propuesta |
 |---|---|---|---|---|
-| `child_id` | **Alto** | Alcance por registro; la docente también puede leer la lista | **Se borra de verdad** cuando el tutor o el administrador la quita (`db.delete`) | Ya cumplido en el borrado manual |
-| `full_name`, `relationship`, `phone` | **Alto** | Es un **tercero que no se registró ni aceptó nada**: el tutor lo dio de alta. Teléfono en texto claro | Igual | Igual |
+| `child_id` | **Alto** | Alcance por registro; la docente también puede leer la lista. **Agregar y quitar son solo del administrador** desde el 18/oct | **Se borra de verdad** cuando el administrador la quita (`db.delete`); las salidas ya registradas conservan su nombre como texto | Ya cumplido en el borrado manual |
+| `full_name`, `relationship`, `phone` | **Alto** | Es un **tercero que no se registró ni aceptó nada**: el administrador lo dio de alta. Teléfono en texto claro | Igual | Igual |
 | `added_by` | Medio | — | Igual | Igual |
+
+#### `child_departure`: el pase de salida (módulo `departures`, migración `a07c3d8e6f76`)
+
+Una fila por niño y por día: a qué hora se fue y con quién.
+
+| Campo | Nivel | Protección propia | Se conserva hoy | Retención propuesta |
+|---|---|---|---|---|
+| `child_id`, `date` | **Alto** | Alcance por registro: la docente de la sala y el administrador; los tutores todavía no lo ven | Sin borrado | Como `child` |
+| `departed_at` | **Alto** | La hora la pone el servidor | Sin borrado | Igual |
+| `picked_up_by` | **Alto** | Nombre de quien lo recogió, guardado como texto aunque después quiten a esa persona de la lista. Es un dato de un **tercero** | Sin borrado | Igual |
+| `pickup_id`, `guardian_id` | Medio | FK (`ON DELETE SET NULL`); solo una de las dos | Sin borrado | Igual |
+| `recorded_by` | Medio | Quién registró la salida | Sin borrado | Igual |
 
 ### 3.10 Comunicación (`messaging`)
 
@@ -309,6 +322,7 @@ Además, al crear el aviso el servidor escribe en su registro (`log.warning`) el
 |---|---|---|---|---|
 | `conversation.child_id` | **Alto** | Una conversación por niño | Sin borrado | Como `child` |
 | `message.text` | **Alto** | Solo los tutores del niño y las docentes de su sala la leen. **El administrador no puede leerla por la API**: `GET /conversations` le devuelve lista vacía y los mensajes responden 404 | Sin borrado | Como `child` `[decidir]` |
+| `message.media_id` | **Alto** | La foto del mensaje (migración `a96b2c7d5f65`); vive en el bucket como las demás fotos y solo la ven quienes ven la conversación. Puede ser la única carga del mensaje (texto vacío) | Sin borrado | Como `child` `[decidir]` |
 | `message.author_id`, `conversation_id` | Medio | — | Sin borrado | Igual |
 | `message.client_id` | Bajo | Evita duplicados en reintentos | Sin borrado | — |
 | `conversation_read.conversation_id`, `user_id`, `last_read_message_id` | Bajo | Sirve para contar no leídos | Sin borrado | — |
@@ -354,7 +368,7 @@ Que el bucket **no** sea legible sin URL firmada depende de la configuración de
 
 ### 4.2.1 Base local `codea.db` (modo sin conexión)
 
-Desde el commit `99fac75` la app guarda una base **Room** en el teléfono (`codea.db`, **versión 2**; el esquema de cada versión se exporta a `app/schemas/mx.tec.codea.data.offline.AppDatabase/1.json` y `2.json`) para que la docente pueda marcar asistencia sin red. Son tablas **locales**: no existen en Postgres.
+Desde el commit `99fac75` la app guarda una base **Room** en el teléfono (`codea.db`, **versión 3**; el esquema de cada versión se exporta a `app/schemas/mx.tec.codea.data.offline.AppDatabase/1.json`, `2.json` y `3.json`) para que la docente pueda marcar asistencia sin red. Son tablas **locales**: no existen en Postgres.
 
 | Tabla local | Campo | Nivel | Qué guarda | Se conserva |
 |---|---|---|---|---|
@@ -370,6 +384,10 @@ Desde el commit `99fac75` la app guarda una base **Room** en el teléfono (`code
 | | `fullName` | **Alto** (menor identificado) | **Nombre completo del niño** | Igual |
 | | `attendance` | **Alto** | Asistencia de hoy | Igual |
 | | `hasUnreadChat`, `hasNoteToday` | Medio | Si hay chat sin leer o nota de la familia hoy | Igual |
+| | `notesJson` | **Alto** (texto que escribió una familia sobre un menor) | Los avisos de casa de hoy con su texto, para «De casa hoy» sin conexión (versión 3, `MIGRATION_2_3`) | Igual |
+| | `hasSummaryToday` | Bajo | Si el niño ya tiene resumen del día | Igual |
+
+Además, la app guarda con DataStore (`SeenNotesStore`) **solo los identificadores** de los avisos que la docente marcó «Ya lo vi», por usuario. No viaja al servidor.
 
 **Cómo se protege hoy:** almacenamiento privado de la app (otras apps no lo leen sin permisos de superusuario) y `allowBackup="false"`. **La base no está cifrada** (los tokens sí). La caché con nombres de niños se borra sola cuando la sesión queda sin usuario, es decir, al cerrar sesión o cuando la sesión termina (`di/AppContainer.kt`, commit `1f2d2a0`). La cola `pending_attendance` **no** se borra al cerrar sesión, para no perder marcas sin enviar.
 

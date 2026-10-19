@@ -1,7 +1,7 @@
 # Checklist del RETO_ENTREGA_3 (rúbrica final)
 
 Entrega: **jueves 22 de octubre de 2026, 23:59**, en Canvas, un solo PDF por grupo. Vale 100 puntos.
-Estado a 2026-10-16. Los entregables nuevos se guardan en `docs/entrega/` (carpeta por crear).
+Estado a 2026-10-18 por la noche. Los entregables nuevos están en `docs/entrega/` (ya existen ocho documentos, con partes **[completar por el equipo]**).
 
 ## Parte 1: Sistema funcionando
 
@@ -11,7 +11,7 @@ Estado a 2026-10-16. Los entregables nuevos se guardan en `docs/entrega/` (carpe
 | Backend propio | 🟡 | Desplegarlo en una URL pública. |
 | Integración completa | 🟡 | Probar de punta a punta los tres roles contra el backend desplegado. |
 | Persistencia | ✅ | Postgres. |
-| Cámara, multimedia, sensores | ✅ | Cámara, micrófono (dictado), GPS. |
+| Cámara, multimedia, sensores | ✅ | Cámara (reportes y chat), selector de fotos, micrófono (dictado) y marcador del teléfono (botón Llamar). **Ya no usa GPS** (el checador se simplificó el 18/oct). |
 | Operación sin conexión | 🟡 | **Asistencia de Mi sala** sin conexión: Room (cola de marcas y caché de la última Mi sala). Probado en el teléfono con la API apagada. Lo demás (reportes, fotos, chat, check-in) requiere conexión. |
 | Sincronización posterior | 🟡 | WorkManager manda la cola solo al volver la red (reintento con espera creciente, colapsa marcas repetidas). Probado de punta a punta; solo cubre la asistencia. |
 | Datos realistas | ✅ | `python -m app.seed`. |
@@ -32,40 +32,40 @@ Estado a 2026-10-16. Los entregables nuevos se guardan en `docs/entrega/` (carpe
 
 | Elemento | Estado |
 |---|---|
-| Pruebas del backend | ✅ 68 pruebas con pytest contra Postgres real (31 son de autenticación). |
-| Pruebas JVM de la app | ✅ 33 pruebas (dominio, autenticador de tokens y sesión, con servidor falso). |
+| Pruebas del backend | ✅ 318 pruebas con pytest contra Postgres real (corridas el 18/oct). |
+| Pruebas JVM de la app | ✅ 121 pruebas (dominio, reglas de Mi sala y del pase de salida, invitación, sesión con servidor falso); contadas, no corridas en esta revisión. |
 | Pruebas de interfaz | ❌ Solo `ExampleInstrumentedTest`. |
-| Matriz de trazabilidad (ID, descripción, criterio, evidencia, resultado, estado) | ❌ Partir de [`REQUISITOS.md`](REQUISITOS.md). Debe ser honesta: lo no cumplido se marca como no cumplido. |
+| Matriz de trazabilidad (ID, descripción, criterio, evidencia, resultado, estado) | 🟡 [`entrega/matriz-trazabilidad.md`](entrega/matriz-trazabilidad.md) existe; hay que repasarla contra el estado final de [`REQUISITOS.md`](REQUISITOS.md). |
 
 ## Parte 4: Documentación
 
 | Documento | Estado |
 |---|---|
-| Manual de usuario | ❌ |
-| Manual de instalación | 🟡 (base en `guarderia-api/README.md` y `docs/GUIA-CONTINUAR.md`) |
-| Arquitectura (capas y relaciones) | 🟡 (texto en los READMEs; falta diagrama) |
+| Manual de usuario | 🟡 [`entrega/manual-usuario.md`](entrega/manual-usuario.md), al día con `main` (escrito leyendo el código; falta cotejarlo en el teléfono) |
+| Manual de instalación | 🟡 [`entrega/manual-instalacion.md`](entrega/manual-instalacion.md) |
+| Arquitectura (capas y relaciones) | ❌ **No hay documento ni diagrama** en `docs/entrega/`; solo texto repartido en los READMEs y [`MARCO-TECNICO.md`](MARCO-TECNICO.md) |
 | Decisiones técnicas principales | 🟡 ([`MARCO-TECNICO.md`](MARCO-TECNICO.md) y [`DECISIONES-PENDIENTES.md`](DECISIONES-PENDIENTES.md)) |
-| Plan de implantación (canal, versión, configuración, despliegue, migración, rollback) | ❌ |
+| Plan de implantación (canal, versión, configuración, despliegue, migración, rollback) | 🟡 [`entrega/plan-implantacion.md`](entrega/plan-implantacion.md) (con huecos **[completar por el equipo]**) |
 
 ## Parte 5: Administración del proyecto
 
 | Elemento | Estado |
 |---|---|
 | Backlog final y estado de requisitos | 🟡 ([`REQUISITOS.md`](REQUISITOS.md)) |
-| Bitácora de hitos | ❌ |
-| Desviaciones respecto al plan | ❌ (aquí van las excepciones al marco) |
-| Riesgos | ❌ |
-| Distribución del trabajo | ❌ (usar el historial de git y el tablero) |
-| Retrospectiva | ❌ |
+| Bitácora de hitos | 🟡 [`entrega/administracion.md`](entrega/administracion.md), sección 1 |
+| Desviaciones respecto al plan | 🟡 [`entrega/administracion.md`](entrega/administracion.md), sección 2 (D1 a D18 y las excepciones al marco) |
+| Riesgos | 🟡 [`entrega/administracion.md`](entrega/administracion.md), sección 3 |
+| Distribución del trabajo | 🟡 sección 4 del mismo documento (el equipo debe llenar 4.2) |
+| Retrospectiva | 🟡 sección 5 del mismo documento (el equipo debe llenar 5.2) |
 
 ## Parte 6: Consideraciones éticas y legales
 
 | Elemento | Estado |
 |---|---|
-| 1. Criterios éticos y legales como requisitos verificables | ❌ |
-| 2. Aviso de privacidad (qué datos, para qué, dónde, con quién, cuánto tiempo, cómo ejercer derechos) | ❌ |
-| 3. Clasificación de datos por campo (nivel, ubicación, protección, retención) | ❌ |
-| 4. Dilemas éticos (al menos dos) | ❌ |
+| 1. Criterios éticos y legales como requisitos verificables | 🟡 [`entrega/etica-legal.md`](entrega/etica-legal.md) |
+| 2. Aviso de privacidad (qué datos, para qué, dónde, con quién, cuánto tiempo, cómo ejercer derechos) | 🟡 [`entrega/aviso-privacidad.md`](entrega/aviso-privacidad.md): borrador, con responsable y canal por completar |
+| 3. Clasificación de datos por campo (nivel, ubicación, protección, retención) | 🟡 [`entrega/clasificacion-datos.md`](entrega/clasificacion-datos.md), con las 33 tablas |
+| 4. Dilemas éticos (al menos dos) | 🟡 tres en [`entrega/etica-legal.md`](entrega/etica-legal.md); el dilema 1 (fotos y derecho al borrado) hay que reescribirlo si el padre borra directo |
 
 Punto de partida: la app maneja datos de menores, fotos y documentos. Las tablas del backend ya dan la lista de campos a clasificar.
 

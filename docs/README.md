@@ -38,7 +38,7 @@ El código de la API vive en [`guarderia-api/`](../guarderia-api/) (cómo levant
 
 | Archivo | Qué contiene |
 | --- | --- |
-| [`api/endpoints.md`](api/endpoints.md) | **Referencia vigente.** Los 56 endpoints que tiene hoy la API, sacados del código: rol, qué envían, qué responden y sus códigos de error. |
+| [`api/endpoints.md`](api/endpoints.md) | **Referencia vigente.** Los endpoints que tiene hoy la API (83 al 18 de octubre), sacados del código: rol, qué envían, qué responden y sus códigos de error. |
 | [`api/endpoints-api-codea.pdf`](api/endpoints-api-codea.pdf) | Histórico. Endpoints de la primera entrega por rol, con las rutas anteriores; ya no coincide en varios detalles con el código. |
 | [Propuesta de arquitectura: API de la guardería](https://claude.ai/artifact/K4CqXjp82tkRLfpKDRdV5H) | Arquitectura completa: componentes, login con Firebase, convenciones, modelo de datos, fotos con S3, monitoreo y seguridad. |
 
@@ -58,7 +58,7 @@ El contrato vivo es el OpenAPI que genera FastAPI: con la API prendida, ábrelo 
 
 ## Estructura del código
 
-Sigue la de las prácticas del curso: `domain/` (reglas en Kotlin puro), `data/` (repositorios que llaman a la API; quedan algunos en memoria de la etapa anterior), `ui/state/` (ViewModels), `ui/screens/` (pantallas que solo dibujan), `ui/components/` y `ui/navigation/`. Las reglas del dominio tienen pruebas en `app/src/test/java/mx/tec/codea/domain/` (`./gradlew test`).
+Sigue la de las prácticas del curso: `domain/` (reglas en Kotlin puro), `data/` (repositorios que llaman a la API; ya no quedan repositorios en memoria), `ui/state/` (ViewModels), `ui/screens/` (pantallas que solo dibujan), `ui/components/` y `ui/navigation/`. Las reglas del dominio tienen pruebas en `app/src/test/java/mx/tec/codea/domain/` (`./gradlew test`).
 
 Sin la key la app compila, pero el mapa sale vacío.
 

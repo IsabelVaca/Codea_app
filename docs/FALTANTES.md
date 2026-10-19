@@ -1,14 +1,14 @@
 # Qué falta de la app
 
-Foto a **2026-10-18 por la noche**, armada leyendo [`PLAN-ACCION.md`](PLAN-ACCION.md), [`REQUISITOS.md`](REQUISITOS.md), [`RECORRIDO.md`](RECORRIDO.md), [`BITACORA.md`](BITACORA.md), [`plan/01-app-pantallas.md`](plan/01-app-pantallas.md), los commits del día y el código. Lo que dice "hecho" está compilado y con pruebas (308 de la API y 106 JVM de la app en verde); lo que dice "visto en el emulador" se abrió en pantalla. **Lo demás no se ha recorrido en un teléfono**, así que "falta" significa "los documentos o el código dicen que no está".
+Foto a **2026-10-18 por la noche**, armada leyendo [`PLAN-ACCION.md`](PLAN-ACCION.md), [`REQUISITOS.md`](REQUISITOS.md), [`RECORRIDO.md`](RECORRIDO.md), [`BITACORA.md`](BITACORA.md), los commits del día y **el código de `main`** (reconocimiento hecho leyendo el código, sin teléfono). Lo que dice "hecho" está compilado y con pruebas (**318 de la API corridas hoy en verde** y 121 JVM contadas); lo que dice "visto en el emulador" se abrió en pantalla. **Lo demás no se ha recorrido en un teléfono**, así que "falta" significa "los documentos o el código dicen que no está".
 
 Entrega final: **jueves 22 de octubre de 2026, 23:59**. Congelamiento de funciones nuevas: **lunes 19 por la noche**; martes y miércoles solo se corrige y se documenta.
 
 Desde el 18/oct el checador ya no usa GPS, radio ni mapa (decisión del equipo), y el admin configura el horario del centro en Ajustes → Horario. Esas cosas ya no son pendientes.
 
-Actualizado después de traer el commit `5b70069` de `main` (limpieza de la app). Varios documentos de plan van atrasados respecto al código, así que lo de la app se comprobó también leyendo el código: **Mi perfil → Mi cuenta con cambio de contraseña** y el **diálogo de agregar persona autorizada** ya existen, y los pendientes que decían lo contrario se quitaron de esta lista.
+Puesto al día después del PR #9 (`e2e5564`). **Los documentos ya se pusieron al día contra el código** el 18/oct por la noche ([`ESTADO.md`](ESTADO.md), [`REQUISITOS.md`](REQUISITOS.md), [`PLAN-ACCION.md`](PLAN-ACCION.md), [`ENTREGA-3.md`](ENTREGA-3.md), [`RECORRIDO.md`](RECORRIDO.md), [`plan/`](plan/README.md), `guarderia-api/PENDIENTES.md` y los ocho documentos de `docs/entrega/`). Lo que se comprobó leyendo el código: **Mi perfil → Mi cuenta con cambio de contraseña** existe, `ParentViewModel` sigue con el primer hijo, el padre conserva «Pedir que se borre» y la pantalla del admin para resolverlo no tiene ruta, la bitácora de auditoría no tiene pantalla, y la matriz de roles (83 rutas) coincide con el código.
 
-## 1. Requisitos sin cumplir (❌, 6 de 32)
+## 1. Requisitos sin cumplir (❌, 6 de 32; en total 15 ✅ y 11 🟡, ~64 %)
 
 | Requisito | Qué pasa |
 |---|---|
@@ -19,13 +19,14 @@ Actualizado después de traer el commit `5b70069` de `main` (limpieza de la app)
 | HN2 La asistente ve la llegada de los padres | Sin modelo ni pantalla |
 | HN3 El padre ve el menú del día | No existe en la API ni en la app |
 
-## 2. Requisitos parciales (🟡, 10 de 32)
+## 2. Requisitos parciales (🟡, 11 de 32)
 
 | Requisito | Qué falta |
 |---|---|
 | CRF-03 Calendario de eventos y citas | Solo muestra asistencia del mes; faltan los modelos de eventos y citas |
 | CRF-04 Dictado y consulta con IA | El dictado a texto sí funciona; la consulta con IA no existe ([decisión #10](DECISIONES-PENDIENTES.md)) |
-| RF-03 Entrada y salida del niño | Solo hay `PRESENT`/`ABSENT` por día; falta la hora de entrada y de salida |
+| RF-03 Entrada y salida del niño | La **salida** ya se registra (pase de salida: hora y quién lo recogió); falta la hora de **entrada** y que la familia vea la salida |
+| RF-10 Borrar una foto | **Bajó de ✅ a 🟡 el 18/oct:** el padre sigue pidiendo el borrado y el admin ya no tiene dónde resolverlo (ver «Cambios pedidos por el equipo») |
 | RF-05 Reporte para varios niños | La API está probada; la pantalla de selección no se ha recorrido en el teléfono |
 | RF-09 Fotografía de la actividad | La captura con la cámara no se ha probado; usa `TakePicturePreview` (miniatura) |
 | RF-11 y RNF07 Sin conexión | Solo funciona la asistencia de Mi sala. Faltan reportes, fotos, chat, documentos y avisos |
@@ -50,6 +51,7 @@ Actualizado después de traer el commit `5b70069` de `main` (limpieza de la app)
 - **Menú del día**: no existe.
 - **Avisos con imágenes** (HN5).
 - **Centro ya no muestra «Fotos que piden borrar»** (se quitó el 18/oct, a petición del equipo). La pantalla de revisión (`SolicitudesBorradoScreen`, su ruta, su ViewModel y los endpoints de `media/deletion-requests`) sigue en el código sin forma de llegar a ella. Mientras el padre conserve «Pedir que se borre», sus solicitudes se guardan y nadie las resuelve.
+- Hay un **dilema ético** ([`entrega/etica-legal.md`](entrega/etica-legal.md), dilema 1: fotos y derecho al borrado) que se escribió con la revisión del admin; si el padre borra directo hay que reescribirlo.
 - Los **turnos** (`shift`) siguen en la base y en la API, aunque el alta de la docente ya no los pide; decidir si se quitan del backend.
 - Leer el **registro de auditoría** (`GET /audit-log`) desde la app: la API existe, no hay pantalla.
 - P2: editar los datos de una docente, un infante o un padre (hoy solo cambian sala y baja), borrar avisos del historial y pedir un documento a la familia.
@@ -85,7 +87,7 @@ Son cambios nuevos a lo que ya existe. Varios mueven requisitos que hoy figuran 
 
 ### Registro de usuarios nuevos
 
-- **Alta por enlace de invitación.** ~~En vez de que el admin comparta un código…~~ **Hecho (rama `invitacion-whatsapp`), falta la URL pública.** El admin toca «Enviar por WhatsApp» y la persona recibe un enlace que abre la app con su correo y su código puestos; solo crea su contraseña. Sin correos: la prueba de identidad es que solo ella recibió el enlace.
+- **Alta por enlace de invitación.** ~~En vez de que el admin comparta un código…~~ **Hecho y ya en `main`; falta la URL pública y probarlo en el teléfono.** El admin toca «Enviar por WhatsApp» y la persona recibe un enlace que abre la app con su correo y su código puestos; solo crea su contraseña. Sin correos: la prueba de identidad es que solo ella recibió el enlace.
   - Falta para que el enlace https abra la app: una **URL pública con HTTPS** que llegue a la API (`PUBLIC_BASE_URL`, decisión #7; para la demostración basta un túnel) y, para que Android la abra sin pasar por el navegador, la huella del certificado (`ANDROID_CERT_SHA256`) y el mismo dominio en la app (`INVITE_HOST`). Sin eso el mensaje lleva el código escrito y funciona igual a mano.
 
 ### Admin
@@ -110,9 +112,11 @@ Son cambios nuevos a lo que ya existe. Varios mueven requisitos que hoy figuran 
 - Despliegue público con HTTPS ([decisión #7](DECISIONES-PENDIENTES.md)) y respaldos de la base.
 - `API_BASE_URL_RELEASE` con HTTPS y un APK de release firmado (necesita un keystore y sus contraseñas).
 - ~~Correo real con el código de invitación~~: ya no aplica; se manda por WhatsApp (ver «Alta por enlace de invitación»).
-- Recorrer en el teléfono los tres roles con los cambios del 18/oct: el checador nuevo, Familias, Ajustes, Horario, Personas autorizadas, Mi hijo y el pase de salida.
+- Recorrer en el teléfono los tres roles con los cambios del 18/oct: el checador nuevo, Familias, Ajustes, Horario, Personas autorizadas, Mi hijo, el pase de lista, Mi sala, el pase de salida, el chat con fotos y la invitación. La lista concreta está al final de [`RECORRIDO.md`](RECORRIDO.md).
+- **Documento de arquitectura (diagrama de capas y relaciones): no existe** y la rúbrica ([`ENTREGA-3.md`](ENTREGA-3.md), parte 4) lo pide. Hay texto en los READMEs y en [`MARCO-TECNICO.md`](MARCO-TECNICO.md), pero no hay un entregable.
+- Huecos **[completar por el equipo]** en `docs/entrega/`: responsable y canal del aviso de privacidad, distribución del trabajo (4.2), retrospectiva (5.2) y las filas de `plan-implantacion.md`.
 - Guion de la presentación de 15 minutos, video de respaldo, captura del Planner y entrega en Canvas.
-- Poner al día [`ESTADO.md`](ESTADO.md) y [`../guarderia-api/PENDIENTES.md`](../guarderia-api/PENDIENTES.md) (foto del 16/oct) y marcar el bloque 4 de [`PLAN-ACCION.md`](PLAN-ACCION.md), cuyos documentos de `docs/entrega/` ya existen.
+- ~~Poner al día `ESTADO.md`, `PENDIENTES.md` y `PLAN-ACCION.md`~~ Hecho el 18/oct por la noche.
 
 ## 6. Decisiones sin aprobar
 
@@ -121,7 +125,7 @@ Las decisiones #2, #4, #5, #6, #7, #8, #9 y #10 de [`DECISIONES-PENDIENTES.md`](
 ## Orden sugerido antes del congelamiento
 
 1. Selector de hijo del padre (HN4): «Mi hijo» sigue mostrando solo el primer hijo.
-2. Los cambios pedidos que quedan: el título del chat con el niño y su familia, terminar lo de las fotos (borrado directo del padre), el enlace de invitación y mejorar la pantalla de Horario. Con el congelamiento el lunes 19, conviene que el equipo decida cuáles entran y deje el resto como desviación documentada.
+2. Los cambios pedidos que quedan: terminar lo de las fotos (borrado directo del padre), la URL pública del enlace de invitación y mejorar la pantalla de Horario. Con el congelamiento el lunes 19, conviene que el equipo decida cuáles entran y deje el resto como desviación documentada.
 3. Migrar Aiven.
 4. Recorrido completo en el teléfono y anotar fallas en [`RECORRIDO.md`](RECORRIDO.md).
-5. Documentos y presentación.
+5. Escribir el documento de arquitectura, completar los huecos de `docs/entrega/`, repasar la matriz de trazabilidad con el estado final y preparar la presentación.

@@ -2,7 +2,7 @@
 
 Parte 6 de la rúbrica, puntos 1 (criterios como requisitos verificables) y 4 (dilemas éticos). Los puntos 2 y 3 están en [`aviso-privacidad.md`](aviso-privacidad.md) y [`clasificacion-datos.md`](clasificacion-datos.md).
 
-Estado a **2026-10-18**, rama `integracion`, commit `22c0008`. La columna «Estado» sale de **leer el código y los documentos**; en esta sesión no se corrió ninguna prueba, así que «Cumple» significa «el código lo hace y existe una prueba o una forma de comprobarlo», no «se corrió hoy y pasó». La [matriz de trazabilidad](matriz-trazabilidad.md) recoge estos mismos requisitos con su evidencia.
+Estado a **2026-10-18**, `main` con los PR #7 a #9 y la invitación por WhatsApp (puesto al día el 18/oct por la noche; en esa revisión se corrió `pytest` de la API: 318 pruebas en verde). La columna «Estado» sale de **leer el código y los documentos**; en esta sesión no se corrió ninguna prueba, así que «Cumple» significa «el código lo hace y existe una prueba o una forma de comprobarlo», no «se corrió hoy y pasó». La [matriz de trazabilidad](matriz-trazabilidad.md) recoge estos mismos requisitos con su evidencia.
 
 **Contexto:** Codea maneja datos de **menores** (nombre, fecha de nacimiento, alergias, reportes, fotos, documentos), datos de **salud**, la **ubicación** de las docentes al checar y las conversaciones entre familias y docentes. Eso exige más cuidado que una app común.
 

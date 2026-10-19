@@ -1,5 +1,7 @@
 # App: pantallas para el mínimo funcional
 
+> **Documento histórico (16–17 de octubre).** Describe el plan de entonces; el login, la conexión con la API y casi todas las pantallas que aquí figuran como pendientes ya se hicieron. Lo vigente está en [`../FALTANTES.md`](../FALTANTES.md) (qué falta), [`../ESTADO.md`](../ESTADO.md) (dónde estamos), [`../REQUISITOS.md`](../REQUISITOS.md) y [`../api/endpoints.md`](../api/endpoints.md).
+
 Hoy la app tiene unas 30 pantallas en uso, pero no tiene login: abre en `RoleSelectionScreen` y manda `Bearer dev:<correo>`. Desde la primera versión de este plan se conectó a la API buena parte de las pantallas de admin (salas, docentes, infantes, padres, rutinas, avisos), de la docente (rutina de hoy, avisos) y del padre (avisos). Para que funcione de verdad faltan **7 pantallas indispensables (P0)** y **6 para entregar completo (P1)** (la de Avisos ya está hecha).
 
 Prioridades:

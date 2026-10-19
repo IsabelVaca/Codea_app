@@ -1,6 +1,6 @@
 # Manual de usuario de Codea
 
-Estado a **2026-10-18**, rama `integracion`, commit `22c0008`. Está escrito a partir de [`docs/plan/01-app-pantallas.md`](../plan/01-app-pantallas.md), de los textos de la app (`app/src/main/res/values/strings.xml`), de los archivos de `app/src/main/java/mx/tec/codea/ui/screens/` y del recorrido en teléfono físico de [`RECORRIDO.md`](../RECORRIDO.md). **No se ejecutó la app para escribirlo**: si una pantalla cambió después, manda lo que se vea en el teléfono.
+Estado a **2026-10-18** (puesto al día contra `main` el 18/oct por la noche: pase de lista, Mi sala nueva, pase de salida, «Mi hijo», personas autorizadas del administrador, chat con fotos e invitación por WhatsApp). Está escrito a partir de [`docs/plan/01-app-pantallas.md`](../plan/01-app-pantallas.md), de los textos de la app (`app/src/main/res/values/strings.xml`), de los archivos de `app/src/main/java/mx/tec/codea/ui/screens/` y del recorrido en teléfono físico de [`RECORRIDO.md`](../RECORRIDO.md). **No se ejecutó la app para escribirlo**: si una pantalla cambió después, manda lo que se vea en el teléfono.
 
 Lo que todavía no existe se marca como **«Próximamente»** o como **«No disponible hoy»** cuando ni siquiera hay una pantalla que lo anuncie.
 
@@ -15,16 +15,20 @@ Codea es la aplicación de la estancia infantil **La Oruga** para llevar el día
 | Un teléfono Android | Versión 7.0 (nivel de API 24) o más nueva |
 | Conexión a internet | **Casi todo necesita conexión.** La única excepción es la **asistencia de Mi sala** (docente), que funciona sin conexión y se envía sola al volver la red (ver 2.4). Reportes, fotos, chat, checador, documentos y avisos necesitan red |
 | Una cuenta | La crea el administrador del centro; no te puedes registrar solo |
-| Un código de acceso | Lo recibes del administrador la primera vez. Tiene el formato `K7QX-M4PZ` |
+| Una invitación | La recibes del administrador por **WhatsApp**: un enlace y, por si el enlace no abre la app, tu correo y un código con el formato `K7QX-M4PZ` |
 
 ### 1.1 Primera vez: activar tu cuenta
+
+**Con el enlace de WhatsApp (lo normal).** Instala Codea y toca el enlace del mensaje: la app se abre en «Activar mi cuenta» con tu **correo y tu código ya escritos**. Solo escribe y repite tu contraseña y toca **«Activar y entrar»**. Si la app ya tiene una sesión abierta, ignora el enlace. Mientras el servidor no tenga una dirección pública con HTTPS, el enlace no abre la app por sí solo; en ese caso usa el procedimiento de abajo.
+
+**A mano (si el enlace no abre la app):**
 
 1. Abre Codea. Aparece «Inicia sesión».
 2. Toca **«Es mi primera vez: activar mi cuenta»**.
 3. Escribe tu **correo** (el que registró la dirección), el **código** que te dieron y la **contraseña** que quieras usar. Repítela.
 4. Toca **«Activar y entrar»**. Quedas dentro con tu perfil.
 
-El código se puede escribir con o sin guion y en mayúsculas o minúsculas. **Solo se puede usar una vez y dura 7 días.** Si venció, pide otro a la dirección.
+El código se puede escribir con o sin guion y en mayúsculas o minúsculas. **Solo se puede usar una vez y dura 7 días.** Si venció, pide otro a la dirección. Quien no esté dado de alta por el administrador no tiene código y no puede crear una cuenta.
 
 Reglas de la contraseña: de **9 a 128 caracteres** y no puede ser igual a tu correo. Con 8 no pasa.
 
@@ -92,6 +96,16 @@ La pantalla muestra los **subprocesos (momentos) de la rutina** de tu sala con s
 - **«Realizar reporte»** (solo en el momento en curso): ver 2.3.
 - **«Confirmar subproceso»**: cierra el momento en curso y arranca el siguiente.
 
+**Pase de lista.** Arriba de la rutina hay una tarjeta «Pase de lista» («1 de 2 presentes»). Ábrela: aparece toda tu sala, un toque por niño (presente o no), y **«Marcar a todos presentes»** para el caso normal. Cada toque se guarda al instante, también sin conexión (ver 2.4). **No hay un tercer estado: un niño al que no le pasas lista cuenta como ausente**; por eso no puedes hacerle reportes ni registrarle salida ese día.
+
+**Pase de salida (último paso del día).** Mientras faltan momentos, el pase es una fila gris con candado («Se abre cuando termines todos los momentos»). Al confirmar el último momento pasa a una tarjeta violeta **«SIGUIENTE PASO»**, a la que la pantalla baja sola. Ábrela:
+
+1. Cuando recojan a un niño, toca **«Registrar salida»** y elige **quién se lo lleva**: las personas autorizadas que registró la dirección y, siempre, sus tutores. Si el niño no tiene a nadie registrado, la pantalla dice que pidas a la dirección que lo agregue en Ajustes → Personas autorizadas.
+2. La hora la pone el servidor. La fila queda como «Salió a las … con …». Si te equivocaste de persona, toca **«Corregir»**.
+3. Solo aparecen los niños con pase de lista de hoy. Con todos fuera (o si hoy no vino ninguno) aparece **«Finalizar día»**: pide confirmación, registra tu salida del checador y termina tu turno. Después se muestra **«Día finalizado»**.
+
+El pase de salida **necesita conexión**: no hay cola sin conexión para él. La familia todavía no ve a qué hora salió su hijo **[Próximamente]**.
+
 ### 2.3 Hacer un reporte
 
 1. En el momento en curso toca **«Realizar reporte»**.
@@ -109,12 +123,14 @@ La foto del reporte se ve como una miniatura de baja calidad (la app usa la vist
 
 ### 2.4 Mi sala
 
-Muestra el nombre de **tu sala**, cuántos niños están presentes y cuántos chats tienes sin leer. Para cada niño:
+Muestra el nombre de **tu sala** y la lista de tus niños, sin cuadros de números ni botones de asistencia (la asistencia se marca en el pase de lista de Mi día, ver 2.2).
 
-- **Presente / Falta:** marca la asistencia del día. Sin registro, el niño cuenta como presente.
-- **Chat:** abre la conversación con su familia.
+- **«De casa hoy»:** los avisos que las familias mandaron hoy, con su texto. Cada uno tiene **Responder** (abre el chat de ese niño) y **«Ya lo vi»**. «Ya lo vi» **se guarda solo en tu teléfono**: no le avisa a la familia ni a otra docente. Si hay más de tres avisos, aparece «Avisos de casa · hoy» con la bandeja completa del día.
+- **Filtros y lista:** cada niño trae sus etiquetas (por ejemplo, nota de la familia o resumen pendiente). Los ausentes quedan plegados al final.
+- **«Capturar resúmenes (N)»:** aparece solo si hay niños presentes sin resumen del día. Abre el resumen del primero («Resumen 1 de N») y, al guardar, pasa solo al siguiente; «Saltar este niño» o «Terminar sin guardar» avanzan sin guardar.
+- **Ficha del niño** (tocar su renglón): edad, alergias y demás datos de salud que escribió la familia en «Mi hijo», sus avisos, el resumen del día, **«Corregir asistencia»**, la **familia** y **«Quién lo recoge»** (personas autorizadas y tutores) con el botón **Llamar**, que abre el marcador del teléfono. También está el **Chat** con la familia.
 
-**Mi sala sin conexión (solo la asistencia).** Si no hay red, puedes seguir marcando **Presente / Falta**:
+**Mi sala sin conexión (solo la asistencia).** Si no hay red, puedes seguir pasando lista y corrigiendo la asistencia (Presente / Falta):
 
 1. La marca se ve de inmediato y aparece el aviso «Sin conexión: la marca se enviará sola cuando vuelva la red».
 2. En lo alto de Mi sala sale un banner: **«1 cambio sin enviar · se manda solo cuando vuelva la conexión»** (o «N cambios sin enviar · se mandan solos…»).
@@ -122,7 +138,7 @@ Muestra el nombre de **tu sala**, cuántos niños están presentes y cuántos ch
 4. Cuando vuelve la red y la docente que las hizo tiene sesión, la app las envía **sola**, sin que la abras (en el caso probado tardó menos de un minuto); el banner desaparece. Si marcas varias veces al mismo niño el mismo día, solo se manda la última.
 5. Una marca que el servidor rechaza de forma definitiva (por ejemplo, un niño que ya no está en tu sala) se avisa y no se reintenta.
 
-**Qué sí necesita red:** reportes, fotos, chats, el checador (entrada y salida), documentos, avisos y todas las pantallas del administrador y del padre. Si abres Mi sala sin red por primera vez y no hay nada guardado, no se puede cargar.
+**Qué sí necesita red:** reportes, fotos, chats, el pase de salida, el checador (entrada y salida), avisos y todas las pantallas del administrador y del padre. Si abres Mi sala sin red por primera vez y no hay nada guardado, no se puede cargar.
 
 **Privacidad en el teléfono:** para mostrar Mi sala sin conexión la app guarda en el teléfono los **nombres de los niños de tu sala** y su asistencia; esa copia **no está cifrada** y se borra cuando cierras sesión o la sesión termina. Las marcas pendientes (solo número de niño, estado, fecha y quién las hizo) no se borran al cerrar sesión: se conservan y **solo se envían con la sesión de la docente que las hizo**; si entra otra docente en el mismo teléfono no se mandan ni se cuentan con la suya. Detalle en [`aviso-privacidad.md`](aviso-privacidad.md), 2.5.
 - **Resumen del día** (en la tarjeta de cada niño, «Resumen del día ›»): la docente captura lo que verá la familia en «Hoy». La pantalla se llama «Resumen de [niño]» y tiene **Ánimo**, **Comida** (por ejemplo «Casi todo»), **Cambios de pañal** (con − y +), **Siesta** (de 15 en 15 minutos, hasta 6 horas) y **Nota para la familia** («Cómo estuvo su día», opcional); toca **«Guardar resumen»**. Solo se manda lo que llenaste. Si la familia dejó una nota para hoy, arriba aparece «La familia te dejó una nota». En la tarjeta del niño también ves la etiqueta **«Nota de la familia hoy»**. Se probó de punta a punta en el teléfono: la mamá lo vio en Hoy.
@@ -132,7 +148,8 @@ Muestra el nombre de **tu sala**, cuántos niños están presentes y cuántos ch
 La **bandeja** lista una conversación por niño (familia de …), con no leídos y el último mensaje. Abre una, escribe y toca enviar. Si falla, aparece «No se envió · toca para reintentar»; reintentar **no duplica** el mensaje. Aparece «leído» cuando la otra persona lo vio.
 
 - La app consulta mensajes nuevos **cada 10 segundos**; no es tiempo real (Próximamente).
-- El botón **«+» para adjuntar** no hace nada todavía **[Próximamente]**.
+- Cada chat muestra el nombre del niño y, debajo, sus tutores («Mamá: … · Papá: …»); si el niño no tiene tutor registrado no sale esa línea.
+- El botón **«+»** adjunta una **foto**: de la galería (selector de fotos del sistema) o con la cámara. La app la comprime y la sube; si falla, toca para reintentar. Tocar la foto la abre completa. Otros archivos: **Próximamente**.
 - Solo ves las conversaciones de los niños de tu sala.
 
 ### 2.6 Menú
@@ -182,8 +199,8 @@ Corregir el nombre, la fecha de nacimiento o las alergias de un infante ya inscr
 **Padres y tutores**
 
 1. Lista de padres y tutores («familias con acceso a la app»).
-2. **«+ Inscribir a un padre o tutor»:** nombre, teléfono de contacto, correo electrónico, parentesco (Mamá, Papá, Tutor o Tutora) y uno o más hijos que ya estén inscritos. Se muestra su código de acceso.
-3. **Detalle:** **quitar o devolver el acceso**, y **«Reenviar invitación»**, que genera un **código nuevo** y lo muestra.
+2. **«+ Inscribir a un padre o tutor»:** nombre, teléfono de contacto, correo electrónico, parentesco (Mamá, Papá, Tutor o Tutora) y uno o más hijos que ya estén inscritos. Al guardar se muestra el diálogo **«Código de acceso»** con el código (solo se ve esa vez) y el botón **«Enviar por WhatsApp»**, que abre el chat con el teléfono de la persona y el mensaje ya escrito (el enlace que abre la app y, por si no abre, su correo y su código). Sin teléfono válido o sin WhatsApp, cae al selector de compartir; **«Compartir»** usa cualquier otra app.
+3. **Detalle:** **quitar o devolver el acceso**, y **«Reenviar invitación»**, que genera un **código nuevo** y abre el mismo diálogo.
 
 ### 3.4 Ajustes
 
@@ -191,6 +208,7 @@ El menú de lo que el administrador configura. Cada fila abre su pantalla:
 
 - **Rutinas:** lista de **plantillas de rutina** con su número de momentos. **«+ Nueva rutina»** pide nombre y momentos; cada momento tiene una categoría (llegada, comida, actividad, siesta, higiene, entrega) y hay un **catálogo de momentos** (también se puede agregar uno propio). Se pueden **ordenar** los momentos (la pantalla de arrastre usa una librería pendiente de aprobar; ver `DECISIONES-PENDIENTES.md`, decisión #8) y **asignar una plantilla a una sala**. Cambiar una plantilla **no modifica un día que ya empezó**: la rutina del día se copia cuando la docente checa.
 - **Horario:** el horario de todo el centro. Se elige la **hora de entrada** (después de ella se marca retardo), la **hora de salida**, la **hora de cierre automático** (a esa hora se cierran solas las entradas que sigan abiertas) y los **días de trabajo** (L M X J V S D). Se toca cada hora para cambiarla; la app avisa si la entrada no es antes de la salida, si el cierre es antes de la salida o si no hay ningún día. Un día que no marques no deja registrar entrada. Por omisión: 8:00 a 16:00, cierre a las 21:00, lunes a viernes.
+- **Personas autorizadas:** la lista de niños y, por niño, quién puede recogerlo (nombre, parentesco y teléfono), con agregar y quitar. **Solo la dirección las administra**; la familia ya no las edita. Se registran por niño: con dos hijos, se capturan en cada uno. La docente las ve en la ficha del niño y las usa en el pase de salida.
 - **Mi cuenta:** perfil, cambiar contraseña y cerrar sesión (ver 1.4).
 
 El checador **no usa ubicación ni radio**.
@@ -209,7 +227,7 @@ El checador **no usa ubicación ni radio**.
 
 ## 4. Padre o tutor
 
-Barra inferior: **Hoy · Calendario · Fotos · Chat · Documento** (la última pestaña se llama «Documento» en la barra).
+Barra inferior: **Hoy · Calendario · Fotos · Chat · Mi hijo**.
 
 > Solo ves a **tus** hijos. Si tienes más de uno, hoy la app muestra **solo el primero** y no hay selector de hijo **[Próximamente]**.
 
@@ -237,14 +255,14 @@ Un mes con la **asistencia** de cada día: día completo, con nota, falta o sin 
 
 ### 4.4 Chat
 
-Conversación con las asistentes de la sala de tu hijo. Si tienes varios hijos, primero ves la bandeja. Escribe y envía; si falla, toca para reintentar. El chat consulta mensajes nuevos cada 10 segundos. Adjuntar fotos o archivos: **Próximamente**.
+Conversación con las asistentes de la sala de tu hijo. Si tienes varios hijos, primero ves la bandeja. Escribe y envía; si falla, toca para reintentar. El chat consulta mensajes nuevos cada 10 segundos. Con el botón **«+»** puedes mandar una **foto** (de la galería o con la cámara); tocarla la abre completa. Otros archivos: **Próximamente**.
 
-### 4.5 Documentos
+### 4.5 Mi hijo
 
-- **Documentos de [hijo]:** lista de lo que pide el centro, cada uno **Vigente** o **Faltante** (con fecha límite).
-- Toca un documento para **subir o reemplazar** el archivo con el selector de archivos del teléfono (PDF o imagen, hasta 10 MB).
-- **Autorizados para recoger:** personas que pueden recoger a tu hijo. **«Agregar»** pide el **nombre completo** y la agrega; **«(eliminar)»** la quita.
-- Si no hay documentos pedidos, la lista aparece vacía: hoy el sistema **no crea** una lista de documentos al inscribir a un infante (está en el Bloque 1 de [`PLAN-ACCION.md`](../PLAN-ACCION.md)); los que se ven en la base de pruebas salen del seed.
+- **Sus datos:** nombre, fecha de nacimiento, edad, sala y tutores. **No los editas tú**: si hay un error, pide a la dirección que lo corrija.
+- **Salud y cuidados:** escribe **alergias, condiciones médicas, intolerancias, medicamentos y otras indicaciones** (hasta 1,000 caracteres cada una) y guarda. La maestra de su sala lo ve en la ficha de tu hijo, y puedes cambiarlo cuando quieras. Son datos de salud de un menor: escribe solo lo necesario para cuidarlo.
+- **Personas autorizadas para recoger:** ya no se agregan desde la app del padre. Si quieres agregar o quitar a alguien, pídelo a la dirección.
+- **Documentos:** esta pestaña ya no sube documentos (se quitó a petición del equipo). La API de documentos sigue en el servidor, sin pantalla.
 
 ### 4.6 Lo que el padre todavía no puede hacer
 
@@ -254,7 +272,8 @@ Conversación con las asistentes de la sala de tu hijo. Si tienes varios hijos, 
 | Ver el menú del día | **Próximamente** |
 | Imprimir o enviar el resumen semanal (hoy solo se ve en la app) | **Próximamente** |
 | Eventos y citas en el calendario | **Próximamente** |
-| Mandar fotos por el chat | **Próximamente** |
+| Ver a qué hora salió mi hijo y con quién | **Próximamente** (la docente ya lo registra en el pase de salida) |
+| Agregar o quitar personas autorizadas | **Lo hace la dirección** |
 | Notificaciones del teléfono (push) | **Próximamente** |
 | Usar la app sin internet | **Próximamente** para el padre y el administrador; para la docente solo existe la asistencia de Mi sala |
 | Desbloqueo con huella | **Próximamente** (pendiente de aprobación) |
@@ -270,10 +289,13 @@ Conversación con las asistentes de la sala de tu hijo. Si tienes varios hijos, 
 | Checador (entrada y salida, sin ubicación; cierre automático a las 9 pm) | ✅ | — | — |
 | Rutina del día | ✅ | ✅ (plantillas) | ✅ (resumen) |
 | Reportes con texto, dictado y foto a varios niños | ✅ | — | ✅ (los ve) |
-| Asistencia del día | ✅ (también sin conexión) | — | ✅ (calendario) |
-| Chat con la familia o la docente | ✅ (sin tiempo real) | — | ✅ (sin tiempo real) |
+| Pase de lista (sin registro = ausente) | ✅ (también sin conexión) | — | ✅ (calendario) |
+| Pase de salida y «Finalizar día» | ✅ (con red) | — | ❌ (no ve la hora de salida) |
+| Chat con la familia o la docente, con fotos | ✅ (sin tiempo real) | — | ✅ (sin tiempo real) |
 | Avisos | ✅ (lee) | ✅ (publica) | ✅ (lee) |
 | Fotos y solicitud de borrado | — | ✅ (revisa) | ✅ (pide el borrado) |
-| Documentos y autorizados | — | — | ✅ |
+| Mi hijo (datos y salud) | ✅ (lo ve en la ficha) | — | ✅ (escribe la salud) |
+| Personas autorizadas para recoger | ✅ (las ve) | ✅ (las administra) | — |
+| Invitación por WhatsApp | — | ✅ | ✅ (activa con el enlace) |
 | Altas, bajas y salas | — | ✅ | — |
 | Varios hijos, menú del día, eventos, huella, notificaciones (push), y todo lo demás sin conexión | ❌ | ❌ | ❌ |

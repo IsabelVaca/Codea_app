@@ -1,6 +1,6 @@
 # Manual de instalación
 
-Cómo levantar el backend (API, base de datos y almacén de archivos) y cómo compilar e instalar la app Android. Estado a **2026-10-18**, rama `integracion`, commit `22c0008`.
+Cómo levantar el backend (API, base de datos y almacén de archivos) y cómo compilar e instalar la app Android. Estado a **2026-10-18**, `main` con los PR #7 a #9 y la invitación por WhatsApp (puesto al día el 18/oct por la noche; en esa revisión se corrió `pytest` de la API: 318 pruebas en verde).
 
 Todo sale de archivos reales del repositorio: `guarderia-api/README.md`, `docker-compose.yml`, `docker-compose.override.yml`, `Dockerfile`, `.env.example`, `app/build.gradle.kts`, `gradle/libs.versions.toml`, `docs/RECORRIDO.md` y `docs/BITACORA.md`. **Los comandos no se ejecutaron para escribir este documento** (la base, los puertos y el teléfono estaban ocupados por otra sesión de trabajo), así que cada paso dice de dónde sale. Lo que no se puede confirmar con los archivos está marcado como **«No confirmado»**.
 
@@ -143,7 +143,7 @@ python3 -m venv .venv
 ```
 
 - `conftest.py` lee `POSTGRES_USER` y `POSTGRES_PASSWORD` del `.env` o del entorno, y usa `TEST_DB_HOST` (por omisión `localhost`). Si tu `.env` apunta a Aiven, la contraseña del contenedor local puede ser otra: pásala así, `POSTGRES_PASSWORD=<la del contenedor local> .venv/bin/pytest` (`docs/RECORRIDO.md`). **Nunca** corras las pruebas contra Aiven.
-- La documentación de pruebas (`guarderia-api/tests/README.md`) habla de 276 pruebas de la API al 2026-10-18 No se ejecutaron para este documento.
+- La documentación de pruebas (`guarderia-api/tests/README.md`) habla de 318 pruebas de la API al 2026-10-18 No se ejecutaron para este documento.
 
 ### 2.7 Apagar y reiniciar
 
@@ -226,7 +226,7 @@ El procedimiento que usó el equipo (`docs/BITACORA.md`, «Operación sin conexi
 3. Marca una falta: la marca se ve y aparece el banner «1 cambio sin enviar». Cierra la app por completo y ábrela: Mi sala sale de lo guardado.
 4. Enciende la API: `docker compose start api`. Sin tocar la app, la marca debe llegar al servidor en menos de un minuto y el banner desaparece.
 
-La base local (`codea.db`) y la cola se guardan en el teléfono; **no** hay pruebas de Room en JVM. La base está en la versión 2 (`MIGRATION_1_2` agrega `userId` a la cola, que va ligada a la docente que hizo cada marca). Si cambias el esquema (`AppDatabase.kt`) hay que subir la versión y escribir la migración de Room.
+La base local (`codea.db`) y la cola se guardan en el teléfono; **no** hay pruebas de Room en JVM. La base está en la versión 3 (`MIGRATION_1_2` agrega `userId` a la cola, que va ligada a la docente que hizo cada marca; `MIGRATION_2_3` agrega `notesJson` y `hasSummaryToday` a `cached_child`). Si cambias el esquema (`AppDatabase.kt`) hay que subir la versión y escribir la migración de Room.
 
 ### 3.6 Generar el APK de release
 
