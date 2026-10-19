@@ -86,6 +86,16 @@ fun SelectStudentsScreen(
             )
         }
 
+        // sin pase de lista todos cuentan como ausentes y ninguno se puede elegir: se dice por qué.
+        if (children.isNotEmpty() && children.none { ReportValidator.canBeInReport(it) }) {
+            InfoBox(
+                title = stringResource(R.string.roll_call_title),
+                body = stringResource(R.string.students_nobody_present),
+                containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.22f),
+                titleColor = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+
         children.forEachIndexed { index, child ->
             StudentCard(
                 child = child,

@@ -14,6 +14,7 @@ La seguridad a fondo (rate limiting, bloqueo de cuentas, auditoría, etc.) se de
 | [03-api-estado.md](03-api-estado.md) | Diagnóstico de la API: qué está hecho, qué está a medias, qué falta y en qué difiere de la propuesta de arquitectura |
 | [04-api-login-jwt.md](04-api-login-jwt.md) | Diseño del login con correo y contraseña y JWT: tablas, endpoints, flujos, cambios al código y pruebas |
 | [05-api-plan.md](05-api-plan.md) | Las tareas de la API en orden, incluidos los endpoints nuevos que piden las pantallas faltantes |
+| [06-mi-sala-propuesta.md](06-mi-sala-propuesta.md) | Propuesta de rediseño de Mi sala (docente): pantallas, subpantallas, datos que faltan y decisiones por tomar |
 
 La lista vigente de endpoints está en [`../api/endpoints.md`](../api/endpoints.md). Referencias anteriores: [endpoints de la primera entrega (PDF, histórico)](../api/endpoints-api-codea.pdf) y la [propuesta de arquitectura](https://claude.ai/artifact/K4CqXjp82tkRLfpKDRdV5H).
 

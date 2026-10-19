@@ -48,6 +48,8 @@ import mx.tec.codea.data.SessionRepository
 import mx.tec.codea.ui.components.AccessCodeDialog
 import mx.tec.codea.ui.screens.account.AccountScreen
 import mx.tec.codea.data.DataEvents
+import mx.tec.codea.domain.AttendanceStatus
+import mx.tec.codea.domain.RoomRules
 import mx.tec.codea.domain.ReportMethod
 import mx.tec.codea.ui.components.rememberDictation
 import mx.tec.codea.ui.components.rememberTakePhoto
@@ -60,7 +62,10 @@ import mx.tec.codea.ui.screens.AvisosFundacionScreen
 import mx.tec.codea.ui.screens.MenuScreen
 import mx.tec.codea.ui.screens.MyDayScreen
 import mx.tec.codea.ui.screens.RutinaDeHoyScreen
+import mx.tec.codea.ui.screens.ChildProfileScreen
+import mx.tec.codea.ui.screens.FamilyNoticesScreen
 import mx.tec.codea.ui.screens.MyRoomScreen
+import mx.tec.codea.ui.screens.RollCallScreen
 import mx.tec.codea.ui.screens.ReportScreen
 import mx.tec.codea.ui.screens.SelectReportMethodScreen
 import mx.tec.codea.ui.screens.SelectStudentsScreen
@@ -101,6 +106,7 @@ import mx.tec.codea.ui.state.CentroViewModel
 import mx.tec.codea.ui.state.SolicitudesBorradoViewModel
 import mx.tec.codea.ui.state.CheckerConfig
 import mx.tec.codea.ui.state.CheckerViewModel
+import mx.tec.codea.ui.state.ChildProfileViewModel
 import mx.tec.codea.ui.state.ResumenDelDiaViewModel
 import mx.tec.codea.ui.state.AccountViewModel
 import mx.tec.codea.ui.state.CodeaViewModel
@@ -191,6 +197,9 @@ fun CodeaNavHost(
                             navController.navigate(SelectReportMethodRoute(subprocessNumber = number))
                         },
                         onConfirmSubprocessClick = viewModel::confirmSubprocess,
+                        rollCallPresent = viewModel.presentCount,
+                        rollCallTotal = viewModel.children.size,
+                        onRollCallClick = { navController.navigate(RollCallRoute) },
                     )
                 } else {
                     DayNotStartedScreen(
@@ -198,6 +207,19 @@ fun CodeaNavHost(
                         onCheckerClick = { navController.navigateToCheckerThroughMenu() },
                     )
                 }
+            }
+
+            // el pase de lista, primer paso del día. cada toque se guarda solo; "Listo" regresa a Mi día.
+            composable<RollCallRoute> {
+                RollCallScreen(
+                    children = viewModel.children,
+                    onPresentChange = { childId, present ->
+                        viewModel.setAttendance(childId, if (present) AttendanceStatus.PRESENT else AttendanceStatus.ABSENT)
+                    },
+                    onMarkAllPresent = viewModel::markAllPresent,
+                    onDoneClick = { navController.popBackStack() },
+                    onBackClick = { navController.popBackStack() },
+                )
             }
 
             // "rutina de hoy": se abre solo después de registrar la entrada. es de solo lectura
@@ -278,37 +300,104 @@ fun CodeaNavHost(
             }
         }
 
-        composable<MyRoomRoute> {
-            MyRoomScreen(
-                children = viewModel.children,
-                roomName = viewModel.teacher.roomName,
-                pendingChanges = viewModel.pendingChanges,
-                onSummaryClick = { childId -> navController.navigate(ResumenDelDiaRoute(childId)) },
-                onAttendanceChange = viewModel::setAttendance,
-                onChatClick = { childId ->
-                    val conversation = viewModel.conversationOf(childId)
-                    if (conversation == null) {
-                        DataEvents.notice("Este niño todavía no tiene chat")
-                    } else {
-                        chatViewModel.open(conversation)
-                        navController.navigateToTopLevel(TopLevelDestination.CHATS)
-                    }
-                },
-            )
-        }
+        // la pestaña "Mi sala": la sala, la ficha de un niño, los avisos de casa y el resumen del día.
+        navigation<MyRoomGraph>(startDestination = MyRoomRoute) {
+            // abre el chat de un niño en la pestaña Chats. lo usan la lista, los avisos y la ficha.
+            val openChat: (String) -> Unit = { childId ->
+                val conversation = viewModel.conversationOf(childId)
+                if (conversation == null) {
+                    DataEvents.notice("Este niño todavía no tiene chat")
+                } else {
+                    chatViewModel.open(conversation)
+                    navController.navigateToTopLevel(TopLevelDestination.CHATS)
+                }
+            }
 
-        composable<ResumenDelDiaRoute> { backStackEntry ->
-            val route = backStackEntry.toRoute<ResumenDelDiaRoute>()
-            val resumenViewModel: ResumenDelDiaViewModel = viewModel()
-            LaunchedEffect(route.childId) { route.childId.toIntOrNull()?.let(resumenViewModel::cargar) }
-            ResumenDelDiaScreen(
-                viewModel = resumenViewModel,
-                onBackClick = { navController.popBackStack() },
-                onGuardado = {
-                    coroutineScope.launch { snackbarHostState.showSnackbar("Resumen guardado") }
-                    navController.popBackStack()
-                },
-            )
+            composable<MyRoomRoute> {
+                MyRoomScreen(
+                    children = viewModel.children,
+                    seenNoteIds = viewModel.seenNoteIds,
+                    roomName = viewModel.teacher.roomName,
+                    pendingChanges = viewModel.pendingChanges,
+                    onChildClick = { childId -> navController.navigate(ChildProfileRoute(childId)) },
+                    onChatClick = openChat,
+                    onNoteSeen = viewModel::markNoteSeen,
+                    onSeeAllNotices = { navController.navigate(FamilyNoticesRoute) },
+                    onCaptureSummaries = {
+                        val queue = RoomRules.pendingSummaries(viewModel.children).map { it.id }
+                        if (queue.isNotEmpty()) {
+                            navController.navigate(ResumenDelDiaRoute(queue.first(), queue.drop(1).joinToString(","), queue.size))
+                        }
+                    },
+                    onRollCallClick = { navController.navigate(RollCallRoute) },
+                )
+            }
+
+            composable<FamilyNoticesRoute> {
+                FamilyNoticesScreen(
+                    children = viewModel.children,
+                    seenNoteIds = viewModel.seenNoteIds,
+                    onBackClick = { navController.popBackStack() },
+                    onReply = openChat,
+                    onNoteSeen = viewModel::markNoteSeen,
+                )
+            }
+
+            composable<ChildProfileRoute> { backStackEntry ->
+                val route = backStackEntry.toRoute<ChildProfileRoute>()
+                val profileViewModel: ChildProfileViewModel = viewModel()
+                LaunchedEffect(route.childId) { route.childId.toIntOrNull()?.let(profileViewModel::load) }
+                // si el niño ya no está en la lista (por ejemplo, lo cambiaron de sala), se regresa a Mi sala.
+                val child = viewModel.childById(route.childId)
+                if (child == null) {
+                    LaunchedEffect(Unit) { navController.popBackStack() }
+                } else {
+                    ChildProfileScreen(
+                        child = child,
+                        seenNoteIds = viewModel.seenNoteIds,
+                        roomName = viewModel.teacher.roomName,
+                        avatarIndex = viewModel.children.indexOfFirst { it.id == child.id }.coerceAtLeast(0),
+                        profile = profileViewModel.profile,
+                        profileLoading = profileViewModel.loading,
+                        profileFailed = profileViewModel.failed,
+                        onBackClick = { navController.popBackStack() },
+                        onChatClick = { openChat(child.id) },
+                        onSummaryClick = { navController.navigate(ResumenDelDiaRoute(child.id)) },
+                        onNoteSeen = viewModel::markNoteSeen,
+                        onAttendanceFix = { status -> viewModel.setAttendance(child.id, status) },
+                        onRetryProfile = profileViewModel::retry,
+                    )
+                }
+            }
+
+            composable<ResumenDelDiaRoute> { backStackEntry ->
+                val route = backStackEntry.toRoute<ResumenDelDiaRoute>()
+                val resumenViewModel: ResumenDelDiaViewModel = viewModel()
+                LaunchedEffect(route.childId) { route.childId.toIntOrNull()?.let(resumenViewModel::cargar) }
+                // resumen guiado: al guardar (o saltar) se abre el siguiente niño de la cola sin volver a la lista.
+                val rest = route.pending.split(",").filter { it.isNotBlank() }
+                val goNext: () -> Unit = {
+                    if (rest.isEmpty()) {
+                        navController.popBackStack()
+                    } else {
+                        navController.navigate(ResumenDelDiaRoute(rest.first(), rest.drop(1).joinToString(","), route.total)) {
+                            popUpTo<ResumenDelDiaRoute> { inclusive = true }
+                        }
+                    }
+                }
+                ResumenDelDiaScreen(
+                    viewModel = resumenViewModel,
+                    onBackClick = { navController.popBackStack() },
+                    onGuardado = {
+                        coroutineScope.launch { snackbarHostState.showSnackbar("Resumen guardado") }
+                        goNext()
+                    },
+                    guidedPosition = if (route.total > 0) route.total - rest.size else null,
+                    guidedTotal = route.total,
+                    isLastGuided = rest.isEmpty(),
+                    onSkip = goNext,
+                )
+            }
         }
 
         composable<ChatsRoute> {

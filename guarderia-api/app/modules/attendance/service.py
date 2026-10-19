@@ -16,7 +16,7 @@ from .schemas import AttendanceIn, AttendanceOut, CalendarDay, CalendarOut, Cale
 
 
 async def set_attendance(db: AsyncSession, current: CurrentUser, child_id: int, data: AttendanceIn) -> AttendanceOut:
-    """Marca a un niño como presente o ausente. Sin registro, cuenta como presente."""
+    """Marca a un niño como presente o ausente. Sin registro, cuenta como ausente."""
     child = await get_child_in_scope(db, current, child_id)
     day = data.date or await center_today(db)
     statement = insert(Attendance).values(child_id=child.id, date=day, status=data.status, marked_by=current.id)
@@ -42,24 +42,23 @@ def _parse_month(month: str) -> tuple[date, date]:
 async def month_calendar(db: AsyncSession, current: CurrentUser, child_id: int, month: str) -> CalendarOut:
     """El estado de cada día del mes para la pantalla Calendario.
 
-    ABSENT si se marcó ausente; WITH_NOTE si ese día tuvo un reporte o una nota en su resumen;
-    FULL_DAY si su sala tuvo rutina ese día; NO_RECORD en cualquier otro caso.
+    Con pase de lista (PRESENT): WITH_NOTE si ese día tuvo un reporte o una nota en su resumen, FULL_DAY si no.
+    ABSENT si se marcó ausente o si su sala tuvo rutina y nadie lo pasó como presente (sin registro es falta).
+    NO_RECORD en cualquier otro caso (fines de semana, días sin rutina, días que aún no llegan).
     """
     child = await get_child_in_scope(db, current, child_id)
     first, last = _parse_month(month)
     in_month = lambda column: column.between(first, last)  # noqa: E731
 
-    absent = set(
+    marks = dict(
         (
-            await db.scalars(
-                select(Attendance.date).where(
-                    Attendance.child_id == child.id,
-                    in_month(Attendance.date),
-                    Attendance.status == AttendanceStatus.ABSENT,
-                )
+            await db.execute(
+                select(Attendance.date, Attendance.status).where(Attendance.child_id == child.id, in_month(Attendance.date))
             )
         ).all()
     )
+    present = {day for day, status in marks.items() if status == AttendanceStatus.PRESENT}
+    absent = {day for day, status in marks.items() if status == AttendanceStatus.ABSENT}
     with_note = set(
         (
             await db.scalars(
@@ -98,12 +97,15 @@ async def month_calendar(db: AsyncSession, current: CurrentUser, child_id: int, 
         day = first.replace(day=number)
         if day > today:
             status = DayAttendanceStatus.NO_RECORD
+        elif day in present:
+            status = DayAttendanceStatus.WITH_NOTE if day in with_note else DayAttendanceStatus.FULL_DAY
         elif day in absent:
             status = DayAttendanceStatus.ABSENT
         elif day in with_note:
+            # un reporte o una nota de ese día son prueba de que vino, aunque no haya pase de lista.
             status = DayAttendanceStatus.WITH_NOTE
         elif day in routine_days:
-            status = DayAttendanceStatus.FULL_DAY
+            status = DayAttendanceStatus.ABSENT
         else:
             status = DayAttendanceStatus.NO_RECORD
         days.append(CalendarDay(day=number, date=day, status=status))

@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 
-from tests.conftest import TODAY
+from tests.conftest import TODAY, mark_present
 
 # los mismos casos que CheckInRulesTest, RoutineRulesTest y ReportValidatorTest de la app.
 
@@ -87,10 +87,17 @@ async def test_my_room_and_attendance(client, world):
     room = f"/classrooms/{world.room_a.id}/children"
     kids = (await client.get(room, headers=world.teacher_a)).json()
     assert [kid["full_name"] for kid in kids] == ["Diego Álvarez", "Sofía Márquez"]
-    assert all(kid["attendance"] == "PRESENT" for kid in kids)
+    # sin pase de lista, todos faltan: la docente los va marcando presentes en Mi día.
+    assert all(kid["attendance"] == "ABSENT" for kid in kids)
 
-    marked = await client.put(f"/attendance/{world.diego.id}", headers=world.teacher_a, json={"status": "ABSENT"})
-    assert marked.json() == {"child_id": world.diego.id, "date": TODAY.isoformat(), "status": "ABSENT"}
+    marked = await client.put(f"/attendance/{world.diego.id}", headers=world.teacher_a, json={"status": "PRESENT"})
+    assert marked.json() == {"child_id": world.diego.id, "date": TODAY.isoformat(), "status": "PRESENT"}
+    kids = {kid["id"]: kid for kid in (await client.get(room, headers=world.teacher_a)).json()}
+    assert kids[world.diego.id]["attendance"] == "PRESENT"
+    assert kids[world.sofia.id]["attendance"] == "ABSENT"
+
+    # corregir una marca: de presente vuelve a ausente.
+    await client.put(f"/attendance/{world.diego.id}", headers=world.teacher_a, json={"status": "ABSENT"})
     kids = {kid["id"]: kid for kid in (await client.get(room, headers=world.teacher_a)).json()}
     assert kids[world.diego.id]["attendance"] == "ABSENT"
 
@@ -117,10 +124,17 @@ async def test_report_rules(client, world):
     not_started = await client.post("/reports", headers=world.teacher_a, json={**report, "routine_moment_id": pending})
     assert not_started.status_code == 409 and not_started.json()["code"] == "MOMENT_NOT_STARTED"
 
-    await client.put(f"/attendance/{world.diego.id}", headers=world.teacher_a, json={"status": "ABSENT"})
+    # Diego no tiene pase de lista: sin registro cuenta como ausente y no puede estar en un reporte.
     absent = await client.post("/reports", headers=world.teacher_a, json={**report, "child_ids": [world.diego.id]})
     assert absent.status_code == 409 and absent.json()["code"] == "CHILD_ABSENT"
     assert absent.json()["child_ids"] == [world.diego.id]
+
+    # y tampoco si se le marcó ausente a propósito.
+    await client.put(f"/attendance/{world.diego.id}", headers=world.teacher_a, json={"status": "ABSENT"})
+    marked_absent = await client.post("/reports", headers=world.teacher_a, json={**report, "child_ids": [world.diego.id]})
+    assert marked_absent.status_code == 409 and marked_absent.json()["code"] == "CHILD_ABSENT"
+
+    await mark_present(client, world, world.sofia)
 
     created = await client.post("/reports", headers=world.teacher_a, json=report)
     assert created.status_code == 201
@@ -146,11 +160,24 @@ async def test_my_room_marks_children_with_a_note_from_the_family_today(client, 
     after = by_name((await client.get(f"/classrooms/{world.room_a.id}/children", headers=world.teacher_a)).json())
     assert after["Sofía"]["has_note_today"] is True and after["Sofía"]["notes_today"] == 2
     assert after["Diego"]["has_note_today"] is False  # solo marca a quien recibió la nota
+    # Mi sala trae el texto de cada aviso, en orden, para leerlo sin abrir otra pantalla.
+    assert [note["text"] for note in after["Sofía"]["notes"]] == ["Hoy no durmió bien.", "Se queda con su abuela a la salida."]
+    assert after["Sofía"]["notes"][0]["created_at"] and after["Diego"]["notes"] == []
 
     # al día siguiente la nota ya no cuenta como "de hoy".
     fixed_clock(datetime(2026, 10, 15, 14, 0, tzinfo=UTC))
     tomorrow = by_name((await client.get(f"/classrooms/{world.room_a.id}/children", headers=world.teacher_a)).json())
     assert tomorrow["Sofía"]["has_note_today"] is False
+
+
+async def test_my_room_says_who_already_has_the_daily_summary(client, world):
+    room = f"/classrooms/{world.room_a.id}/children"
+    before = {kid["name"]: kid for kid in (await client.get(room, headers=world.teacher_a)).json()}
+    assert before["Sofía"]["has_summary_today"] is False
+
+    await client.post(f"/children/{world.sofia.id}/daily-entries", headers=world.teacher_a, json={"mood": "HAPPY"})
+    after = {kid["name"]: kid for kid in (await client.get(room, headers=world.teacher_a)).json()}
+    assert after["Sofía"]["has_summary_today"] is True and after["Diego"]["has_summary_today"] is False
 
 
 async def test_a_note_for_one_room_does_not_mark_the_other(client, world):
@@ -260,6 +287,7 @@ async def test_one_report_can_be_for_several_children(client, world):
     """RF-05: un solo reporte para varios niños; cada papá lo ve en su Hoy y no en el de otro."""
     routine = (await client.get(f"/classrooms/{world.room_a.id}/routine", headers=world.teacher_a)).json()
     moment = routine["moments"][0]["id"]
+    await mark_present(client, world, world.sofia, world.diego)
     created = await client.post(
         "/reports",
         headers=world.teacher_a,

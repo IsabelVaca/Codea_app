@@ -8,6 +8,7 @@ from app.core.errors import ApiError
 from app.core.schemas import ClassroomRef
 from app.core.security import CurrentUser, get_child_in_scope
 from app.modules.attendance.models import Attendance, AttendanceStatus
+from app.modules.attendance.queries import present_child_ids
 from app.modules.children.models import Child, ChildStatus
 from app.modules.classrooms.centers import center_of_classroom, center_today
 from app.modules.classrooms.models import Classroom
@@ -75,17 +76,15 @@ async def create_report(db: AsyncSession, current: CurrentUser, data: ReportIn) 
     ).all()
     if len(in_room) != len(child_ids):
         raise ApiError(404, "CHILD_NOT_FOUND", "No existe ese niño en la sala")
-    absent = (
-        await db.scalars(
-            select(Attendance.child_id).where(
-                Attendance.child_id.in_(child_ids),
-                Attendance.date == moment.date,
-                Attendance.status == AttendanceStatus.ABSENT,
-            )
-        )
-    ).all()
+    present = await present_child_ids(db, child_ids, moment.date)
+    absent = [child_id for child_id in child_ids if child_id not in present]
     if absent:
-        raise ApiError(409, "CHILD_ABSENT", "Un niño que faltó hoy no puede estar en un reporte", child_ids=sorted(absent))
+        raise ApiError(
+            409,
+            "CHILD_ABSENT",
+            "Un niño que no está presente hoy no puede estar en un reporte",
+            child_ids=sorted(absent),
+        )
 
     if data.media_id is not None:
         media = await db.get(Media, data.media_id)
@@ -181,7 +180,7 @@ async def child_day(db: AsyncSession, current: CurrentUser, child_id: int, day: 
     center = await center_of_classroom(db, child.classroom_id)
 
     marked = await db.scalar(select(Attendance.status).where(Attendance.child_id == child.id, Attendance.date == day))
-    attendance = marked or AttendanceStatus.PRESENT
+    attendance = marked or AttendanceStatus.ABSENT
     summary = await db.scalar(select(DailySummary).where(DailySummary.child_id == child.id, DailySummary.date == day))
     notes = (
         await db.scalars(
@@ -249,7 +248,8 @@ async def weekly_summary(
     """El resumen de la semana (lunes a viernes) a partir de lo que ya se registró cada día.
 
     Cualquier fecha sirve como `week_start`: se toma el lunes de esa semana. Sin fecha, la semana de hoy.
-    Un día cuenta como asistido si su sala tuvo rutina, o si hay un resumen o un reporte suyo, y no se marcó ausente.
+    Un día cuenta como asistido si la docente lo pasó como presente, o si hay un resumen o un reporte suyo.
+    Cuenta como ausente si se marcó ausente o si su sala tuvo rutina y no hay nada de lo anterior (sin registro es falta).
     """
     child = await get_child_in_scope(db, current, child_id)
     today = await center_today(db)
@@ -257,17 +257,17 @@ async def weekly_summary(
     friday = monday + timedelta(days=4)
     week = [monday + timedelta(days=offset) for offset in range(5)]
 
-    absent = set(
+    marks = dict(
         (
-            await db.scalars(
-                select(Attendance.date).where(
-                    Attendance.child_id == child.id,
-                    Attendance.date.between(monday, friday),
-                    Attendance.status == AttendanceStatus.ABSENT,
+            await db.execute(
+                select(Attendance.date, Attendance.status).where(
+                    Attendance.child_id == child.id, Attendance.date.between(monday, friday)
                 )
             )
         ).all()
     )
+    present = {day for day, status in marks.items() if status == AttendanceStatus.PRESENT}
+    absent = {day for day, status in marks.items() if status == AttendanceStatus.ABSENT}
     summaries = {
         row.date: row
         for row in (
@@ -312,10 +312,14 @@ async def weekly_summary(
         reports_today = [report for report in reports if report.date == day]
         if day > today:
             status = WeekDayStatus.NO_RECORD
+        elif day in present:
+            status = WeekDayStatus.ATTENDED
         elif day in absent:
             status = WeekDayStatus.ABSENT
-        elif day in routine_days or summary is not None or reports_today:
+        elif summary is not None or reports_today:
             status = WeekDayStatus.ATTENDED
+        elif day in routine_days:
+            status = WeekDayStatus.ABSENT
         else:
             status = WeekDayStatus.NO_RECORD
         days.append(

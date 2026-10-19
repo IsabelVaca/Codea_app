@@ -2,6 +2,7 @@ from sqlalchemy import select
 
 from app.modules.documents.models import ChildDocument
 from app.modules.media.models import Media
+from tests.conftest import mark_present
 
 
 async def _upload(client, storage, headers, kind="PHOTO", content_type="image/jpeg") -> int:
@@ -40,6 +41,7 @@ async def test_upload_rules(client, world, storage):
 
 
 async def test_photo_report_reaches_the_family(client, world, storage, db):
+    await mark_present(client, world, world.sofia)
     routine = (await client.get(f"/classrooms/{world.room_a.id}/routine", headers=world.teacher_a)).json()
     media_id = await _upload(client, storage, world.teacher_a)
     report = await client.post(
@@ -80,6 +82,7 @@ async def test_photo_report_reaches_the_family(client, world, storage, db):
 
 
 async def test_feed_pages(client, world, storage):
+    await mark_present(client, world, world.sofia)
     routine = (await client.get(f"/classrooms/{world.room_a.id}/routine", headers=world.teacher_a)).json()
     for number in range(3):
         media_id = await _upload(client, storage, world.teacher_a)

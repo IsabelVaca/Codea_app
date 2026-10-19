@@ -48,7 +48,7 @@ enum class TopLevelDestination(
         roles = setOf(Role.TEACHER),
     ),
     MY_ROOM(
-        route = MyRoomRoute,
+        route = MyRoomGraph,
         icon = Icons.Filled.Face,
         labelRes = R.string.nav_my_room,
         isLocked = false,

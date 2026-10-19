@@ -1,5 +1,7 @@
 """RF-12: el resumen semanal que ve el papá."""
 
+from tests.conftest import mark_present
+
 # el reloj de las pruebas está en el miércoles 14 de octubre de 2026: la semana va del lunes 12 al viernes 16.
 MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY = (f"2026-10-{day}" for day in (12, 13, 14, 15, 16))
 
@@ -21,6 +23,7 @@ async def test_a_full_week(client, world):
     # lunes y martes con resumen; miércoles (hoy) con rutina y un logro; jueves ausente.
     await _entry(client, world, MONDAY, mood="HAPPY", meals="ALL", diaper_changes=3, nap_minutes=60)
     await _entry(client, world, TUESDAY, mood="HAPPY", meals="MOST", diaper_changes=2, nap_minutes=90)
+    await mark_present(client, world, world.sofia)
     routine = (await client.get(f"/classrooms/{world.room_a.id}/routine", headers=world.teacher_a)).json()
     moment = routine["moments"][0]["id"]
     await client.post(f"/routine-moments/{moment}/confirm", headers=world.teacher_a)
@@ -58,6 +61,16 @@ async def test_a_full_week(client, world):
     assert week["achievements"] == ["Compartió sus juguetes con todo el grupo."]
     assert week["family_notes"] == 1
     assert week["days"][2]["reports"] == 1 and week["days"][2]["family_notes"] == 1
+
+
+async def test_a_routine_day_without_roll_call_is_an_absence(client, world):
+    """Hoy hay rutina y nadie pasó lista a Sofía: falta; al pasarle lista, asistió."""
+    await client.get(f"/classrooms/{world.room_a.id}/routine", headers=world.teacher_a)
+    status = lambda week: {day["date"]: day["status"] for day in week["days"]}[WEDNESDAY]  # noqa: E731
+
+    assert status(await _week(client, world)) == "ABSENT"
+    await mark_present(client, world, world.sofia)
+    assert status(await _week(client, world)) == "ATTENDED"
 
 
 async def test_any_date_of_the_week_gives_the_same_monday(client, world):

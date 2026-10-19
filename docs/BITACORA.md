@@ -155,6 +155,21 @@ Registro cronológico de lo que se hizo, por qué y cómo se verificó. Lo nuevo
 
 - La pantalla de confirmación de la entrada abría Mi día por sí sola a los 2 segundos. Se quitó el temporizador y el texto «La app te lleva sola en 2 segundos»: ahora se queda hasta que la docente toca «Ir a Mi día».
 
+
+## 2026-10-18 · Rediseño de Mi sala y pase de lista en Mi día
+
+Propuesta y decisiones en [`plan/06-mi-sala-propuesta.md`](plan/06-mi-sala-propuesta.md).
+
+- **Pase de lista (Mi día):** nueva tarjeta «Pase de lista» arriba de la rutina y pantalla `RollCallScreen` (toda la sala, un toque por niño, «Marcar a todos presentes», «Listo»). Cada toque se guarda al instante con la cola sin conexión que ya existía.
+- **Sin registro = ausente (API):** no hay tercer estado. `GET /classrooms/{id}/children`, el día del niño, los reportes (`409 CHILD_ABSENT` para quien no está presente), el calendario del papá y el resumen semanal usan la misma regla (`attendance/queries.py::present_child_ids`). Un día con rutina y sin pase de lista cuenta como falta en el calendario y la semana. **Ojo:** los días ya registrados sin pase de lista (datos de pruebas) pasan de «día completo» a «falta».
+- **Mi sala (app):** sin cuadros de números ni botones Presente/Falta. «De casa hoy» (avisos de los papás con su texto, **Responder** y **Ya lo vi**), filtros, lista de niños con etiquetas, ausentes plegados. `RoomChild` de la API ganó `notes[]` y `has_summary_today`.
+- **Ficha del niño:** alergias, edad, avisos, resumen, **Corregir asistencia** (diálogo), «Familia» y «Quién lo recoge» con botón **Llamar** (abre el marcador, sin permisos). **Avisos de casa:** bandeja con todos los del día.
+- **Ya lo vi:** solo en el teléfono (`SeenNotesStore`, por usuario y solo ids). Room pasa a la versión 3 (`MIGRATION_2_3`: `notesJson` y `hasSummaryToday` en `cached_child`).
+- **Verificado:** 292 pruebas de la API en verde (tres nuevas) y 92 pruebas JVM de la app en verde (`RoomRulesTest`, `ChildProfileRulesTest` y `RoomChildMappingTest` son nuevas). En el Pixel 8 Pro, con la API local y Aiven: login, Mi día con la tarjeta «Pase de lista» («1 de 2 presentes»), el pase de lista, Mi sala (aviso de casa con su texto, filtros, renglón con etiquetas, ausentes plegado), la ficha (edad, aviso, resumen, asistencia, familia con **Llamar**, autorizados) y el diálogo de corregir asistencia. Se corrigió el contraste del botón «Responder» y de las opciones del diálogo.
+- **Aiven:** se aplicaron `e74f0a5b3d43` (borra las columnas de ubicación del checador, aprobado por el usuario) y `f85a1b6c4e54` (horario del centro); sin ellas el login daba 500. Aiven queda en `f85a1b6c4e54`. Además, el contenedor de la API había perdido el DNS (no resolvía Aiven) y se reinició con `docker restart guarderia-api-api-1`.
+- **Sin probar en el teléfono:** «Ya lo vi» (se dejó el aviso de prueba sin tocar), «Marcar a todos presentes», «Avisos de casa» (solo aparece con más de tres avisos), el recuadro de alergias (Diego no tiene), la caché sin conexión con los campos nuevos, y todo en modo oscuro.
+- **Resumen guiado (después):** botón «Capturar resúmenes (N)» en Mi sala, solo si hay niños presentes sin resumen. Abre el resumen del primero («Resumen 1 de N») y al guardar pasa solo al siguiente; «Saltar este niño» o «Terminar sin guardar» avanzan sin guardar. La cola se arma al tocar el botón (`RoomRules.pendingSummaries`) y viaja en la ruta (`ResumenDelDiaRoute.pending` y `total`). Probado en el teléfono con un niño en la cola (se marcó presente a Renata y se regresó a falta); sin probar con varios niños seguidos.
+- **Para correr la app en un teléfono físico** hay que compilar con `-PapiBaseUrl=http://localhost:8000/api/v1/` (o ponerlo en `local.properties`) y activar `adb reverse tcp:8000 tcp:8000` y `tcp:9000`; sin eso la build apunta a `10.0.2.2` (emulador).
 ## 2026-10-18 · Limpieza de la app (candidatos 1 a 5)
 
 - **1. Cinco pantallas sin uso:** `checadorScreen.kt`, `miDiaScreen.kt`, `miDiaEnCursoScreen.kt`, `confirmarMomentoScreen.kt` y `ajustarRutinaScreen.kt` (1,010 líneas). Ninguna se abría desde la app; solo existían sus `@Preview`.

@@ -34,13 +34,32 @@ data class ReportRoute(val subprocessNumber: Int)
 @Serializable
 data class SelectStudentsRoute(val subprocessNumber: Int)
 
+// el pase de lista: el primer paso del día, dentro de "Mi día". se abre desde la tarjeta de arriba de la rutina.
+@Serializable
+data object RollCallRoute
+
+// the "mi sala" tab has more than one screen (la sala, la ficha de un niño, los avisos de casa y el resumen),
+// so it is a graph like MyDayGraph: así la pestaña sigue marcada mientras la docente está dentro.
+@Serializable
+data object MyRoomGraph
+
 // the list of children in the room of the teacher.
 @Serializable
 data object MyRoomRoute
 
-// el resumen del día de un niño (ánimo, comida, pañales, siesta y nota) que captura la docente. se abre desde Mi sala.
+// la ficha de un niño: alergias, avisos de la familia, resumen, asistencia y a quién llamar.
 @Serializable
-data class ResumenDelDiaRoute(val childId: String)
+data class ChildProfileRoute(val childId: String)
+
+// todos los avisos que mandaron los papás hoy.
+@Serializable
+data object FamilyNoticesRoute
+
+// el resumen del día de un niño (ánimo, comida, pañales, siesta y nota) que captura la docente. se abre desde la ficha.
+// en el resumen guiado, "pending" son los ids que faltan DESPUÉS de este niño (separados por coma) y "total" cuántos
+// tenía la cola al empezar; con total = 0 es un resumen suelto, abierto desde la ficha.
+@Serializable
+data class ResumenDelDiaRoute(val childId: String, val pending: String = "", val total: Int = 0)
 
 // the conversations with the families.
 @Serializable

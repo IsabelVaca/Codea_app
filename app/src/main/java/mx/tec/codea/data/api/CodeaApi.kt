@@ -119,6 +119,10 @@ interface CodeaApi {
     @GET("classrooms/{id}/children")
     suspend fun roomChildren(@Path("id") id: Int): List<RoomChildDto>
 
+    // la ficha del niño: alergias, fecha de nacimiento y tutores con su teléfono.
+    @GET("children/{id}")
+    suspend fun childDetail(@Path("id") id: Int): ChildDetailDto
+
     @PUT("attendance/{id}")
     suspend fun setAttendance(@Path("id") id: Int, @Body body: AttendanceBody)
 

@@ -22,6 +22,7 @@ fun NavHostController.reselectTopLevel(destination: TopLevelDestination) {
         // a second tap closes the inner screen of the tab and shows its first screen,
         // like "reporte" -> "mi día" or "checador" -> "menú".
         TopLevelDestination.MY_DAY -> popBackStack<MyDayRoute>(inclusive = false)
+        TopLevelDestination.MY_ROOM -> popBackStack<MyRoomRoute>(inclusive = false)
         TopLevelDestination.MENU -> popBackStack<MenuRoute>(inclusive = false)
         // "centro" -> "crear sala" y "familias" -> "inscribir infante" funcionan igual:
         // un segundo toque cierra la pantalla de adentro.
@@ -30,7 +31,6 @@ fun NavHostController.reselectTopLevel(destination: TopLevelDestination) {
         TopLevelDestination.FAMILIAS -> popBackStack<AdminFamiliasRoute>(inclusive = false)
         TopLevelDestination.AJUSTES -> popBackStack<AjustesAdminRoute>(inclusive = false)
         // the other tabs have only one screen, so there is nothing to do.
-        TopLevelDestination.MY_ROOM,
         TopLevelDestination.CHATS,
         -> Unit
 

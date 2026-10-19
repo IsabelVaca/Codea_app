@@ -62,7 +62,7 @@ Errores comunes a todos los endpoints con sesión: `401 UNAUTHENTICATED` (sin to
 | PATCH | `/classrooms/{id}` | `ADMIN` | `{name?, capacity?, school_grade?}` | `ClassroomDetail` | `422 NAME_REQUIRED`, `CAPACITY_INVALID` |
 | PUT | `/classrooms/{id}/staff` | `ADMIN` | `{teacher_ids[], primary_teacher_id?}` | `ClassroomDetail` | `404 TEACHER_NOT_FOUND`; `422 PRIMARY_NOT_IN_STAFF` |
 | DELETE | `/classrooms/{id}` | `ADMIN` | — | 204; sus asistentes quedan sin sala | `409 CLASSROOM_NOT_EMPTY` |
-| GET | `/classrooms/{id}/children?date=` | `ADMIN`, `TEACHER` (su sala) | — | `RoomChild[]`: `attendance`, `conversation_id`, `has_unread_chat`, `unread_count`, `notes_today`, `has_note_today` (notas del papá de hoy) | `404 CLASSROOM_NOT_FOUND` |
+| GET | `/classrooms/{id}/children?date=` | `ADMIN`, `TEACHER` (su sala) | — | `RoomChild[]`: `attendance` (`PRESENT` solo si hoy se le pasó lista; **sin registro es `ABSENT`**), `conversation_id`, `has_unread_chat`, `unread_count`, `notes_today`, `has_note_today`, `notes[]` (`id`, `text`, `created_at`: los avisos del papá de hoy, del más viejo al más nuevo) y `has_summary_today` (la docente ya guardó el resumen del día) | `404 CLASSROOM_NOT_FOUND` |
 
 ## Docentes
 
@@ -115,8 +115,8 @@ La API calcula distancia, radio y retardo con su propio reloj; nunca acepta el e
 
 | Método | Ruta | Rol | Envía | Responde | Errores |
 | --- | --- | --- | --- | --- | --- |
-| PUT | `/attendance/{child_id}` | `ADMIN`, `TEACHER` (su sala) | `{status: PRESENT \| ABSENT, date?}` | `AttendanceOut` | `404 CHILD_NOT_FOUND` |
-| GET | `/children/{id}/attendance?month=AAAA-MM` | Todos (en su alcance) | — | `CalendarOut`: `days[]` con `status` (`FULL_DAY`, `WITH_NOTE`, `ABSENT`, `NO_RECORD`) y `summary` | `422 MONTH_INVALID`; `404 CHILD_NOT_FOUND` |
+| PUT | `/attendance/{child_id}` | `ADMIN`, `TEACHER` (su sala) | `{status: PRESENT \| ABSENT, date?}`: el pase de lista de *Mi día* marca `PRESENT`; corregir una marca manda el otro estado | `AttendanceOut` | `404 CHILD_NOT_FOUND` |
+| GET | `/children/{id}/attendance?month=AAAA-MM` | Todos (en su alcance) | — | `CalendarOut`: `days[]` con `status` (`FULL_DAY`, `WITH_NOTE`, `ABSENT`, `NO_RECORD`) y `summary`. Un día con rutina y sin pase de lista `PRESENT` cuenta como `ABSENT` | `422 MONTH_INVALID`; `404 CHILD_NOT_FOUND` |
 
 ## Rutina
 
@@ -234,6 +234,7 @@ Acciones y qué datos guarda cada una: [`app/modules/audit/README.md`](../../gua
 | Nombres | Un solo `name` | `name` + `surname` en docentes, padres, tutores e infantes |
 | Checador | — | Repetir la checada el mismo día regresa la misma con 200; `notify-coordination` pide `reason` |
 | Asistencia | Solo `{status}` | También acepta `date`; la puede marcar el `ADMIN` |
+| Sin pase de lista | Sin registro, el niño contaba como presente | **Sin registro cuenta como ausente** (Mi sala, día del niño, reportes, calendario y resumen semanal). Un reporte de un niño que no está presente responde `409 CHILD_ABSENT` |
 | Fotos | `POST /media/uploads` sin cuerpo descrito | Pide `content_type` y `size_bytes`; máximo 10 MB; también sirve para documentos (`kind: DOCUMENT`) |
 | Chat | — | `?after=<id>` para traer solo lo nuevo, `client_id` contra duplicados, `is_mine` e `is_read` en cada mensaje |
 | Día del niño | Solo el padre | Cualquier rol en su alcance: la docente también lo lee (incluye las notas del papá) |

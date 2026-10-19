@@ -55,6 +55,11 @@ fun MyDayScreen(
     onMakeReportClick: (Int) -> Unit,
     onConfirmSubprocessClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    // el pase de lista es el primer paso del día: cuántos niños están marcados presentes y cuántos hay en la sala.
+    // con 0 niños en la sala no hay a quién pasar lista y la tarjeta no se muestra.
+    rollCallPresent: Int = 0,
+    rollCallTotal: Int = 0,
+    onRollCallClick: () -> Unit = {},
 ) {
     // a lazy column only draws the rows that fit on the screen, and it can scroll.
     LazyColumn(
@@ -67,6 +72,11 @@ fun MyDayScreen(
                 overline = routine.name,
                 title = stringResource(R.string.my_day_title),
             )
+        }
+        if (rollCallTotal > 0) {
+            item(key = "roll-call") {
+                RollCallCard(present = rollCallPresent, total = rollCallTotal, onClick = onRollCallClick)
+            }
         }
         item {
             RoutineProgressCard(current = routine.currentStep, total = routine.subprocesses.size)
@@ -93,6 +103,55 @@ fun MyDayScreen(
                     modifier = Modifier.animateItem(),
                 )
             }
+        }
+    }
+}
+
+// el primer paso del día: el pase de lista. mientras nadie esté marcado se ve como algo por hacer;
+// ya con niños marcados queda tranquila, con el avance y una forma de revisar la lista.
+@Composable
+private fun RollCallCard(present: Int, total: Int, onClick: () -> Unit) {
+    val pending = present == 0
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(22.dp),
+        color = if (pending) MaterialTheme.colorScheme.secondary.copy(alpha = 0.22f) else MaterialTheme.colorScheme.tertiaryContainer,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 17.dp, vertical = 15.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text = stringResource(R.string.roll_call_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = if (pending) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onTertiaryContainer,
+                )
+                Text(
+                    text = if (pending) {
+                        stringResource(R.string.roll_call_card_pending_body)
+                    } else {
+                        pluralStringResource(R.plurals.roll_call_card_progress, total, present, total)
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (pending) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onTertiaryContainer,
+                )
+            }
+            Text(
+                text = stringResource(if (pending) R.string.roll_call_card_action else R.string.roll_call_card_review),
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.ExtraBold,
+                color = if (pending) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onTertiaryContainer,
+            )
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = if (pending) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onTertiaryContainer,
+            )
         }
     }
 }

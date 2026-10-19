@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.first
+import kotlinx.serialization.builtins.ListSerializer
 import mx.tec.codea.CodeaApplication
 import mx.tec.codea.data.DataEvents
 import mx.tec.codea.data.SessionRepository
@@ -22,6 +23,7 @@ import mx.tec.codea.data.SessionState
 import mx.tec.codea.data.api.ApiClient
 import mx.tec.codea.data.api.AttendanceBody
 import mx.tec.codea.data.api.RoomChildDto
+import mx.tec.codea.data.api.RoomNoteDto
 import mx.tec.codea.domain.AttendanceRemote
 import mx.tec.codea.domain.OfflineAttendance
 import mx.tec.codea.domain.PendingAttendance
@@ -42,7 +44,7 @@ object Offline {
 
     fun init(context: Context, sessions: SessionRepository) {
         val db = Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, "codea.db")
-            .addMigrations(AppDatabase.MIGRATION_1_2)
+            .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3)
             .build()
         val dao = db.dao()
         attendance = OfflineAttendance(RoomPendingStore(dao, sessions), RetrofitAttendanceRemote(), OfflineErrors::kindOf)
@@ -130,6 +132,8 @@ class RoomCache(private val dao: OfflineDao) {
                     conversationId = it.conversationId,
                     hasUnreadChat = it.hasUnreadChat,
                     hasNoteToday = it.hasNoteToday,
+                    notesJson = ApiClient.json.encodeToString(notesSerializer, it.notes),
+                    hasSummaryToday = it.hasSummaryToday,
                 )
             },
         )
@@ -153,9 +157,16 @@ class RoomCache(private val dao: OfflineDao) {
                     conversationId = it.conversationId,
                     hasUnreadChat = it.hasUnreadChat,
                     hasNoteToday = it.hasNoteToday,
+                    // si el JSON guardado no se puede leer, se pierde solo el texto de los avisos, no la lista.
+                    notes = runCatching { ApiClient.json.decodeFromString(notesSerializer, it.notesJson) }.getOrDefault(emptyList()),
+                    hasSummaryToday = it.hasSummaryToday,
                 )
             },
         )
+    }
+
+    private companion object {
+        val notesSerializer = ListSerializer(RoomNoteDto.serializer())
     }
 }
 

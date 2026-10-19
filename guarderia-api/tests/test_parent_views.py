@@ -1,9 +1,13 @@
+from tests.conftest import mark_present
+
+
 async def _start_day(client, world) -> list[int]:
     routine = (await client.get(f"/classrooms/{world.room_a.id}/routine", headers=world.teacher_a)).json()
     return [moment["id"] for moment in routine["moments"]]
 
 
 async def test_today_screen(client, world):
+    await mark_present(client, world, world.sofia)
     arrival, breakfast, _ = await _start_day(client, world)
     await client.post(f"/routine-moments/{arrival}/confirm", headers=world.teacher_a)
     await client.post(
@@ -46,6 +50,17 @@ async def test_today_screen(client, world):
     assert (await client.get(f"/children/{world.renata.id}/day", headers=world.mom)).status_code == 404
     other = await client.post(f"/children/{world.renata.id}/notes", headers=world.mom, json={"text": "Hola"})
     assert other.status_code == 404
+
+
+async def test_a_routine_day_without_roll_call_counts_as_absent(client, world):
+    """Sin pase de lista el niño falta: el calendario del papá lo dice igual que Mi sala."""
+    await _start_day(client, world)  # la rutina de hoy (miércoles 14) existe, pero nadie pasó lista
+    day = lambda calendar: {d["day"]: d["status"] for d in calendar["days"]}[14]  # noqa: E731
+    path = f"/children/{world.sofia.id}/attendance?month=2026-10"
+
+    assert day((await client.get(path, headers=world.mom)).json()) == "ABSENT"
+    await mark_present(client, world, world.sofia)
+    assert day((await client.get(path, headers=world.mom)).json()) == "FULL_DAY"
 
 
 async def test_calendar(client, world):

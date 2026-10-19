@@ -15,6 +15,7 @@ import mx.tec.codea.data.TeacherApiRepository
 import mx.tec.codea.data.api.ApiConfig
 import mx.tec.codea.data.api.toUserMessage
 import mx.tec.codea.data.hoyIso
+import mx.tec.codea.data.local.Local
 import mx.tec.codea.data.offline.CachedRoom
 import mx.tec.codea.data.offline.Offline
 import mx.tec.codea.data.offline.OfflineErrors
@@ -28,6 +29,7 @@ import mx.tec.codea.domain.ErrorKind
 import mx.tec.codea.domain.MarkResult
 import mx.tec.codea.domain.Report
 import mx.tec.codea.domain.ReportValidator
+import mx.tec.codea.domain.RoomRules
 import mx.tec.codea.domain.Routine
 import mx.tec.codea.domain.Subprocess
 import mx.tec.codea.domain.Teacher
@@ -78,6 +80,14 @@ class CodeaViewModel : ViewModel() {
     var pendingChanges by mutableIntStateOf(0)
         private set
 
+    // los avisos de casa que la docente ya marcó con "Ya lo vi" (solo se guarda en este teléfono).
+    var seenNoteIds by mutableStateOf<Set<Int>>(emptySet())
+        private set
+
+    // cuántos niños están hoy y cuántos hay en la sala: lo que muestra el pase de lista de Mi día.
+    val presentCount: Int
+        get() = RoomRules.present(children).size
+
     val hasCheckedIn: Boolean
         get() = checkIn != null
 
@@ -87,6 +97,7 @@ class CodeaViewModel : ViewModel() {
         cargar()
         // lo que quedó sin enviar de otra vez: se cuenta y se vuelve a intentar al abrir la app.
         viewModelScope.launch { Offline.attendance.pendingCount().collect { pendingChanges = it } }
+        viewModelScope.launch { Local.seenNotes.seen().collect { seenNoteIds = it } }
         viewModelScope.launch { if (Offline.attendance.pendingCount().first() > 0) Offline.scheduler.schedule() }
     }
 
@@ -116,6 +127,8 @@ class CodeaViewModel : ViewModel() {
                     val lista = repository.roomChildren(room)
                     conversationIds = lista.mapNotNull { c -> c.conversationId?.let { c.id.toString() to it } }.toMap()
                     children = conPendientes(lista.map { it.toChild() })
+                    // los avisos de días anteriores ya no importan: se olvida cuáles se vieron.
+                    runCatching { Local.seenNotes.keepOnly(children.flatMap { child -> child.notes.map { it.id } }.toSet()) }
                     // lo último que se vio queda guardado para poder abrir Mi sala sin conexión.
                     runCatching {
                         Offline.cache.save(
@@ -166,7 +179,7 @@ class CodeaViewModel : ViewModel() {
         if (marcas.isEmpty()) return lista
         return lista.map { child ->
             val estado = marcas[child.id.toIntOrNull()] ?: return@map child
-            child.copy(attendance = if (estado == "ABSENT") AttendanceStatus.ABSENT else AttendanceStatus.PRESENT)
+            child.copy(attendance = if (estado == "PRESENT") AttendanceStatus.PRESENT else AttendanceStatus.ABSENT)
         }
     }
 
@@ -229,21 +242,42 @@ class CodeaViewModel : ViewModel() {
 
     // se pinta de inmediato. sin conexión la marca espera en la cola y se manda sola al volver la red;
     // si la API dice que no (por ejemplo, el niño no es de tu sala), se avisa y se vuelve a pedir la lista.
-    fun setAttendance(childId: String, status: AttendanceStatus) {
-        children = children.map { if (it.id == childId) it.copy(attendance = status) else it }
+    // el pase de lista (Mi día) y la corrección de una marca (la ficha del niño) usan esta misma función.
+    fun setAttendance(childId: String, status: AttendanceStatus) = setAttendanceOf(listOf(childId), status)
+
+    // "marcar a todos presentes" del pase de lista: solo toca a los que todavía están como ausentes.
+    fun markAllPresent() =
+        setAttendanceOf(children.filter { it.attendance == AttendanceStatus.ABSENT }.map { it.id }, AttendanceStatus.PRESENT)
+
+    private fun setAttendanceOf(ids: List<String>, status: AttendanceStatus) {
+        if (ids.isEmpty()) return
+        children = children.map { if (it.id in ids) it.copy(attendance = status) else it }
         viewModelScope.launch {
-            try {
-                val resultado = Offline.attendance.mark(childId.toInt(), status.name, hoyIso())
-                if (resultado == MarkResult.QUEUED) {
-                    Offline.scheduler.schedule()
-                    DataEvents.notice("Sin conexión: la marca se enviará sola cuando vuelva la red")
+            var queued = false
+            var failure: Exception? = null
+            for (id in ids) {
+                try {
+                    if (Offline.attendance.mark(id.toInt(), status.name, hoyIso()) == MarkResult.QUEUED) queued = true
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    failure = failure ?: e
                 }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                DataEvents.notice(e.toUserMessage())
+            }
+            if (queued) {
+                Offline.scheduler.schedule()
+                DataEvents.notice("Sin conexión: la marca se enviará sola cuando vuelva la red")
+            }
+            failure?.let {
+                DataEvents.notice(it.toUserMessage())
                 cargar()
             }
         }
+    }
+
+    // "Ya lo vi": el aviso deja de contar como pendiente. solo en este teléfono.
+    fun markNoteSeen(noteId: Int) {
+        seenNoteIds = seenNoteIds + noteId
+        viewModelScope.launch { runCatching { Local.seenNotes.markSeen(noteId) } }
     }
 }
