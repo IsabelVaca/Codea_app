@@ -1,7 +1,7 @@
 """salud del niño (Mi hijo) y pase de salida
 
 Revision ID: a07c3d8e6f76
-Revises: f85a1b6c4e54
+Revises: a96b2c7d5f65
 Create Date: 2026-10-19 10:00:00.000000
 
 """
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 revision: str = 'a07c3d8e6f76'
-down_revision: Union[str, None] = 'f85a1b6c4e54'
+down_revision: Union[str, None] = 'a96b2c7d5f65'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

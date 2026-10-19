@@ -85,10 +85,8 @@ Son cambios nuevos a lo que ya existe. Varios mueven requisitos que hoy figuran 
 
 ### Registro de usuarios nuevos
 
-- **Alta por enlace de invitación.** En vez de que el admin comparta un código `XXXX-XXXX`, la persona recibe un enlace, lo abre, el servidor comprueba que ya está dada de alta y entonces se registra con su correo y contraseña.
-  - Hoy: `POST /auth/activate` con correo, código y contraseña ([`guarderia-api/README.md`](../guarderia-api/README.md), sección Códigos de acceso).
-  - Hace falta definir cómo llega el enlace, porque la API no manda correos (el código "solo queda en el log"); si no hay correo, el admin tendría que compartir el enlace. También hay que manejar el enlace dentro de la app (deep link), su caducidad y su uso único.
-  - Afecta la pantalla "Activar cuenta" y el diálogo del código de invitación del admin.
+- **Alta por enlace de invitación.** ~~En vez de que el admin comparta un código…~~ **Hecho (rama `invitacion-whatsapp`), falta la URL pública.** El admin toca «Enviar por WhatsApp» y la persona recibe un enlace que abre la app con su correo y su código puestos; solo crea su contraseña. Sin correos: la prueba de identidad es que solo ella recibió el enlace.
+  - Falta para que el enlace https abra la app: una **URL pública con HTTPS** que llegue a la API (`PUBLIC_BASE_URL`, decisión #7; para la demostración basta un túnel) y, para que Android la abra sin pasar por el navegador, la huella del certificado (`ANDROID_CERT_SHA256`) y el mismo dominio en la app (`INVITE_HOST`). Sin eso el mensaje lleva el código escrito y funciona igual a mano.
 
 ### Admin
 
@@ -108,10 +106,10 @@ Son cambios nuevos a lo que ya existe. Varios mueven requisitos que hoy figuran 
 
 ## 5. Infraestructura y entrega
 
-- **Aiven:** aplicar las migraciones `e74f0a5b3d43`, `f85a1b6c4e54` y `a07c3d8e6f76` (necesita aprobación). La primera borra las coordenadas ya guardadas; la última agrega los datos de salud del niño y la tabla del pase de salida. Sin ellas el login da 500.
+- **Aiven:** aplicar las migraciones pendientes, en este orden: `a96b2c7d5f65` (foto en el chat) y `a07c3d8e6f76` (datos de salud del niño y tabla del pase de salida); `alembic current` en Aiven dice cuáles faltan (necesita aprobación). Sin ellas el login da 500.
 - Despliegue público con HTTPS ([decisión #7](DECISIONES-PENDIENTES.md)) y respaldos de la base.
 - `API_BASE_URL_RELEASE` con HTTPS y un APK de release firmado (necesita un keystore y sus contraseñas).
-- Correo real con el código de invitación (hoy solo queda en el log y el admin lo comparte).
+- ~~Correo real con el código de invitación~~: ya no aplica; se manda por WhatsApp (ver «Alta por enlace de invitación»).
 - Recorrer en el teléfono los tres roles con los cambios del 18/oct: el checador nuevo, Familias, Ajustes, Horario, Personas autorizadas, Mi hijo y el pase de salida.
 - Guion de la presentación de 15 minutos, video de respaldo, captura del Planner y entrega en Canvas.
 - Poner al día [`ESTADO.md`](ESTADO.md) y [`../guarderia-api/PENDIENTES.md`](../guarderia-api/PENDIENTES.md) (foto del 16/oct) y marcar el bloque 4 de [`PLAN-ACCION.md`](PLAN-ACCION.md), cuyos documentos de `docs/entrega/` ya existen.

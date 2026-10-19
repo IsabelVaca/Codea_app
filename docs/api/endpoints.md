@@ -200,8 +200,15 @@ Participantes de una conversación: los padres ligados al niño y las docentes d
 | --- | --- | --- | --- | --- | --- |
 | GET | `/center` | `ADMIN` | — | `CenterOut`: `name`, `latitude`, `longitude`, `check_in_radius_m`, `timezone`, `entry_time`, `exit_time`, `auto_close_time`, `work_days` | `409 CENTER_MISSING` |
 | PATCH | `/center` | `ADMIN` | `{name?, latitude?, longitude?, check_in_radius_m?, timezone?, entry_time?, exit_time?, auto_close_time?, work_days?}` (solo cambia lo que se manda; latitud y longitud en `null` quitan la ubicación). Horario: la entrada va antes de la salida y la salida no pasa del cierre | `CenterOut` | `422 LOCATION_INCOMPLETE`, `LOCATION_INVALID`, `RADIUS_INVALID`, `TIMEZONE_INVALID`, `SCHEDULE_INVALID`, `WORKDAYS_INVALID` |
-| POST | `/invitations` | `ADMIN` | `{name, surname?, phone, email, role}` | 201 `InvitationOut` con `access_code {code, purpose, expires_at}` (se muestra una sola vez) | `409 EMAIL_TAKEN`, `ALREADY_HAS_ACCOUNT` |
+| POST | `/invitations` | `ADMIN` | `{name, surname?, phone, email, role}` | 201 `InvitationOut` con `access_code {code, purpose, expires_at, link?}` (se muestra una sola vez; `link` solo si la API tiene `PUBLIC_BASE_URL`) | `409 EMAIL_TAKEN`, `ALREADY_HAS_ACCOUNT` |
 | GET | `/invitations?status=&role=` | `ADMIN` | — | `InvitationOut[]`: `status` (`PENDING`, `ACCEPTED` = código usado, `EXPIRED`), `expires_at`, `accepted_at` | — |
+
+### Enlace de invitación (fuera de `/api/v1`)
+
+| Método | Ruta | Rol | Responde |
+| --- | --- | --- | --- |
+| GET | `/invitar?email=&code=` | Sin sesión | Página HTML con «Abrir en la app» (`codea://invitar?…`) y el correo y el código escritos. Solo lee: **no gasta el código**. `400` si el correo o el código no tienen la forma esperada |
+| GET | `/.well-known/assetlinks.json` | Sin sesión | Verificación de la app para que Android abra el enlace directo (`ANDROID_CERT_SHA256`); `[]` si no está configurada |
 
 ## Auditoría
 

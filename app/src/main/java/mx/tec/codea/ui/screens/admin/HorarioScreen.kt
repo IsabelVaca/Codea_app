@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import mx.tec.codea.domain.HorarioCentro
 import mx.tec.codea.domain.HorarioRules
 import mx.tec.codea.domain.formatTimeOfDay
+import mx.tec.codea.ui.components.BackHeader
 
 // Ajustes → Horario: el horario de todo el centro. la hora de entrada decide quién llega tarde, la de salida
 // es la esperada, y a la hora de cierre el servidor cierra solas las entradas que siguen abiertas.
@@ -60,13 +61,11 @@ fun HorarioScreen(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Horario", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
-                    }
-                },
+            BackHeader(
+                overline = "Ajustes",
+                title = "Horario",
+                onBackClick = onBack,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
             )
         },
     ) { paddingValues ->

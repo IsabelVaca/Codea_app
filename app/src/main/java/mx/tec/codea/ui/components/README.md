@@ -12,6 +12,14 @@ Piezas reutilizables entre pantallas.
 | `AccessCodeDialog.kt` | El código de acceso de alguien recién dado de alta, con botón de compartir. La API lo da una sola vez, así que es la única oportunidad de copiarlo |
 | `DeviceLaunchers.kt` | `rememberTakePhoto` (cámara) y `rememberDictation` (voz a texto), con sus permisos |
 
+## Regla de los encabezados
+
+Toda pantalla empieza igual, en los tres perfiles:
+
+- **Pestañas** (la barra inferior): `ScreenHeader(overline, title)`. El sobretítulo dice dónde estás; en el admin es `admin_overline` («Estancia La Oruga · Administración»), en la docente y el padre el nombre del lugar o de la persona.
+- **Pantallas que abren encima de una pestaña:** `BackHeader(overline, title, onBackClick)`, con el botón redondo de regreso. El sobretítulo es la sección de donde vienes (`Centro`, `Docentes`, `Familias`, `Ajustes · Rutinas`).
+- No se escriben encabezados a mano ni con `TopAppBar`. Desde el 18/oct las pantallas del admin (y la bandeja de Chats) siguen esta regla.
+
 ## Notas sobre `DeviceLaunchers.kt`
 
 - **Cámara:** usa `ActivityResultContracts.TakePicturePreview`, que devuelve **una miniatura** (`Bitmap`), no la foto completa. Sirve para el prototipo, pero para fotos reales de actividades habría que usar `TakePicture` con `FileProvider`, comprimir y corregir la orientación con EXIF (el marco lo pide así) y subir por `MediaUploader`.

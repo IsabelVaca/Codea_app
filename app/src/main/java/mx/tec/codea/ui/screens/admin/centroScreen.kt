@@ -59,6 +59,9 @@ import mx.tec.codea.domain.Sala
 import mx.tec.codea.ui.theme.CodeaTheme
 import mx.tec.codea.ui.theme.Poppins
 import mx.tec.codea.ui.theme.salaColor
+import mx.tec.codea.R
+import mx.tec.codea.ui.components.ScreenHeader
+import androidx.compose.ui.res.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,7 +82,11 @@ fun CentroScreen(
     val destino = salas.firstOrNull { it.id == destinoSalaId }
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Centro", fontWeight = FontWeight.Bold) })
+            ScreenHeader(
+                overline = stringResource(R.string.admin_overline),
+                title = "Centro",
+                modifier = Modifier.padding(horizontal = 22.dp, vertical = 16.dp),
+            )
         },
         content = { paddingValues ->
     Column(

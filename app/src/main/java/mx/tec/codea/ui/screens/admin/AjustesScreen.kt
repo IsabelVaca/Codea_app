@@ -27,6 +27,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import mx.tec.codea.ui.theme.Poppins
+import mx.tec.codea.R
+import mx.tec.codea.ui.components.ScreenHeader
+import androidx.compose.ui.res.stringResource
 
 // Ajustes: el menú de todo lo que el administrador puede configurar. cada fila abre su pantalla.
 // para agregar una opción nueva, súmala aquí y su ruta en AjustesAdminGraph.
@@ -41,7 +44,11 @@ fun AjustesScreen(
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Ajustes", fontWeight = FontWeight.Bold) }) },
+        topBar = { ScreenHeader(
+                overline = stringResource(R.string.admin_overline),
+                title = "Ajustes",
+                modifier = Modifier.padding(horizontal = 22.dp, vertical = 16.dp),
+            ) },
     ) { paddingValues ->
         Column(
             modifier = modifier

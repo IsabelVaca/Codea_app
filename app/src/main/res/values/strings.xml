@@ -131,6 +131,9 @@
 
     <!-- my room screen -->
     <string name="my_room_overline">Estancia La Oruga</string>
+    <string name="admin_overline">Estancia La Oruga · Administración</string>
+    <string name="chats_inbox_overline">Estancia La Oruga</string>
+    <string name="chats_inbox_overline_parent">Estancia La Oruga · Familia</string>
     <string name="my_room_title">Sala · %1$s</string>
     <string name="my_room_title_generic">Mi sala</string>
     <string name="my_room_present">Presente</string>
@@ -248,7 +251,13 @@
     <string name="chats_no_messages">Aún no hay mensajes en esta conversación.</string>
     <string name="chats_message_hint">Escribe un mensaje…</string>
     <string name="chats_message_read">%1$s · leído</string>
-    <string name="chats_attach">Adjuntar archivo</string>
+    <string name="chats_attach">Adjuntar foto</string>
+    <string name="chats_attach_camera">Cámara</string>
+    <string name="chats_attach_gallery">Galería</string>
+    <string name="chats_photo_close">Cerrar</string>
+    <string name="chats_photo_caption_hint">Añade un texto… (opcional)</string>
+    <string name="chats_photo_failed">No se pudo preparar la foto</string>
+    <string name="chats_photo_description">Foto del mensaje</string>
     <string name="chats_send">Enviar mensaje</string>
 
     <!-- menu screen -->
@@ -455,8 +464,10 @@
     <string name="account_logout_body">Tendrás que volver a entrar con tu correo y tu contraseña.</string>
     <string name="role_selection_no_roles">Tu cuenta todavía no tiene un perfil. Pide ayuda en la dirección.</string>
     <string name="access_code_title">Código de acceso</string>
-    <string name="access_code_body">Comparte este código con %1$s para que active su cuenta. Solo se muestra ahora y vence el %2$s.</string>
+    <string name="access_code_body">Mándale la invitación a %1$s para que cree su cuenta. El código solo se muestra ahora y vence el %2$s.</string>
+    <string name="access_code_whatsapp">Enviar por WhatsApp</string>
     <string name="access_code_share">Compartir</string>
     <string name="access_code_close">Listo</string>
-    <string name="access_code_share_text">Tu código de Codea es %1$s. Úsalo en «Activar mi cuenta» con tu correo.</string>
+    <string name="invite_message_with_link">Hola %1$s, la estancia La Oruga te invita a Codea.\n\nToca este enlace para crear tu cuenta:\n%2$s\n\nSi no se abre la app: instálala, toca «Es mi primera vez» y escribe tu correo (%3$s) y este código: %4$s\n\nEl código vence el %5$s.</string>
+    <string name="invite_message_no_link">Hola %1$s, la estancia La Oruga te invita a Codea.\n\nPara crear tu cuenta: instala la app, toca «Es mi primera vez» y escribe tu correo (%2$s) y este código: %3$s\n\nEl código vence el %4$s.</string>
 </resources>

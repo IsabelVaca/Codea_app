@@ -30,7 +30,44 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- el enlace de invitación que el admin manda por WhatsApp: abre la app con el correo y el código puestos.
+                 solo prellena el formulario de "Activar mi cuenta"; no hace nada más. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="https"
+                    android:host="${inviteHost}"
+                    android:pathPrefix="/invitar" />
+            </intent-filter>
+
+            <!-- el mismo enlace con esquema propio: lo usa el botón "Abrir en la app" de la página del enlace. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="codea"
+                    android:host="invitar" />
+            </intent-filter>
         </activity>
+
+        <!-- la cámara del chat escribe la foto aquí (carpeta cache/chat) para que la lea nuestra app. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 
 </manifest>

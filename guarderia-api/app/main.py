@@ -16,6 +16,7 @@ from .core.storage import get_storage
 from .modules.admins.router import router as admins
 from .modules.audit.router import router as audit
 from .modules.attendance.router import router as attendance
+from .modules.auth import invite_page
 from .modules.auth.router import router as auth
 from .modules.children.router import router as children
 from .modules.classrooms.router import router as classrooms
@@ -79,7 +80,12 @@ async def security_headers(request: Request, call_next):
     headers["Referrer-Policy"] = "no-referrer"
     headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
     path = request.url.path
-    if not path.startswith(_DOC_PATHS):
+    if path == "/invitar":
+        # la página del enlace de invitación solo lleva estilos propios en la misma página; nada de scripts.
+        headers["Content-Security-Policy"] = (
+            "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+        )
+    elif not path.startswith(_DOC_PATHS):
         headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'"
     if path.startswith("/api/"):
         # son datos de menores y tokens: nada de guardarlos en cachés del camino.
@@ -129,3 +135,5 @@ for router in (
     api.include_router(router)
 
 app.include_router(api)
+# fuera de /api/v1: son direcciones que abre una persona o Android, no la app con su token.
+app.include_router(invite_page.router)

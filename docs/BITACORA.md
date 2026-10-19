@@ -189,8 +189,26 @@ Propuesta y decisiones en [`plan/06-mi-sala-propuesta.md`](plan/06-mi-sala-propu
 - **App docente:** tarjeta «Pase de salida» en Mi día al terminar todos los momentos; `DeparturePassScreen` con «Registrar salida», «Corregir» y «Finalizar día»; `DayFinishedScreen` cuando el turno terminó. La ficha del niño muestra lo que escribió la familia.
 - **Decisiones mías, por confirmar:** los tutores salen siempre como opción en el pase (si no, un niño sin personas autorizadas bloquearía «Finalizar día»); solo salen los niños con pase de lista; la hora la pone el servidor; el pase necesita conexión.
 - **Verificado:** compila, 106 pruebas JVM en verde (14 nuevas) y el APK de debug se arma. **No se probó en el teléfono.**
-- **Pendiente:** aplicar `a07c3d8e6f76` en Aiven (necesita aprobación), probar los tres flujos en el teléfono, y que la familia vea la hora de salida de su hijo.
+- **Pendiente:** aplicar `a07c3d8e6f76` en Aiven, después de `a96b2c7d5f65` de main (necesita aprobación), probar los tres flujos en el teléfono, y que la familia vea la hora de salida de su hijo.
 - **Ajustes posteriores (misma noche):** el pase de salida pasó a ser el último paso de la rutina en Mi día (fila gris con candado y, al terminar, tarjeta violeta «SIGUIENTE PASO» a la que la pantalla baja sola) y, con la rutina terminada, ya no queda ningún momento seleccionado con el botón de reporte. Centro del admin ya no muestra «Fotos que piden borrar»; su pantalla y endpoints quedan sin forma de llegar a ellos. Visto en el emulador; sin registrar salidas de punta a punta.
 - **«Mi hijo» sin documentos:** se quitó la subida de documentos de la pestaña (`RequestedDocument`, el selector de archivos y las llamadas del padre). La API de documentos (`GET` y `PUT /children/{id}/documents`) sigue en el backend sin pantalla; el CRF-02 y los manuales de `docs/entrega/` que mencionen documentos del padre hay que revisarlos.
 - **Chats de la docente:** la bandeja y el encabezado de la conversación muestran al niño y a sus tutores (`GET /conversations` ahora trae `child.guardians[]`; `ChatRules.guardiansLabel`). 309 pruebas de la API y 109 JVM en verde. Sin verlo en pantalla. Con el seed, solo Mateo Iglesias y Valentina Ruiz tienen tutor registrado; en los demás chats la línea no aparece.
 
+## 2026-10-18 · Limpieza visual, propuesta 1: un solo encabezado
+
+- Había cuatro encabezados distintos: título pequeño en las pestañas del admin; sobretítulo y título grande en las de la docente y el padre; flecha sin círculo en Horario y Rutinas; y nada (sin botón de volver) en Detalle de rutina, Nueva rutina, Catálogo, Orden y Agregar momento.
+- Ahora las pestañas del admin (Centro, Docentes, Familias, Ajustes) y la bandeja de Chats usan `ScreenHeader`; las ocho pantallas internas del admin que dibujaban su flecha a mano, Horario, la lista de Rutinas y las cinco de rutinas usan `BackHeader`. El detalle de sala, docente, infante y padre ganó el espaciado de las demás.
+- Sin cambios de función. Compila y pasan las 77 pruebas JVM; se revisó en el emulador con el admin y la docente.
+- Siguen las propuestas 2 a 7 de la presentación de limpieza visual (color, botones, filas, vacíos, modo oscuro y detalles).
+
+
+## 2026-10-18 · Invitación por enlace de WhatsApp (rama `invitacion-whatsapp`)
+
+Sin correos ni SMTP: el admin manda la invitación por WhatsApp y el padre solo crea su contraseña. Quien no está dado de alta no tiene código y no puede crear cuenta. La prueba de identidad es que solo esa persona recibió el enlace (la misma seguridad del código de acceso, que ya tiene límite de intentos y auditoría).
+
+- **Admin (app):** el diálogo del código ahora tiene **«Enviar por WhatsApp»**: abre el chat con el teléfono de la persona (10 dígitos = México, `52`) y el mensaje escrito (enlace y, por si no abre la app, el correo y el código). Sin teléfono válido o sin WhatsApp cae al selector de compartir. `Invite.whatsAppUrl` y `Invite.whatsAppPhone` (Kotlin puro, con pruebas).
+- **Padre (app):** `Invite.parseLink` lee `https://<servidor>/invitar?email=&code=` y `codea://invitar?…`; `MainActivity` lo recibe (también con la app abierta), `CodeaApp` salta el login y deja «Activar mi cuenta» con correo y código puestos. Con la sesión abierta lo descarta y avisa. El manifiesto tiene el filtro https (`INVITE_HOST`, con `autoVerify`) y el de `codea://`.
+- **API:** `access_code.link` (con `PUBLIC_BASE_URL`), página `GET /invitar` (solo lee, nunca gasta el código; escapa y valida lo que refleja; CSP propia) y `GET /.well-known/assetlinks.json` (`ANDROID_CERT_SHA256`). Ambas son públicas y están en la matriz de acceso. Sin migración.
+- **Verificado:** 299 pruebas de la API (siete nuevas en `tests/test_invitations.py`) y 102 JVM de la app, en verde; la app compila e instala.
+- **Sin probar en el teléfono** (se bloqueó la pantalla): el enlace con la sesión abierta, el prefill de «Activar mi cuenta» (se puede probar con `adb shell am start -a android.intent.action.VIEW -d "codea://invitar?email=…&code=…" mx.tec.codea` con la sesión cerrada), el botón «Enviar por WhatsApp» y el flujo completo.
+- **Falta para que el enlace https abra la app:** una URL pública con HTTPS que llegue a la API (`PUBLIC_BASE_URL`; para la demostración basta un túnel), la huella del certificado (`ANDROID_CERT_SHA256`) y el mismo dominio en la app (`-PinviteHost=` o `INVITE_HOST` en `local.properties`). Sin eso el mensaje solo lleva el código escrito y funciona igual a mano.

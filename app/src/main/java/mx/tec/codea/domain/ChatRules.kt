@@ -36,5 +36,13 @@ object ChatRules {
     // a new message from the other person means we have to mark the chat as read again.
     fun hasIncoming(messages: List<ChatMessage>): Boolean = messages.any { !it.isMine }
 
-    fun canSend(text: String): Boolean = text.isNotBlank()
+    // a message needs text, a photo, or both.
+    fun canSend(text: String, hasPhoto: Boolean = false): Boolean = hasPhoto || text.isNotBlank()
+
+    // what the inbox shows as the last message when it is only a photo.
+    fun preview(text: String, hasPhoto: Boolean): String? = when {
+        text.isNotBlank() -> text
+        hasPhoto -> "Foto"
+        else -> null
+    }
 }

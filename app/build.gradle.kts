@@ -36,6 +36,17 @@ android {
                 ?.substringAfter("=")
             ?: "http://10.0.2.2:8000/api/v1/"
         buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
+
+        // el dominio https de los enlaces de invitación (el de PUBLIC_BASE_URL de la API), para que Android abra la app
+        // directo al tocarlos. orden: -PinviteHost=..., INVITE_HOST en local.properties, o un dominio que no existe
+        // (así el filtro no atrapa ningún enlace real y solo funciona el esquema codea://).
+        val inviteHost = providers.gradleProperty("inviteHost").orNull
+            ?: localProperties.lineSequence()
+                .map { it.trim() }
+                .firstOrNull { it.startsWith("INVITE_HOST=") }
+                ?.substringAfter("=")
+            ?: "invitaciones.codea.invalid"
+        manifestPlaceholders["inviteHost"] = inviteHost
     }
 
     buildTypes {

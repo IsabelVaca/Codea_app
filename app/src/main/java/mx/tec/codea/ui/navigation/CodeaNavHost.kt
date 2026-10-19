@@ -25,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -126,6 +127,7 @@ import mx.tec.codea.ui.state.ParentViewModel
 import mx.tec.codea.ui.state.ReportFormViewModel
 import mx.tec.codea.ui.state.RutinasAdminViewModel
 import mx.tec.codea.ui.state.SalasAdminViewModel
+import mx.tec.codea.ui.components.BackHeader
 
 // the nav host is like a map of the app: it connects each route to its screen.
 // here we also connect each screen to its state: the screens are "dumb",
@@ -1022,13 +1024,11 @@ fun CodeaNavHost(
                 // la lista de rutinas ya no es una pestaña: lleva su título y su botón de volver.
                 Scaffold(
                     topBar = {
-                        TopAppBar(
-                            title = { Text("Rutinas", fontWeight = FontWeight.Bold) },
-                            navigationIcon = {
-                                IconButton(onClick = { navController.popBackStack() }) {
-                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
-                                }
-                            },
+                        BackHeader(
+                            overline = "Ajustes",
+                            title = "Rutinas",
+                            onBackClick = { navController.popBackStack() },
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
                         )
                     },
                 ) { paddingValues ->
@@ -1048,6 +1048,7 @@ fun CodeaNavHost(
                 val momentosPorRutina by rutinasViewModel.momentos.collectAsState()
                 val salas by salasViewModel.salas.collectAsState()
                 RutinaDetalleScreen(
+                    onBack = { navController.popBackStack() },
                     nombreRutina = rutina.nombre,
                     momentos = momentosPorRutina[rutina.id].orEmpty(),
                     onReordenar = { from, to -> rutinasViewModel.reordenar(rutina.id, from, to) },
@@ -1075,6 +1076,7 @@ fun CodeaNavHost(
                     rutinasViewModel.catalogoDisponible(route.rutinaId)
                 }
                 AgregarMomentoScreen(
+                    onBack = { navController.popBackStack() },
                     catalogo = catalogo,
                     elegido = uiState.elegido,
                     onElegir = agregarMomentoViewModel::onElegir,
@@ -1100,6 +1102,7 @@ fun CodeaNavHost(
                 val form: NuevaRutinaViewModel = viewModel(backStackEntry)
                 val uiState = form.uiState
                 NuevaRutinaScreen(
+                    onBack = { navController.popBackStack() },
                     nombre = uiState.nombre,
                     onNombreChange = form::onNombreChange,
                     etapa = uiState.etapa,
@@ -1111,6 +1114,7 @@ fun CodeaNavHost(
                 val form = nuevaRutinaForm(navController, backStackEntry)
                 val uiState = form.uiState
                 CatalogoMomentosScreen(
+                    onBack = { navController.popBackStack() },
                     catalogo = form.catalogoCompleto(),
                     seleccionados = uiState.seleccionados,
                     onAlternar = form::onAlternar,
@@ -1127,6 +1131,7 @@ fun CodeaNavHost(
             composable<RutinasAdminOrdenRoute> { backStackEntry ->
                 val form = nuevaRutinaForm(navController, backStackEntry)
                 OrdenRutinaScreen(
+                    onBack = { navController.popBackStack() },
                     momentos = form.momentosFinal(),
                     onReordenar = form::reordenarMomentos,
                     onGuardar = {
@@ -1206,6 +1211,7 @@ private fun ChatTab(
         onBackClick = onBackClick,
         onSend = chatViewModel::send,
         onRetry = chatViewModel::retry,
+        onSendPhoto = chatViewModel::sendPhoto,
     )
 }
 

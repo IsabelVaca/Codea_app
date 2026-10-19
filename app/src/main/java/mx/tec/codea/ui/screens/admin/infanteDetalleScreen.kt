@@ -37,6 +37,7 @@ import mx.tec.codea.domain.Padre
 import mx.tec.codea.ui.theme.AvatarBg
 import mx.tec.codea.ui.theme.AvatarFg
 import mx.tec.codea.ui.theme.CodeaTheme
+import mx.tec.codea.ui.components.BackHeader
 
 @Composable
 fun InfanteDetalleScreen(
@@ -54,27 +55,12 @@ fun InfanteDetalleScreen(
             .background(Color(0xFFFFFDFA))
             .padding(horizontal = 22.dp)
     ) {
-        // Barra superior
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(vertical = 14.dp)
-        ) {
-            IconButton(
-                onClick = onBack,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(999.dp))
-                    .background(Color(red = 244, green = 241, blue = 250))
-            ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás", tint = Color(0xFF2A2140))
-            }
-            Text(
-                text = infante.nombre,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF2A2140),
-                modifier = Modifier.padding(start = 4.dp)
-            )
-        }
+        BackHeader(
+            overline = "Familias",
+            title = infante.nombre,
+            onBackClick = onBack,
+            modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
+        )
 
         Column(
             verticalArrangement = Arrangement.spacedBy(14.dp),

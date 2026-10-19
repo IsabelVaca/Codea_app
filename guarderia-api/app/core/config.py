@@ -37,6 +37,12 @@ class Settings(BaseSettings):
 
     # días que dura una invitación antes de que haya que reenviarla.
     invitation_days: int = 7
+    # la dirección pública de la API (https://...), sin barra final. Con ella el código de acceso trae un enlace
+    # que abre la app con el correo y el código puestos. Vacío = sin enlace: el admin solo comparte el código.
+    public_base_url: str = ""
+    # huella(s) SHA-256 del certificado con que se firma la app (separadas por coma), para que Android verifique
+    # el enlace y lo abra directo en la app. Vacío = sin verificar: el botón de la página del enlace sigue sirviendo.
+    android_cert_sha256: str = ""
     # correo del primer administrador que crea el seed.
     seed_admin_email: str = "admin@oruga.test"
 

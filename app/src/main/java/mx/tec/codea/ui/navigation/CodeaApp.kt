@@ -31,6 +31,7 @@ import mx.tec.codea.data.DataEvents
 import mx.tec.codea.data.SessionRepository
 import mx.tec.codea.data.SessionState
 import mx.tec.codea.data.api.ApiConfig
+import mx.tec.codea.domain.InviteLink
 import mx.tec.codea.domain.Session
 import mx.tec.codea.ui.components.CodeaBottomBar
 import mx.tec.codea.ui.screens.auth.ActivateAccountScreen
@@ -46,7 +47,12 @@ import mx.tec.codea.ui.state.SessionViewModel
 //   Anonymous -> login / activate account
 //   Active    -> the app of the role (the scaffold, the bottom bar and the nav host)
 @Composable
-fun CodeaApp(modifier: Modifier = Modifier) {
+fun CodeaApp(
+    modifier: Modifier = Modifier,
+    // el enlace de invitación con el que se abrió la app: precarga "Activar mi cuenta". null si no se abrió con uno.
+    inviteLink: InviteLink? = null,
+    onInviteUsed: () -> Unit = {},
+) {
     val container = (LocalContext.current.applicationContext as CodeaApplication).container
     val sessionViewModel: SessionViewModel = viewModel(factory = SessionViewModel.Factory(container.sessionRepository))
     val state by sessionViewModel.state.collectAsState()
@@ -63,9 +69,25 @@ fun CodeaApp(modifier: Modifier = Modifier) {
 
         SessionState.Anonymous -> {
             var activating by rememberSaveable { mutableStateOf(false) }
+            // con un enlace de invitación se salta el login y se llega a "Activar mi cuenta" con todo puesto.
+            // el enlace se gasta en cuanto se lee: lo que trae se guarda aquí, para que sobreviva a girar la pantalla
+            // y para que, ya con la sesión abierta, no quede un enlace pendiente.
+            var prefillEmail by rememberSaveable { mutableStateOf("") }
+            var prefillCode by rememberSaveable { mutableStateOf("") }
+            LaunchedEffect(inviteLink) {
+                if (inviteLink != null) {
+                    prefillEmail = inviteLink.email
+                    prefillCode = inviteLink.code
+                    sessionViewModel.clearError()
+                    activating = true
+                    onInviteUsed()
+                }
+            }
             if (activating) {
                 ActivateAccountScreen(
                     form = form,
+                    initialEmail = prefillEmail,
+                    initialCode = prefillCode,
                     onActivate = sessionViewModel::activate,
                     onGoToLogin = {
                         sessionViewModel.clearError()
@@ -87,6 +109,13 @@ fun CodeaApp(modifier: Modifier = Modifier) {
         }
 
         is SessionState.Active -> {
+            // con la sesión abierta un enlace de invitación no sirve: se descarta y se avisa.
+            LaunchedEffect(inviteLink) {
+                if (inviteLink != null) {
+                    DataEvents.notice("Ya tienes una sesión abierta. Cierra sesión para activar otra cuenta.")
+                    onInviteUsed()
+                }
+            }
             // cada sesión tiene su propio almacén de ViewModels: sobrevive a girar la pantalla y se borra al salir.
             val owner = sessionScopes.ownerFor(current.session.userId)
             CompositionLocalProvider(LocalViewModelStoreOwner provides owner) {

@@ -45,7 +45,9 @@ La contraseña lleva de 9 a 128 caracteres y no puede ser el correo (RNF01: "may
 
 ### Códigos de acceso (invitaciones)
 
-Nadie entra solo por saber un correo. Al dar de alta a una docente (`POST /teachers`), a un tutor (`POST /children`) o a un padre (`POST /parents`), la respuesta trae `access_code`: un código `XXXX-XXXX` que **se muestra una sola vez** (en la base queda su hash) y dura 7 días. El administrador se lo comparte a la persona, que lo usa en `POST /auth/activate` junto con su correo y la contraseña que elija. Con eso queda con sesión iniciada.
+Nadie entra solo por saber un correo. Al dar de alta a una docente (`POST /teachers`), a un tutor (`POST /children`) o a un padre (`POST /parents`), la respuesta trae `access_code`: un código `XXXX-XXXX` que **se muestra una sola vez** (en la base queda su hash) y dura 7 días. El administrador se lo manda a la persona (la app tiene el botón **Enviar por WhatsApp**), que lo usa en `POST /auth/activate` junto con su correo y la contraseña que elija. Con eso queda con sesión iniciada.
+
+Si `PUBLIC_BASE_URL` está configurada, la respuesta trae además `access_code.link` (`https://<servidor>/invitar?email=…&code=…`): al tocarlo, la app se abre con el correo y el código puestos y solo falta la contraseña. La página `/invitar` solo lee: no gasta el código. Ver [`auth`](app/modules/auth/README.md).
 
 - **Otro código:** `POST /users/{id}/access-code` (admin). Si la persona nunca entró es de tipo `INVITATION`; si ya entró, `PASSWORD_RESET` (olvidó su contraseña): al usarlo se cierran sus sesiones anteriores. Un código nuevo deja sin vigencia a los anteriores.
 - **Cambiar la contraseña:** `POST /me/password`. Cierra todas las sesiones y devuelve tokens nuevos para la actual. `DELETE /me/sessions` cierra todas las sesiones.

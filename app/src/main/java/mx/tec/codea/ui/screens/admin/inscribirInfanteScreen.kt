@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import mx.tec.codea.domain.InfanteError
 import mx.tec.codea.ui.theme.CodeaTheme
 import mx.tec.codea.ui.theme.Poppins
+import mx.tec.codea.ui.components.BackHeader
 
 data class SalaOpcion(val nombre: String, val activo: Boolean)
 
@@ -64,26 +65,11 @@ fun InscribirInfanteScreen(
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Flecha para regresar a "Infantes"
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(
-                onClick = onBack,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(999.dp))
-                    .background(Color(0xFFF4F1FB))
-            ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás", tint = Color(0xFF2A2140))
-            }
-
-            Text(
-                text = "Inscribir a un infante",
-                fontFamily = Poppins,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF2A2140),
-                modifier = Modifier.padding(start = 4.dp)
-            )
-        }
+        BackHeader(
+            overline = "Familias",
+            title = "Inscribir a un infante",
+            onBackClick = onBack,
+        )
 
 
         // Encabezado

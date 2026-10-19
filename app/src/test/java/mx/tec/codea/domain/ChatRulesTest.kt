@@ -73,4 +73,18 @@ class ChatRulesTest {
         assertNull(ChatRules.guardiansLabel(emptyList()))
         assertNull(ChatRules.guardiansLabel(listOf(ChatGuardian("  ", "Mamá"))))
     }
+
+    @Test
+    fun canSend_aPhotoWithoutTextIsEnough() {
+        assertFalse(ChatRules.canSend("  "))
+        assertTrue(ChatRules.canSend("  ", hasPhoto = true))
+        assertTrue(ChatRules.canSend("hola"))
+    }
+
+    @Test
+    fun preview_showsFotoWhenThereIsOnlyAPhoto() {
+        assertEquals("hola", ChatRules.preview("hola", hasPhoto = true))
+        assertEquals("Foto", ChatRules.preview("", hasPhoto = true))
+        assertNull(ChatRules.preview("", hasPhoto = false))
+    }
 }
