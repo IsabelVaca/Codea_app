@@ -83,10 +83,6 @@ data object CheckerRoute
 @Serializable
 data object CheckInDoneRoute
 
-// an option of the menu that is not built yet. we send the enum name as text.
-@Serializable
-data class MenuOptionRoute(val optionName: String)
-
 // la lista de avisos de la fundación que ve la asistente (opción "Avisos" del menú).
 @Serializable
 data object AvisosFundacionRoute

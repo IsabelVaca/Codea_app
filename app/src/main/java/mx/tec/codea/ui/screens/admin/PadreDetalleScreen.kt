@@ -40,7 +40,6 @@ fun PadreDetalleScreen(
     hijosNombres: List<String>,
     onToggleAcceso: () -> Unit,
     onReenviarInvitacion: () -> Unit,
-    onAbrirChat: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -125,7 +124,6 @@ fun PadreDetalleScreen(
                     BotonAccionPadre("Reactivar su acceso a la app", Color(0xFFE8FBF6), Color(0xFF0F7A6C), onToggleAcceso)
                 }
                 BotonAccionPadre("Reenviar invitación", Color(0xFFF4F1FB), Color(0xFF4A4066), onReenviarInvitacion)
-                BotonAccionPadre("Abrir chat", Color(0xFFEFE9FF), Color(0xFF5B3FE0), onAbrirChat)
             }
         }
     }

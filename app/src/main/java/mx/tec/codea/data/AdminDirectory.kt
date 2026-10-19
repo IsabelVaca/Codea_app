@@ -2,7 +2,6 @@ package mx.tec.codea.data
 
 import mx.tec.codea.data.api.ApiClient
 import mx.tec.codea.data.api.ClassroomDto
-import mx.tec.codea.data.api.ShiftDto
 import mx.tec.codea.data.api.TeacherDto
 
 // la app habla con nombres (sala "Maternal", asistente "Paola Sánchez") y la API con ids.
@@ -12,7 +11,6 @@ object AdminDirectory {
 
     private var classrooms: List<ClassroomDto> = emptyList()
     private var teachers: List<TeacherDto> = emptyList()
-    private var shifts: List<ShiftDto> = emptyList()
 
     fun rememberClassrooms(list: List<ClassroomDto>) {
         classrooms = list
@@ -38,14 +36,5 @@ object AdminDirectory {
         teachers = ApiClient.api.teachers()
         return teachers.firstOrNull { it.fullName == fullName }?.id
             ?: throw IllegalStateException("No se encontró a \"$fullName\"")
-    }
-
-    // "Matutino" / "Vespertino". vacío = sin turno.
-    suspend fun shiftId(name: String): Int? {
-        if (name.isBlank()) return null
-        shifts.firstOrNull { it.name == name }?.let { return it.id }
-        shifts = ApiClient.api.shifts()
-        return shifts.firstOrNull { it.name == name }?.id
-            ?: throw IllegalStateException("No se encontró el turno \"$name\"")
     }
 }

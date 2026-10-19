@@ -2,7 +2,7 @@
 
 Estado a **2026-10-18**, rama `integracion`, commit `22c0008`. Está escrito a partir de [`docs/plan/01-app-pantallas.md`](../plan/01-app-pantallas.md), de los textos de la app (`app/src/main/res/values/strings.xml`), de los archivos de `app/src/main/java/mx/tec/codea/ui/screens/` y del recorrido en teléfono físico de [`RECORRIDO.md`](../RECORRIDO.md). **No se ejecutó la app para escribirlo**: si una pantalla cambió después, manda lo que se vea en el teléfono.
 
-Lo que todavía no existe se marca como **«Próximamente»** (la propia app muestra «Muy pronto» en lo que no está construido) o como **«No disponible hoy»** cuando ni siquiera hay una pantalla que lo anuncie.
+Lo que todavía no existe se marca como **«Próximamente»** o como **«No disponible hoy»** cuando ni siquiera hay una pantalla que lo anuncie.
 
 Codea es la aplicación de la estancia infantil **La Oruga** para llevar el día de los niños y comunicar al centro, a las docentes y a las familias. Tiene **tres perfiles**: administrador, docente y padre o tutor. Cada persona entra con su correo y su contraseña y ve únicamente las pantallas de su perfil.
 
@@ -64,7 +64,6 @@ Editar tu nombre, teléfono o foto: **Próximamente**.
 | «Tu acceso a la app está desactivado» | La dirección te dio de baja. Habla con ella |
 | «Demasiados intentos; espera unos minutos» | Espera unos 15 minutos |
 | La app te regresa a «Inicia sesión» sola | Tu sesión terminó (cambio de contraseña, baja o más de 7 días). Entra de nuevo |
-| «Muy pronto» con un candado | Esa sección no está construida |
 
 ---
 
@@ -142,7 +141,6 @@ La **bandeja** lista una conversación por niño (familia de …), con no leído
 |---|---|
 | Tu tarjeta | Nombre, turno y si ya registraste entrada |
 | **Checador** | Abre el checador (entrada, y después salida; si no la registras, se cierra sola a las 9 pm). Su tarjeta muestra la entrada y, si ya la hay, la salida |
-| **Mis documentos** (contrato, constancias) | **Próximamente.** Abre «Muy pronto» |
 | **Mi perfil** | Abre Mi cuenta (ver 1.4) |
 | **Avisos de la fundación** | Lista los avisos del centro y de tu sala, en «Nuevos» y «Anteriores». Muestra un contador de nuevos |
 | **Cerrar sesión** | Pide confirmación |
@@ -165,7 +163,7 @@ Barra inferior: **Centro · Docentes · Familias · Ajustes**.
 ### 3.2 Docentes
 
 1. Lista de docentes con sala, hora de checada del día y número de niños.
-2. **«+ Dar de alta a una asistente»:** nombre, teléfono de contacto, correo electrónico, sala y turno (Matutino o Vespertino).
+2. **«+ Dar de alta a una asistente»:** nombre, teléfono de contacto, correo electrónico, y sala. El turno ya no se pide: la entrada y la salida son las del centro (Ajustes → Horario).
 3. La app muestra un **código de acceso** en una ventana: **solo se ve ahora**. Toca **«Compartir»** (WhatsApp, en persona…) y **«Listo»**. La persona lo usa en «Activar mi cuenta». La app **no manda correos**.
 4. **Detalle de una docente:** cambiar de sala, **dar de baja** (le corta el acceso al instante) o **reactivar**.
 
@@ -186,7 +184,6 @@ Corregir el nombre, la fecha de nacimiento o las alergias de un infante ya inscr
 1. Lista de padres y tutores («familias con acceso a la app»).
 2. **«+ Inscribir a un padre o tutor»:** nombre, teléfono de contacto, correo electrónico, parentesco (Mamá, Papá, Tutor o Tutora) y uno o más hijos que ya estén inscritos. Se muestra su código de acceso.
 3. **Detalle:** **quitar o devolver el acceso**, y **«Reenviar invitación»**, que genera un **código nuevo** y lo muestra.
-4. El botón **«Abrir chat»** del detalle apunta a la pestaña Chats, que el administrador no tiene: **no funciona para este perfil** (según la lectura del código; no se probó).
 
 ### 3.4 Ajustes
 

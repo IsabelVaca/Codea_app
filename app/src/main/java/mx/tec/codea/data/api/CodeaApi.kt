@@ -63,9 +63,6 @@ interface CodeaApi {
     @GET("teachers")
     suspend fun teachers(): List<TeacherDto>
 
-    @GET("shifts")
-    suspend fun shifts(): List<ShiftDto>
-
     @POST("teachers")
     suspend fun createTeacher(@Body body: TeacherCreateBody): TeacherDto
 

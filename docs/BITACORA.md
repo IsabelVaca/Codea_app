@@ -170,3 +170,13 @@ Propuesta y decisiones en [`plan/06-mi-sala-propuesta.md`](plan/06-mi-sala-propu
 - **Sin probar en el teléfono:** «Ya lo vi» (se dejó el aviso de prueba sin tocar), «Marcar a todos presentes», «Avisos de casa» (solo aparece con más de tres avisos), el recuadro de alergias (Diego no tiene), la caché sin conexión con los campos nuevos, y todo en modo oscuro.
 - **Resumen guiado (después):** botón «Capturar resúmenes (N)» en Mi sala, solo si hay niños presentes sin resumen. Abre el resumen del primero («Resumen 1 de N») y al guardar pasa solo al siguiente; «Saltar este niño» o «Terminar sin guardar» avanzan sin guardar. La cola se arma al tocar el botón (`RoomRules.pendingSummaries`) y viaja en la ruta (`ResumenDelDiaRoute.pending` y `total`). Probado en el teléfono con un niño en la cola (se marcó presente a Renata y se regresó a falta); sin probar con varios niños seguidos.
 - **Para correr la app en un teléfono físico** hay que compilar con `-PapiBaseUrl=http://localhost:8000/api/v1/` (o ponerlo en `local.properties`) y activar `adb reverse tcp:8000 tcp:8000` y `tcp:9000`; sin eso la build apunta a `10.0.2.2` (emulador).
+## 2026-10-18 · Limpieza de la app (candidatos 1 a 5)
+
+- **1. Cinco pantallas sin uso:** `checadorScreen.kt`, `miDiaScreen.kt`, `miDiaEnCursoScreen.kt`, `confirmarMomentoScreen.kt` y `ajustarRutinaScreen.kt` (1,010 líneas). Ninguna se abría desde la app; solo existían sus `@Preview`.
+- **2. Siete repositorios de ejemplo:** `ChildRepository`, `DocenteRepository`, `InfanteRepository`, `PadreRepository`, `RoutineRepository`, `SalaRepository` y `TeacherRepository` (263 líneas). Se borraron también las nueve vistas previas que los usaban; `RoutineRulesTest` trae ahora su propio dato de ejemplo.
+- **3. «Mis documentos»:** se quita del Menú de la docente, junto con `ComingSoonScreen`, `MenuOptionRoute` y sus textos.
+- **4. Turno en el alta de la docente:** se quita el campo y la llamada `GET /shifts` de la app; la app ya no manda `shift_id` (la API lo sigue aceptando como opcional).
+- **5. «Abrir chat» del administrador:** se quita el botón del detalle del padre, que llevaba a una pantalla que no terminaba de cargar.
+- Quedan para decidir: el 6 (arrastrar para ordenar rutinas, librería `reorderable`) y el 7 (avisos a coordinación en el servidor).
+- Compila y las 77 pruebas JVM pasan.
+

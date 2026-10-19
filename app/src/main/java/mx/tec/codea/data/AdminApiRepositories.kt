@@ -36,7 +36,7 @@ class DocenteApiRepository {
         return lista.map { it.toDocente() }.sortedBy { it.nombre }
     }
 
-    suspend fun alta(nombre: String, apellido: String, telefono: String, correo: String, sala: String, turno: String) {
+    suspend fun alta(nombre: String, apellido: String, telefono: String, correo: String, sala: String) {
         val creada = api.createTeacher(
             TeacherCreateBody(
                 name = nombre.trim(),
@@ -44,7 +44,6 @@ class DocenteApiRepository {
                 phone = telefono.trim(),
                 email = correo.trim(),
                 classroomId = AdminDirectory.classroomId(sala),
-                shiftId = AdminDirectory.shiftId(turno),
             )
         )
         // la API da el código de acceso una sola vez: el admin lo comparte para que la docente active su cuenta.

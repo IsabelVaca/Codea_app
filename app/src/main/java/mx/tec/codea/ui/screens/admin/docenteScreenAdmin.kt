@@ -34,8 +34,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import mx.tec.codea.data.DocenteRepository
-import mx.tec.codea.data.InfanteRepository
 import mx.tec.codea.domain.Docente
 import mx.tec.codea.domain.Infante
 import androidx.compose.ui.draw.shadow
@@ -243,13 +241,5 @@ fun DarDeAltaAsistenteButton(
             fontFamily = Poppins,
             fontWeight = FontWeight.Bold
         )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DocenteScreenPreview() {
-    CodeaTheme {
-        DocenteScreen(docentes = DocenteRepository().getAll(), infantes = InfanteRepository().getAll(), totalSalas = 3)
     }
 }

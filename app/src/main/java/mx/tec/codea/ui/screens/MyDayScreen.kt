@@ -34,7 +34,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import mx.tec.codea.R
-import mx.tec.codea.data.RoutineRepository
 import mx.tec.codea.domain.Routine
 import mx.tec.codea.domain.RoutineRules
 import mx.tec.codea.domain.Subprocess
@@ -417,20 +416,4 @@ private fun Pill(text: String, containerColor: Color, contentColor: Color) {
             .background(containerColor, CircleShape)
             .padding(horizontal = 11.dp, vertical = 6.dp),
     )
-}
-
-@Preview(showBackground = true, heightDp = 900)
-@Composable
-private fun MyDayScreenPreview() {
-    CodeaTheme {
-        MyDayScreen(
-            routine = RoutineRepository().getToday(),
-            selectedSubprocessNumber = 4,
-            // fake data: it is only the drawing.
-            reportCountOf = { number -> if (number == 3) 2 else 0 },
-            onSubprocessClick = {},
-            onMakeReportClick = {},
-            onConfirmSubprocessClick = {},
-        )
-    }
 }

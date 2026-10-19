@@ -262,8 +262,6 @@
     <string name="menu_checker_subtitle">Entrada y salida del turno</string>
     <string name="menu_checker_subtitle_done">Entrada %1$s · falta registrar tu salida</string>
     <string name="menu_checker_subtitle_out">Entrada %1$s · Salida %2$s</string>
-    <string name="menu_documents_title">Mis documentos</string>
-    <string name="menu_documents_subtitle">Contrato, constancias</string>
     <string name="menu_profile_title">Mi perfil</string>
     <string name="menu_profile_subtitle">Datos y foto</string>
     <string name="menu_notices_title">Avisos de la fundación</string>
@@ -327,8 +325,6 @@
     <string name="parent_documents_remove_authorized">(eliminar)</string>
 
     <!-- coming soon screen -->
-    <string name="coming_soon_title">Muy pronto</string>
-    <string name="coming_soon_subtitle">Esta sección todavía está en construcción.</string>
 
     <!-- entrar: arranque, iniciar sesión, activar cuenta y mi cuenta -->
     <string name="auth_loading">Abriendo Codea…</string>

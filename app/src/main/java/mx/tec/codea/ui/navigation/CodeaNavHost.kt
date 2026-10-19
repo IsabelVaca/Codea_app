@@ -56,7 +56,6 @@ import mx.tec.codea.ui.components.rememberTakePhoto
 import mx.tec.codea.ui.screens.ChatsScreen
 import mx.tec.codea.ui.screens.CheckInDoneScreen
 import mx.tec.codea.ui.screens.CheckerScreen
-import mx.tec.codea.ui.screens.ComingSoonScreen
 import mx.tec.codea.ui.screens.DayNotStartedScreen
 import mx.tec.codea.ui.screens.MenuOption
 import mx.tec.codea.ui.screens.AvisosFundacionScreen
@@ -429,8 +428,6 @@ fun CodeaNavHost(
                             navController.navigate(AvisosFundacionRoute)
                         } else if (option == MenuOption.PROFILE) {
                             navController.navigate(AccountRoute)
-                        } else {
-                            navController.navigate(MenuOptionRoute(option.name))
                         }
                     },
                     // cerrar sesión de verdad: CodeaApp ve que la sesión terminó y dibuja el inicio de sesión.
@@ -483,13 +480,6 @@ fun CodeaNavHost(
                 val avisos by avisosViewModel.avisos.collectAsState()
                 AvisosFundacionScreen(
                     avisos = avisos,
-                    onBackClick = { navController.popBackStack() },
-                )
-            }
-            composable<MenuOptionRoute> { backStackEntry ->
-                val option = MenuOption.valueOf(backStackEntry.toRoute<MenuOptionRoute>().optionName)
-                ComingSoonScreen(
-                    title = stringResource(option.titleRes),
                     onBackClick = { navController.popBackStack() },
                 )
             }
@@ -674,7 +664,6 @@ fun CodeaNavHost(
                     correoError = uiState.correoError,
                     salas = salas,
                     onElegirSala = altaAsistenteViewModel::onElegirSala,
-                    turno = uiState.turno, onElegirTurno = altaAsistenteViewModel::onElegirTurno,
                     canGuardar = uiState.canGuardar,
                     onGuardar = {
                         docentesViewModel.altaDocente(
@@ -683,7 +672,6 @@ fun CodeaNavHost(
                             sala = uiState.salaElegida ?: "",
                             telefono = uiState.telefono,
                             correo = uiState.correo,
-                            turno = uiState.turno,
                             onSuccess = {
                                 coroutineScope.launch {
                                     snackbarHostState.showSnackbar("Asistente \"${uiState.nombre}\" dada de alta")
@@ -795,7 +783,6 @@ fun CodeaNavHost(
                             }
                         })
                     },
-                    onAbrirChat = { navController.navigateToTopLevel(TopLevelDestination.CHATS) },
                     onBack = { navController.popBackStack() },
                 )
             }
