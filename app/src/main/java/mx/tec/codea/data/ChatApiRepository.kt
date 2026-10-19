@@ -6,6 +6,7 @@ import mx.tec.codea.data.api.ConversationDto
 import mx.tec.codea.data.api.MessageBody
 import mx.tec.codea.data.api.MessageDto
 import mx.tec.codea.domain.ChatMessage
+import mx.tec.codea.domain.ChatGuardian
 import mx.tec.codea.domain.ChatRules
 import mx.tec.codea.domain.Conversation
 
@@ -57,4 +58,5 @@ private fun ConversationDto.toConversation() = Conversation(
     unreadCount = unreadCount,
     lastText = lastMessage?.let { ChatRules.preview(it.text, it.mediaUrl != null) },
     lastTime = lastMessage?.createdAt?.let { clockOf(it) },
+    guardians = child.guardians.map { ChatGuardian(it.fullName, parentesco(it.relationship)) },
 )

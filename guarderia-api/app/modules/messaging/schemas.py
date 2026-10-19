@@ -4,6 +4,7 @@ from datetime import date, datetime
 from pydantic import BaseModel
 
 from app.core.schemas import Schema
+from app.modules.parents.models import Relationship
 
 
 class AnnouncementIn(BaseModel):
@@ -47,10 +48,20 @@ class MessageOut(BaseModel):
     is_read: bool
 
 
+class ConversationGuardian(BaseModel):
+    """Un tutor del niño, para que la docente sepa con quién habla en cada chat."""
+
+    full_name: str
+    relationship: Relationship
+    is_primary: bool
+
+
 class ConversationChild(BaseModel):
     id: int
     full_name: str
     classroom_id: int | None
+    # los tutores del niño, el principal primero.
+    guardians: list[ConversationGuardian] = []
 
 
 class ConversationOut(BaseModel):

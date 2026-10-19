@@ -13,8 +13,8 @@
 | Rol | Grafo inicial | Pestañas |
 |---|---|---|
 | Docente | `MyDayGraph` | Mi día, Mi sala, Chats, Menú |
-| Admin | `AdminCentroGraph` | Centro, Docentes, Infantes, Padres, Rutinas |
-| Padre | `ParentTodayRoute` | Hoy, Calendario, Fotos, Documentos |
+| Admin | `AdminCentroGraph` | Centro, Docentes, Familias, Ajustes |
+| Padre | `ParentTodayRoute` | Hoy, Calendario, Fotos, Chat, Mi hijo |
 
 Las pestañas exactas salen de `TopLevelDestination.kt`: ahí es donde se agregan o se quitan.
 
@@ -32,4 +32,5 @@ Las pestañas exactas salen de `TopLevelDestination.kt`: ahí es donde se agrega
 - **El login no es una ruta:** cerrar sesión cambia el estado de la sesión y `CodeaApp` dibuja otra cosa; no se navega a ningún lado. `RoleSelectionScreen` solo aparece para quien tiene más de un rol.
 - **Partir `CodeaNavHost.kt`:** es el archivo con más conflictos de merge. Separar un archivo por rol (`TeacherNavGraph`, `AdminNavGraph`, `ParentNavGraph`) reduce choques.
 - **Rutas del padre que faltan:** chat, menú del día, selector de hijo.
-- **Rutas del admin:** `AdminSolicitudesBorradoRoute` (fotos que piden borrar, se abre desde Centro) ya existe. El horario del centro se cambia en Ajustes → Horario (`AjustesHorarioRoute`).
+- **Rutas del admin:** `AdminSolicitudesBorradoRoute` (fotos que piden borrar, se abre desde Centro) ya existe. El horario del centro se cambia en Ajustes → Horario (`AjustesHorarioRoute`) y las personas autorizadas para recoger, en Ajustes → Personas autorizadas (`AjustesPersonasAutorizadasRoute` y su detalle por niño).
+- **Ruta de la docente:** `DeparturePassRoute` (pase de salida) se abre desde la tarjeta de Mi día cuando ya no queda ningún momento por hacer.

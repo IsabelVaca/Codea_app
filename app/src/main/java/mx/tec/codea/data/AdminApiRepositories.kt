@@ -8,6 +8,7 @@ import mx.tec.codea.data.api.CenterDto
 import mx.tec.codea.data.api.CenterScheduleBody
 import mx.tec.codea.data.api.ChildDto
 import mx.tec.codea.data.api.ParentCreateBody
+import mx.tec.codea.data.api.PickupBody
 import mx.tec.codea.data.api.ParentDto
 import mx.tec.codea.data.api.TeacherClassroomBody
 import mx.tec.codea.data.api.TeacherCreateBody
@@ -18,6 +19,7 @@ import mx.tec.codea.domain.HorarioCentro
 import mx.tec.codea.domain.formatTimeOfDay
 import mx.tec.codea.domain.Infante
 import mx.tec.codea.domain.Padre
+import mx.tec.codea.domain.PersonaAutorizada
 import mx.tec.codea.domain.SolicitudBorrado
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -112,6 +114,32 @@ private fun ChildDto.toInfante() = Infante(
     sala = classroom?.name ?: "",
     baja = !active,
 )
+
+// las personas que pueden recoger a un niño: las registra el admin, la docente las elige en el pase de salida.
+class PersonaAutorizadaApiRepository {
+
+    private val api get() = ApiClient.api
+
+    suspend fun deNino(infanteId: String): List<PersonaAutorizada> =
+        api.pickups(infanteId.toInt()).map {
+            PersonaAutorizada(id = it.id.toString(), nombre = it.fullName, parentesco = it.relationship.orEmpty(), telefono = it.phone.orEmpty())
+        }
+
+    suspend fun agregar(infanteId: String, nombre: String, parentesco: String, telefono: String) {
+        api.addPickup(
+            infanteId.toInt(),
+            PickupBody(
+                fullName = nombre.trim(),
+                relationship = parentesco.trim().ifBlank { null },
+                phone = telefono.trim().ifBlank { null },
+            ),
+        )
+    }
+
+    suspend fun quitar(infanteId: String, personaId: String) {
+        api.removePickup(infanteId.toInt(), personaId.toInt())
+    }
+}
 
 //  padres
 

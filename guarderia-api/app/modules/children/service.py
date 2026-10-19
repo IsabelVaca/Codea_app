@@ -16,7 +16,9 @@ from app.modules.parents import service as parents
 from app.modules.parents.models import ParentChildRel
 
 from .models import Child, ChildStatus
-from .schemas import ChildCreate, ChildDetail, ChildOut, ChildUpdate, GuardianOut
+from .schemas import ChildCreate, ChildDetail, ChildHealthUpdate, ChildOut, ChildUpdate, GuardianOut
+
+MAX_HEALTH_TEXT = 1000
 
 
 async def _guardians(db: AsyncSession, child_ids: list[int]) -> dict[int, list[GuardianOut]]:
@@ -55,6 +57,10 @@ def _to_out(child: Child, classroom: Classroom | None, guardians: list[GuardianO
         birth_date=child.birth_date,
         age=rules.age_on(child.birth_date, today) if child.birth_date else None,
         allergies=child.allergies,
+        medical_conditions=child.medical_conditions,
+        intolerances=child.intolerances,
+        medications=child.medications,
+        other_notes=child.other_notes,
         classroom=ClassroomRef.model_validate(classroom) if classroom else None,
         status=child.status,
         active=child.status == ChildStatus.ACTIVE,
@@ -145,6 +151,27 @@ async def update_child(
         detail={"classroom_id": data.classroom_id},
     )
     await db.commit()
+    return await get_detail(db, child)
+
+
+async def update_health(
+    db: AsyncSession, current: CurrentUser, child_id: int, data: ChildHealthUpdate
+) -> ChildDetail:
+    """La familia (o el admin) escribe la salud del niño. Solo cambia los campos que vienen en la petición."""
+    child = await get_child_in_scope(db, current, child_id)
+    changes = data.model_dump(exclude_unset=True)
+    for field, value in changes.items():
+        text = (value or "").strip()
+        if len(text) > MAX_HEALTH_TEXT:
+            raise ApiError(422, "TEXT_TOO_LONG", f"Cada dato puede tener hasta {MAX_HEALTH_TEXT} caracteres")
+        setattr(child, field, text or None)
+    if changes:
+        audit.record(
+            db, audit.CHILD_HEALTH_UPDATED, actor_id=current.id, entity_type="CHILD", entity_id=child.id,
+            # solo se guarda qué campos cambiaron, nunca su contenido: es información médica.
+            detail={"fields": sorted(changes)},
+        )
+        await db.commit()
     return await get_detail(db, child)
 
 

@@ -121,11 +121,20 @@ async def test_documents_and_pickups(client, world, storage, db):
     assert (await client.get(path, headers=world.dad)).status_code == 404
     assert (await client.get(path, headers=world.teacher_a)).status_code == 403
 
+    # las personas autorizadas las administra el admin: la familia ya no puede agregar ni quitar.
     pickups = f"/children/{world.sofia.id}/authorized-pickups"
-    nameless = await client.post(pickups, headers=world.mom, json={"full_name": ""})
+    for write in (
+        await client.post(pickups, headers=world.mom, json={"full_name": "Andrea Torres"}),
+        await client.delete(f"{pickups}/1", headers=world.mom),
+        await client.post(pickups, headers=world.teacher_a, json={"full_name": "Andrea Torres"}),
+    ):
+        assert write.status_code == 403
+    nameless = await client.post(pickups, headers=world.admin, json={"full_name": ""})
     assert nameless.json()["code"] == "NAME_REQUIRED"
-    added = await client.post(pickups, headers=world.mom, json={"full_name": "Andrea Torres", "relationship": "Tía"})
+    added = await client.post(pickups, headers=world.admin, json={"full_name": "Andrea Torres", "relationship": "Tía"})
     assert added.status_code == 201
-    assert [p["full_name"] for p in (await client.get(pickups, headers=world.teacher_a)).json()] == ["Andrea Torres"]
-    assert (await client.delete(f"{pickups}/{added.json()['id']}", headers=world.mom)).status_code == 204
+    # la docente y la familia la consultan.
+    for headers in (world.teacher_a, world.mom):
+        assert [p["full_name"] for p in (await client.get(pickups, headers=headers)).json()] == ["Andrea Torres"]
+    assert (await client.delete(f"{pickups}/{added.json()['id']}", headers=world.admin)).status_code == 204
     assert (await client.get(pickups, headers=world.mom)).json() == []

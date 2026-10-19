@@ -9,6 +9,9 @@ import mx.tec.codea.data.api.CheckInBody
 import mx.tec.codea.data.api.CheckInDto
 import mx.tec.codea.data.api.DailyEntryBody
 import mx.tec.codea.data.api.DayDto
+import mx.tec.codea.data.api.DepartureBody
+import mx.tec.codea.data.api.DepartureChildDto
+import mx.tec.codea.data.api.PickupChoiceDto
 import mx.tec.codea.data.api.GuardianDto
 import mx.tec.codea.data.api.PickupDto
 import mx.tec.codea.data.api.MeDto
@@ -18,9 +21,13 @@ import mx.tec.codea.data.api.RoutineDto
 import mx.tec.codea.domain.AttendanceStatus
 import mx.tec.codea.domain.CheckInRecord
 import mx.tec.codea.domain.Child
+import mx.tec.codea.domain.ChildHealth
 import mx.tec.codea.domain.ChildProfile
 import mx.tec.codea.domain.ChildProfileRules
 import mx.tec.codea.domain.Contact
+import mx.tec.codea.domain.DepartureEntry
+import mx.tec.codea.domain.PickupChoice
+import mx.tec.codea.domain.PickupKind
 import mx.tec.codea.domain.FamilyNote
 import mx.tec.codea.domain.Report
 import mx.tec.codea.domain.Routine
@@ -65,7 +72,32 @@ class TeacherApiRepository {
             ageText = ChildProfileRules.ageText(detail.birthDate, hoyLocal()),
             guardians = detail.guardians.sortedByDescending { it.isPrimary }.map { it.toContact() },
             pickups = pickups.map { it.toContact() },
+            health = ChildHealth(
+                allergies = detail.allergies.orEmpty(),
+                medicalConditions = detail.medicalConditions.orEmpty(),
+                intolerances = detail.intolerances.orEmpty(),
+                medications = detail.medications.orEmpty(),
+                otherNotes = detail.otherNotes.orEmpty(),
+            ),
         )
+    }
+
+    // ----- pase de salida -----
+
+    // los niños que vinieron hoy, con quién puede recoger a cada uno y la salida de los que ya se fueron.
+    suspend fun departures(classroomId: Int): List<DepartureEntry> =
+        api.departures(classroomId).children.map { it.toEntry() }
+
+    suspend fun registerDeparture(childId: String, choice: PickupChoice) {
+        val body = when (choice.kind) {
+            PickupKind.AUTHORIZED -> DepartureBody(pickupId = choice.id.toInt())
+            PickupKind.GUARDIAN -> DepartureBody(guardianId = choice.id)
+        }
+        api.registerDeparture(childId.toInt(), body)
+    }
+
+    suspend fun undoDeparture(childId: String) {
+        api.undoDeparture(childId.toInt())
     }
 
     suspend fun saveDailyEntry(childId: Int, body: DailyEntryBody) {
@@ -118,12 +150,27 @@ fun RoomChildDto.toChild() = Child(
     hasSummaryToday = hasSummaryToday,
 )
 
-private fun GuardianDto.toContact() = Contact(name = fullName, relationship = parentesco(relationship), phone = phone)
+private fun DepartureChildDto.toEntry() = DepartureEntry(
+    childId = childId.toString(),
+    name = fullName,
+    choices = choices.map { it.toChoice() },
+    time = departure?.let { clockOf(it.departedAt) },
+    pickedUpBy = departure?.pickedUpBy,
+)
+
+private fun PickupChoiceDto.toChoice() = PickupChoice(
+    kind = if (kind == "GUARDIAN") PickupKind.GUARDIAN else PickupKind.AUTHORIZED,
+    id = id,
+    name = fullName,
+    relationship = parentesco(relationship),
+)
+
+internal fun GuardianDto.toContact() = Contact(name = fullName, relationship = parentesco(relationship), phone = phone)
 
 private fun PickupDto.toContact() = Contact(name = fullName, relationship = relationship?.let(::parentesco), phone = phone)
 
 // el parentesco llega como código de la API ("MOTHER") o como texto libre de una persona autorizada ("Abuela").
-private fun parentesco(valor: String?): String? = when (valor) {
+internal fun parentesco(valor: String?): String? = when (valor) {
     "MOTHER" -> "Mamá"
     "FATHER" -> "Papá"
     "LEGAL_GUARDIAN" -> "Tutor"

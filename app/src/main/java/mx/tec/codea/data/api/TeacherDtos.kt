@@ -113,6 +113,13 @@ data class ChildDetailDto(
     @SerialName("full_name") val fullName: String,
     @SerialName("birth_date") val birthDate: String? = null,
     val allergies: String? = null,
+    // lo que la familia escribe en "Mi hijo".
+    @SerialName("medical_conditions") val medicalConditions: String? = null,
+    val intolerances: String? = null,
+    val medications: String? = null,
+    @SerialName("other_notes") val otherNotes: String? = null,
+    val age: Int? = null,
+    val classroom: RefDto? = null,
     val guardians: List<GuardianDto> = emptyList(),
 )
 
@@ -195,6 +202,14 @@ data class MessageDto(
 data class ConversationChildDto(
     val id: Int,
     @SerialName("full_name") val fullName: String,
+    // los tutores del niño, el principal primero: la docente ve de quién es cada chat.
+    val guardians: List<ConversationGuardianDto> = emptyList(),
+)
+
+@Serializable
+data class ConversationGuardianDto(
+    @SerialName("full_name") val fullName: String,
+    val relationship: String? = null,
 )
 
 @Serializable
@@ -216,4 +231,48 @@ data class MessageBody(
     val text: String,
     @SerialName("client_id") val clientId: String? = null,
     @SerialName("media_id") val mediaId: Int? = null,
+)
+
+// ---------- pase de salida ----------
+
+// una persona de la lista de quién puede recoger al niño: kind = "AUTHORIZED" (la registró el admin) o "GUARDIAN" (su tutor).
+@Serializable
+data class PickupChoiceDto(
+    val kind: String,
+    val id: String,
+    @SerialName("full_name") val fullName: String,
+    val relationship: String? = null,
+)
+
+@Serializable
+data class DepartureDto(
+    @SerialName("child_id") val childId: Int,
+    val date: String,
+    @SerialName("departed_at") val departedAt: String,
+    @SerialName("picked_up_by") val pickedUpBy: String,
+)
+
+@Serializable
+data class DepartureChildDto(
+    @SerialName("child_id") val childId: Int,
+    val name: String,
+    @SerialName("full_name") val fullName: String,
+    val choices: List<PickupChoiceDto> = emptyList(),
+    val departure: DepartureDto? = null,
+)
+
+// GET /classrooms/{id}/departures: los niños presentes hoy y cuántos faltan por salir.
+@Serializable
+data class DepartureSheetDto(
+    val date: String,
+    val children: List<DepartureChildDto> = emptyList(),
+    val pending: Int = 0,
+    @SerialName("all_done") val allDone: Boolean = false,
+)
+
+// quien recoge: o una persona autorizada o un tutor, nunca los dos.
+@Serializable
+data class DepartureBody(
+    @SerialName("pickup_id") val pickupId: Int? = null,
+    @SerialName("guardian_id") val guardianId: String? = null,
 )

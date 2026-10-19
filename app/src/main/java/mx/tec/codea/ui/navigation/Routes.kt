@@ -150,8 +150,9 @@ data object ParentPhotosRoute
 @Serializable
 data object ParentChatRoute
 
+// "Mi hijo": los datos del niño, lo que la familia cuenta de su salud y sus documentos.
 @Serializable
-data object ParentDocumentsRoute
+data object ParentChildRoute
 
 
 @Serializable
@@ -171,6 +172,17 @@ data object AjustesAdminRoute
 // el horario del centro: entrada, salida, cierre automático y días de trabajo.
 @Serializable
 data object AjustesHorarioRoute
+
+// las personas autorizadas para recoger a un niño: primero la lista de niños y luego las de uno.
+@Serializable
+data object AjustesPersonasAutorizadasRoute
+
+@Serializable
+data class AjustesPersonasAutorizadasDetalleRoute(val infanteId: String)
+
+// el pase de salida de la docente, al terminar la rutina. se abre desde Mi día.
+@Serializable
+data object DeparturePassRoute
 
 // las rutinas son una opción de Ajustes: la lista, "nueva rutina" y el detalle de una rutina.
 @Serializable

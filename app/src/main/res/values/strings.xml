@@ -29,7 +29,7 @@
     <string name="nav_parent_calendar">Calendario</string>
     <string name="nav_parent_photos">Fotos</string>
     <string name="nav_parent_chat">Chat</string>
-    <string name="nav_parent_documents">Documento</string>
+    <string name="nav_parent_child">Mi hijo</string>
 
     <!-- my day screen -->
     <string name="my_day_title">Mi día</string>
@@ -325,13 +325,101 @@
     <string name="checker_done_day_starts">El día arranca igual, sin perder momentos</string>
     <string name="checker_done_go_to_my_day">Ir a Mi día</string>
 
-    <!-- parent documents screen -->
-    <string name="parent_documents_overline">Estancia La Oruga · Familia</string>
-    <string name="parent_documents_title">Documentos de %1$s</string>
-    <string name="parent_documents_current">Vigente</string>
-    <string name="parent_documents_missing">Faltante</string>
-    <string name="parent_documents_authorized_section">Autorizados para recoger</string>
-    <string name="parent_documents_remove_authorized">(eliminar)</string>
+    <!-- parent: Mi hijo -->
+    <string name="mychild_overline">Estancia La Oruga · Familia</string>
+    <string name="mychild_loading">Cargando los datos de tu hijo…</string>
+    <string name="mychild_data_title">Datos de tu hijo</string>
+    <string name="mychild_full_name">Nombre completo</string>
+    <string name="mychild_birth_date">Fecha de nacimiento</string>
+    <string name="mychild_age">Edad</string>
+    <string name="mychild_room">Sala</string>
+    <string name="mychild_guardians">Tutores</string>
+    <string name="mychild_unknown">Sin registrar</string>
+    <string name="mychild_data_hint">Si algún dato está mal, avísale a la dirección de la estancia.</string>
+    <string name="mychild_health_title">Salud y cuidados</string>
+    <string name="mychild_health_hint">Cuéntanos lo que debemos saber para cuidarlo. La maestra de su sala lo ve en la ficha de tu hijo. Puedes cambiarlo cuando quieras.</string>
+    <string name="mychild_allergies">Alergias</string>
+    <string name="mychild_allergies_example">Por ejemplo: nueces, picadura de abeja</string>
+    <string name="mychild_conditions">Condiciones médicas</string>
+    <string name="mychild_conditions_example">Por ejemplo: asma, epilepsia</string>
+    <string name="mychild_intolerances">Intolerancias alimentarias</string>
+    <string name="mychild_intolerances_example">Por ejemplo: lactosa, gluten</string>
+    <string name="mychild_medications">Medicamentos</string>
+    <string name="mychild_medications_example">Nombre, dosis y horario, si toma alguno</string>
+    <string name="mychild_notes">Otras indicaciones</string>
+    <string name="mychild_notes_example">Cualquier otra cosa que debamos saber</string>
+    <string name="mychild_too_long">Máximo %1$d caracteres</string>
+    <string name="mychild_save">Guardar</string>
+    <string name="mychild_saving">Guardando…</string>
+
+    <!-- admin: personas autorizadas para recoger -->
+    <string name="pa_title">Personas autorizadas</string>
+    <string name="pa_back">Volver</string>
+    <string name="pa_hint">Elige un niño para ver o cambiar quién puede recogerlo. La maestra las usa en el pase de salida.</string>
+    <string name="pa_search">Buscar niño</string>
+    <string name="pa_no_children">No hay niños que coincidan.</string>
+    <string name="pa_no_room">Sin sala</string>
+    <string name="pa_detail_hint">Estas personas, además de sus tutores, pueden recoger a %1$s. La maestra las elige al registrar su salida.</string>
+    <string name="pa_add">Agregar persona</string>
+    <string name="pa_empty">Todavía no hay personas autorizadas. Sus tutores sí pueden recogerlo.</string>
+    <string name="pa_failed">No se pudieron cargar las personas autorizadas.</string>
+    <string name="pa_retry">Reintentar</string>
+    <string name="pa_remove">Quitar</string>
+    <string name="pa_remove_title">¿Quitar a %1$s?</string>
+    <string name="pa_remove_body">Ya no podrá ser elegida para recoger a %1$s. Las salidas ya registradas no cambian.</string>
+    <string name="pa_remove_confirm">Quitar</string>
+    <string name="pa_cancel">Cancelar</string>
+    <string name="pa_add_title">Agregar persona autorizada</string>
+    <string name="pa_field_name">Nombre completo</string>
+    <string name="pa_field_relationship">Parentesco (opcional)</string>
+    <string name="pa_field_relationship_example">Tía, abuelo, vecina…</string>
+    <string name="pa_field_phone">Teléfono (opcional)</string>
+    <string name="pa_add_confirm">Agregar</string>
+
+    <!-- docente: pase de salida y día finalizado -->
+    <string name="departure_title">Pase de salida</string>
+    <plurals name="departure_card_body">
+        <item quantity="one">Terminaste la rutina. Registra la salida del niño de hoy y finaliza el día.</item>
+        <item quantity="other">Terminaste la rutina. Registra la salida de los %1$d niños de hoy y finaliza el día.</item>
+    </plurals>
+    <string name="departure_card_action">Abrir</string>
+    <string name="departure_next_step">SIGUIENTE PASO</string>
+    <string name="departure_locked_hint">Se abre cuando termines todos los momentos</string>
+    <string name="departure_hint">Cuando recojan a un niño, toca «Registrar salida» y elige quién se lo lleva. La hora se guarda sola.</string>
+    <string name="departure_progress">Han salido %1$d de %2$d</string>
+    <string name="departure_loading">Cargando a los niños de hoy…</string>
+    <string name="departure_failed">No se pudo cargar el pase de salida. Revisa tu conexión.</string>
+    <string name="departure_retry">Reintentar</string>
+    <string name="departure_empty">Hoy no vino ningún niño: no hay salidas que registrar. Ya puedes finalizar el día.</string>
+    <string name="departure_row_pending">Todavía no sale</string>
+    <string name="departure_row_done">Salió a las %1$s con %2$s</string>
+    <string name="departure_register">Registrar salida</string>
+    <string name="departure_undo">Corregir</string>
+    <string name="departure_choose_title">¿Quién recoge a %1$s?</string>
+    <string name="departure_choose_empty">Este niño no tiene personas registradas. Pide a la dirección que las agregue en Ajustes → Personas autorizadas.</string>
+    <string name="departure_choose_confirm">Registrar salida</string>
+    <string name="departure_guardian_tag">Tutor</string>
+    <string name="departure_cancel">Cancelar</string>
+    <plurals name="departure_pending">
+        <item quantity="one">Falta 1 niño por salir para poder finalizar el día.</item>
+        <item quantity="other">Faltan %1$d niños por salir para poder finalizar el día.</item>
+    </plurals>
+    <string name="departure_finish">Finalizar día</string>
+    <string name="departure_finishing">Finalizando…</string>
+    <string name="departure_finish_title">¿Finalizar el día?</string>
+    <string name="departure_finish_body">Se registrará tu salida y terminará tu turno de hoy. Ya no podrás cambiar la rutina de hoy.</string>
+    <string name="departure_finish_confirm">Finalizar</string>
+    <string name="day_finished_title">Día finalizado</string>
+    <string name="day_finished_headline">¡Buen trabajo, %1$s!</string>
+    <string name="day_finished_exit">Tu salida quedó registrada a las %1$s.</string>
+    <string name="day_finished_auto">Tu salida se registró sola a las %1$s, con el cierre automático.</string>
+    <string name="day_finished_tomorrow">Tu turno terminó. Mañana arranca un día nuevo.</string>
+
+    <!-- ficha del niño: lo que escribió la familia -->
+    <string name="profile_conditions_title">Condiciones médicas</string>
+    <string name="profile_intolerances_title">Intolerancias</string>
+    <string name="profile_medications_title">Medicamentos</string>
+    <string name="profile_other_notes_title">Otras indicaciones de la familia</string>
 
     <!-- coming soon screen -->
 

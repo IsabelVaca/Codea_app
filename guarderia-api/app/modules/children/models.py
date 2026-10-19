@@ -23,6 +23,11 @@ class Child(IdMixin, Base):
     # se guarda la fecha y la API calcula la edad (Infante.edad en la app).
     birth_date: Mapped[date | None]
     allergies: Mapped[str | None] = mapped_column(Text)
+    # lo que la familia le cuenta a la guardería en "Mi hijo"; la docente lo ve en la ficha del niño.
+    medical_conditions: Mapped[str | None] = mapped_column(Text)
+    intolerances: Mapped[str | None] = mapped_column(Text)
+    medications: Mapped[str | None] = mapped_column(Text)
+    other_notes: Mapped[str | None] = mapped_column(Text)
     status: Mapped[ChildStatus] = mapped_column(
         str_enum(ChildStatus), default=ChildStatus.ACTIVE, server_default=ChildStatus.ACTIVE.value
     )

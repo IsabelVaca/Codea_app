@@ -21,6 +21,7 @@ from .schemas import (
     AnnouncementIn,
     AnnouncementOut,
     ConversationChild,
+    ConversationGuardian,
     ConversationOut,
     MessageIn,
     MessageOut,
@@ -177,6 +178,20 @@ async def list_conversations(db: AsyncSession, current: CurrentUser, storage: St
         ).all()
     }
 
+    guardians: dict[int, list[ConversationGuardian]] = {}
+    if children:
+        for link, user in (
+            await db.execute(
+                select(ParentChildRel, AppUser)
+                .join(AppUser, AppUser.id == ParentChildRel.parent_id)
+                .where(ParentChildRel.child_id.in_([child.id for child in children]))
+                .order_by(ParentChildRel.is_primary.desc(), ParentChildRel.id)
+            )
+        ).all():
+            guardians.setdefault(link.child_id, []).append(
+                ConversationGuardian(full_name=user.full_name, relationship=link.relationship, is_primary=link.is_primary)
+            )
+
     urls = await _media_urls(db, storage, [message for message, _ in last_messages.values()])
     result = []
     for child in children:
@@ -189,7 +204,12 @@ async def list_conversations(db: AsyncSession, current: CurrentUser, storage: St
         result.append(
             ConversationOut(
                 id=conversation_id,
-                child=ConversationChild(id=child.id, full_name=child.full_name, classroom_id=child.classroom_id),
+                child=ConversationChild(
+                    id=child.id,
+                    full_name=child.full_name,
+                    classroom_id=child.classroom_id,
+                    guardians=guardians.get(child.id, []),
+                ),
                 unread_count=unread.get(conversation_id, 0),
                 last_message=last,
             )

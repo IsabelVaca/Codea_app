@@ -133,6 +133,24 @@ fun ChildProfileScreen(
             )
         }
 
+        // lo demás que la familia escribió en "Mi hijo": condiciones, intolerancias, medicamentos y otras indicaciones.
+        profile?.health?.let { health ->
+            listOf(
+                R.string.profile_conditions_title to health.medicalConditions,
+                R.string.profile_intolerances_title to health.intolerances,
+                R.string.profile_medications_title to health.medications,
+                R.string.profile_other_notes_title to health.otherNotes,
+            ).filter { (_, text) -> text.isNotBlank() }.forEach { (title, text) ->
+                Callout(
+                    title = stringResource(title),
+                    body = text,
+                    container = MaterialTheme.colorScheme.primaryContainer,
+                    content = MaterialTheme.colorScheme.onPrimaryContainer,
+                    withWarningIcon = false,
+                )
+            }
+        }
+
         // los avisos de hoy de este niño, completos. los vistos se quedan, ya sin botones.
         child.notes.sortedByDescending { it.id }.forEach { note ->
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {

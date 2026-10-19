@@ -56,6 +56,25 @@ class ChatRulesTest {
     }
 
     @Test
+    fun guardiansLabel_namesTheMotherAndTheFather() {
+        val label = ChatRules.guardiansLabel(
+            listOf(ChatGuardian("Laura Iglesias", "Mamá"), ChatGuardian("Jorge Flores", "Papá")),
+        )
+        assertEquals("Mamá: Laura Iglesias · Papá: Jorge Flores", label)
+    }
+
+    @Test
+    fun guardiansLabel_withoutRelationship_isJustTheName() {
+        assertEquals("Rosa Pérez", ChatRules.guardiansLabel(listOf(ChatGuardian("Rosa Pérez", null))))
+    }
+
+    @Test
+    fun guardiansLabel_withNobody_isNull() {
+        assertNull(ChatRules.guardiansLabel(emptyList()))
+        assertNull(ChatRules.guardiansLabel(listOf(ChatGuardian("  ", "Mamá"))))
+    }
+
+    @Test
     fun canSend_aPhotoWithoutTextIsEnough() {
         assertFalse(ChatRules.canSend("  "))
         assertTrue(ChatRules.canSend("  ", hasPhoto = true))

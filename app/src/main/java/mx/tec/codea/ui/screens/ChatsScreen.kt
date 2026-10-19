@@ -65,6 +65,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import mx.tec.codea.R
 import mx.tec.codea.domain.ChatMessage
+import mx.tec.codea.domain.ChatRules
 import mx.tec.codea.domain.Conversation
 import mx.tec.codea.domain.MessageStatus
 import mx.tec.codea.ui.components.BackHeader
@@ -158,7 +159,7 @@ private fun InboxScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             items(conversations, key = { it.id }) { conversation ->
-                ConversationRow(conversation, onClick = { onOpen(conversation.id) })
+                ConversationRow(conversation, showGuardians = !isParent, onClick = { onOpen(conversation.id) })
             }
         }
     }
@@ -167,6 +168,7 @@ private fun InboxScreen(
 @Composable
 private fun ConversationRow(
     conversation: Conversation,
+    showGuardians: Boolean,
     onClick: () -> Unit,
 ) {
     Row(
@@ -187,6 +189,19 @@ private fun ConversationRow(
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold,
             )
+            // de quién es el chat: la mamá o el papá del niño. el papá ya sabe que es su chat, así que solo lo ve la docente.
+            if (showGuardians) {
+                ChatRules.guardiansLabel(conversation.guardians)?.let { label ->
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
             Text(
                 text = conversation.lastText ?: stringResource(R.string.chats_no_messages_short),
                 style = MaterialTheme.typography.bodyMedium,
@@ -254,12 +269,14 @@ private fun ConversationScreen(
             .padding(horizontal = 22.dp, vertical = 16.dp)
             .imePadding(),
     ) {
+        // la docente ve de quién es el chat: el niño de título y su mamá o papá arriba.
+        val guardians = if (isParent) null else ChatRules.guardiansLabel(conversation.guardians)
         BackHeader(
-            overline = stringResource(
+            overline = guardians ?: stringResource(
                 if (isParent) R.string.chats_parent_of else R.string.chats_family_of,
                 conversation.childName.substringBefore(" "),
             ),
-            title = stringResource(if (isParent) R.string.chats_parent_title else R.string.chats_title),
+            title = if (isParent) stringResource(R.string.chats_parent_title) else conversation.childName,
             onBackClick = onBackClick,
             modifier = Modifier.padding(bottom = 12.dp),
         )

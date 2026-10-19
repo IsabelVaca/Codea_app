@@ -133,6 +133,19 @@ data class PickupDto(
 @Serializable
 data class PickupBody(
     @SerialName("full_name") val fullName: String,
+    val relationship: String? = null,
+    val phone: String? = null,
+)
+
+// PATCH /children/{id}/health: sin valores por defecto, así que siempre se mandan los cinco campos.
+// "" borra un dato; la familia ve en pantalla lo mismo que se guarda.
+@Serializable
+data class HealthBody(
+    val allergies: String?,
+    @SerialName("medical_conditions") val medicalConditions: String?,
+    val intolerances: String?,
+    val medications: String?,
+    @SerialName("other_notes") val otherNotes: String?,
 )
 
 @Serializable

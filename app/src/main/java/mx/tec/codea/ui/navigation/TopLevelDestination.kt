@@ -10,7 +10,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.FamilyRestroom
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -131,10 +131,10 @@ enum class TopLevelDestination(
         isLocked = false,
         roles = setOf(Role.PARENT),
     ),
-    PARENT_DOCUMENTS(
-        route = ParentDocumentsRoute,
-        icon = Icons.Filled.Description,
-        labelRes = R.string.nav_parent_documents,
+    PARENT_CHILD(
+        route = ParentChildRoute,
+        icon = Icons.Filled.ChildCare,
+        labelRes = R.string.nav_parent_child,
         isLocked = false,
         roles = setOf(Role.PARENT),
     ),

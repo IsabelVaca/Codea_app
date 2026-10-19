@@ -25,6 +25,7 @@ import mx.tec.codea.data.toRoutine
 import mx.tec.codea.domain.AttendanceStatus
 import mx.tec.codea.domain.CheckInRecord
 import mx.tec.codea.domain.Child
+import mx.tec.codea.domain.DepartureRules
 import mx.tec.codea.domain.ErrorKind
 import mx.tec.codea.domain.MarkResult
 import mx.tec.codea.domain.Report
@@ -42,7 +43,9 @@ class CodeaViewModel : ViewModel() {
     private val repository = TeacherApiRepository()
 
     // ids que la API necesita y la app no guarda en sus clases.
-    private var classroomId: Int? = null
+    // la sala de la docente: el pase de salida la necesita para pedir los niños de hoy.
+    var classroomId: Int? = null
+        private set
     private var momentIds: Map<Int, Int> = emptyMap()          // número del momento -> id
     private var conversationIds: Map<String, Int> = emptyMap() // id del niño -> id de la conversación
     private var selectActiveAfterLoad = true
@@ -191,8 +194,9 @@ class CodeaViewModel : ViewModel() {
         // al abrir la app, o después de confirmar un momento, se sigue el día: el activo queda seleccionado.
         val esValido = routine.subprocesses.any { it.number == selectedSubprocessNumber }
         if (selectActiveAfterLoad || !esValido) {
+            // con la rutina terminada no se deja ningún momento grande: lo que sigue es el pase de salida, no otro reporte.
             selectedSubprocessNumber = routine.activeSubprocess?.number
-                ?: routine.subprocesses.firstOrNull()?.number
+                ?: if (DepartureRules.routineFinished(routine)) 0 else routine.subprocesses.firstOrNull()?.number
                 ?: 0
             selectActiveAfterLoad = false
         }
