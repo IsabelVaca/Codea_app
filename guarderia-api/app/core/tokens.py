@@ -2,6 +2,7 @@ import hashlib
 import secrets
 import uuid
 from datetime import timedelta
+from urllib.parse import urlencode
 
 import jwt
 
@@ -63,6 +64,15 @@ def new_access_code() -> str:
     """Código de 8 caracteres que el administrador comparte: XXXX-XXXX."""
     raw = "".join(secrets.choice(_CODE_ALPHABET) for _ in range(8))
     return f"{raw[:4]}-{raw[4:]}"
+
+
+def invite_link(email: str, code: str) -> str | None:
+    """El enlace que el admin manda por WhatsApp: abre la página /invitar del servidor, y de ahí la app.
+    None si el servidor no tiene dirección pública configurada."""
+    base = settings.public_base_url.strip().rstrip("/")
+    if not base:
+        return None
+    return f"{base}/invitar?{urlencode({'email': email, 'code': code})}"
 
 
 def normalize_code(code: str) -> str:

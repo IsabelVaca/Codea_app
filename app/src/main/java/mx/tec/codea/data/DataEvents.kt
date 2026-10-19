@@ -5,7 +5,16 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 
 // el código que hay que mostrarle al admin para que lo comparta (se muestra una sola vez).
-data class AccessCodeNotice(val personName: String, val code: String, val expiresAt: String)
+data class AccessCodeNotice(
+    val personName: String,
+    val code: String,
+    val expiresAt: String,
+    // para mandar la invitación por WhatsApp: el teléfono y el correo de la persona, y el enlace que arma el servidor
+    // (null mientras el servidor no tenga URL pública; entonces el mensaje solo lleva el código).
+    val phone: String? = null,
+    val email: String? = null,
+    val link: String? = null,
+)
 
 // tres avisos globales entre los ViewModels:
 // - changed: algo cambió en el servidor, cada lista se vuelve a pedir.

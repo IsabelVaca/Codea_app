@@ -76,7 +76,12 @@ async def create_invitation(
     )
     db.add(invitation)
     await db.flush()
-    return invitation, AccessCodeOut(code=code, purpose=purpose.value, expires_at=invitation.expires_at)
+    return invitation, AccessCodeOut(
+        code=code,
+        purpose=purpose.value,
+        expires_at=invitation.expires_at,
+        link=tokens.invite_link(user.email, code),
+    )
 
 
 async def renew_invitation(db: AsyncSession, user: AppUser, role: Role) -> AccessCodeOut:

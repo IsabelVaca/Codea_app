@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,9 +31,17 @@ fun ActivateAccountScreen(
     onActivate: (email: String, code: String, password: String, confirmation: String) -> Unit,
     onGoToLogin: () -> Unit,
     modifier: Modifier = Modifier,
+    // con un enlace de invitación el correo y el código llegan puestos y solo falta la contraseña.
+    initialEmail: String = "",
+    initialCode: String = "",
 ) {
-    var email by rememberSaveable { mutableStateOf("") }
-    var code by rememberSaveable { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf(initialEmail) }
+    var code by rememberSaveable { mutableStateOf(initialCode) }
+    // si llega otro enlace con la pantalla abierta, se reemplaza lo escrito.
+    LaunchedEffect(initialEmail, initialCode) {
+        if (initialEmail.isNotBlank()) email = initialEmail
+        if (initialCode.isNotBlank()) code = initialCode
+    }
     var password by remember { mutableStateOf("") }
     var confirmation by remember { mutableStateOf("") }
 

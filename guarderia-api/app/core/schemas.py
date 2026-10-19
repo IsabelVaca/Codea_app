@@ -21,3 +21,5 @@ class AccessCodeOut(BaseModel):
     code: str
     purpose: str
     expires_at: datetime
+    # https://<servidor>/invitar?email=...&code=...: abre la app con todo puesto. None si PUBLIC_BASE_URL no está configurada.
+    link: str | None = None
