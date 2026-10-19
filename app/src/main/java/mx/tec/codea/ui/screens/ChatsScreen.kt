@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -236,6 +237,8 @@ private fun ConversationScreen(
     // the photo chosen but not sent yet; while it is not null the preview covers the chat.
     var previewUri by rememberSaveable { mutableStateOf<Uri?>(null) }
     var showAttach by rememberSaveable { mutableStateOf(false) }
+    // the message whose photo is open full screen.
+    var viewing by remember { mutableStateOf<ChatMessage?>(null) }
     val pickPhoto = rememberPickPhoto { previewUri = it }
     val capturePhoto = rememberCapturePhoto { previewUri = it }
 
@@ -284,7 +287,7 @@ private fun ConversationScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 items(messages, key = { it.clientId ?: it.id }) { message ->
-                    MessageBubble(message, onRetry = onRetry)
+                    MessageBubble(message, onRetry = onRetry, onImageClick = { viewing = message })
                 }
             }
         }
@@ -303,6 +306,8 @@ private fun ConversationScreen(
             onGallery = { showAttach = false; pickPhoto() },
         )
     }
+
+    viewing?.let { message -> PhotoViewer(message = message, onClose = { viewing = null }) }
 
     previewUri?.let { uri ->
         PhotoPreview(
@@ -440,6 +445,7 @@ private fun PhotoPreview(uri: Uri, onClose: () -> Unit, onSend: (String) -> Unit
 private fun MessageBubble(
     message: ChatMessage,
     onRetry: (String) -> Unit,
+    onImageClick: () -> Unit,
 ) {
     val containerColor =
         if (message.isMine) {
@@ -512,6 +518,8 @@ private fun MessageBubble(
             if (message.hasImage) {
                 MessageImage(
                     message = message,
+                    // a failed message uses the tap to retry instead.
+                    onClick = onImageClick.takeIf { message.status != MessageStatus.FAILED },
                     shape = imageShape,
                     // without a caption the time goes over the photo, like WhatsApp.
                     overlay = if (message.text.isBlank()) statusText else null,
@@ -547,12 +555,10 @@ private fun MessageBubble(
     }
 }
 
-// the photo inside the bubble. while it is sending we show the file we just compressed.
+// the signed URL changes every time, so the cache is keyed by the message to avoid downloading it again.
 @Composable
-private fun MessageImage(message: ChatMessage, shape: Shape, overlay: String?) {
-    val context = LocalContext.current
-    // the signed URL changes every time, so the cache is keyed by the message to avoid downloading it again.
-    val request = ImageRequest.Builder(context)
+private fun chatImageRequest(message: ChatMessage): ImageRequest =
+    ImageRequest.Builder(LocalContext.current)
         .data(message.localImage ?: message.imageUrl)
         .apply {
             if (message.localImage == null && message.id > 0) {
@@ -561,12 +567,44 @@ private fun MessageImage(message: ChatMessage, shape: Shape, overlay: String?) {
             }
         }
         .build()
+
+// the whole photo, not cropped, over the chat.
+@Composable
+private fun PhotoViewer(message: ChatMessage, onClose: () -> Unit) {
+    BackHandler(onBack = onClose)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF15111F))
+            .clickable(onClick = onClose),
+    ) {
+        AsyncImage(
+            model = chatImageRequest(message),
+            contentDescription = stringResource(R.string.chats_photo_description),
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.fillMaxSize(),
+        )
+        IconButton(onClick = onClose, modifier = Modifier.statusBarsPadding().padding(8.dp)) {
+            Icon(
+                imageVector = Icons.Filled.Close,
+                contentDescription = stringResource(R.string.chats_photo_close),
+                tint = Color.White,
+            )
+        }
+    }
+}
+
+// the photo inside the bubble. while it is sending we show the file we just compressed.
+@Composable
+private fun MessageImage(message: ChatMessage, shape: Shape, overlay: String?, onClick: (() -> Unit)?) {
+    val request = chatImageRequest(message)
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(4f / 3f)
             .clip(shape)
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
     ) {
         AsyncImage(
             model = request,
