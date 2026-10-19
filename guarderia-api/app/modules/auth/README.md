@@ -15,10 +15,12 @@ Piezas compartidas: `core/tokens.py` (JWT, refresh, códigos), `core/passwords.p
 | `POST /users/{id}/access-code` | admin | Genera un código (`INVITATION` o `PASSWORD_RESET`). `404 USER_NOT_FOUND`, `409 USER_INACTIVE` |
 | `POST /invitations` | admin | Invita a una persona con un rol; devuelve su `access_code` una sola vez |
 | `GET /invitations` | admin | Códigos con estado `PENDING`/`ACCEPTED`/`EXPIRED`; filtros `?status=` y `?role=` |
+| `GET /invitar?email=&code=` | pública, fuera de `/api/v1` | Página del enlace de invitación: botón «Abrir en la app» (`codea://invitar?…`) y el correo y el código escritos. **Solo lee, nunca gasta el código.** `400` si el correo o el código no tienen la forma esperada (no se refleja nada) |
+| `GET /.well-known/assetlinks.json` | pública | Le dice a Android que `mx.tec.codea` puede abrir los enlaces de este servidor (`ANDROID_CERT_SHA256`); vacía si no está configurada |
 
 ## Cómo funciona
 
-1. El admin da de alta a alguien y la respuesta trae `access_code` (`XXXX-XXXX`, 7 días, solo se ve una vez).
+1. El admin da de alta a alguien y la respuesta trae `access_code` (`XXXX-XXXX`, 7 días, solo se ve una vez) y, con `PUBLIC_BASE_URL`, su `link`. La app del admin arma el mensaje de WhatsApp con el enlace y, por si no abre la app, el correo y el código escritos.
 2. La persona manda correo + código + contraseña a `/auth/activate` y queda dentro con `access_token` (5 min) y `refresh_token` (7 días).
 3. Con el access token vencido la API responde `401 TOKEN_EXPIRED`; la app llama `/auth/refresh` y repite la petición. Cada refresh rota el token; si llega uno ya rotado se cierra toda su familia.
 4. El JWT lleva `sub`, `type`, `tv` (`token_version`), `iat`, `exp` y `jti`: **nada de rol ni datos personales**. El rol se lee de Postgres en cada petición.
@@ -30,7 +32,7 @@ Piezas compartidas: `core/tokens.py` (JWT, refresh, códigos), `core/passwords.p
 |---|---|
 | Login, activar con código, refresh con rotación y detección de reuso, logout, cambio de contraseña, cerrar sesiones, códigos nuevos y de recuperación, baja que corta el acceso | Límite en `refresh` (los refresh tokens tienen entropía alta, el riesgo es bajo) |
 | **Límite de intentos** (ver abajo) y **auditoría** de logins, códigos y bajas (`modules/audit`) | Lista de sesiones abiertas; segundo factor para el admin |
-| 31 pruebas en `tests/test_auth.py` y 23 en `tests/test_security.py` | **Correo real** con el código (hoy el admin lo comparte) |
+| 31 pruebas en `tests/test_auth.py` y 23 en `tests/test_security.py` | Sin correos: la invitación la manda el admin por WhatsApp (decisión del equipo) |
 | | Rotación de la llave del JWT (`kid`), tarea que borre refresh tokens y códigos vencidos |
 
 Diseño y decisiones: [`docs/plan/04-api-login-jwt.md`](../../../../docs/plan/04-api-login-jwt.md). Diferencias con ese plan: `POST /me/password` devuelve `200 TokenOut` (y no 204) para que quien cambia su contraseña siga dentro; el código se acepta con o sin guion y en cualquier mayúscula.

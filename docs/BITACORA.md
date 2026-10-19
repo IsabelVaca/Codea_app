@@ -187,3 +187,14 @@ Propuesta y decisiones en [`plan/06-mi-sala-propuesta.md`](plan/06-mi-sala-propu
 - Sin cambios de función. Compila y pasan las 77 pruebas JVM; se revisó en el emulador con el admin y la docente.
 - Siguen las propuestas 2 a 7 de la presentación de limpieza visual (color, botones, filas, vacíos, modo oscuro y detalles).
 
+
+## 2026-10-18 · Invitación por enlace de WhatsApp (rama `invitacion-whatsapp`)
+
+Sin correos ni SMTP: el admin manda la invitación por WhatsApp y el padre solo crea su contraseña. Quien no está dado de alta no tiene código y no puede crear cuenta. La prueba de identidad es que solo esa persona recibió el enlace (la misma seguridad del código de acceso, que ya tiene límite de intentos y auditoría).
+
+- **Admin (app):** el diálogo del código ahora tiene **«Enviar por WhatsApp»**: abre el chat con el teléfono de la persona (10 dígitos = México, `52`) y el mensaje escrito (enlace y, por si no abre la app, el correo y el código). Sin teléfono válido o sin WhatsApp cae al selector de compartir. `Invite.whatsAppUrl` y `Invite.whatsAppPhone` (Kotlin puro, con pruebas).
+- **Padre (app):** `Invite.parseLink` lee `https://<servidor>/invitar?email=&code=` y `codea://invitar?…`; `MainActivity` lo recibe (también con la app abierta), `CodeaApp` salta el login y deja «Activar mi cuenta» con correo y código puestos. Con la sesión abierta lo descarta y avisa. El manifiesto tiene el filtro https (`INVITE_HOST`, con `autoVerify`) y el de `codea://`.
+- **API:** `access_code.link` (con `PUBLIC_BASE_URL`), página `GET /invitar` (solo lee, nunca gasta el código; escapa y valida lo que refleja; CSP propia) y `GET /.well-known/assetlinks.json` (`ANDROID_CERT_SHA256`). Ambas son públicas y están en la matriz de acceso. Sin migración.
+- **Verificado:** 299 pruebas de la API (siete nuevas en `tests/test_invitations.py`) y 102 JVM de la app, en verde; la app compila e instala.
+- **Sin probar en el teléfono** (se bloqueó la pantalla): el enlace con la sesión abierta, el prefill de «Activar mi cuenta» (se puede probar con `adb shell am start -a android.intent.action.VIEW -d "codea://invitar?email=…&code=…" mx.tec.codea` con la sesión cerrada), el botón «Enviar por WhatsApp» y el flujo completo.
+- **Falta para que el enlace https abra la app:** una URL pública con HTTPS que llegue a la API (`PUBLIC_BASE_URL`; para la demostración basta un túnel), la huella del certificado (`ANDROID_CERT_SHA256`) y el mismo dominio en la app (`-PinviteHost=` o `INVITE_HOST` en `local.properties`). Sin eso el mensaje solo lleva el código escrito y funciona igual a mano.

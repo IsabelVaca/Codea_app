@@ -22,6 +22,9 @@ PUBLIC = {
     ("POST", "/api/v1/auth/activate"),
     ("POST", "/api/v1/auth/refresh"),
     ("POST", "/api/v1/auth/logout"),
+    # la página del enlace de invitación y la verificación de la app: las abre una persona o Android, sin token.
+    ("GET", "/invitar"),
+    ("GET", "/.well-known/assetlinks.json"),
 }
 
 

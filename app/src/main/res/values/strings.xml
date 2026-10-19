@@ -376,8 +376,10 @@
     <string name="account_logout_body">Tendrás que volver a entrar con tu correo y tu contraseña.</string>
     <string name="role_selection_no_roles">Tu cuenta todavía no tiene un perfil. Pide ayuda en la dirección.</string>
     <string name="access_code_title">Código de acceso</string>
-    <string name="access_code_body">Comparte este código con %1$s para que active su cuenta. Solo se muestra ahora y vence el %2$s.</string>
+    <string name="access_code_body">Mándale la invitación a %1$s para que cree su cuenta. El código solo se muestra ahora y vence el %2$s.</string>
+    <string name="access_code_whatsapp">Enviar por WhatsApp</string>
     <string name="access_code_share">Compartir</string>
     <string name="access_code_close">Listo</string>
-    <string name="access_code_share_text">Tu código de Codea es %1$s. Úsalo en «Activar mi cuenta» con tu correo.</string>
+    <string name="invite_message_with_link">Hola %1$s, la estancia La Oruga te invita a Codea.\n\nToca este enlace para crear tu cuenta:\n%2$s\n\nSi no se abre la app: instálala, toca «Es mi primera vez» y escribe tu correo (%3$s) y este código: %4$s\n\nEl código vence el %5$s.</string>
+    <string name="invite_message_no_link">Hola %1$s, la estancia La Oruga te invita a Codea.\n\nPara crear tu cuenta: instala la app, toca «Es mi primera vez» y escribe tu correo (%2$s) y este código: %3$s\n\nEl código vence el %4$s.</string>
 </resources>

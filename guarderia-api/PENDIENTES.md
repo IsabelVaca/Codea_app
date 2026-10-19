@@ -32,7 +32,7 @@ Foto a 2026-10-16 (leyendo el código; las pruebas no se corrieron para esta fot
 | Exportar reportes (PDF/CSV) | HN1 |
 | Varios hijos por padre en las respuestas de la API | HN4 (el modelo ya lo permite) |
 | Chat en tiempo real | SSE o WebSocket (el marco los permite); hoy se consulta con `?after=` |
-| Correo real de invitación | Hoy solo queda en el log (`auth/service.py`) |
+| Correo real de invitación | **Ya no aplica:** el admin manda el enlace por WhatsApp. Falta una URL pública con HTTPS para que el enlace funcione fuera de la red local (`PUBLIC_BASE_URL`) |
 
 ### Infra y operación
 

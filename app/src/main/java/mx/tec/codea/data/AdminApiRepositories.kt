@@ -47,7 +47,11 @@ class DocenteApiRepository {
             )
         )
         // la API da el código de acceso una sola vez: el admin lo comparte para que la docente active su cuenta.
-        creada.accessCode?.let { DataEvents.accessCode(AccessCodeNotice(creada.fullName, it.code, shortDateOf(it.expiresAt).orEmpty())) }
+        creada.accessCode?.let {
+            DataEvents.accessCode(
+                AccessCodeNotice(creada.fullName, it.code, shortDateOf(it.expiresAt).orEmpty(), creada.phone, creada.email, it.link),
+            )
+        }
     }
 
     // sala vacía = sin sala.
@@ -129,7 +133,11 @@ class PadreApiRepository {
                 childIds = hijoIds.map { it.toInt() },
             )
         )
-        creado.accessCode?.let { DataEvents.accessCode(AccessCodeNotice(creado.fullName, it.code, shortDateOf(it.expiresAt).orEmpty())) }
+        creado.accessCode?.let {
+            DataEvents.accessCode(
+                AccessCodeNotice(creado.fullName, it.code, shortDateOf(it.expiresAt).orEmpty(), creado.phone, creado.email, it.link),
+            )
+        }
     }
 
     suspend fun setAcceso(padreId: String, conAcceso: Boolean) {
@@ -139,7 +147,11 @@ class PadreApiRepository {
     // la API genera un código nuevo; se muestra para que el admin lo comparta.
     suspend fun reenviarInvitacion(padreId: String) {
         val padre = api.resendInvitation(padreId)
-        padre.accessCode?.let { DataEvents.accessCode(AccessCodeNotice(padre.fullName, it.code, shortDateOf(it.expiresAt).orEmpty())) }
+        padre.accessCode?.let {
+            DataEvents.accessCode(
+                AccessCodeNotice(padre.fullName, it.code, shortDateOf(it.expiresAt).orEmpty(), padre.phone, padre.email, it.link),
+            )
+        }
     }
 }
 

@@ -8,6 +8,7 @@ Quién puede llamar a cada endpoint. **Se genera leyendo las dependencias reales
 
 | Método | Ruta | Admin | Docente | Padre | Tipo |
 |---|---|:-:|:-:|:-:|---|
+| GET | `/.well-known/assetlinks.json` | ✅ | ✅ | ✅ | Pública |
 | GET | `/announcements` | ✅ | ✅ | ✅ | Sesión |
 | POST | `/announcements` | ✅ | — | — | Por rol |
 | PUT | `/attendance/{child_id}` | ✅ | ✅ | — | Por rol |
@@ -49,6 +50,7 @@ Quién puede llamar a cada endpoint. **Se genera leyendo las dependencias reales
 | POST | `/conversations/{conversation_id}/read` | ✅ | ✅ | ✅ | Sesión |
 | GET | `/health/live` | ✅ | ✅ | ✅ | Pública |
 | GET | `/health/ready` | ✅ | ✅ | ✅ | Pública |
+| GET | `/invitar` | ✅ | ✅ | ✅ | Pública |
 | GET | `/invitations` | ✅ | — | — | Por rol |
 | POST | `/invitations` | ✅ | — | — | Por rol |
 | GET | `/me` | ✅ | ✅ | ✅ | Sesión |
@@ -86,7 +88,7 @@ Quién puede llamar a cada endpoint. **Se genera leyendo las dependencias reales
 | POST | `/teachers/{teacher_id}/reactivate` | ✅ | — | — | Por rol |
 | POST | `/users/{user_id}/access-code` | ✅ | — | — | Por rol |
 
-Total: 77 endpoints (6 públicos, 55 por rol, 16 con alcance por registro).
+Total: 79 endpoints (8 públicos, 55 por rol, 16 con alcance por registro).
 
 ## Cómo se regenera
 

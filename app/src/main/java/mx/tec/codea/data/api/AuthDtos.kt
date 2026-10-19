@@ -38,4 +38,6 @@ data class AccessCodeDto(
     val code: String,
     val purpose: String,
     @SerialName("expires_at") val expiresAt: String,
+    // el enlace que abre la app con el correo y el código ya puestos; null si el servidor no tiene URL pública.
+    val link: String? = null,
 )
