@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import mx.tec.codea.ui.theme.CodeaTheme
 import mx.tec.codea.ui.theme.Poppins
 import mx.tec.codea.domain.DocenteError
+import mx.tec.codea.ui.components.BackHeader
 
 data class OpcionChip(val nombre: String, val activo: Boolean)
 
@@ -63,25 +64,11 @@ fun AltaAsistenteScreen(
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Flecha para regresar y título
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(
-                onClick = onBack,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(999.dp))
-                    .background(Color(0xFFF4F1FB))
-            ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás", tint = Color(0xFF2A2140))
-            }
-            Text(
-                text = "Dar de alta asistente",
-                fontFamily = Poppins,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF2A2140),
-                modifier = Modifier.padding(start = 4.dp)
-            )
-        }
+        BackHeader(
+            overline = "Docentes",
+            title = "Dar de alta asistente",
+            onBackClick = onBack,
+        )
 
         Column(
             modifier = Modifier

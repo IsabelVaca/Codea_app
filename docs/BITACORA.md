@@ -180,3 +180,10 @@ Propuesta y decisiones en [`plan/06-mi-sala-propuesta.md`](plan/06-mi-sala-propu
 - Quedan para decidir: el 6 (arrastrar para ordenar rutinas, librería `reorderable`) y el 7 (avisos a coordinación en el servidor).
 - Compila y las 77 pruebas JVM pasan.
 
+## 2026-10-18 · Limpieza visual, propuesta 1: un solo encabezado
+
+- Había cuatro encabezados distintos: título pequeño en las pestañas del admin; sobretítulo y título grande en las de la docente y el padre; flecha sin círculo en Horario y Rutinas; y nada (sin botón de volver) en Detalle de rutina, Nueva rutina, Catálogo, Orden y Agregar momento.
+- Ahora las pestañas del admin (Centro, Docentes, Familias, Ajustes) y la bandeja de Chats usan `ScreenHeader`; las ocho pantallas internas del admin que dibujaban su flecha a mano, Horario, la lista de Rutinas y las cinco de rutinas usan `BackHeader`. El detalle de sala, docente, infante y padre ganó el espaciado de las demás.
+- Sin cambios de función. Compila y pasan las 77 pruebas JVM; se revisó en el emulador con el admin y la docente.
+- Siguen las propuestas 2 a 7 de la presentación de limpieza visual (color, botones, filas, vacíos, modo oscuro y detalles).
+

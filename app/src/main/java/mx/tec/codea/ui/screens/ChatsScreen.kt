@@ -42,6 +42,7 @@ import mx.tec.codea.domain.Conversation
 import mx.tec.codea.domain.MessageStatus
 import mx.tec.codea.ui.components.BackHeader
 import mx.tec.codea.ui.theme.CodeaTheme
+import mx.tec.codea.ui.components.ScreenHeader
 
 // the chat tab. the teacher sees an inbox (one row per child) and opens a conversation;
 // the parent goes straight to the conversation when there is only one child.
@@ -94,12 +95,13 @@ private fun InboxScreen(
             .padding(horizontal = 22.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text(
-            text = stringResource(
+        ScreenHeader(
+            overline = stringResource(
+                if (isParent) R.string.chats_inbox_overline_parent else R.string.chats_inbox_overline,
+            ),
+            title = stringResource(
                 if (isParent) R.string.chats_inbox_title_parent else R.string.chats_inbox_title,
             ),
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
         )
 
         if (conversations.isEmpty()) {

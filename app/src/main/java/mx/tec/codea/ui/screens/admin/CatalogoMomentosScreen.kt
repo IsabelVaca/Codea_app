@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import mx.tec.codea.domain.MomentoCatalogo
 import mx.tec.codea.ui.theme.Poppins
+import mx.tec.codea.ui.components.BackHeader
 
 @Composable
 fun CatalogoMomentosScreen(
@@ -46,6 +47,7 @@ fun CatalogoMomentosScreen(
     registroPropio: String, onRegistroPropioChange: (String) -> Unit,
     onGuardarPropio: () -> Unit,
     onContinuar: () -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val textoBoton = if (seleccionados.isNotEmpty()) "Continuar con ${seleccionados.size} momentos" else "Elige momentos"
@@ -55,6 +57,7 @@ fun CatalogoMomentosScreen(
             modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+            BackHeader(overline = "Ajustes · Rutinas", title = "Nueva rutina", onBackClick = onBack)
             SeccionLabel("PASO 2 DE 3")
             Text(
                 "Toca para incluir. Cada momento trae su registro rápido.",

@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import mx.tec.codea.domain.MomentoCatalogo
 import mx.tec.codea.ui.theme.Poppins
+import mx.tec.codea.ui.components.BackHeader
 
 @Composable
 fun AgregarMomentoScreen(
@@ -40,6 +41,7 @@ fun AgregarMomentoScreen(
     nombrePropio: String, onNombrePropioChange: (String) -> Unit,
     registroPropio: String, onRegistroPropioChange: (String) -> Unit,
     onAgregar: () -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val textoBoton = when {
@@ -55,6 +57,7 @@ fun AgregarMomentoScreen(
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
+        BackHeader(overline = "Ajustes · Rutinas", title = "Agregar momento", onBackClick = onBack)
         SeccionLabel("DEL CATÁLOGO")
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             catalogo.forEach { m ->

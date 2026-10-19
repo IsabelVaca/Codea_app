@@ -37,6 +37,9 @@ import androidx.compose.foundation.lazy.items
 import mx.tec.codea.domain.Docente
 import mx.tec.codea.domain.Infante
 import androidx.compose.ui.draw.shadow
+import mx.tec.codea.R
+import mx.tec.codea.ui.components.ScreenHeader
+import androidx.compose.ui.res.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,7 +52,11 @@ fun DocenteScreen(
 ){
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Docentes", fontWeight = FontWeight.Bold) })
+            ScreenHeader(
+                overline = stringResource(R.string.admin_overline),
+                title = "Docentes",
+                modifier = Modifier.padding(horizontal = 22.dp, vertical = 16.dp),
+            )
         },
         content = { paddingValues ->
             Column(

@@ -19,12 +19,14 @@ import mx.tec.codea.domain.MomentoRutina
 import mx.tec.codea.ui.theme.Poppins
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+import mx.tec.codea.ui.components.BackHeader
 
 @Composable
 fun OrdenRutinaScreen(
     momentos: List<MomentoRutina>,
     onReordenar: (from: Int, to: Int) -> Unit,
     onGuardar: () -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
@@ -40,6 +42,7 @@ fun OrdenRutinaScreen(
         ) {
             item(key = "header") {
                 Column(Modifier.padding(bottom = 6.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    BackHeader(overline = "Ajustes · Rutinas", title = "Nueva rutina", onBackClick = onBack)
                     SeccionLabel("PASO 3 DE 3")
                     Text(
                         "Arrastra de las rayitas para dejar los momentos en orden.",

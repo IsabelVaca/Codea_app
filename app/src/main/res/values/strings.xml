@@ -131,6 +131,9 @@
 
     <!-- my room screen -->
     <string name="my_room_overline">Estancia La Oruga</string>
+    <string name="admin_overline">Estancia La Oruga · Administración</string>
+    <string name="chats_inbox_overline">Estancia La Oruga</string>
+    <string name="chats_inbox_overline_parent">Estancia La Oruga · Familia</string>
     <string name="my_room_title">Sala · %1$s</string>
     <string name="my_room_title_generic">Mi sala</string>
     <string name="my_room_present">Presente</string>

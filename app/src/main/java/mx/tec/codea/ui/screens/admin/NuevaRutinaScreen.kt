@@ -23,12 +23,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import mx.tec.codea.ui.theme.Poppins
+import mx.tec.codea.ui.components.BackHeader
 
 @Composable
 fun NuevaRutinaScreen(
     nombre: String, onNombreChange: (String) -> Unit,
     etapa: String, onElegirEtapa: (String) -> Unit,
     onElegirMomentos: () -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxSize().padding(20.dp)) {
@@ -36,6 +38,7 @@ fun NuevaRutinaScreen(
             modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            BackHeader(overline = "Ajustes · Rutinas", title = "Nueva rutina", onBackClick = onBack)
             SeccionLabel("PASO 1 DE 3")
             SeccionLabel("NOMBRE")
             CampoTexto(nombre, onNombreChange, "Ej. Tarde tranquila")

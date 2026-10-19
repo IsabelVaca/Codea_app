@@ -31,6 +31,7 @@ import mx.tec.codea.domain.Sala
 import mx.tec.codea.ui.theme.Poppins
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+import mx.tec.codea.ui.components.BackHeader
 
 @Composable
 fun RutinaDetalleScreen(
@@ -43,6 +44,7 @@ fun RutinaDetalleScreen(
     salasAsignadas: Set<String>,
     esPredeterminada: Boolean,
     onAlternarSala: (salaId: String, asignar: Boolean) -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
@@ -57,6 +59,8 @@ fun RutinaDetalleScreen(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item(key = "header") {
+            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            BackHeader(overline = "Ajustes · Rutinas", title = nombreRutina, onBackClick = onBack)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -66,11 +70,11 @@ fun RutinaDetalleScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Text(nombreRutina, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF4A3A80))
                 Text(
                     "Arrastra de las rayitas para dejar los momentos en el orden deseado.",
                     fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, color = Color(0xFF5B4B8A)
                 )
+            }
             }
         }
 
