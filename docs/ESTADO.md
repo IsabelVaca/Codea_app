@@ -10,7 +10,7 @@ Documentos hermanos: [`REQUISITOS.md`](REQUISITOS.md) · [`ENTREGA-3.md`](ENTREG
 | Área | Avance | Hecho | Falta |
 |---|---|---|---|
 | Requisitos (30 % de la app) | ~59 % | 15 de 32 completos y 8 parciales | Ver [`REQUISITOS.md`](REQUISITOS.md) |
-| App: docente | Alto | Check-in con GPS, rutina, reportes (escrito, dictado, foto), Mi sala, chat | Documentos y perfil (`ComingSoon`); tiempo real; sin conexión |
+| App: docente | Alto | Check-in con GPS, rutina, reportes (escrito, dictado, foto), Mi sala, chat | Documentos de la docente (se quitó la opción del Menú); tiempo real; sin conexión |
 | App: admin | Alto | Pestañas Centro, Docentes, **Familias** (infantes y padres juntos) y **Ajustes** (horario del centro, rutinas, catálogo de momentos y Mi cuenta); salas, avisos (publicar e historial) y fotos que piden borrar | Menú del día |
 | App: padre | Medio | Hoy, calendario, fotos, documentos, personas autorizadas, nota a la asistente | Chat, varios hijos, paginación de fotos, menú del día |
 | Backend | Alto | 13 módulos, migraciones, seed, 68 pruebas, login JWT | Resumen semanal, HTTPS, endurecimiento restante |
@@ -31,9 +31,8 @@ Documentos hermanos: [`REQUISITOS.md`](REQUISITOS.md) · [`ENTREGA-3.md`](ENTREG
 |---|---|
 | HTTP sin cifrar | Solo en debug y solo a `10.0.2.2`/`localhost` (`network_security_config`); falta definir `API_BASE_URL_RELEASE` con HTTPS. |
 | Release sin firmar | `app/build.gradle.kts` tiene `optimization.enable = false` y no hay `signingConfig`. |
-| Repositorios en memoria olvidados | En `data/` quedan clases de la etapa sin backend (`ChildRepository`, `TeacherRepository`, …); ver [`app/src/main/java/mx/tec/codea/data/README.md`](../app/src/main/java/mx/tec/codea/data/README.md). |
 | Datos de ejemplo del padre | `ui/screens/parent/*SampleData.kt` siguen en el repo; las pantallas leen del `ParentViewModel`. |
-| Dos pantallas casi iguales | Por ejemplo `CheckerScreen.kt` y `checadorScreen.kt`, `MyDayScreen.kt` y `miDiaScreen.kt`; ver el README de `ui/screens/`. |
+| Pantallas duplicadas | Se borraron el 18/oct (`checadorScreen.kt`, `miDiaScreen.kt` y otras tres). Siguen `MyDayScreen.kt` y `CheckerScreen.kt`. |
 | `CodeaNavHost.kt` | 849 líneas; todos los frentes lo tocan y genera conflictos de merge. |
 | Estado con `mutableStateOf` | `CodeaViewModel` y `ParentViewModel`; el marco pide StateFlow. |
 | Contraseñas por defecto | `guarderia-api/.env.example` trae valores de ejemplo; cambiarlos antes de desplegar. |

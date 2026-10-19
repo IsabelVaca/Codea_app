@@ -155,3 +155,13 @@ Registro cronológico de lo que se hizo, por qué y cómo se verificó. Lo nuevo
 
 - La pantalla de confirmación de la entrada abría Mi día por sí sola a los 2 segundos. Se quitó el temporizador y el texto «La app te lleva sola en 2 segundos»: ahora se queda hasta que la docente toca «Ir a Mi día».
 
+## 2026-10-18 · Limpieza de la app (candidatos 1 a 5)
+
+- **1. Cinco pantallas sin uso:** `checadorScreen.kt`, `miDiaScreen.kt`, `miDiaEnCursoScreen.kt`, `confirmarMomentoScreen.kt` y `ajustarRutinaScreen.kt` (1,010 líneas). Ninguna se abría desde la app; solo existían sus `@Preview`.
+- **2. Siete repositorios de ejemplo:** `ChildRepository`, `DocenteRepository`, `InfanteRepository`, `PadreRepository`, `RoutineRepository`, `SalaRepository` y `TeacherRepository` (263 líneas). Se borraron también las nueve vistas previas que los usaban; `RoutineRulesTest` trae ahora su propio dato de ejemplo.
+- **3. «Mis documentos»:** se quita del Menú de la docente, junto con `ComingSoonScreen`, `MenuOptionRoute` y sus textos.
+- **4. Turno en el alta de la docente:** se quita el campo y la llamada `GET /shifts` de la app; la app ya no manda `shift_id` (la API lo sigue aceptando como opcional).
+- **5. «Abrir chat» del administrador:** se quita el botón del detalle del padre, que llevaba a una pantalla que no terminaba de cargar.
+- Quedan para decidir: el 6 (arrastrar para ordenar rutinas, librería `reorderable`) y el 7 (avisos a coordinación en el servidor).
+- Compila y las 77 pruebas JVM pasan.
+

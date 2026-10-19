@@ -49,7 +49,6 @@ fun AltaAsistenteScreen(
     correo: String, onCorreoChange: (String) -> Unit,
     correoError: DocenteError?,
     salas: List<OpcionChip>, onElegirSala: (String) -> Unit,
-    turno: String, onElegirTurno: (String) -> Unit,
     canGuardar: Boolean,
     onGuardar: () -> Unit,
     onBack: () -> Unit,
@@ -94,7 +93,7 @@ fun AltaAsistenteScreen(
         ) {
             Text("Nueva asistente", fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF9A4A32))
             Text(
-                "Da de alta su acceso a la app: sala y turno.",
+                "Da de alta su acceso a la app: sala.",
                 fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, color = Color(0xFF9A6A5C)
             )
         }
@@ -111,13 +110,6 @@ fun AltaAsistenteScreen(
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             salas.forEach { o ->
                 ChipBoton(o.nombre, o.activo, Color(0xFFFF7A5A)) { onElegirSala(o.nombre) }
-            }
-        }
-
-        SeccionLabel("TURNO")
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf("Matutino", "Vespertino").forEach { t ->
-                ChipBoton(t, turno == t, Color(0xFFFF7A5A)) { onElegirTurno(t) }
             }
         }
 
@@ -193,8 +185,6 @@ private fun AltaAsistenteScreenPreview() {
                 OpcionChip("Preescolar 2", activo = false),
             ),
             onElegirSala = {},
-            turno = "Matutino",
-            onElegirTurno = {},
             onGuardar = {},
             onBack = {},
             nombreError = null,

@@ -14,24 +14,16 @@ Las pantallas copian el diseño y el texto del prototipo (`docs/prototipos/`) y 
 | `SelectStudentsScreen.kt` | Elegir niños del reporte | ✅ |
 | `MyRoomScreen.kt` | Mi sala y asistencia | ✅ |
 | `ChatsScreen.kt` | Conversaciones con las familias | ✅ Envía y lee por la API; sin tiempo real |
-| `MenuScreen.kt` | Menú: perfil, checador y otras opciones | 🟡 Documentos abre `ComingSoon`; Avisos abre `AvisosFundacionScreen`; Mi perfil abre Mi cuenta; Cerrar sesión cierra la sesión de verdad |
+| `MenuScreen.kt` | Menú: perfil, checador y otras opciones | ✅ Avisos abre `AvisosFundacionScreen`; Mi perfil abre Mi cuenta; Cerrar sesión cierra la sesión de verdad |
 | `CheckerScreen.kt` | Checador: entrada y salida con un toque, sin ubicación ni mapa; a las 9 pm la salida se cierra sola | ✅ |
 | `CheckInDoneScreen.kt` | "Entrada registrada" | ✅ |
-| `ComingSoonScreen.kt` | Marcador de lo no construido | — |
 
-## Posiblemente muertas (no las registra el grafo; revisar antes de borrar)
+## Pantallas borradas el 18/oct
 
-| Archivo | Observación |
-|---|---|
-| `checadorScreen.kt` (`ChecadorScreen`) | Versión paralela de `CheckerScreen.kt` |
-| `miDiaScreen.kt` (`MiDiaScreen`), `miDiaEnCursoScreen.kt` | Versiones paralelas de `MyDayScreen.kt` |
-| `ajustarRutinaScreen.kt`, `confirmarMomentoScreen.kt` | Solo aparecen en sus propios `@Preview` |
-
-Comprobado el 2026-10-16 con búsqueda de texto. Si se confirma que nada las usa, se pueden eliminar; la convención de nombres del repo es "igual que el archivo vecino", así que no las renombres.
+Se quitaron `checadorScreen.kt`, `miDiaScreen.kt`, `miDiaEnCursoScreen.kt`, `confirmarMomentoScreen.kt` y `ajustarRutinaScreen.kt` (1,010 líneas): ninguna se abría desde la app, solo existían sus `@Preview`. También `ComingSoonScreen.kt`, que solo servía para «Mis documentos». Las pantallas vivas son `CheckerScreen.kt` y `MyDayScreen.kt`.
 
 ## Pendiente
 
-- La opción `ComingSoon` del menú: **documentos** (avisos y perfil ya existen).
 - **"Finalizar día"** al terminar la rutina (tarea abierta en Teams).
 - **Mandar fotos** desde el chat (tarea abierta en Teams).
 - **Foto de calidad:** `TakePicturePreview` devuelve una miniatura; para fotos de verdad usar `TakePicture` con `FileProvider`, y comprimir y orientar según EXIF como pide el marco.

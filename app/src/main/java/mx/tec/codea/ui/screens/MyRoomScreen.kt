@@ -32,7 +32,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import mx.tec.codea.R
 import androidx.compose.ui.res.stringResource
-import mx.tec.codea.data.ChildRepository
 import mx.tec.codea.domain.AttendanceStatus
 import mx.tec.codea.domain.Child
 import mx.tec.codea.ui.components.ScreenHeader
@@ -335,17 +334,5 @@ private fun ChatButton(
                     ),
             )
         }
-    }
-}
-
-@Preview(showBackground = true, heightDp = 900)
-@Composable
-private fun MyRoomScreenPreview() {
-    CodeaTheme {
-        MyRoomScreen(
-            children = ChildRepository().getAll(),
-            onAttendanceChange = { _, _ -> },
-            onChatClick = {},
-        )
     }
 }

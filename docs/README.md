@@ -52,7 +52,7 @@ El contrato vivo es el OpenAPI que genera FastAPI: con la API prendida, ábrelo 
 | Mi día → Reporte | Reporte con foto · pasos 3 a 6, ruta A, E1 y E2 | Escrito, dictado o con foto (cámara real). No deja continuar sin texto ni guardar sin niños, y los que faltaron no se pueden marcar |
 | Mi sala | Chatear con los papás · paso 1 | Asistencia editable (la comparte el reporte) y botón de chat |
 | Chats | Chatear con los papás · paso 2 | Conversación de muestra, todavía no envía mensajes |
-| Menú | Registrar entrada · paso 1 | Perfil, estado de la entrada, checador, opciones («Muy pronto») y cerrar sesión (reinicia el día del prototipo) |
+| Menú | Registrar entrada · paso 1 | Perfil, estado de la entrada, checador, avisos de la fundación, mi perfil y cerrar sesión (reinicia el día del prototipo) |
 | Menú → Checador | Registrar entrada · paso 2 y E2 | Sin ubicación ni mapa: un toque registra la entrada (tarde registra con motivo opcional) y otro la salida; a las 9 pm el servidor cierra solo lo que quedó abierto. El caso E1 («fuera del perímetro») ya no existe |
 | Menú → Entrada registrada | Registrar entrada · paso 3 y E3 | Se queda en pantalla hasta que la docente toca «Ir a Mi día»; ya no se cierra sola |
 

@@ -47,10 +47,9 @@ class DocentesAdminViewModel : ViewModel() {
         apellido: String = "",
         telefono: String = "",
         correo: String = "",
-        turno: String = "",
         onSuccess: () -> Unit = {},
     ) {
-        launchAction(onSuccess) { repository.alta(nombre, apellido, telefono, correo, sala, turno) }
+        launchAction(onSuccess) { repository.alta(nombre, apellido, telefono, correo, sala) }
     }
 
     fun cambiarSala(docenteId: String, nuevaSala: String) {

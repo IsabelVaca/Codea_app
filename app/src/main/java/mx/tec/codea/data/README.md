@@ -18,16 +18,9 @@ Repositorios: lo que las capas de arriba piden y mandan. Convierten DTOs (`data/
 | `DataEvents.kt` | Todos | Bus global: `changed` (recargar listas), `notices` (texto para el snackbar) y `accessCodes` (el código de acceso de alguien recién dado de alta; `CodeaNavHost` lo muestra en un diálogo) |
 | `TimeUtils.kt` | Todos | Conversión de horas ISO / "HH:mm" |
 
-## Repositorios en memoria de la etapa sin backend (heredados)
+## Repositorios en memoria
 
-`ChildRepository`, `ChatRepository`, `RoutineRepository`, `TeacherRepository`, `SalaRepository`, `DocenteRepository`, `InfanteRepository`, `PadreRepository`.
-
-Devuelven datos escritos a mano. Revisado el 2026-10-16:
-- `ChildRepository`, `ChatRepository`, `RoutineRepository` y `TeacherRepository` solo los usan los `@Preview` de las pantallas de la docente.
-- `SalaRepository`, `DocenteRepository` e `InfanteRepository` los referencian pantallas de admin (`centroScreen.kt`, `docenteScreenAdmin.kt`, `infanteScreenAdmin.kt`); verifica si es solo en previews.
-- `PadreRepository` no lo usa nadie.
-
-Antes de borrarlos, busca sus referencias y reemplaza los previews con datos propios. Borrarlos reduce confusión: hoy parece que la app lee de ahí, y no.
+**Ya no hay.** El 18/oct se borraron los siete de la etapa sin backend (`ChildRepository`, `DocenteRepository`, `InfanteRepository`, `PadreRepository`, `RoutineRepository`, `SalaRepository` y `TeacherRepository`): solo alimentaban vistas previas de Android Studio y las pruebas de `RoutineRules`, que ahora traen su propio dato de ejemplo. Todo lo que lee la app sale de los `*ApiRepository`.
 
 ## Cómo agregar un repositorio o una función
 

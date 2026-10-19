@@ -113,7 +113,6 @@ data class TeacherCreateBody(
     val phone: String,
     val email: String,
     @SerialName("classroom_id") val classroomId: Int? = null,
-    @SerialName("shift_id") val shiftId: Int? = null,
 )
 
 @Serializable

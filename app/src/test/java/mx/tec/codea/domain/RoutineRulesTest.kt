@@ -1,6 +1,5 @@
 package mx.tec.codea.domain
 
-import mx.tec.codea.data.RoutineRepository
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -9,7 +8,27 @@ import org.junit.Test
 
 class RoutineRulesTest {
 
-    private val routine = RoutineRepository().getToday()
+    // el día de ejemplo del prototipo: tres momentos hechos, el cuarto en curso y cinco pendientes.
+    private val routine = Routine(
+        name = "Día completo · Preescolar",
+        subprocesses = listOf(
+            Subprocess(1, "Recepción y bienvenida", SubprocessStatus.DONE, time = "8:10"),
+            Subprocess(2, "Desayuno", SubprocessStatus.DONE, time = "9:05"),
+            Subprocess(3, "Trazos y motricidad", SubprocessStatus.DONE, time = "10:05"),
+            Subprocess(
+                number = 4,
+                name = "Patio y juego libre",
+                status = SubprocessStatus.ACTIVE,
+                time = "11:20",
+                description = "14 niños en el patio chico.",
+            ),
+            Subprocess(5, "Comida", SubprocessStatus.PENDING),
+            Subprocess(6, "Siesta", SubprocessStatus.PENDING),
+            Subprocess(7, "Higiene y cambio", SubprocessStatus.PENDING),
+            Subprocess(8, "Actividad de la tarde", SubprocessStatus.PENDING),
+            Subprocess(9, "Entrega a familias", SubprocessStatus.PENDING),
+        ),
+    )
 
     @Test
     fun confirm_closesActiveAndStartsNext() {

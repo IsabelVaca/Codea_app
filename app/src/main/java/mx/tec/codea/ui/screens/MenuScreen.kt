@@ -50,7 +50,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import mx.tec.codea.R
-import mx.tec.codea.data.TeacherRepository
 import mx.tec.codea.domain.CheckInRecord
 import mx.tec.codea.domain.Teacher
 import mx.tec.codea.domain.formatTimeOfDay
@@ -61,7 +60,6 @@ import mx.tec.codea.ui.theme.CodeaTheme
 // the other options of the menu. they do not have a screen yet,
 // so the nav host opens "muy pronto" with their title.
 enum class MenuOption(@StringRes val titleRes: Int, @StringRes val subtitleRes: Int) {
-    DOCUMENTS(R.string.menu_documents_title, R.string.menu_documents_subtitle),
     PROFILE(R.string.menu_profile_title, R.string.menu_profile_subtitle),
     NOTICES(R.string.menu_notices_title, R.string.menu_notices_subtitle),
 }
@@ -363,20 +361,5 @@ private fun MenuRow(
                 tint = MaterialTheme.colorScheme.outline,
             )
         }
-    }
-}
-
-@Preview(showBackground = true, heightDp = 800)
-@Composable
-private fun MenuScreenPreview() {
-    CodeaTheme {
-        MenuScreen(
-            teacher = TeacherRepository().current(),
-            checkIn = null,
-            openChecker = false,
-            onCheckerClick = {},
-            onOptionClick = {},
-            onLogoutConfirm = {},
-        )
     }
 }

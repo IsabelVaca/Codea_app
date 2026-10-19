@@ -53,8 +53,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import mx.tec.codea.data.InfanteRepository
-import mx.tec.codea.data.SalaRepository
 import mx.tec.codea.domain.Aviso
 import mx.tec.codea.domain.Infante
 import mx.tec.codea.domain.Sala
@@ -334,26 +332,6 @@ fun CrearSalaButton(
             fontSize = 15.sp,
             fontFamily = Poppins,
             fontWeight = FontWeight.Bold
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun CentroScreenPreview() {
-    CodeaTheme {
-        CentroScreen(
-            salas = SalaRepository().getAll(),
-            infantes = InfanteRepository().getAll(),
-            avisoTexto = "",
-            onAvisoTextoChange = {},
-            onPublicarAviso = {},
-            onCrearSala = {},
-            canPublicarAviso = true,
-            avisos = listOf(
-                Aviso("2", "Maternal", "16 oct · 09:30", "Mañana no hay servicio."),
-                Aviso("1", null, "15 oct · 14:00", "Junta de padres el viernes."),
-            )
         )
     }
 }

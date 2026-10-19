@@ -13,7 +13,6 @@ data class AltaAsistenteUiState(
     val telefono: String = "",
     val correo: String = "",
     val salaElegida: String? = null,
-    val turno: String = ""
 ) {
     val nombreError: DocenteError?
         get() = if (nombre.isEmpty()) null else DocenteValidator.validateNombre(nombre)
@@ -28,7 +27,6 @@ data class AltaAsistenteUiState(
         get() = DocenteValidator.isValid(nombre, telefono, correo)
             && apellido.isNotBlank()
             && salaElegida != null
-            && turno.isNotBlank()
 }
 
 // vive solo en esta pantalla.
@@ -44,9 +42,5 @@ class AltaAsistenteViewModel : ViewModel() {
 
     fun onElegirSala(nombre: String) {
         uiState = uiState.copy(salaElegida = if (uiState.salaElegida == nombre) null else nombre)
-    }
-
-    fun onElegirTurno(turno: String) {
-        uiState = uiState.copy(turno = turno)
     }
 }

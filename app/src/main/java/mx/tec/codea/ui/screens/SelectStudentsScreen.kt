@@ -34,7 +34,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import mx.tec.codea.R
-import mx.tec.codea.data.ChildRepository
 import mx.tec.codea.domain.AttendanceStatus
 import mx.tec.codea.domain.Child
 import mx.tec.codea.domain.ReportValidator
@@ -214,22 +213,5 @@ private fun CheckSquare(isChecked: Boolean) {
                 modifier = Modifier.size(16.dp),
             )
         }
-    }
-}
-
-@Preview(showBackground = true, heightDp = 900)
-@Composable
-private fun SelectStudentsScreenPreview() {
-    CodeaTheme {
-        SelectStudentsScreen(
-            uiState = ReportFormUiState(
-                description = "Se tropezaron jugando a las carreras.",
-                selectedChildIds = setOf("mateo-torres", "sofia-marquez"),
-            ),
-            children = ChildRepository().getAll(),
-            onChildToggle = {},
-            onSaveClick = {},
-            onBackClick = {},
-        )
     }
 }
