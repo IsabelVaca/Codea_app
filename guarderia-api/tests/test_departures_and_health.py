@@ -178,3 +178,24 @@ async def test_the_inbox_says_whose_parent_each_chat_is(client, world):
     assert by_child["Diego Álvarez"] == []
     # la otra sala no se mezcla.
     assert "Renata Gómez" not in by_child
+
+
+async def test_the_family_sees_when_the_child_left_and_with_whom(client, world, db):
+    await mark_present(client, world, world.sofia)
+    pickup_id = await _pickup(db, world, world.sofia)
+
+    before = (await client.get(f"/children/{world.sofia.id}/day", headers=world.mom)).json()
+    assert all(event["type"] != "DEPARTURE" for event in before["timeline"])
+
+    assert (
+        await client.post(f"/children/{world.sofia.id}/departure", headers=world.teacher_a, json={"pickup_id": pickup_id})
+    ).status_code == 201
+    day = (await client.get(f"/children/{world.sofia.id}/day", headers=world.mom)).json()
+    last = day["timeline"][-1]
+    assert (last["type"], last["title"], last["description"]) == ("DEPARTURE", "Salida", "Lo recogió Andrea Torres.")
+    assert last["time"].startswith("2026-10-14T13:52")
+
+    # si la docente se equivocó y lo corrige, desaparece.
+    assert (await client.delete(f"/children/{world.sofia.id}/departure", headers=world.teacher_a)).status_code == 204
+    after = (await client.get(f"/children/{world.sofia.id}/day", headers=world.mom)).json()
+    assert all(event["type"] != "DEPARTURE" for event in after["timeline"])

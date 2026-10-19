@@ -171,11 +171,6 @@ data class FeedPage(
     @SerialName("next_cursor") val nextCursor: String? = null,
 )
 
-@Serializable
-data class DeletionBody(
-    val reason: String? = null,
-)
-
 // ---------- subir archivos ----------
 
 @Serializable

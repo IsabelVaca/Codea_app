@@ -352,7 +352,7 @@ private fun TimelineEventCard(event: TimelineEvent) {
                     modifier = Modifier.weight(1f),
                 ) {
                     val dotColor = when (event.type) {
-                        TimelineEventType.CHECK_IN, TimelineEventType.MEAL -> Teal
+                        TimelineEventType.CHECK_IN, TimelineEventType.MEAL, TimelineEventType.DEPARTURE -> Teal
                         TimelineEventType.ACTIVITY, TimelineEventType.NAP -> MaterialTheme.colorScheme.primary
                     }
 

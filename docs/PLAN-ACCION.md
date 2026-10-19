@@ -12,7 +12,7 @@
 
 ## Bloque 0: línea base (domingo)
 
-- [x] Correr `pytest` de la API (318 en verde, 18/oct). Las pruebas JVM de la app (121) se contaron pero no se corrieron en la última revisión.
+- [x] Correr `pytest` de la API (318 en verde, 18/oct). Las pruebas JVM de la app (125) se contaron pero no se corrieron en la última revisión.
 - [ ] Recorrer en el teléfono los tres roles (admin, docente, padre) con `adb` y anotar cada falla en [`RECORRIDO.md`](RECORRIDO.md). Se hizo una vez en la mañana del 18/oct; **falta repetirlo** con todo lo nuevo (Mi sala, pase de lista, pase de salida, Mi hijo, chat con fotos, invitación).
 - [x] Arreglar lo que bloquee el recorrido (por ejemplo, el título "Inicia sesión" casi invisible).
 

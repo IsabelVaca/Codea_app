@@ -1,6 +1,6 @@
 # Manual de instalación
 
-Cómo levantar el backend (API, base de datos y almacén de archivos) y cómo compilar e instalar la app Android. Estado a **2026-10-18**, `main` con los PR #7 a #9 y la invitación por WhatsApp (puesto al día el 18/oct por la noche; en esa revisión se corrió `pytest` de la API: 318 pruebas en verde).
+Cómo levantar el backend (API, base de datos y almacén de archivos) y cómo compilar e instalar la app Android. Estado a **2026-10-18**, `main` con los PR #7 a #9 y la invitación por WhatsApp (puesto al día el 18/oct por la noche; en esa revisión se corrió `pytest` de la API: 324 pruebas en verde).
 
 Todo sale de archivos reales del repositorio: `guarderia-api/README.md`, `docker-compose.yml`, `docker-compose.override.yml`, `Dockerfile`, `.env.example`, `app/build.gradle.kts`, `gradle/libs.versions.toml`, `docs/RECORRIDO.md` y `docs/BITACORA.md`. **Los comandos no se ejecutaron para escribir este documento** (la base, los puertos y el teléfono estaban ocupados por otra sesión de trabajo), así que cada paso dice de dónde sale. Lo que no se puede confirmar con los archivos está marcado como **«No confirmado»**.
 
@@ -143,7 +143,7 @@ python3 -m venv .venv
 ```
 
 - `conftest.py` lee `POSTGRES_USER` y `POSTGRES_PASSWORD` del `.env` o del entorno, y usa `TEST_DB_HOST` (por omisión `localhost`). Si tu `.env` apunta a Aiven, la contraseña del contenedor local puede ser otra: pásala así, `POSTGRES_PASSWORD=<la del contenedor local> .venv/bin/pytest` (`docs/RECORRIDO.md`). **Nunca** corras las pruebas contra Aiven.
-- La documentación de pruebas (`guarderia-api/tests/README.md`) habla de 318 pruebas de la API al 2026-10-18 No se ejecutaron para este documento.
+- La documentación de pruebas (`guarderia-api/tests/README.md`) habla de 324 pruebas de la API al 2026-10-18 No se ejecutaron para este documento.
 
 ### 2.7 Apagar y reiniciar
 

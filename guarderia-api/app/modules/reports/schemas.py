@@ -65,6 +65,8 @@ class TimelineType(StrEnum):
     MEAL = "MEAL"
     ACTIVITY = "ACTIVITY"
     NAP = "NAP"
+    # la salida del niño (pase de salida): a qué hora se fue y con quién.
+    DEPARTURE = "DEPARTURE"
 
 
 class TimelineEvent(BaseModel):

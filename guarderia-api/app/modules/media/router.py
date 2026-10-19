@@ -59,6 +59,12 @@ async def request_deletion(
     return request
 
 
+@router.delete("/{media_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_photo(db: Db, current: ParentUser, storage: StorageDep, media_id: int) -> None:
+    """Botón "Borrar" del padre: borra la foto de inmediato si solo salen hijos suyos; 409 `MEDIA_SHARED` si no."""
+    await service.delete_own_photo(db, current, storage, media_id)
+
+
 @router.get("/deletion-requests", response_model=list[DeletionReviewOut])
 async def list_deletion_requests(
     db: Db, _: AdminUser, storage: StorageDep, status: DeletionStatus = DeletionStatus.PENDING

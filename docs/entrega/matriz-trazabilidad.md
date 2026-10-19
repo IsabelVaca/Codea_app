@@ -1,6 +1,6 @@
 # Matriz de trazabilidad
 
-Parte 3 de la rúbrica: **ID, descripción, criterio de aceptación, evidencia, resultado y estado**. Corte: **2026-10-18**, `main` con los PR #7 a #9 y la invitación por WhatsApp (puesto al día el 18/oct por la noche; en esa revisión se corrió `pytest` de la API: 318 pruebas en verde).
+Parte 3 de la rúbrica: **ID, descripción, criterio de aceptación, evidencia, resultado y estado**. Corte: **2026-10-18**, `main` con los PR #7 a #9 y la invitación por WhatsApp (puesto al día el 18/oct por la noche; en esa revisión se corrió `pytest` de la API: 324 pruebas en verde).
 
 ## Cómo leerla
 
@@ -13,7 +13,7 @@ Parte 3 de la rúbrica: **ID, descripción, criterio de aceptación, evidencia, 
   - **no probado** = solo existe el código o no hay evidencia.
   - **no pasa** = no existe o falla.
 - **Estado:** ✅ cumple · 🟡 parcial · ❌ no cumple. Para los requisitos de `REQUISITOS.md` es el estado de ese documento.
-- **Quién ejecutó qué:** **yo no ejecuté ninguna prueba** al escribir esta matriz (la base de datos, los puertos y el teléfono estaban en uso). Los resultados «en verde» (318 pruebas de la API y 121 JVM) son los que **reporta el equipo** en `docs/BITACORA.md` y en los README de pruebas. Antes de entregar hay que correrlas de nuevo y anotar la fecha:
+- **Quién ejecutó qué:** **yo no ejecuté ninguna prueba** al escribir esta matriz (la base de datos, los puertos y el teléfono estaban en uso). Los resultados «en verde» (324 pruebas de la API y 125 JVM) son los que **reporta el equipo** en `docs/BITACORA.md` y en los README de pruebas. Antes de entregar hay que correrlas de nuevo y anotar la fecha:
 
 ```bash
 cd guarderia-api && POSTGRES_PASSWORD=<la del contenedor local> .venv/bin/pytest -q
@@ -83,7 +83,7 @@ La base Room del modo sin conexión **no tiene pruebas en JVM** (hace falta un d
 | SIS-01 | App Android con build de release firmado | Existe un APK de release firmado e instalable. | Ninguna: sin keystore ni `signingConfig`, minificación apagada (`app/build.gradle.kts`). | no pasa (no existe) | ❌ |
 | SIS-02 | Backend propio en una URL pública con HTTPS | La API responde en una URL pública con certificado válido. | Ninguna: no hay despliegue (`docs/ENTREGA-3.md`, parte 1; [`plan-implantacion.md`](plan-implantacion.md)). | no pasa (no existe) | ❌ |
 | SIS-03 | Integración completa de los tres roles contra el backend | Los tres roles recorren sus pantallas contra el backend desplegado. | Teléfono: `docs/RECORRIDO.md` (tres roles contra la API local y la base de Aiven migrada). No se hizo contra un backend desplegado. | pasa en el entorno local; no probado contra un despliegue | 🟡 |
-| SIS-04 | Persistencia en base de datos | Los datos sobreviven al reinicio de la API. | Postgres (`docker-compose.yml`, Alembic): las 318 pruebas de la API corren contra un Postgres real (`guarderia-api/tests/conftest.py`). Aiven en las pruebas manuales (`docs/BITACORA.md`). | pasa (prueba automática) | ✅ |
+| SIS-04 | Persistencia en base de datos | Los datos sobreviven al reinicio de la API. | Postgres (`docker-compose.yml`, Alembic): las 324 pruebas de la API corren contra un Postgres real (`guarderia-api/tests/conftest.py`). Aiven en las pruebas manuales (`docs/BITACORA.md`). | pasa (prueba automática) | ✅ |
 | SIS-05 | Cámara, multimedia y sensores | La app usa cámara, micrófono y GPS. | GPS: probado en el teléfono (`docs/BITACORA.md`, «Checador con GPS y hora reales»). Cámara y dictado: código en `ui/components/DeviceLaunchers.kt`, sin prueba manual registrada. | GPS pasa; cámara y micrófono: no probado | 🟡 |
 | SIS-06 | Datos realistas | Hay un conjunto de datos de ejemplo para la demostración. | `guarderia-api/app/seed.py` (1 administrador, 7 docentes, 6 tutores, 11 niños); `docs/RECORRIDO.md`: 15 usuarios en Aiven. | pasa (inspección y teléfono) | ✅ |
 | SIS-07 | Operación sin conexión | Las funciones principales siguen disponibles sin conexión. | Igual que RF-11: solo la asistencia de Mi sala (Room y WorkManager), probada en el teléfono con la API apagada (`docs/BITACORA.md`, «Operación sin conexión»). | parcial: la asistencia pasa; el resto no existe | 🟡 |
@@ -91,8 +91,8 @@ La base Room del modo sin conexión **no tiene pruebas en JVM** (hace falta un d
 | SEG-01 | Sesiones y tokens | Access token de 5 minutos, refresh que rota en cada uso y reuso detectado. | `guarderia-api/tests/test_auth.py::test_expired_access_token`; `guarderia-api/tests/test_auth.py::test_refresh_token_is_not_an_access_token`; `guarderia-api/tests/test_auth.py::test_refresh_rotates_the_token`; `guarderia-api/tests/test_auth.py::test_reusing_a_rotated_token_closes_the_family`; `guarderia-api/tests/test_auth.py::test_expired_refresh_token`; `guarderia-api/tests/test_auth.py::test_logout_revokes_the_refresh_token`; `guarderia-api/tests/test_auth.py::test_close_all_my_sessions`; `app/src/test/java/mx/tec/codea/data/TokenAuthenticatorTest.kt` (8); `app/src/test/java/mx/tec/codea/data/SessionRepositoryTest.kt` (6). Falta la aprobación formal de la decisión #1. | pasa (prueba automática) | ✅ |
 | SEG-02 | Consultas parametrizadas e inyección | Las entradas con cargas de inyección no entran, no producen 500 y se guardan como texto. | `guarderia-api/tests/test_access_matrix.py::test_injection_in_login_never_gets_in`; `guarderia-api/tests/test_access_matrix.py::test_injection_in_query_parameters_is_not_a_500`; `guarderia-api/tests/test_access_matrix.py::test_injection_text_is_stored_as_plain_text`; `guarderia-api/tests/test_access_matrix.py::test_unknown_fields_and_wrong_types_are_rejected_not_executed`; `guarderia-api/tests/test_access_matrix.py::test_ids_in_the_path_must_be_numbers_or_uuids`. SQLAlchemy ORM (inspección). | pasa (prueba automática) | ✅ |
 | SEG-03 | Escaneo dinámico (OWASP ZAP) | Se corrió ZAP contra la API y se documentaron hallazgos y mitigaciones. | Ninguna: no se ha corrido (`docs/ENTREGA-3.md`, parte 2). | no probado | ❌ |
-| PRU-01 | Pruebas del backend | Hay pruebas automáticas contra Postgres real y pasan. | `guarderia-api/tests/` (276 según `guarderia-api/tests/README.md` y `docs/BITACORA.md`, «318 pruebas en verde»). Yo no las ejecuté. | pasa (resultado reportado por el equipo) | ✅ |
-| PRU-02 | Pruebas JVM de la app | Hay pruebas de dominio, de sesión y de red con servidor falso y pasan. | `app/src/test/java/mx/tec/codea/` (74 según `docs/BITACORA.md`, «121 pruebas en verde»; 14 clases). Yo no las ejecuté. | pasa (resultado reportado por el equipo) | ✅ |
+| PRU-01 | Pruebas del backend | Hay pruebas automáticas contra Postgres real y pasan. | `guarderia-api/tests/` (276 según `guarderia-api/tests/README.md` y `docs/BITACORA.md`, «324 pruebas en verde»). Yo no las ejecuté. | pasa (resultado reportado por el equipo) | ✅ |
+| PRU-02 | Pruebas JVM de la app | Hay pruebas de dominio, de sesión y de red con servidor falso y pasan. | `app/src/test/java/mx/tec/codea/` (74 según `docs/BITACORA.md`, «125 pruebas en verde»; 14 clases). Yo no las ejecuté. | pasa (resultado reportado por el equipo) | ✅ |
 | PRU-03 | Pruebas de interfaz | Hay pruebas de Compose UI Test que recorren pantallas. | Solo existe `app/src/androidTest/` con `ExampleInstrumentedTest` (vacía). | no pasa (no existen) | ❌ |
 
 ## 3. Ética y legal

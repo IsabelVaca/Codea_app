@@ -1,12 +1,12 @@
 # Qué falta de la app
 
-Foto a **2026-10-18 por la noche**, armada leyendo [`PLAN-ACCION.md`](PLAN-ACCION.md), [`REQUISITOS.md`](REQUISITOS.md), [`RECORRIDO.md`](RECORRIDO.md), [`BITACORA.md`](BITACORA.md), los commits del día y **el código de `main`** (reconocimiento hecho leyendo el código, sin teléfono). Lo que dice "hecho" está compilado y con pruebas (**318 de la API corridas hoy en verde** y 121 JVM contadas); lo que dice "visto en el emulador" se abrió en pantalla. **Lo demás no se ha recorrido en un teléfono**, así que "falta" significa "los documentos o el código dicen que no está".
+Foto a **2026-10-18 por la noche**, armada leyendo [`PLAN-ACCION.md`](PLAN-ACCION.md), [`REQUISITOS.md`](REQUISITOS.md), [`RECORRIDO.md`](RECORRIDO.md), [`BITACORA.md`](BITACORA.md), los commits del día y **el código de `main`** (reconocimiento hecho leyendo el código, sin teléfono). Lo que dice "hecho" está compilado y con pruebas (**324 de la API corridas hoy en verde** y 125 JVM contadas); lo que dice "visto en el emulador" se abrió en pantalla. **Lo demás no se ha recorrido en un teléfono**, así que "falta" significa "los documentos o el código dicen que no está".
 
 Entrega final: **jueves 22 de octubre de 2026, 23:59**. Congelamiento de funciones nuevas: **lunes 19 por la noche**; martes y miércoles solo se corrige y se documenta.
 
 Desde el 18/oct el checador ya no usa GPS, radio ni mapa (decisión del equipo), y el admin configura el horario del centro en Ajustes → Horario. Esas cosas ya no son pendientes.
 
-Puesto al día después del PR #9 (`e2e5564`). **Los documentos ya se pusieron al día contra el código** el 18/oct por la noche ([`ESTADO.md`](ESTADO.md), [`REQUISITOS.md`](REQUISITOS.md), [`PLAN-ACCION.md`](PLAN-ACCION.md), [`ENTREGA-3.md`](ENTREGA-3.md), [`RECORRIDO.md`](RECORRIDO.md), [`plan/`](plan/README.md), `guarderia-api/PENDIENTES.md` y los ocho documentos de `docs/entrega/`). Lo que se comprobó leyendo el código: **Mi perfil → Mi cuenta con cambio de contraseña** existe, `ParentViewModel` sigue con el primer hijo, el padre conserva «Pedir que se borre» y la pantalla del admin para resolverlo no tiene ruta, la bitácora de auditoría no tiene pantalla, y la matriz de roles (83 rutas) coincide con el código.
+Puesto al día después del PR #9 (`e2e5564`). **Los documentos ya se pusieron al día contra el código** el 18/oct por la noche ([`ESTADO.md`](ESTADO.md), [`REQUISITOS.md`](REQUISITOS.md), [`PLAN-ACCION.md`](PLAN-ACCION.md), [`ENTREGA-3.md`](ENTREGA-3.md), [`RECORRIDO.md`](RECORRIDO.md), [`plan/`](plan/README.md), `guarderia-api/PENDIENTES.md` y los ocho documentos de `docs/entrega/`). Lo que se comprobó leyendo el código: **Mi perfil → Mi cuenta con cambio de contraseña** existe, `ParentViewModel` sigue con el primer hijo, el padre conserva «Pedir que se borre» y la pantalla del admin para resolverlo no tiene ruta, la bitácora de auditoría no tiene pantalla, y la matriz de roles (84 rutas) coincide con el código.
 
 ## 1. Requisitos sin cumplir (❌, 6 de 32; en total 15 ✅ y 11 🟡, ~64 %)
 
@@ -58,7 +58,7 @@ Puesto al día después del PR #9 (`e2e5564`). **Los documentos ya se pusieron a
 
 ### Padre
 
-- **Selector de hijo** en las tabs (HN4); la API ya devuelve la lista en `GET /me`.
+- ~~Selector de hijo en las tabs (HN4)~~ **Hecho el 18/oct, sin verlo en un teléfono.** Tira con los nombres arriba de Hoy, Calendario, Fotos y Mi hijo, solo con más de un hijo. Falta probarlo con una familia de dos hijos (el seed trae uno por padre).
 - ~~Probar el diálogo de agregar persona autorizada~~: ya no aplica, porque las personas autorizadas pasan al admin (ver "Cambios pedidos por el equipo").
 - **Probar «Mi hijo» en el teléfono**: guardar alergias y demás datos y ver el cambio en la ficha de la docente.
 - **Paginación de fotos** y probar la galería con una foto real (falla #10 de [`RECORRIDO.md`](RECORRIDO.md)). La solicitud de borrado está por quitarse (ver abajo).
@@ -74,15 +74,15 @@ Son cambios nuevos a lo que ya existe. Varios mueven requisitos que hoy figuran 
 - ✅ **Chats con el niño y su familia (hecho el 18/oct; compila y con pruebas, sin verlo en pantalla).** En la bandeja de la docente cada chat muestra el nombre del niño y, debajo, sus tutores («Mamá: Laura Iglesias · Papá: Jorge Flores»); al abrir el chat, el niño va de título y los tutores arriba. El padre no ve esa línea. La API manda `child.guardians[]` en `GET /conversations`. Si el niño no tiene tutor registrado no sale la línea (en el seed solo Mateo Iglesias y Valentina Ruiz tienen uno).
 - ✅ **Pase de salida por alumno (hecho el 18/oct; visto en el emulador, sin registrar salidas de punta a punta).** El pase es el último paso de la rutina en Mi día: antes de terminar es una fila gris con candado y, al confirmar el último momento, pasa a una tarjeta violeta «SIGUIENTE PASO» y la pantalla baja sola hasta ella. La docente registra la hora de salida de cada niño y elige quién lo recoge (las personas autorizadas que registró el admin y los tutores); con todos fuera aparece «Finalizar día», que registra su salida y termina su turno. Ver [`guarderia-api/app/modules/departures/README.md`](../guarderia-api/app/modules/departures/README.md).
   - Decisiones que tomé y conviene confirmar con el equipo: solo salen los niños con pase de lista de hoy; los tutores del niño aparecen siempre como opción (si no, un niño sin personas autorizadas bloquearía el «Finalizar día»); la hora la pone el servidor; hay «Corregir» por si se eligió a la persona equivocada; «Finalizar día» pide confirmación; el pase necesita conexión (no hay cola sin conexión).
-  - Pendiente: que la familia vea a qué hora salió su hijo y con quién.
+  - ✅ La familia ve la hora de salida y quién lo recogió como último evento de Hoy (hecho el 18/oct; API probada, sin verlo en un teléfono).
 
 ### Padre
 
 - ✅ **Tab «Documentos» ahora es «Mi hijo» (hecho el 18/oct, sin probar en el teléfono).** Muestra los datos del niño (nombre, fecha de nacimiento, edad, sala y tutores), deja escribir y editar alergias, condiciones médicas, intolerancias, medicamentos y otras indicaciones (hasta 1000 caracteres cada una; `PATCH /children/{id}/health`) . Ya no tiene subida de documentos (se quitó a petición del equipo; la API de documentos sigue en el backend sin pantalla). La docente ve lo que escribe la familia en la ficha del niño. Los datos del niño (nombre, nacimiento, sala) no los edita la familia: los corrige la dirección.
-- **Fotos: el padre las elimina directamente. *(A medias.)*** Se quita la solicitud de borrado (`POST /media/{id}/deletion-request`) y el padre borra por su cuenta.
-  - Hecho: Centro ya no muestra «Fotos que piden borrar». Falta lo principal: un endpoint con el que el padre borre la foto, el botón «Borrar» en Fotos (hoy dice «Pedir que se borre») y quitar el código de la revisión del admin.
+- **Fotos: el padre las elimina directamente. *(Casi hecho.)*** `DELETE /media/{id}` y el botón «Borrar» con confirmación en Fotos (18/oct; API con pruebas, sin verlo en un teléfono).
+  - Hecho: Centro ya no muestra «Fotos que piden borrar», el endpoint y el botón. **Falta:** decidir qué pasa con la foto que sale con niños de otras familias (hoy `409 MEDIA_SHARED` y nadie puede resolverlo desde la app) y quitar o reutilizar el código de la revisión del admin.
   - Afecta RF-10: hoy se cumple con la solicitud y la revisión del admin, y con lo ya quitado queda sin pantalla de admin. Hay que actualizar [`REQUISITOS.md`](REQUISITOS.md).
-  - Definir si el borrado afecta a las demás familias cuando la foto sale con varios niños: hoy el admin decide eso.
+  - Regla que apliqué (confirmar con el equipo): el padre solo borra si todos los niños de la foto son hijos suyos.
 - ✅ **Personas autorizadas para recoger pasan al rol de admin (hecho el 18/oct, sin probar en el teléfono).** Se quitó esa parte de la pantalla del padre (y `AddAuthorizedDialog`). El admin las administra por niño en Ajustes → Personas autorizadas (nombre, parentesco y teléfono). En la API, agregar y quitar son solo del admin; consultar sigue abierto a quien ve al niño. Se registran por niño, no por padre: con dos hijos, se capturan en cada uno.
 
 ### Registro de usuarios nuevos
@@ -108,7 +108,7 @@ Son cambios nuevos a lo que ya existe. Varios mueven requisitos que hoy figuran 
 
 ## 5. Infraestructura y entrega
 
-- **Aiven:** aplicar las migraciones pendientes, en este orden: `a96b2c7d5f65` (foto en el chat) y `a07c3d8e6f76` (datos de salud del niño y tabla del pase de salida); `alembic current` en Aiven dice cuáles faltan (necesita aprobación). Sin ellas el login da 500.
+- ~~**Aiven:** aplicar las migraciones pendientes~~ **Hecho el 18/oct por la noche** (con permiso): Aiven está en `a07c3d8e6f76`, la última.
 - Despliegue público con HTTPS ([decisión #7](DECISIONES-PENDIENTES.md)) y respaldos de la base.
 - `API_BASE_URL_RELEASE` con HTTPS y un APK de release firmado (necesita un keystore y sus contraseñas).
 - ~~Correo real con el código de invitación~~: ya no aplica; se manda por WhatsApp (ver «Alta por enlace de invitación»).
@@ -124,8 +124,8 @@ Las decisiones #2, #4, #5, #6, #7, #8, #9 y #10 de [`DECISIONES-PENDIENTES.md`](
 
 ## Orden sugerido antes del congelamiento
 
-1. Selector de hijo del padre (HN4): «Mi hijo» sigue mostrando solo el primer hijo.
-2. Los cambios pedidos que quedan: terminar lo de las fotos (borrado directo del padre), la URL pública del enlace de invitación y mejorar la pantalla de Horario. Con el congelamiento el lunes 19, conviene que el equipo decida cuáles entran y deje el resto como desviación documentada.
-3. Migrar Aiven.
+1. ~~Selector de hijo del padre (HN4)~~ Hecho; falta probarlo.
+2. Los cambios pedidos que quedan: la foto con niños de varias familias, la URL pública del enlace de invitación y mejorar la pantalla de Horario. Con el congelamiento el lunes 19, conviene que el equipo decida cuáles entran y deje el resto como desviación documentada.
+3. ~~Migrar Aiven~~ Hecho el 18/oct: Aiven está en `a07c3d8e6f76`.
 4. Recorrido completo en el teléfono y anotar fallas en [`RECORRIDO.md`](RECORRIDO.md).
 5. Escribir el documento de arquitectura, completar los huecos de `docs/entrega/`, repasar la matriz de trazabilidad con el estado final y preparar la presentación.

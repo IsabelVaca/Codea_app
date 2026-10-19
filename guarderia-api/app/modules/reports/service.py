@@ -12,6 +12,7 @@ from app.modules.attendance.queries import present_child_ids
 from app.modules.children.models import Child, ChildStatus
 from app.modules.classrooms.centers import center_of_classroom, center_today
 from app.modules.classrooms.models import Classroom
+from app.modules.departures.models import ChildDeparture
 from app.modules.media.models import Media, MediaChild, MediaKind, MediaStatus
 from app.modules.messaging.models import ParentNote
 from app.modules.messaging.schemas import NoteOut
@@ -224,6 +225,22 @@ async def child_day(db: AsyncSession, current: CurrentUser, child_id: int, day: 
                     report_types=[report.type for report in mine],
                 )
             )
+
+    # la familia ve a qué hora salió su hijo y con quién (lo registra la docente en el pase de salida).
+    departure = await db.scalar(
+        select(ChildDeparture).where(ChildDeparture.child_id == child.id, ChildDeparture.date == day)
+    )
+    if departure is not None:
+        timeline.append(
+            TimelineEvent(
+                id=f"departure-{departure.id}",
+                type=TimelineType.DEPARTURE,
+                title="Salida",
+                time=departure.departed_at,
+                description=f"Lo recogió {departure.picked_up_by}.",
+                report_types=[],
+            )
+        )
 
     return DayOut(
         child=DayChild(

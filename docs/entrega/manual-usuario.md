@@ -104,7 +104,7 @@ La pantalla muestra los **subprocesos (momentos) de la rutina** de tu sala con s
 2. La hora la pone el servidor. La fila queda como «Salió a las … con …». Si te equivocaste de persona, toca **«Corregir»**.
 3. Solo aparecen los niños con pase de lista de hoy. Con todos fuera (o si hoy no vino ninguno) aparece **«Finalizar día»**: pide confirmación, registra tu salida del checador y termina tu turno. Después se muestra **«Día finalizado»**.
 
-El pase de salida **necesita conexión**: no hay cola sin conexión para él. La familia todavía no ve a qué hora salió su hijo **[Próximamente]**.
+El pase de salida **necesita conexión**: no hay cola sin conexión para él. La familia ve la hora y quién recogió a su hijo como último evento de «Hoy».
 
 ### 2.3 Hacer un reporte
 
@@ -175,7 +175,7 @@ Barra inferior: **Centro · Docentes · Familias · Ajustes**.
 - **Salas con su ocupación** («8/12 niños»). Toca una sala para su **detalle**: ver sus niños y asistentes, cambiar el **cupo**, asignar asistentes, mover niños y **«Eliminar esta sala»** (si tiene niños, el sistema lo rechaza; sus asistentes quedan sin sala).
 - **Crear sala:** «Define su nombre, cupo y quién la atiende» (se elige una asistente).
 - **Publicar aviso:** escribe el texto y elige a quién va: **«Para todos · todas las salas»** o **«Solo» una sala**. Debajo ves el **historial** de avisos. Los avisos **no se pueden borrar** ni llevar imágenes **[Próximamente]**.
-- **Fotos que piden borrar:** una tarjeta que dice cuántas solicitudes de las familias esperan decisión («N por revisar» o «No hay solicitudes pendientes»). Toca **«Ver»**: para cada solicitud ves la foto, los niños etiquetados, quién la pidió, la fecha y el motivo (si lo escribió). Elige **«Borrar la foto»** (pide confirmación: «Se borra del servidor y desaparece de las galerías de todas las familias. No se puede deshacer») o **«Conservar»**. Si la foto sale con varios niños, al borrarla desaparece para **todas** esas familias. Esta pantalla es nueva y no se ha probado en un teléfono con una foto real.
+- **Fotos que piden borrar:** ya no aparece en Centro (se quitó el 18/oct a petición del equipo). La familia borra directamente las fotos de su hijo; el administrador **no** revisa solicitudes desde la app.
 
 ### 3.2 Docentes
 
@@ -217,7 +217,7 @@ El checador **no usa ubicación ni radio**.
 
 | Función | Estado |
 |---|---|
-| Quitar solo a un niño de una foto de grupo; revisar solicitudes de borrado de **documentos** | **Próximamente** (la revisión de solicitudes de fotos ya existe, ver 3.1) |
+| Quitar solo a un niño de una foto de grupo; decidir el borrado de una foto con niños de varias familias; revisar solicitudes de borrado de **documentos** | **Próximamente** (la revisión del administrador existe en la API pero no tiene pantalla) |
 | Ver la **bitácora de auditoría** | No hay pantalla; existe `GET /audit-log` en la API |
 | Editar datos de docentes, infantes y padres; cambiar el nombre del centro | **Próximamente** |
 | Pedir documentos a una familia (la lista de cada niño sale hoy del seed) | **Próximamente** |
@@ -229,11 +229,11 @@ El checador **no usa ubicación ni radio**.
 
 Barra inferior: **Hoy · Calendario · Fotos · Chat · Mi hijo**.
 
-> Solo ves a **tus** hijos. Si tienes más de uno, hoy la app muestra **solo el primero** y no hay selector de hijo **[Próximamente]**.
+> Solo ves a **tus** hijos. Si tienes más de uno, arriba de Hoy, Calendario, Fotos y Mi hijo aparece una tira con sus nombres: toca uno para ver a ese hijo. La app recuerda cuál elegiste mientras la usas. El Chat tiene una conversación por niño.
 
 ### 4.1 Hoy
 
-- **Resumen del día** de tu hijo: ánimo, cuánto comió, cambios de pañal, minutos de siesta y una nota general, y la **línea de tiempo «Su día, paso a paso»**. Si la docente aún no capturó nada, verás «Todavía no hay notas».
+- **Resumen del día** de tu hijo: ánimo, cuánto comió, cambios de pañal, minutos de siesta y una nota general, y la **línea de tiempo «Su día, paso a paso»**, que termina con la **Salida** («Lo recogió …») cuando la maestra la registra en el pase de salida. Si la docente aún no capturó nada, verás «Todavía no hay notas».
 - **«Ver el mes»** lleva al calendario.
 - **Aviso desde casa:** escribe una nota para la asistente («Cuéntale a la asistente cómo amaneció …») y envíala; la docente la ve en el día de hoy.
 - La **campana** abre los **avisos** del centro y de la sala de tu hijo, con contador de nuevos. «Leído» se guarda solo en tu teléfono: al cambiar de teléfono vuelven a salir como nuevos.
@@ -250,7 +250,7 @@ Un mes con la **asistencia** de cada día: día completo, con nota, falta o sin 
 - Galería de las fotos donde **aparece tu hijo**, por categoría: **Actividades, Comidas, Siesta e Incidentes**, con la maestra, fecha, hora y nota.
 - Una foto en la que aparezcan varios niños **la ven las familias de todos ellos**.
 - **Descargar:** abre la foto en el navegador, desde donde la puedes guardar. La dirección vale 10 minutos.
-- **Pedir que se borre:** envía una solicitud al centro y el botón cambia a «Solicitud enviada». El administrador la revisa en su pantalla «Fotos que piden borrar» y decide borrarla o conservarla. No hay un plazo de respuesta definido: si necesitas que se atienda pronto, habla con la dirección. La app no te avisa cuando se resuelve.
+- **Borrar:** abre la foto y toca **«Borrar»**. La app pide confirmación («Se borra para siempre y ya no la verá nadie, ni tú ni la maestra. No se puede deshacer.») y la foto desaparece en el momento, también para la maestra. **Si en la foto salen niños de otras familias no se puede borrar:** la app te lo dice y debes hablar con la dirección **[la dirección todavía no tiene una pantalla para decidirlo]**.
 - La galería carga una primera página; seguir cargando más: **Próximamente**.
 
 ### 4.4 Chat
@@ -268,11 +268,9 @@ Conversación con las asistentes de la sala de tu hijo. Si tienes varios hijos, 
 
 | Función | Estado |
 |---|---|
-| Cambiar entre varios hijos | **Próximamente** |
 | Ver el menú del día | **Próximamente** |
 | Imprimir o enviar el resumen semanal (hoy solo se ve en la app) | **Próximamente** |
 | Eventos y citas en el calendario | **Próximamente** |
-| Ver a qué hora salió mi hijo y con quién | **Próximamente** (la docente ya lo registra en el pase de salida) |
 | Agregar o quitar personas autorizadas | **Lo hace la dirección** |
 | Notificaciones del teléfono (push) | **Próximamente** |
 | Usar la app sin internet | **Próximamente** para el padre y el administrador; para la docente solo existe la asistencia de Mi sala |
@@ -290,10 +288,10 @@ Conversación con las asistentes de la sala de tu hijo. Si tienes varios hijos, 
 | Rutina del día | ✅ | ✅ (plantillas) | ✅ (resumen) |
 | Reportes con texto, dictado y foto a varios niños | ✅ | — | ✅ (los ve) |
 | Pase de lista (sin registro = ausente) | ✅ (también sin conexión) | — | ✅ (calendario) |
-| Pase de salida y «Finalizar día» | ✅ (con red) | — | ❌ (no ve la hora de salida) |
+| Pase de salida y «Finalizar día» | ✅ (con red) | — | ✅ (ve la hora y quién lo recogió en Hoy) |
 | Chat con la familia o la docente, con fotos | ✅ (sin tiempo real) | — | ✅ (sin tiempo real) |
 | Avisos | ✅ (lee) | ✅ (publica) | ✅ (lee) |
-| Fotos y solicitud de borrado | — | ✅ (revisa) | ✅ (pide el borrado) |
+| Fotos y borrado | — | — | ✅ (borra las fotos de su hijo) |
 | Mi hijo (datos y salud) | ✅ (lo ve en la ficha) | — | ✅ (escribe la salud) |
 | Personas autorizadas para recoger | ✅ (las ve) | ✅ (las administra) | — |
 | Invitación por WhatsApp | — | ✅ | ✅ (activa con el enlace) |

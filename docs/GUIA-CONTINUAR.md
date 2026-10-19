@@ -39,8 +39,8 @@ API en `http://localhost:8000/api/v1`, Swagger en `/docs`.
 
 **Pruebas**
 ```bash
-./gradlew test                                     # 121 pruebas JVM
-cd guarderia-api && .venv/bin/pytest               # 318 pruebas de la API (Postgres real; con POSTGRES_PASSWORD si cambiaste la contraseña)
+./gradlew test                                     # 125 pruebas JVM
+cd guarderia-api && .venv/bin/pytest               # 324 pruebas de la API (Postgres real; con POSTGRES_PASSWORD si cambiaste la contraseña)
 ```
 
 ## 3. Mapa del repo

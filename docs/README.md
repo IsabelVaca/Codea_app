@@ -38,7 +38,7 @@ El código de la API vive en [`guarderia-api/`](../guarderia-api/) (cómo levant
 
 | Archivo | Qué contiene |
 | --- | --- |
-| [`api/endpoints.md`](api/endpoints.md) | **Referencia vigente.** Los endpoints que tiene hoy la API (83 al 18 de octubre), sacados del código: rol, qué envían, qué responden y sus códigos de error. |
+| [`api/endpoints.md`](api/endpoints.md) | **Referencia vigente.** Los endpoints que tiene hoy la API (84 al 18 de octubre), sacados del código: rol, qué envían, qué responden y sus códigos de error. |
 | [`api/endpoints-api-codea.pdf`](api/endpoints-api-codea.pdf) | Histórico. Endpoints de la primera entrega por rol, con las rutas anteriores; ya no coincide en varios detalles con el código. |
 | [Propuesta de arquitectura: API de la guardería](https://claude.ai/artifact/K4CqXjp82tkRLfpKDRdV5H) | Arquitectura completa: componentes, login con Firebase, convenciones, modelo de datos, fotos con S3, monitoreo y seguridad. |
 

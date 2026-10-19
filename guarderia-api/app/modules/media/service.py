@@ -182,6 +182,58 @@ async def request_deletion(
     return DeletionRequestOut.model_validate(request), created
 
 
+async def delete_own_photo(db: AsyncSession, current: CurrentUser, storage: Storage, media_id: int) -> None:
+    """El botón "Borrar" de la familia: borra la foto del bucket y de todas las pantallas, sin pasar por el admin.
+
+    Solo si todos los niños etiquetados son hijos de quien la borra. Si sale algún niño de otra familia, la foto
+    no es solo suya: responde 409 y la decisión queda con la dirección.
+    """
+    media = await db.scalar(
+        select(Media)
+        .where(Media.id == media_id, Media.kind == MediaKind.PHOTO, Media.status != MediaStatus.DELETED)
+        .with_for_update()
+    )
+    tagged = set((await db.scalars(select(MediaChild.child_id).where(MediaChild.media_id == media_id))).all())
+    mine = set(
+        (
+            await db.scalars(
+                select(ParentChildRel.child_id).where(
+                    ParentChildRel.parent_id == current.id, ParentChildRel.child_id.in_(tagged or {0})
+                )
+            )
+        ).all()
+    )
+    if media is None or not mine:
+        raise ApiError(404, "MEDIA_NOT_FOUND", "No existe esa foto")
+    if tagged - mine:
+        raise ApiError(
+            409, "MEDIA_SHARED", "En esta foto salen niños de otras familias; pide a la dirección que decida si se borra"
+        )
+    # primero el bucket: si falla, no se marca nada como borrado.
+    try:
+        await storage.delete(media.storage_key)
+    except Exception as error:
+        raise ApiError(502, "STORAGE_UNAVAILABLE", "No se pudo borrar el archivo; intenta de nuevo") from error
+    media.status = MediaStatus.DELETED
+    # los reportes conservan su texto, pero ya no apuntan a una foto que no existe.
+    await db.execute(update(Report).where(Report.media_id == media.id).values(media_id=None))
+    # una solicitud de borrado anterior queda resuelta con ella.
+    await db.execute(
+        update(MediaDeletionRequest)
+        .where(MediaDeletionRequest.media_id == media.id, MediaDeletionRequest.status == DeletionStatus.PENDING)
+        .values(
+            status=DeletionStatus.APPROVED,
+            decided_by=current.id,
+            decided_at=clock.now(),
+            decision_note="La familia la borró",
+        )
+    )
+    audit.record(
+        db, audit.MEDIA_DELETED_BY_FAMILY, actor_id=current.id, entity_type="MEDIA", entity_id=media.id, detail=None
+    )
+    await db.commit()
+
+
 # ---------------------------------------------------------------- revisión del admin
 
 

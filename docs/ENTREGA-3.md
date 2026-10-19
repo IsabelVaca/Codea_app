@@ -32,8 +32,8 @@ Estado a 2026-10-18 por la noche. Los entregables nuevos están en `docs/entrega
 
 | Elemento | Estado |
 |---|---|
-| Pruebas del backend | ✅ 318 pruebas con pytest contra Postgres real (corridas el 18/oct). |
-| Pruebas JVM de la app | ✅ 121 pruebas (dominio, reglas de Mi sala y del pase de salida, invitación, sesión con servidor falso); contadas, no corridas en esta revisión. |
+| Pruebas del backend | ✅ 324 pruebas con pytest contra Postgres real (corridas el 18/oct). |
+| Pruebas JVM de la app | ✅ 125 pruebas (dominio, reglas de Mi sala y del pase de salida, invitación, sesión con servidor falso); contadas, no corridas en esta revisión. |
 | Pruebas de interfaz | ❌ Solo `ExampleInstrumentedTest`. |
 | Matriz de trazabilidad (ID, descripción, criterio, evidencia, resultado, estado) | 🟡 [`entrega/matriz-trazabilidad.md`](entrega/matriz-trazabilidad.md) existe; hay que repasarla contra el estado final de [`REQUISITOS.md`](REQUISITOS.md). |
 

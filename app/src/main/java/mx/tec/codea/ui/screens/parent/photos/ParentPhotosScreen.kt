@@ -115,12 +115,12 @@ fun ParentPhotosScreen(
     nombreNino: String = "Mateo",
     fotos: List<Foto> = fotosDemo,
     onDescargar: (Foto) -> Unit = {},
-    onPedirBorrar: (Foto) -> Unit = {},
+    onBorrar: (Foto) -> Unit = {},
 ) {
     var filtro by remember { mutableStateOf(Categoria.TODAS) }
     var menuAbierto by remember { mutableStateOf(false) }
     var visorIndex by remember { mutableStateOf<Int?>(null) }
-    val borradoSolicitado = remember { mutableStateListOf<Int>() }
+    var confirmarBorrado by remember { mutableStateOf<Foto?>(null) }
 
     val filtradas = remember(filtro, fotos) {
         fotos.filter { filtro == Categoria.TODAS || it.categoria == filtro }
@@ -183,17 +183,27 @@ fun ParentPhotosScreen(
         VisorFoto(
             foto = foto,
             posicion = "${i + 1} de ${filtradas.size}",
-            borradoSolicitado = foto.id in borradoSolicitado,
             onCerrar = { visorIndex = null },
             onAnterior = { visorIndex = (i - 1 + filtradas.size) % filtradas.size },
             onSiguiente = { visorIndex = (i + 1) % filtradas.size },
             onDescargar = { onDescargar(foto) },
-            onPedirBorrar = {
-                if (foto.id !in borradoSolicitado) {
-                    borradoSolicitado.add(foto.id)
-                    onPedirBorrar(foto)
-                }
+            onBorrar = { confirmarBorrado = foto },
+        )
+    }
+
+    confirmarBorrado?.let { foto ->
+        AlertDialog(
+            onDismissRequest = { confirmarBorrado = null },
+            title = { Text("¿Borrar esta foto?") },
+            text = { Text("Se borra para siempre y ya no la verá nadie, ni tú ni la maestra. No se puede deshacer.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmarBorrado = null
+                    visorIndex = null
+                    onBorrar(foto)
+                }) { Text("Borrar") }
             },
+            dismissButton = { TextButton(onClick = { confirmarBorrado = null }) { Text("Cancelar") } },
         )
     }
 }
@@ -325,12 +335,11 @@ private fun Modifier.rayado(tono: Tono): Modifier = drawBehind {
 private fun VisorFoto(
     foto: Foto,
     posicion: String,
-    borradoSolicitado: Boolean,
     onCerrar: () -> Unit,
     onAnterior: () -> Unit,
     onSiguiente: () -> Unit,
     onDescargar: () -> Unit,
-    onPedirBorrar: () -> Unit,
+    onBorrar: () -> Unit,
 ) {
     Dialog(onDismissRequest = onCerrar, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Column(Modifier.fillMaxSize().background(ViewerBg).systemBarsPadding()) {
@@ -397,14 +406,14 @@ private fun VisorFoto(
                         colors = ButtonDefaults.buttonColors(containerColor = Ink, contentColor = Color.White),
                     ) { Text("Descargar", fontFamily = Poppins, fontWeight = FontWeight.SemiBold) }
                     OutlinedButton(
-                        onClick = onPedirBorrar,
+                        onClick = onBorrar,
                         modifier = Modifier.weight(1f).height(48.dp),
                         shape = RoundedCornerShape(14.dp),
                         border = BorderStroke(1.5.dp, Color(0xFFE4DEF2)),
                         colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White, contentColor = Ink),
                     ) {
                         Text(
-                            if (borradoSolicitado) "Solicitud enviada" else "Pedir que se borre",
+                            "Borrar",
                             fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
                         )
                     }

@@ -1,8 +1,8 @@
 # Endpoints de la API (estado actual)
 
-Lista sacada del código el 16 de octubre de 2026 (rama `backend`, commit `12da735`), puesta al día el 17 de octubre y revisada contra `main` el 18 de octubre (la matriz [`matriz-de-roles.md`](matriz-de-roles.md) cuenta 83 rutas y se genera del código) con lo que se agregó después (centro, invitaciones, plantillas de rutina y avisos): rutas y roles de cada `router.py`, cuerpos y respuestas del OpenAPI que genera FastAPI, y códigos de error de cada `service.py`. Reemplaza a `Endpoints_API_Codea.docx.pdf` y a [`endpoints-api-codea.pdf`](endpoints-api-codea.pdf), que tienen el mismo contenido y ya no coinciden en varios detalles (ver [qué cambió](#qué-cambió-respecto-al-pdf)).
+Lista sacada del código el 16 de octubre de 2026 (rama `backend`, commit `12da735`), puesta al día el 17 de octubre y revisada contra `main` el 18 de octubre (la matriz [`matriz-de-roles.md`](matriz-de-roles.md) cuenta 84 rutas y se genera del código) con lo que se agregó después (centro, invitaciones, plantillas de rutina y avisos): rutas y roles de cada `router.py`, cuerpos y respuestas del OpenAPI que genera FastAPI, y códigos de error de cada `service.py`. Reemplaza a `Endpoints_API_Codea.docx.pdf` y a [`endpoints-api-codea.pdf`](endpoints-api-codea.pdf), que tienen el mismo contenido y ya no coinciden en varios detalles (ver [qué cambió](#qué-cambió-respecto-al-pdf)).
 
-Son **83 endpoints en 15 módulos** (81 bajo `/api/v1` y 2 públicos fuera de él: `/invitar` y `/.well-known/assetlinks.json`). El contrato exacto, con todos los campos, sigue siendo el OpenAPI: con la API prendida, `http://localhost:8000/docs`.
+Son **84 endpoints en 15 módulos** (82 bajo `/api/v1` y 2 públicos fuera de él: `/invitar` y `/.well-known/assetlinks.json`). El contrato exacto, con todos los campos, sigue siendo el OpenAPI: con la API prendida, `http://localhost:8000/docs`.
 
 El login con JWT ya está en `main` (aquí lo reflejan las secciones *Cuenta* y la convención de autenticación). Lo que falta de la API vive en [`../../guarderia-api/PENDIENTES.md`](../../guarderia-api/PENDIENTES.md).
 
@@ -140,7 +140,7 @@ La API calcula distancia, radio y retardo con su propio reloj; nunca acepta el e
 | GET | `/reports?moment_id=` | `ADMIN`, `TEACHER` | — | `ReportOut[]` | `404 MOMENT_NOT_FOUND` |
 | POST | `/children/{id}/daily-entries` | `ADMIN`, `TEACHER` | `{date?, mood?, meals?, diaper_changes?, nap_minutes?, general_note?}`; solo cambia lo que se manda | `DailyEntryOut` | `404 CHILD_NOT_FOUND` |
 | GET | `/children/{id}/weekly-summary?week_start=` | Todos (en su alcance) | — | `WeeklySummaryOut`: lunes a viernes de esa semana (sin fecha, la de hoy): `days_attended`, `days_absent`, `moods`, `meals`, `nap_minutes_average`, `diaper_changes_total`, `reports_by_type`, `achievements`, `family_notes` y `days[]` | `404 CHILD_NOT_FOUND`; `422` si la fecha no es válida |
-| GET | `/children/{id}/day?date=` | Todos (en su alcance) | — | `DayOut`: `attendance`, `summary`, `timeline[]` y `notes[]` (las notas del papá) | `404 CHILD_NOT_FOUND` |
+| GET | `/children/{id}/day?date=` | Todos (en su alcance) | — | `DayOut`: `attendance`, `summary`, `timeline[]` (el último puede ser la salida del niño, `DEPARTURE`: hora y quién lo recogió) y `notes[]` (las notas del papá) | `404 CHILD_NOT_FOUND` |
 
 ## Fotos
 
@@ -149,6 +149,7 @@ La API calcula distancia, radio y retardo con su propio reloj; nunca acepta el e
 | POST | `/media/uploads` | `TEACHER` (`PHOTO`), `PARENT` (`DOCUMENT`) | `{content_type, size_bytes, kind?: PHOTO \| DOCUMENT}` | 201 `{media_id, url, fields, expires_in, max_bytes}`: un permiso de 5 minutos, máximo 10 MB | `422 CONTENT_TYPE_NOT_ALLOWED`, `FILE_TOO_LARGE`; `403 FORBIDDEN` (otro rol u otro tipo) |
 | POST | `/media/{id}/complete` | Quien la pidió | — | `MediaOut` con `status: READY` | `409 UPLOAD_MISSING`; `404 MEDIA_NOT_FOUND` |
 | GET | `/media?child_id=&category=&cursor=&limit=` | Todos (en su alcance) | — | `{items: FeedItem[], next_cursor}`; cada foto con `url` firmada de 10 minutos, `category`, `teacher_name`, `note` | `404 CHILD_NOT_FOUND` |
+| DELETE | `/media/{id}` | `PARENT` | — | 204: la foto se borra del bucket y de todas las galerías en el momento; la solicitud que hubiera queda resuelta | `404 MEDIA_NOT_FOUND` (no es foto de un hijo suyo), `409 MEDIA_SHARED` (salen niños de otras familias), `502 STORAGE_UNAVAILABLE` |
 | POST | `/media/{id}/deletion-request` | `PARENT` | `{reason?}` | 201 `DeletionRequestOut`; repetida: 200 con la misma | `404 MEDIA_NOT_FOUND` |
 | GET | `/media/deletion-requests?status=` | `ADMIN` | — | `DeletionReviewOut[]` (por omisión `PENDING`): `reason`, `requested_by_name`, `child_names`, `photo_url` (firmada, 10 min; vacía si ya se borró), `decided_at`, `decision_note` | — |
 | POST | `/media/deletion-requests/{id}/approve` | `ADMIN` | `{note?}` | `DeletionReviewOut`: borra la foto del bucket y de todas las galerías | `404 DELETION_REQUEST_NOT_FOUND`, `409 REQUEST_ALREADY_DECIDED`, `502 STORAGE_UNAVAILABLE` |
@@ -235,7 +236,7 @@ Acciones y qué datos guarda cada una: [`app/modules/audit/README.md`](../../gua
 | `ReportMethod` | `WRITTEN`, `DICTATION`, `PHOTO` |
 | `Mood` | `HAPPY`, `CALM`, `TIRED`, `SAD`, `UPSET` |
 | `MealAmount` | `ALL`, `MOST`, `HALF`, `LITTLE`, `NONE` |
-| `TimelineType` | `CHECK_IN`, `MEAL`, `ACTIVITY`, `NAP` |
+| `TimelineType` | `CHECK_IN`, `MEAL`, `ACTIVITY`, `NAP`, `DEPARTURE` |
 | `MediaKind` | `PHOTO`, `DOCUMENT` |
 | `MediaStatus` | `PENDING`, `READY` |
 | `PhotoCategory` | `ACTIVITIES`, `MEALS`, `NAP`, `INCIDENTS` |

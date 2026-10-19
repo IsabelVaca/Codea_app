@@ -219,8 +219,9 @@ interface CodeaApi {
     @GET("media")
     suspend fun photoFeed(@Query("child_id") childId: Int, @Query("limit") limit: Int): FeedPage
 
-    @POST("media/{id}/deletion-request")
-    suspend fun requestPhotoDeletion(@Path("id") id: Int, @Body body: DeletionBody)
+    // la familia borra la foto de su hijo de inmediato; 409 MEDIA_SHARED si salen niños de otras familias.
+    @DELETE("media/{id}")
+    suspend fun deletePhoto(@Path("id") id: Int)
 
     @POST("media/uploads")
     suspend fun requestUpload(@Body body: UploadBody): UploadDto

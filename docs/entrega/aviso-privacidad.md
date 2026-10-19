@@ -195,7 +195,7 @@ Como titular (o como madre, padre o tutor de un menor) tienes derecho a **conoce
 |---|---|---|
 | **Acceso** | El tutor ve en la app el resumen del día, el calendario, las fotos, los documentos y las personas autorizadas de sus hijos. El administrador ve los expedientes | No hay una exportación de «todos mis datos». Hay que pedirla al administrador, que no tiene una función para generarla |
 | **Rectificación** | El administrador puede cambiar de sala a un niño y administra las personas autorizadas; el tutor puede corregir las alergias y demás datos de salud de su hijo desde «Mi hijo» | **No hay pantalla ni endpoint para corregir** nombre, fecha de nacimiento, alergias, correo o teléfono de una cuenta (está como «editar datos» en `docs/plan/01-app-pantallas.md`, prioridad P2). Hoy solo se corrige con acceso directo a la base |
-| **Cancelación** | El administrador puede **dar de baja** una cuenta o un niño (se desactiva el acceso). El tutor puede **pedir que se borre una foto** desde la pantalla Fotos; el administrador la ve en «Fotos que piden borrar» y puede **borrarla** (se elimina del almacén y de las galerías de todas las familias etiquetadas) o **conservarla** | **La baja no borra datos.** No hay forma de borrar un expediente completo desde la app. No se pueden borrar documentos por esa vía (solo fotos). En una foto de grupo no se puede quitar solo la etiqueta de un niño: al aprobar, desaparece para todos. No hay plazo de atención definido |
+| **Cancelación** | El administrador puede **dar de baja** una cuenta o un niño (se desactiva el acceso). Desde el 18/oct el tutor **borra directamente** las fotos de su hijo desde la pantalla Fotos (se eliminan del almacén y de todas las galerías al momento y queda en la bitácora). Si la foto tiene a niños de otras familias no puede borrarla solo: la decisión es de la dirección, que todavía no tiene una pantalla para tomarla | **La baja no borra datos.** No hay forma de borrar un expediente completo desde la app. No se pueden borrar documentos por esa vía (solo fotos). En una foto de grupo no se puede quitar solo la etiqueta de un niño: al aprobar, desaparece para todos. No hay plazo de atención definido |
 | **Oposición** | Se puede pedir la baja de la cuenta | Igual que cancelación |
 | **Revocar el consentimiento** | Igual que cancelación | Igual |
 
@@ -217,7 +217,7 @@ Cualquier cambio se publicará en **[medio: completar por el equipo]** y se avis
 |---|---|
 | ~~Corregir el texto de permiso de ubicación («no se guarda»)~~ **Hecho** en `f814763`. Sigue abierto decidir si se dejan de guardar las coordenadas | `staff_check_in` |
 | Mostrar y registrar la aceptación del aviso al activar la cuenta | App (no existe) |
-| Probar la revisión de solicitudes de borrado en un teléfono con una foto real y definir el plazo de atención | `media` (RF-10) |
+| Probar el borrado directo en un teléfono con una foto real y definir qué pasa con una foto de varias familias | `media` (RF-10) |
 | Plazos de retención aprobados e implementados | Tareas de limpieza en el servidor |
 | Responsable, domicilio y canal de contacto | Este documento |
 | HTTPS público, respaldos y proveedor del almacén de archivos | [`plan-implantacion.md`](plan-implantacion.md) |

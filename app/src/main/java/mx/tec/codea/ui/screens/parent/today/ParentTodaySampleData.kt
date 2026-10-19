@@ -5,6 +5,8 @@ enum class TimelineEventType {
     MEAL,
     ACTIVITY,
     NAP,
+    // la salida del niño: a qué hora se fue y con quién.
+    DEPARTURE,
 }
 
 data class TimelineEvent(

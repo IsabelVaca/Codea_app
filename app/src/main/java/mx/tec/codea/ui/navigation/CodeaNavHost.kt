@@ -7,7 +7,12 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import mx.tec.codea.domain.ChildChoice
+import mx.tec.codea.ui.components.ChildSwitcher
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -894,7 +899,9 @@ fun CodeaNavHost(
             val context = LocalContext.current
             val pendientes by avisosViewModel.pendientes.collectAsState()
             val notifs by avisosViewModel.notifs.collectAsState()
+            WithChildSwitcher(parentViewModel) { screenModifier ->
             ParentTodayScreen(
+                modifier = screenModifier,
                 summary = parentViewModel.summary,
                 timelineEvents = parentViewModel.timeline,
                 pendientes = pendientes,
@@ -910,10 +917,13 @@ fun CodeaNavHost(
                     })
                 },
             )
+            }
         }
 
         composable<ParentCalendarRoute> {
+            WithChildSwitcher(parentViewModel) { screenModifier ->
             ParentCalendarScreen(
+                modifier = screenModifier,
                 monthData = parentViewModel.monthData,
                 resumenSemana = parentViewModel.weekly,
                 initialSelectedDay = parentViewModel.todayDayNumber,
@@ -922,10 +932,13 @@ fun CodeaNavHost(
                     navController.navigateToTopLevel(TopLevelDestination.PARENT_TODAY)
                 },
             )
+            }
         }
 
         composable<ParentPhotosRoute> {
             val context = LocalContext.current
+            WithChildSwitcher(parentViewModel) { screenModifier ->
+            Box(screenModifier) {
             ParentPhotosScreen(
                 nombreNino = parentViewModel.childName.substringBefore(" "),
                 fotos = parentViewModel.photos,
@@ -933,8 +946,10 @@ fun CodeaNavHost(
                 onDescargar = { foto ->
                     foto.url?.let { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) }
                 },
-                onPedirBorrar = parentViewModel::requestPhotoDeletion,
+                onBorrar = parentViewModel::deletePhoto,
             )
+            }
+            }
         }
 
         composable<ParentChatRoute> {
@@ -951,11 +966,14 @@ fun CodeaNavHost(
 
         // "Mi hijo": sus datos y la salud que la familia escribe.
         composable<ParentChildRoute> {
+            WithChildSwitcher(parentViewModel) { screenModifier ->
             MyChildScreen(
                 child = parentViewModel.myChild,
                 saving = parentViewModel.savingHealth,
                 onSaveHealth = parentViewModel::saveHealth,
+                modifier = screenModifier,
             )
+            }
         }
 
         // la pestaña "ajustes": el menú de lo que el admin puede configurar. rutinas abre
@@ -1216,3 +1234,14 @@ private fun ChatTab(
 }
 
 private const val CHAT_POLL_MS = 10_000L
+
+// las pestañas del padre con la tira para cambiar de hijo arriba (solo si la familia tiene más de uno).
+@Composable
+private fun WithChildSwitcher(viewModel: ParentViewModel, content: @Composable (Modifier) -> Unit) {
+    Column(Modifier.fillMaxSize()) {
+        if (ChildChoice.needsSelector(viewModel.children)) {
+            ChildSwitcher(viewModel.children, viewModel.selectedChildId, viewModel::selectChild)
+        }
+        content(Modifier.weight(1f))
+    }
+}

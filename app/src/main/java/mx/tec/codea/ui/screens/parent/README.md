@@ -6,7 +6,7 @@ Pantallas del padre. Pestañas: **Hoy, Calendario, Fotos, Chat, Mi hijo**. Todas
 |---|---|---|
 | `today/` | Hoy: resumen del día (ánimo, comida, cambios, siesta, nota) y línea de tiempo; elegir otro día; mandar una nota a la asistente; botón de Mi cuenta junto a la campana | ✅ |
 | `calendar/` | Calendario del mes con la asistencia de cada día | 🟡 Solo asistencia; faltan eventos y citas (CRF-03) |
-| `photos/` | Fotos por categoría y botón "Pedir que se borre" (usa Coil) | 🟡 Sin paginación en pantalla; el backend ya pagina |
+| `photos/` | Fotos por categoría y botón "Borrar" con confirmación (usa Coil) | 🟡 Sin paginación en pantalla; el backend ya pagina |
 | `child/` | **Mi hijo** (`MyChildScreen`): los datos del niño, la salud que la familia escribe y edita (alergias, condiciones médicas, intolerancias, medicamentos y otras indicaciones; la maestra los ve en la ficha del niño). Ya no se suben documentos desde aquí (se quitó el 18/oct; el backend conserva `GET` y `PUT /children/{id}/documents`). Las personas autorizadas para recoger **ya no se manejan aquí**: las administra el admin en Ajustes | 🟡 sin probar en el teléfono |
 
 ## Pendiente

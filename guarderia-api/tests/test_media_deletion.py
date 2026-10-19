@@ -166,3 +166,65 @@ async def test_decisions_are_audited(client, world, storage):
     assert entry["actor_name"] == "Directora Prueba"
     assert entry["entity_type"] == "MEDIA" and entry["entity_id"] == str(media_id)
     assert entry["detail"] == {"request_id": request_id}
+
+
+# ---------------------------------------------------------------- la familia borra directo (cambio pedido el 18/oct)
+
+
+async def test_the_family_deletes_its_own_photo_directly(client, world, storage, db):
+    media_id, key = await _photo_of_sofia(client, world, storage)
+    await _request_deletion(client, world, media_id)
+
+    assert (await client.delete(f"/media/{media_id}", headers=world.mom)).status_code == 204
+
+    assert key not in storage.objects
+    for headers in (world.mom, world.teacher_a, world.admin):
+        feed = (await client.get("/media", params={"child_id": world.sofia.id}, headers=headers)).json()
+        assert feed["items"] == []
+    stored = await db.scalar(select(Media).where(Media.id == media_id))
+    await db.refresh(stored)
+    assert stored.status == MediaStatus.DELETED
+    # la solicitud que había quedó resuelta con ella y lo dice la bitácora.
+    assert (await client.get("/media/deletion-requests", headers=world.admin)).json() == []
+    audit = (await client.get("/audit-log?action=MEDIA_DELETED_BY_FAMILY", headers=world.admin)).json()
+    assert [item["entity_id"] for item in audit["items"]] == [str(media_id)]
+    # borrarla otra vez ya no existe.
+    assert (await client.delete(f"/media/{media_id}", headers=world.mom)).status_code == 404
+
+
+async def test_a_photo_with_other_families_children_is_not_deleted_by_one_family(client, world, storage):
+    await mark_present(client, world, world.sofia, world.diego)
+    routine = (await client.get(f"/classrooms/{world.room_a.id}/routine", headers=world.teacher_a)).json()
+    permit = await client.post(
+        "/media/uploads", headers=world.teacher_a, json={"content_type": "image/jpeg", "size_bytes": 2048}
+    )
+    media_id, key = permit.json()["media_id"], permit.json()["fields"]["key"]
+    storage.put(key)
+    await client.post(f"/media/{media_id}/complete", headers=world.teacher_a)
+    report = await client.post(
+        "/reports",
+        headers=world.teacher_a,
+        json={
+            "routine_moment_id": routine["moments"][0]["id"],
+            "type": "ACHIEVEMENT",
+            "method": "PHOTO",
+            "description": "Pintaron juntos",
+            "child_ids": [world.sofia.id, world.diego.id],
+            "media_id": media_id,
+        },
+    )
+    assert report.status_code == 201
+
+    shared = await client.delete(f"/media/{media_id}", headers=world.mom)
+    assert shared.status_code == 409 and shared.json()["code"] == "MEDIA_SHARED"
+    assert key in storage.objects
+
+
+async def test_only_a_parent_of_the_child_can_delete_the_photo(client, world, storage):
+    media_id, key = await _photo_of_sofia(client, world, storage)
+    for headers in (world.teacher_a, world.admin):
+        assert (await client.delete(f"/media/{media_id}", headers=headers)).status_code == 403
+    # otra familia ni siquiera sabe que existe.
+    assert (await client.delete(f"/media/{media_id}", headers=world.dad)).status_code == 404
+    assert (await client.delete(f"/media/{media_id}")).status_code == 401
+    assert key in storage.objects

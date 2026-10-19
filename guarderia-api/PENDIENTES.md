@@ -1,10 +1,10 @@
 # Backend: estado y pendientes
 
-Foto a 2026-10-18 por la noche, sobre `main`. Las pruebas sí se corrieron para esta foto: `POSTGRES_PASSWORD=123456 .venv/bin/pytest` → **318 pasaron**. Contexto general: [`../docs/ESTADO.md`](../docs/ESTADO.md). Qué falta en toda la app: [`../docs/FALTANTES.md`](../docs/FALTANTES.md). Marco técnico: [`../docs/MARCO-TECNICO.md`](../docs/MARCO-TECNICO.md).
+Foto a 2026-10-18 por la noche, sobre `main`. Las pruebas sí se corrieron para esta foto: `POSTGRES_PASSWORD=123456 .venv/bin/pytest` → **324 pasaron**. Contexto general: [`../docs/ESTADO.md`](../docs/ESTADO.md). Qué falta en toda la app: [`../docs/FALTANTES.md`](../docs/FALTANTES.md). Marco técnico: [`../docs/MARCO-TECNICO.md`](../docs/MARCO-TECNICO.md).
 
 ## Qué hay
 
-- 15 módulos en `app/modules/` (ver [`app/modules/README.md`](app/modules/README.md)), 11 migraciones Alembic, 33 tablas, 83 endpoints (matriz en [`../docs/api/matriz-de-roles.md`](../docs/api/matriz-de-roles.md), comprobada por `tests/test_access_matrix.py`) y seed con datos de ejemplo.
+- 15 módulos en `app/modules/` (ver [`app/modules/README.md`](app/modules/README.md)), 11 migraciones Alembic, 33 tablas, 84 endpoints (matriz en [`../docs/api/matriz-de-roles.md`](../docs/api/matriz-de-roles.md), comprobada por `tests/test_access_matrix.py`) y seed con datos de ejemplo.
 - Errores uniformes (Problem Details con `code` estable), paginación por cursor, reloj reemplazable en pruebas, subida de archivos con URL firmada.
 - Permisos por rol (`require_role`) y por registro (404 fuera de alcance).
 - Login propio con JWT, límite de intentos, auditoría (`audit_log`), cabeceras de seguridad y CORS cerrado.
@@ -20,7 +20,9 @@ Foto a 2026-10-18 por la noche, sobre `main`. Las pruebas sí se corrieron para 
 | Bitácora de auditoría (`modules/audit`) | RF-14 (falta registrar lectura de fotos y documentos, y `PATCH /center`) |
 | Resumen semanal (`GET /children/{id}/weekly-summary`) | RF-12 |
 | Revisión de solicitudes de borrado de fotos (`media/deletion-requests`) | RF-10 (ver abajo: el equipo pidió cambiarla) |
-| Hora de **salida** del niño y con quién (pase de salida) | RF-03, solo la salida |
+| Hora de **salida** del niño y con quién (pase de salida); la familia la ve como último evento de `GET /children/{id}/day` (`DEPARTURE`) | RF-03, solo la salida |
+| Borrado directo de fotos por la familia (`DELETE /media/{id}`) | RF-10 (cambio del 18/oct) |
+| Migraciones `a96b2c7d5f65` y `a07c3d8e6f76` aplicadas en Aiven (18/oct) | — |
 | Endurecimiento: límite de intentos, cabeceras, CORS cerrado, pruebas de IDOR, inyección y matriz de roles | Rúbrica, partes 2 y 3 |
 
 ## Pendiente, por prioridad
@@ -29,10 +31,8 @@ Foto a 2026-10-18 por la noche, sobre `main`. Las pruebas sí se corrieron para 
 
 | Qué | Requisito | Cómo, dentro del marco |
 |---|---|---|
-| **Borrado directo de fotos por el padre** | RF-10 (cambio del 18/oct) | Endpoint con el que el padre borre la foto (hoy solo `POST /media/{id}/deletion-request`); definir qué pasa si la foto sale con varios niños; decidir si se quitan los endpoints de revisión (`GET /media/deletion-requests`, `…/approve`, `…/reject`), que hoy la app no usa |
-| **Aplicar las migraciones en Aiven** | — | `a96b2c7d5f65` (foto en el chat) y `a07c3d8e6f76` (salud del niño y pase de salida), con `alembic upgrade head`. `alembic current` dice cuáles faltan. Sin ellas el login da 500 |
+| **Foto con niños de varias familias** | RF-10 | `DELETE /media/{id}` ya existe (el padre borra directo si solo salen hijos suyos); con niños de otras familias responde `409 MEDIA_SHARED` y **nadie puede resolverlo desde la app**, porque la revisión del admin no tiene pantalla. Decidir con el equipo qué hacer (devolver la pantalla del admin, o que cada familia la oculte) y si se quitan los endpoints `…/deletion-requests`. |
 | **Hora de entrada del niño** | RF-03 | `attendance` guarda solo `PRESENT`/`ABSENT`; agregar hora de entrada. La salida ya está |
-| **Que la familia vea la salida** | RF-03 | `GET` del pase de salida para el padre (hoy solo admin y docente de la sala) |
 | **Avisos con imágenes** | HN5 | `media_id` en `announcement` (hoy solo lo tiene `message`); marcar como leído en el servidor (`POST /announcements/{id}/read`); hoy el "leído" vive en el teléfono |
 | **Despliegue con HTTPS y URL pública** | RNF04 y enlace de invitación | Configurar `PUBLIC_BASE_URL` y `ANDROID_CERT_SHA256` (en `.env`) para que el enlace abra la app |
 
@@ -44,7 +44,7 @@ Foto a 2026-10-18 por la noche, sobre `main`. Las pruebas sí se corrieron para 
 | Menú del día | HN3 |
 | Llegada de los padres | HN2 |
 | Exportar reportes (PDF/CSV) | HN1 |
-| Varios hijos por padre: `GET /me` ya devuelve la lista; falta que la app la use | HN4 |
+| Varios hijos por padre: `GET /me` devuelve la lista y la app ya tiene el selector (falta verlo en un teléfono) | HN4 |
 | Chat en tiempo real | SSE o WebSocket (el marco los permite); hoy se consulta con `?after=` cada 10 s |
 | Decidir si se quitan los turnos (`shift`), `POST /staff-attendance/notify-coordination` y `coordination_notice`, que la app ya no usa | — |
 | Documentos al inscribir (la API de documentos sigue, pero la app ya no tiene pantalla) | — |

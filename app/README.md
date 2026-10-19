@@ -8,7 +8,7 @@ Marco técnico: solo lo de <https://startdroid.pages.dev/> ([`docs/MARCO-TECNICO
 ```bash
 ./gradlew assembleDebug
 ./gradlew installDebug
-./gradlew test                                   # 121 pruebas JVM (dominio, sesión, Mi sala, pase de salida, invitación)
+./gradlew test                                   # 125 pruebas JVM (dominio, sesión, Mi sala, pase de salida, invitación)
 ./gradlew connectedAndroidTest                   # necesita dispositivo; solo hay un ejemplo vacío
 ```
 

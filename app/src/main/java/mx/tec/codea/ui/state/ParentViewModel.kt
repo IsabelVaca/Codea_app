@@ -20,7 +20,9 @@ import mx.tec.codea.data.api.ChildDetailDto
 import mx.tec.codea.data.hoyLocal
 import mx.tec.codea.data.parseIso
 import mx.tec.codea.data.toContact
+import mx.tec.codea.domain.ChildChoice
 import mx.tec.codea.domain.ChildHealth
+import mx.tec.codea.domain.ChildOption
 import mx.tec.codea.domain.ChildProfileRules
 import mx.tec.codea.domain.MyChild
 import mx.tec.codea.domain.DiaSemana
@@ -40,7 +42,7 @@ import java.util.Calendar
 import java.util.Locale
 
 // el estado de las pantallas del padre: hoy, calendario, fotos y "Mi hijo" (sus datos y su salud).
-// un padre puede tener varios hijos; por ahora se usa el primero.
+// un padre puede tener varios hijos: `children` es la lista para el selector y todo lo demás es del hijo elegido.
 class ParentViewModel : ViewModel() {
 
     private val repository = ParentApiRepository()
@@ -57,6 +59,13 @@ class ParentViewModel : ViewModel() {
     private val shownMonth = Calendar.getInstance().get(Calendar.MONTH)
 
     var childName by mutableStateOf("")
+        private set
+
+    // los hijos de la familia y el elegido; el selector solo sale con más de uno.
+    var children by mutableStateOf<List<ChildOption>>(emptyList())
+        private set
+
+    var selectedChildId by mutableStateOf<Int?>(null)
         private set
 
     var summary by mutableStateOf(
@@ -104,10 +113,13 @@ class ParentViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val me = repository.me()
-                val hijo = me.parent?.children?.firstOrNull() ?: return@launch
+                children = me.parent?.children.orEmpty().map { ChildOption(it.id, it.name, it.fullName) }
+                // la recarga que sigue a cada cambio conserva al hijo elegido.
+                val hijo = ChildChoice.pick(children, childId) ?: return@launch
                 childId = hijo.id
+                selectedChildId = hijo.id
                 childName = hijo.fullName
-                childFirstName = hijo.name
+                childFirstName = hijo.firstName
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -121,6 +133,22 @@ class ParentViewModel : ViewModel() {
             parte("los datos de tu hijo") { cargarHijo() }
             parte("las fotos") { cargarFotos() }
         }
+    }
+
+    // la familia cambia de hijo: lo del anterior se quita para no mostrarlo mientras carga el nuevo.
+    fun selectChild(id: Int) {
+        val hijo = children.firstOrNull { it.id == id } ?: return
+        if (hijo.id == childId) return
+        childId = hijo.id
+        selectedChildId = hijo.id
+        childName = hijo.fullName
+        childFirstName = hijo.firstName
+        selectedDate = null
+        timeline = emptyList()
+        weekly = null
+        myChild = null
+        photos = emptyList()
+        cargar()
     }
 
     private suspend fun parte(nombre: String, bloque: suspend () -> Unit) {
@@ -244,9 +272,10 @@ class ParentViewModel : ViewModel() {
         photos = repository.photos(id).map { it.toFoto() }
     }
 
-    fun requestPhotoDeletion(foto: Foto) {
-        launchAction(onSuccess = { DataEvents.notice("Solicitud enviada a la guardería") }) {
-            repository.requestPhotoDeletion(foto.id)
+    // la foto se borra de inmediato; si salen niños de otras familias, la API lo rechaza y el snackbar lo dice.
+    fun deletePhoto(foto: Foto) {
+        launchAction(onSuccess = { DataEvents.notice("Foto borrada") }) {
+            repository.deletePhoto(foto.id)
         }
     }
 
@@ -304,6 +333,7 @@ class ParentViewModel : ViewModel() {
             "MEAL" -> TimelineEventType.MEAL
             "ACTIVITY" -> TimelineEventType.ACTIVITY
             "NAP" -> TimelineEventType.NAP
+            "DEPARTURE" -> TimelineEventType.DEPARTURE
             else -> TimelineEventType.CHECK_IN
         },
     )

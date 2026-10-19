@@ -14,6 +14,7 @@ Archivos y bucket: `core/storage.py`.
 | `POST /media/uploads` | cualquiera con cuenta | Pide permiso de subida. Valida tipo y tamaño (`test_upload_rules`) |
 | `POST /media/{id}/complete` | cualquiera con cuenta | Marca el archivo como subido |
 | `GET /media` | padre | Galería paginada y filtrada por categoría, solo donde aparece su hijo |
+| `DELETE /media/{id}` | padre | **"Borrar"** (18/oct): borra la foto del bucket y de las galerías al momento, deja sus reportes sin foto, resuelve la solicitud que hubiera y queda en la bitácora. Solo si todos los niños de la foto son hijos suyos: si no, `409 MEDIA_SHARED` |
 | `POST /media/{id}/deletion-request` | padre | "Pedir que se borre"; si ya la pidió, devuelve la misma con 200 |
 | `GET /media/deletion-requests?status=` | admin | Las solicitudes (por omisión `PENDING`): quién la pidió, el motivo, de qué niños es la foto y una URL firmada para verla |
 | `POST /media/deletion-requests/{id}/approve` | admin | Borra el archivo del bucket y marca la foto `DELETED` (sale de todas las galerías); los reportes conservan su texto sin foto; cierra las demás solicitudes de la misma foto. `409 REQUEST_ALREADY_DECIDED`; `502 STORAGE_UNAVAILABLE` si el bucket falla (y entonces no se marca nada) |

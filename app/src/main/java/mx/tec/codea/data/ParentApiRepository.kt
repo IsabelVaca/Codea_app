@@ -3,7 +3,6 @@ package mx.tec.codea.data
 import mx.tec.codea.data.api.ApiClient
 import mx.tec.codea.data.api.CalendarDto
 import mx.tec.codea.data.api.DayDto
-import mx.tec.codea.data.api.DeletionBody
 import mx.tec.codea.data.api.FeedItemDto
 import mx.tec.codea.data.api.WeeklySummaryDto
 import mx.tec.codea.data.api.MeDto
@@ -40,7 +39,7 @@ class ParentApiRepository {
 
     suspend fun photos(childId: Int): List<FeedItemDto> = api.photoFeed(childId, 50).items
 
-    suspend fun requestPhotoDeletion(mediaId: Int) {
-        api.requestPhotoDeletion(mediaId, DeletionBody())
+    suspend fun deletePhoto(mediaId: Int) {
+        api.deletePhoto(mediaId)
     }
 }

@@ -31,7 +31,7 @@ Todas las fases de abajo se hicieron, salvo lo que se dice aquí. Detalle en [`.
 | 5. Completar (P1) | Hecho: Día del niño (Mi sala → Resumen), Cambiar contraseña. Cambió: las personas autorizadas las administra el admin. Falta: selector de hijo |
 | 6. Seguridad | Hecho en gran parte: límite de intentos, auditoría, cabeceras, CORS, matriz de roles. Falta HTTPS público |
 
-Cifras: 83 endpoints, 11 migraciones, 318 pruebas de la API y 121 JVM.
+Cifras: 84 endpoints, 11 migraciones, 324 pruebas de la API y 125 JVM.
 
 ## Resumen (16 de octubre)
 
