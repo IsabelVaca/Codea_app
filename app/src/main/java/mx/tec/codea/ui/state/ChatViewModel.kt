@@ -16,6 +16,7 @@ import mx.tec.codea.domain.ChatMessage
 import mx.tec.codea.domain.ChatRules
 import mx.tec.codea.domain.Conversation
 import mx.tec.codea.domain.MessageStatus
+import retrofit2.HttpException
 import java.util.UUID
 
 // el chat de la docente (bandeja y conversación) y el del papá. la pantalla llama a refresh()
@@ -150,8 +151,10 @@ class ChatViewModel : ViewModel() {
     }
 
     // la foto ya viene comprimida (ImageCompressor); el texto es opcional.
-    fun sendPhoto(jpeg: ByteArray, caption: String) {
-        val id = openId ?: return
+    // el id de la conversación viene de la pantalla: comprimir tarda, y la foto debe ir al chat donde se eligió.
+    fun sendPhoto(conversationId: Int, jpeg: ByteArray, caption: String) {
+        val id = conversationId
+        if (id != openId) return
         val clientId = UUID.randomUUID().toString()
         messages = messages + ChatMessage(
             id = 0,
@@ -194,6 +197,8 @@ class ChatViewModel : ViewModel() {
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                // un error 4xx no se arregla reintentando con la misma foto: se vuelve a subir.
+                if (e is HttpException && e.code() in 400..499) uploadedMedia.remove(clientId)
                 replace(clientId) { it.copy(status = MessageStatus.FAILED) }
                 DataEvents.notice("No se pudo enviar: ${e.toUserMessage()}")
             }

@@ -87,6 +87,8 @@ fun rememberCapturePhoto(onCaptured: (Uri) -> Unit): () -> Unit {
     }
     fun launchCamera() {
         val folder = File(context.cacheDir, "chat").apply { mkdirs() }
+        // las fotos de la cámara ya se mandaron o se cancelaron: se borran las de más de un día.
+        folder.listFiles()?.filter { System.currentTimeMillis() - it.lastModified() > 24 * 60 * 60 * 1000L }?.forEach { it.delete() }
         val file = File.createTempFile("foto_", ".jpg", folder)
         val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
         target = uri

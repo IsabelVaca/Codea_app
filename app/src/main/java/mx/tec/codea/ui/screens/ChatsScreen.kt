@@ -85,7 +85,7 @@ fun ChatsScreen(
     modifier: Modifier = Modifier,
     onSend: (String) -> Unit = {},
     onRetry: (String) -> Unit = {},
-    onSendPhoto: (ByteArray, String) -> Unit = { _, _ -> },
+    onSendPhoto: (Int, ByteArray, String) -> Unit = { _, _, _ -> },
 ) {
     if (openConversation == null) {
         InboxScreen(
@@ -228,7 +228,7 @@ private fun ConversationScreen(
     onBackClick: () -> Unit,
     onSend: (String) -> Unit,
     onRetry: (String) -> Unit,
-    onSendPhoto: (ByteArray, String) -> Unit,
+    onSendPhoto: (Int, ByteArray, String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -317,7 +317,7 @@ private fun ConversationScreen(
                 previewUri = null
                 scope.launch {
                     try {
-                        onSendPhoto(ImageCompressor.compress(context.contentResolver, uri), caption)
+                        onSendPhoto(conversation.id, ImageCompressor.compress(context.contentResolver, uri), caption)
                     } catch (e: CancellationException) {
                         throw e
                     } catch (e: Exception) {
