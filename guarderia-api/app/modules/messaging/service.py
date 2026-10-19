@@ -7,10 +7,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.errors import ApiError
 from app.core.pagination import Page
 from app.core.security import CurrentUser, get_child_in_scope
+from app.core.storage import Storage
 from app.modules.auth.models import AppUser
 from app.modules.children.models import Child, ChildStatus
 from app.modules.classrooms.centers import center_today, default_center, get_active_classroom
 from app.modules.classrooms.models import Classroom
+from app.modules.media.models import Media, MediaStatus
+from app.modules.media.service import get_own_media
 from app.modules.parents.models import ParentChildRel
 
 from .models import Announcement, Conversation, ConversationRead, Message, ParentNote
@@ -129,7 +132,18 @@ async def _read_marks(db: AsyncSession, conversation_id: int, user_id: uuid.UUID
     return mine, others
 
 
-def _message_out(message: Message, author: AppUser, me: uuid.UUID, mine_read: int, others_read: int) -> MessageOut:
+async def _media_urls(db: AsyncSession, storage: Storage, messages: list[Message]) -> dict[int, str]:
+    """{message.id: URL firmada de su foto}. Una foto borrada o sin subir no sale."""
+    by_media = {message.media_id: message.id for message in messages if message.media_id is not None}
+    if not by_media:
+        return {}
+    rows = await db.execute(select(Media).where(Media.id.in_(by_media), Media.status == MediaStatus.READY))
+    return {by_media[media.id]: storage.presign_get(media.storage_key) for media in rows.scalars()}
+
+
+def _message_out(
+    message: Message, author: AppUser, me: uuid.UUID, mine_read: int, others_read: int, media_url: str | None = None
+) -> MessageOut:
     is_mine = message.author_id == me
     return MessageOut(
         id=message.id,
@@ -138,13 +152,14 @@ def _message_out(message: Message, author: AppUser, me: uuid.UUID, mine_read: in
         author_name=author.full_name,
         text=message.text,
         client_id=message.client_id,
+        media_url=media_url,
         created_at=message.created_at,
         is_mine=is_mine,
         is_read=(others_read if is_mine else mine_read) >= message.id,
     )
 
 
-async def list_conversations(db: AsyncSession, current: CurrentUser) -> list[ConversationOut]:
+async def list_conversations(db: AsyncSession, current: CurrentUser, storage: Storage) -> list[ConversationOut]:
     children = await _children_in_chat_scope(db, current)
     conversations = await ensure_conversations(db, [child.id for child in children])
     conversation_ids = list(conversations.values())
@@ -162,6 +177,7 @@ async def list_conversations(db: AsyncSession, current: CurrentUser) -> list[Con
         ).all()
     }
 
+    urls = await _media_urls(db, storage, [message for message, _ in last_messages.values()])
     result = []
     for child in children:
         conversation_id = conversations[child.id]
@@ -169,7 +185,7 @@ async def list_conversations(db: AsyncSession, current: CurrentUser) -> list[Con
         if conversation_id in last_messages:
             message, author = last_messages[conversation_id]
             mine_read, others_read = await _read_marks(db, conversation_id, current.id)
-            last = _message_out(message, author, current.id, mine_read, others_read)
+            last = _message_out(message, author, current.id, mine_read, others_read, urls.get(message.id))
         result.append(
             ConversationOut(
                 id=conversation_id,
@@ -184,6 +200,7 @@ async def list_conversations(db: AsyncSession, current: CurrentUser) -> list[Con
 async def list_messages(
     db: AsyncSession,
     current: CurrentUser,
+    storage: Storage,
     conversation_id: int,
     cursor: int | None,
     after: int | None,
@@ -206,8 +223,12 @@ async def list_messages(
         next_cursor = str(rows[limit - 1][0].id) if len(rows) > limit else None
         rows = rows[:limit]
     mine_read, others_read = await _read_marks(db, conversation_id, current.id)
+    urls = await _media_urls(db, storage, [message for message, _ in rows])
     return Page(
-        items=[_message_out(message, author, current.id, mine_read, others_read) for message, author in rows],
+        items=[
+            _message_out(message, author, current.id, mine_read, others_read, urls.get(message.id))
+            for message, author in rows
+        ],
         next_cursor=next_cursor,
     )
 
@@ -230,11 +251,19 @@ async def _mark_read_up_to(db: AsyncSession, conversation_id: int, user_id: uuid
 
 
 async def send_message(
-    db: AsyncSession, current: CurrentUser, conversation_id: int, data: MessageIn
+    db: AsyncSession, current: CurrentUser, storage: Storage, conversation_id: int, data: MessageIn
 ) -> tuple[MessageOut, bool]:
-    """Regresa (mensaje, creado). Si el client_id ya existe, regresa el mensaje que ya estaba."""
+    """Regresa (mensaje, creado). Si el client_id ya existe, regresa el mensaje que ya estaba.
+    El mensaje lleva texto, foto o ambos."""
     await _get_conversation(db, current, conversation_id)
-    text = _require_text(data.text)
+    text = data.text.strip()
+    if data.media_id is None:
+        text = _require_text(text)
+    else:
+        # la foto debe ser mía, estar ya en el bucket y ser una imagen.
+        media = await get_own_media(db, current, data.media_id)
+        if media.status != MediaStatus.READY or not media.content_type.startswith("image/"):
+            raise ApiError(422, "MEDIA_NOT_VALID", "La foto no está lista para enviarse")
     message = None
     if data.client_id is not None:
         message = await db.scalar(
@@ -242,14 +271,21 @@ async def send_message(
         )
     created = message is None
     if created:
-        message = Message(conversation_id=conversation_id, author_id=current.id, text=text, client_id=data.client_id)
+        message = Message(
+            conversation_id=conversation_id,
+            author_id=current.id,
+            text=text,
+            client_id=data.client_id,
+            media_id=data.media_id,
+        )
         db.add(message)
         await db.flush()
         await _mark_read_up_to(db, conversation_id, current.id, message.id)
         await db.commit()
         await db.refresh(message)
     mine_read, others_read = await _read_marks(db, conversation_id, current.id)
-    return _message_out(message, current.user, current.id, mine_read, others_read), created
+    urls = await _media_urls(db, storage, [message])
+    return _message_out(message, current.user, current.id, mine_read, others_read, urls.get(message.id)), created
 
 
 async def mark_read(db: AsyncSession, current: CurrentUser, conversation_id: int) -> None:

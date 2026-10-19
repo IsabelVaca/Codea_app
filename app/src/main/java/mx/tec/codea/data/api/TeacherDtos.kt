@@ -182,8 +182,10 @@ data class MessageDto(
     val id: Int,
     @SerialName("conversation_id") val conversationId: Int,
     @SerialName("author_name") val authorName: String = "",
-    val text: String,
+    val text: String = "",
     @SerialName("client_id") val clientId: String? = null,
+    // URL firmada (10 min) de la foto del mensaje; null si no trae foto.
+    @SerialName("media_url") val mediaUrl: String? = null,
     @SerialName("created_at") val createdAt: String,
     @SerialName("is_mine") val isMine: Boolean = false,
     @SerialName("is_read") val isRead: Boolean = false,
@@ -213,4 +215,5 @@ data class MessagePage(
 data class MessageBody(
     val text: String,
     @SerialName("client_id") val clientId: String? = null,
+    @SerialName("media_id") val mediaId: Int? = null,
 )

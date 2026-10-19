@@ -16,6 +16,7 @@ import mx.tec.codea.domain.ChatMessage
 import mx.tec.codea.domain.ChatRules
 import mx.tec.codea.domain.Conversation
 import mx.tec.codea.domain.MessageStatus
+import retrofit2.HttpException
 import java.util.UUID
 
 // el chat de la docente (bandeja y conversación) y el del papá. la pantalla llama a refresh()
@@ -46,6 +47,9 @@ class ChatViewModel : ViewModel() {
         get() = ApiConfig.isParent && conversations.size == 1
 
     private var openJob: Job? = null
+
+    // fotos que ya se subieron pero cuyo mensaje no llegó: un reintento no las sube otra vez.
+    private val uploadedMedia = mutableMapOf<String, Int>()
 
     init {
         // otro usuario entra o algo cambió en el servidor: se vuelve a pedir la bandeja.
@@ -146,26 +150,55 @@ class ChatViewModel : ViewModel() {
         deliver(id, text.trim(), clientId)
     }
 
+    // la foto ya viene comprimida (ImageCompressor); el texto es opcional.
+    // el id de la conversación viene de la pantalla: comprimir tarda, y la foto debe ir al chat donde se eligió.
+    fun sendPhoto(conversationId: Int, jpeg: ByteArray, caption: String) {
+        val id = conversationId
+        if (id != openId) return
+        val clientId = UUID.randomUUID().toString()
+        messages = messages + ChatMessage(
+            id = 0,
+            clientId = clientId,
+            text = caption.trim(),
+            time = "",
+            isMine = true,
+            status = MessageStatus.SENDING,
+            localImage = jpeg,
+        )
+        deliver(id, caption.trim(), clientId, jpeg)
+    }
+
     // el mismo clientId: si el mensaje sí había llegado, la API no lo duplica.
     fun retry(clientId: String) {
         val id = openId ?: return
         val pending = messages.firstOrNull { it.clientId == clientId && it.status == MessageStatus.FAILED }
             ?: return
         replace(clientId) { it.copy(status = MessageStatus.SENDING) }
-        deliver(id, pending.text, clientId)
+        deliver(id, pending.text, clientId, pending.localImage)
     }
 
-    private fun deliver(conversationId: Int, text: String, clientId: String) {
+    private fun deliver(conversationId: Int, text: String, clientId: String, jpeg: ByteArray? = null) {
         viewModelScope.launch {
             try {
-                val sent = repository.send(conversationId, text, clientId)
+                val sent = if (jpeg == null) {
+                    repository.send(conversationId, text, clientId)
+                } else {
+                    val mediaId = uploadedMedia.getOrPut(clientId) { repository.uploadPhoto(jpeg) }
+                    repository.sendPhoto(conversationId, mediaId, text, clientId).also { uploadedMedia.remove(clientId) }
+                }
                 if (conversationId == openId) messages = ChatRules.merge(messages, listOf(sent))
                 conversations = conversations.map {
-                    if (it.id == conversationId) it.copy(lastText = sent.text, lastTime = sent.time) else it
+                    if (it.id == conversationId) {
+                        it.copy(lastText = ChatRules.preview(sent.text, sent.hasImage), lastTime = sent.time)
+                    } else {
+                        it
+                    }
                 }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                // un error 4xx no se arregla reintentando con la misma foto: se vuelve a subir.
+                if (e is HttpException && e.code() in 400..499) uploadedMedia.remove(clientId)
                 replace(clientId) { it.copy(status = MessageStatus.FAILED) }
                 DataEvents.notice("No se pudo enviar: ${e.toUserMessage()}")
             }

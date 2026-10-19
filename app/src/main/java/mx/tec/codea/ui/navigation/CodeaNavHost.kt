@@ -1179,6 +1179,7 @@ private fun ChatTab(
         onBackClick = onBackClick,
         onSend = chatViewModel::send,
         onRetry = chatViewModel::retry,
+        onSendPhoto = chatViewModel::sendPhoto,
     )
 }
 

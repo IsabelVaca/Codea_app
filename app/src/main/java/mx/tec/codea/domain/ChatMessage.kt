@@ -12,7 +12,12 @@ data class ChatMessage(
     val isMine: Boolean,
     val isRead: Boolean = false,
     val status: MessageStatus = MessageStatus.SENT,
-)
+    // the photo of the message: the signed URL from the server, or (while sending) the JPEG we just compressed.
+    val imageUrl: String? = null,
+    val localImage: ByteArray? = null,
+) {
+    val hasImage: Boolean get() = imageUrl != null || localImage != null
+}
 
 // one row of the inbox: the chat about one child.
 data class Conversation(

@@ -25,8 +25,11 @@ class Message(IdMixin, Base):
 
     conversation_id: Mapped[int] = mapped_column(ForeignKey("conversation.id"))
     author_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("app_user.id"))
+    # vacío si el mensaje es solo una foto.
     text: Mapped[str] = mapped_column(Text)
     client_id: Mapped[uuid.UUID | None]
+    # la foto del mensaje (opcional); vive en el bucket igual que las demás.
+    media_id: Mapped[int | None] = mapped_column(ForeignKey("media.id"))
 
 
 class ConversationRead(TimestampMixin, Base):
