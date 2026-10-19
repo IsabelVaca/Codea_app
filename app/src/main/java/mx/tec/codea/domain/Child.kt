@@ -2,16 +2,29 @@ package mx.tec.codea.domain
 
 enum class AttendanceStatus { PRESENT, ABSENT }
 
-// a child of the room. "mi sala" and the report flow use the same list,
+// un aviso que el papá mandó desde casa para hoy. "time" ya viene como "7:40" para dibujarlo.
+data class FamilyNote(
+    val id: Int,
+    val text: String,
+    val time: String,
+)
+
+// a child of the room. "mi sala", "mi día" and the report flow use the same list,
 // so a child marked absent in "mi sala" also shows as absent in the report.
+// sin pase de lista el niño cuenta como ausente: la docente lo marca presente en "Mi día".
 data class Child(
     val id: String,
     val name: String,
     val attendance: AttendanceStatus,
     val hasUnreadChat: Boolean,
-    // el papá le dejó una nota a la asistente hoy: se marca en Mi sala.
-    val hasNoteToday: Boolean = false,
+    // los avisos que los papás le dejaron a la asistente hoy, del más viejo al más nuevo.
+    val notes: List<FamilyNote> = emptyList(),
+    // true cuando la docente ya guardó el resumen del día de este niño.
+    val hasSummaryToday: Boolean = false,
 ) {
+    val hasNoteToday: Boolean
+        get() = notes.isNotEmpty()
+
     val firstName: String
         get() = name.substringBefore(" ")
 

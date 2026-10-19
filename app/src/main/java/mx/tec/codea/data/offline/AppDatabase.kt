@@ -51,6 +51,10 @@ data class CachedChildEntity(
     val conversationId: Int?,
     val hasUnreadChat: Boolean,
     val hasNoteToday: Boolean,
+    // los avisos de casa de hoy, como JSON (lista de RoomNoteDto); "[]" si no hay.
+    // sin defaultValue en la anotación: la migración 2 -> 3 pone el DEFAULT y Room no compara los defaults que la entidad no declara.
+    val notesJson: String = "[]",
+    val hasSummaryToday: Boolean = false,
 )
 
 @Dao
@@ -100,7 +104,7 @@ interface OfflineDao {
 
 @Database(
     entities = [PendingAttendanceEntity::class, CachedRoomEntity::class, CachedChildEntity::class],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -111,6 +115,14 @@ abstract class AppDatabase : RoomDatabase() {
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE pending_attendance ADD COLUMN userId TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        // versión 3: la lista guardada de Mi sala también lleva el texto de los avisos y si el resumen del día ya está.
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE cached_child ADD COLUMN notesJson TEXT NOT NULL DEFAULT '[]'")
+                db.execSQL("ALTER TABLE cached_child ADD COLUMN hasSummaryToday INTEGER NOT NULL DEFAULT 0")
             }
         }
     }

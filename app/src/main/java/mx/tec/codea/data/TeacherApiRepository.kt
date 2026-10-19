@@ -9,6 +9,8 @@ import mx.tec.codea.data.api.CheckInBody
 import mx.tec.codea.data.api.CheckInDto
 import mx.tec.codea.data.api.DailyEntryBody
 import mx.tec.codea.data.api.DayDto
+import mx.tec.codea.data.api.GuardianDto
+import mx.tec.codea.data.api.PickupDto
 import mx.tec.codea.data.api.MeDto
 import mx.tec.codea.data.api.ReportBody
 import mx.tec.codea.data.api.RoomChildDto
@@ -16,6 +18,10 @@ import mx.tec.codea.data.api.RoutineDto
 import mx.tec.codea.domain.AttendanceStatus
 import mx.tec.codea.domain.CheckInRecord
 import mx.tec.codea.domain.Child
+import mx.tec.codea.domain.ChildProfile
+import mx.tec.codea.domain.ChildProfileRules
+import mx.tec.codea.domain.Contact
+import mx.tec.codea.domain.FamilyNote
 import mx.tec.codea.domain.Report
 import mx.tec.codea.domain.Routine
 import mx.tec.codea.domain.Subprocess
@@ -49,6 +55,18 @@ class TeacherApiRepository {
 
     // el resumen de hoy del niño (lo que ya se capturó) y las notas de la familia.
     suspend fun day(childId: Int): DayDto = api.childDay(childId, null)
+
+    // la ficha: alergias y edad del niño, sus tutores con teléfono y las personas autorizadas a recogerlo.
+    suspend fun childProfile(childId: Int): ChildProfile {
+        val detail = api.childDetail(childId)
+        val pickups = api.pickups(childId)
+        return ChildProfile(
+            allergies = detail.allergies?.trim()?.ifBlank { null },
+            ageText = ChildProfileRules.ageText(detail.birthDate, hoyLocal()),
+            guardians = detail.guardians.sortedByDescending { it.isPrimary }.map { it.toContact() },
+            pickups = pickups.map { it.toContact() },
+        )
+    }
 
     suspend fun saveDailyEntry(childId: Int, body: DailyEntryBody) {
         api.saveDailyEntry(childId, body)
@@ -93,10 +111,25 @@ private fun CheckInDto.toRecord() = CheckInRecord(
 fun RoomChildDto.toChild() = Child(
     id = id.toString(),
     name = fullName,
-    attendance = if (attendance == "ABSENT") AttendanceStatus.ABSENT else AttendanceStatus.PRESENT,
+    // sin pase de lista el niño falta: solo "PRESENT" cuenta como presente.
+    attendance = if (attendance == "PRESENT") AttendanceStatus.PRESENT else AttendanceStatus.ABSENT,
     hasUnreadChat = hasUnreadChat,
-    hasNoteToday = hasNoteToday,
+    notes = notes.map { FamilyNote(id = it.id, text = it.text, time = clockOf(it.createdAt) ?: "") },
+    hasSummaryToday = hasSummaryToday,
 )
+
+private fun GuardianDto.toContact() = Contact(name = fullName, relationship = parentesco(relationship), phone = phone)
+
+private fun PickupDto.toContact() = Contact(name = fullName, relationship = relationship?.let(::parentesco), phone = phone)
+
+// el parentesco llega como código de la API ("MOTHER") o como texto libre de una persona autorizada ("Abuela").
+private fun parentesco(valor: String?): String? = when (valor) {
+    "MOTHER" -> "Mamá"
+    "FATHER" -> "Papá"
+    "LEGAL_GUARDIAN" -> "Tutor"
+    "OTHER" -> null
+    else -> valor?.ifBlank { null }
+}
 
 fun RoutineDto.toRoutine() = Routine(
     name = name ?: "Rutina del día",

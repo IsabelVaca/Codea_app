@@ -72,6 +72,14 @@ data class MeDto(
 
 // ---------- mi sala ----------
 
+// un aviso que el papá mandó desde casa; la hora llega en ISO y la app la pasa a "7:40".
+@Serializable
+data class RoomNoteDto(
+    val id: Int,
+    val text: String,
+    @SerialName("created_at") val createdAt: String,
+)
+
 @Serializable
 data class RoomChildDto(
     val id: Int,
@@ -83,6 +91,29 @@ data class RoomChildDto(
     @SerialName("has_unread_chat") val hasUnreadChat: Boolean = false,
     @SerialName("unread_count") val unreadCount: Int = 0,
     @SerialName("has_note_today") val hasNoteToday: Boolean = false,
+    val notes: List<RoomNoteDto> = emptyList(),
+    @SerialName("has_summary_today") val hasSummaryToday: Boolean = false,
+)
+
+// ---------- ficha del niño ----------
+
+@Serializable
+data class GuardianDto(
+    val id: String,
+    @SerialName("full_name") val fullName: String,
+    val relationship: String? = null,
+    val phone: String? = null,
+    @SerialName("is_primary") val isPrimary: Boolean = false,
+)
+
+// GET /children/{id}: lo que la ficha necesita además de lo que ya trae Mi sala.
+@Serializable
+data class ChildDetailDto(
+    val id: Int,
+    @SerialName("full_name") val fullName: String,
+    @SerialName("birth_date") val birthDate: String? = null,
+    val allergies: String? = null,
+    val guardians: List<GuardianDto> = emptyList(),
 )
 
 @Serializable

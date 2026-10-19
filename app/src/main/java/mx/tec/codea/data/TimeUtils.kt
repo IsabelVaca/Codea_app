@@ -53,3 +53,8 @@ fun hoyLocal(): mx.tec.codea.domain.Fecha {
 // "23 oct": para mostrar cuándo vence algo.
 fun shortDateOf(iso: String?): String? =
     parseIso(iso)?.let { SimpleDateFormat("d MMM", Locale("es", "MX")).format(it) }
+
+// "Lunes 19 de octubre": la fecha de hoy para el encabezado de Mi sala.
+fun todayLabel(): String =
+    SimpleDateFormat("EEEE d 'de' MMMM", Locale("es", "MX")).format(Date())
+        .replaceFirstChar { it.uppercase() }

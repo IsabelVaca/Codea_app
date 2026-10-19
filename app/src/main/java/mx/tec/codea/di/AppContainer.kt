@@ -12,6 +12,7 @@ import mx.tec.codea.data.SessionState
 import mx.tec.codea.data.api.ApiClient
 import mx.tec.codea.data.offline.Offline
 import mx.tec.codea.data.local.KeystoreTokenCipher
+import mx.tec.codea.data.local.Local
 import mx.tec.codea.data.local.SessionStore
 
 // el contenedor de dependencias, a mano (DI manual): crea una sola vez lo que viven mientras viva la app.
@@ -29,6 +30,7 @@ class AppContainer(context: Context) {
 
     init {
         Offline.init(context, sessionRepository)
+        Local.init(context, sessionRepository)
         ApiClient.init(sessionRepository)
         // lee la sesión guardada; mientras tanto el estado es Loading y la app muestra el arranque.
         appScope.launch { sessionRepository.load() }

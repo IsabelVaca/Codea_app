@@ -22,6 +22,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import mx.tec.codea.R
 import mx.tec.codea.domain.Animo
 import mx.tec.codea.domain.Comida
 import mx.tec.codea.domain.ResumenDelDiaReglas
@@ -38,6 +40,11 @@ fun ResumenDelDiaScreen(
     onBackClick: () -> Unit,
     onGuardado: () -> Unit,
     modifier: Modifier = Modifier,
+    // resumen guiado: en qué niño de la cola va ("2 de 5"); null cuando se abrió suelto desde la ficha.
+    guidedPosition: Int? = null,
+    guidedTotal: Int = 0,
+    isLastGuided: Boolean = true,
+    onSkip: () -> Unit = {},
 ) {
     Column(
         modifier = modifier
@@ -47,7 +54,11 @@ fun ResumenDelDiaScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         BackHeader(
-            overline = "Mi sala",
+            overline = if (guidedPosition != null) {
+                stringResource(R.string.summary_guided_overline, guidedPosition, guidedTotal)
+            } else {
+                "Mi sala"
+            },
             title = if (viewModel.nombre.isBlank()) "Resumen del día" else "Resumen de ${viewModel.nombre}",
             onBackClick = onBackClick,
         )
@@ -119,10 +130,31 @@ fun ResumenDelDiaScreen(
             contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
         ) {
             Text(
-                text = if (viewModel.guardando) "Guardando…" else "Guardar resumen",
+                text = when {
+                    viewModel.guardando -> "Guardando…"
+                    guidedPosition == null -> "Guardar resumen"
+                    isLastGuided -> stringResource(R.string.summary_guided_save_last)
+                    else -> stringResource(R.string.summary_guided_save)
+                },
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
             )
+        }
+
+        // sin guardar este niño, se pasa al siguiente de la cola.
+        if (guidedPosition != null) {
+            OutlinedButton(
+                onClick = onSkip,
+                enabled = !viewModel.guardando,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(14.dp),
+            ) {
+                Text(
+                    text = stringResource(if (isLastGuided) R.string.summary_guided_finish else R.string.summary_guided_skip),
+                    fontWeight = FontWeight.Bold,
+                )
+            }
         }
     }
 }

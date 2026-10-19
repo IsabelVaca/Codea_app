@@ -133,12 +133,105 @@
     <string name="my_room_overline">Estancia La Oruga</string>
     <string name="my_room_title">Sala · %1$s</string>
     <string name="my_room_title_generic">Mi sala</string>
-    <string name="my_room_note_today">Nota de la familia hoy</string>
-    <string name="my_room_present_count">presentes</string>
-    <string name="my_room_unread_count">chats sin leer</string>
     <string name="my_room_present">Presente</string>
     <string name="my_room_absent">Falta</string>
-    <string name="my_room_chat">Chat</string>
+    <plurals name="my_room_today_line">
+        <item quantity="one">%1$s · %2$d de %3$d niño hoy</item>
+        <item quantity="other">%1$s · %2$d de %3$d niños hoy</item>
+    </plurals>
+    <plurals name="my_room_pending_changes">
+        <item quantity="one">%1$d cambio sin enviar · se manda solo cuando vuelva la conexión</item>
+        <item quantity="other">%1$d cambios sin enviar · se mandan solos cuando vuelva la conexión</item>
+    </plurals>
+    <string name="my_room_nobody_title">Todavía no pasas lista hoy</string>
+    <string name="my_room_nobody_body">Marca a los niños que llegaron en el pase de lista de Mi día.</string>
+    <string name="my_room_nobody_action">Ir al pase de lista</string>
+    <string name="my_room_notices_title">De casa hoy</string>
+    <string name="my_room_notices_see_all">Ver todos (%1$d)</string>
+    <string name="my_room_filter_all">Todos · %1$d</string>
+    <string name="my_room_filter_note">Con aviso · %1$d</string>
+    <string name="my_room_filter_chat">Con chat · %1$d</string>
+    <string name="my_room_filter_summary">Sin resumen · %1$d</string>
+    <string name="my_room_children_title">Los niños</string>
+    <string name="my_room_capture_summaries">Capturar resúmenes (%1$d)</string>
+    <string name="summary_guided_overline">Resumen %1$d de %2$d</string>
+    <string name="summary_guided_save">Guardar y seguir con el siguiente</string>
+    <string name="summary_guided_save_last">Guardar y terminar</string>
+    <string name="summary_guided_skip">Saltar este niño</string>
+    <string name="summary_guided_finish">Terminar sin guardar</string>
+    <string name="my_room_empty">Todavía no hay niños en tu sala.</string>
+    <string name="my_room_filter_empty">Ningún niño con este filtro.</string>
+    <string name="my_room_absent_section">Ausentes hoy (%1$d)</string>
+    <string name="my_room_absent_hint">¿Llegó alguno? Márcalo en el pase de lista de Mi día.</string>
+    <string name="my_room_tag_note">Aviso de casa</string>
+    <string name="my_room_tag_note_seen">Aviso visto</string>
+    <string name="my_room_tag_summary_pending">Resumen pendiente</string>
+    <string name="my_room_tag_summary_done">Resumen listo</string>
+    <string name="my_room_tag_absent">Ausente</string>
+    <string name="my_room_open_child">Abrir la ficha de %1$s</string>
+    <string name="my_room_chat_with">Chat con la familia de %1$s</string>
+    <string name="my_room_chat_unread">Chat con la familia de %1$s · mensajes sin leer</string>
+    <string name="notice_from">%1$s · %2$s</string>
+    <string name="notice_reply">Responder</string>
+    <string name="notice_seen">Ya lo vi</string>
+
+    <!-- child profile (ficha del niño) -->
+    <string name="profile_overline">Mi sala</string>
+    <string name="profile_age_room">%1$s · %2$s</string>
+    <string name="profile_allergies_title">Alergias</string>
+    <string name="profile_notes_title">Aviso de la familia</string>
+    <string name="profile_absent_title">Hoy no está presente</string>
+    <string name="profile_absent_body">Si ya llegó, márcalo en el pase de lista de Mi día o corrige su asistencia aquí abajo.</string>
+    <string name="profile_write_family">Escribir a la familia</string>
+    <string name="profile_today_title">Hoy</string>
+    <string name="profile_summary_label">Resumen del día</string>
+    <string name="profile_summary_pending">Pendiente</string>
+    <string name="profile_summary_done">Listo</string>
+    <string name="profile_summary_capture">Capturar</string>
+    <string name="profile_summary_edit">Editar</string>
+    <string name="profile_summary_blocked">Para capturar el resumen, primero el niño debe estar presente.</string>
+    <string name="profile_attendance_label">Asistencia</string>
+    <string name="profile_attendance_present">Presente</string>
+    <string name="profile_attendance_absent">Ausente</string>
+    <string name="profile_attendance_fix">Corregir</string>
+    <string name="profile_pickups_title">Quién lo recoge</string>
+    <string name="profile_pickups_empty">Todavía no hay personas autorizadas registradas.</string>
+    <string name="profile_family_title">Familia</string>
+    <string name="profile_call">Llamar</string>
+    <string name="profile_call_to">Llamar a %1$s</string>
+    <string name="profile_no_phone">Sin teléfono</string>
+    <string name="profile_loading">Cargando alergias y contactos…</string>
+    <string name="profile_failed">No se pudieron cargar las alergias ni los contactos.</string>
+    <string name="profile_retry">Reintentar</string>
+    <string name="profile_no_dialer">Este teléfono no puede hacer llamadas.</string>
+    <string name="fix_title">Corregir asistencia de %1$s</string>
+    <string name="fix_body">El pase de lista se hace en Mi día. Usa esto solo si hubo un error.</string>
+    <string name="fix_save">Guardar</string>
+
+    <!-- family notices (avisos de casa) -->
+    <string name="notices_overline">Mi sala</string>
+    <string name="notices_title">Avisos de casa · hoy</string>
+    <string name="notices_unseen">Sin ver (%1$d)</string>
+    <string name="notices_seen">Ya vistos (%1$d)</string>
+    <string name="notices_empty">Hoy ninguna familia dejó avisos.</string>
+
+    <!-- roll call (pase de lista, en Mi día) -->
+    <string name="roll_call_title">Pase de lista</string>
+    <string name="roll_call_card_pending">Aún no marcas a nadie</string>
+    <string name="roll_call_card_pending_body">Empieza el día pasando lista.</string>
+    <string name="roll_call_card_action">Pasar lista</string>
+    <string name="roll_call_card_review">Revisar</string>
+    <plurals name="roll_call_card_progress">
+        <item quantity="one">%1$d de %2$d presente</item>
+        <item quantity="other">%1$d de %2$d presentes</item>
+    </plurals>
+    <string name="roll_call_hint">Toca a cada niño que llegó. Quien no marques cuenta como falta.</string>
+    <string name="roll_call_mark_all">Marcar a todos presentes</string>
+    <string name="roll_call_done">Listo</string>
+    <string name="roll_call_empty">Todavía no hay niños en tu sala.</string>
+    <string name="roll_call_present_description">%1$s: presente. Toca para marcar falta.</string>
+    <string name="roll_call_absent_description">%1$s: falta. Toca para marcar presente.</string>
+    <string name="students_nobody_present">Nadie está presente todavía. Pasa lista en Mi día para poder reportar.</string>
 
     <!-- chats screen -->
     <string name="chats_inbox_title">Chats con las familias</string>
