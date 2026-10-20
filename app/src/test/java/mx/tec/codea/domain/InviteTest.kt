@@ -73,4 +73,27 @@ class InviteTest {
         assertNull(Invite.parseLink("codea://invitar?email=a@b.co&code=K7QX-M4P%3Cscript%3E"))
         assertNull(Invite.parseLink("codea://invitar?email=a@b.co"))
     }
+
+    @Test
+    fun cleanCode_keepsOnlyLettersAndNumbers() {
+        assertEquals("YZ5EPEKV", Invite.cleanCode("YZ5E-PEKV"))
+        assertEquals("YZ5EPEKV", Invite.cleanCode(" yz5e pekv "))
+        // copiado de WhatsApp: aislantes de dirección, espacio de ancho cero y guion largo.
+        assertEquals("YZ5EPEKV", Invite.cleanCode("\u2068YZ5E\u2013PEKV\u200B\u2069"))
+        assertEquals("YZ5EPEKV", Invite.cleanCode("YZ5EPEKVXX"))
+    }
+
+    @Test
+    fun formatCode_putsTheDashAfterFour() {
+        assertEquals("", Invite.formatCode(""))
+        assertEquals("YZ5E", Invite.formatCode("YZ5E"))
+        assertEquals("YZ5E-P", Invite.formatCode("YZ5EP"))
+        assertEquals("YZ5E-PEKV", Invite.formatCode("YZ5EPEKV"))
+    }
+
+    @Test
+    fun cleanEmail_dropsSpacesInvisiblesAndCase() {
+        assertEquals("paola@correo.mx", Invite.cleanEmail(" Paola@Correo.mx "))
+        assertEquals("paola@correo.mx", Invite.cleanEmail("\u2068paola@correo.mx\u2069\u200B"))
+    }
 }

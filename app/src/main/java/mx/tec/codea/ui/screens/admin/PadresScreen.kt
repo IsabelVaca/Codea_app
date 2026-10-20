@@ -19,6 +19,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -34,49 +35,66 @@ import androidx.compose.ui.unit.sp
 import mx.tec.codea.domain.Padre
 import mx.tec.codea.ui.theme.Poppins
 
-internal val avatarColores = listOf(
-    Color(0xFFEFE9FF) to Color(0xFF5B3FE0),
-    Color(0xFFFFEDE7) to Color(0xFFC4432A),
-    Color(0xFFE8FBF6) to Color(0xFF0F7A6C),
-    Color(0xFFFFF4D6) to Color(0xFFB37F09),
-    Color(0xFFF4F1FB) to Color(0xFF6B6183)
-)
-
+// la tarjeta de un padre o tutor, con el mismo diseño que InfanteCard: iniciales, nombre, parentesco e hijos,
+// y a la derecha si ya tiene acceso a la app.
 @Composable
-internal fun PadreFila(p: Padre, avatarBg: Color, avatarFg: Color, onClick: () -> Unit) {
-    Row(
+internal fun PadreFila(p: Padre, onClick: () -> Unit) {
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(8.dp, RoundedCornerShape(24.dp), ambientColor = Color(0x122A2140), spotColor = Color(0x122A2140))
-            .clip(RoundedCornerShape(24.dp))
-            .background(Color.White)
-            .clickable(onClick = onClick)
-            .padding(14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(13.dp)
+            .padding(vertical = 5.dp, horizontal = 15.dp)
+            .shadow(
+                elevation = 20.dp,
+                shape = RoundedCornerShape(18.dp),
+                ambientColor = Color.Black.copy(alpha = 0.70f),
+                spotColor = Color.Black.copy(alpha = 0.30f)
+            )
+            .clickable(onClick = onClick),
+        color = Color.White,
+        shape = RoundedCornerShape(18.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .size(46.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(avatarBg),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(p.iniciales, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, color = avatarFg)
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .padding(18.dp)
+                    .size(50.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Color(0xFFEDE9FE)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(p.iniciales, color = Color(0xFF6D28D9), fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    p.nombre,
+                    modifier = Modifier.padding(top = 10.dp),
+                    color = Color(red = 1, green = 1, blue = 1),
+                    fontSize = 17.sp, fontFamily = Poppins, fontWeight = FontWeight.ExtraBold,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis
+                )
+                val hijosTexto = if (p.hijoIds.size == 1) "1 hijo" else "${p.hijoIds.size} hijos"
+                Text(
+                    "${p.parentesco} · $hijosTexto",
+                    modifier = Modifier.padding(top = 3.dp, bottom = 7.dp),
+                    color = Color(red = 138, green = 128, blue = 165),
+                    fontSize = 13.sp, lineHeight = 13.sp, fontFamily = Poppins, fontWeight = FontWeight.SemiBold,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis
+                )
+            }
+            // con acceso, en morado como la sala del infante; sin acceso, en gris como «Sin checar».
+            Surface(
+                modifier = Modifier.padding(end = 9.dp),
+                color = if (p.conAcceso) Color(0xFFEDE9FE) else Color(0xFFF4F1FB),
+                shape = RoundedCornerShape(percent = 50)
+            ) {
+                Text(
+                    text = if (p.conAcceso) "Con acceso" else "Sin acceso",
+                    modifier = Modifier.padding(horizontal = 9.dp, vertical = 3.dp),
+                    color = if (p.conAcceso) Color(0xFF6D28D9) else Color(0xFFA79BBF),
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 12.sp
+                )
+            }
         }
-        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(p.nombre, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            val hijosTexto = if (p.hijoIds.size == 1) "1 hijo vinculado" else "${p.hijoIds.size} hijos vinculados"
-            Text("${p.parentesco} · $hijosTexto", fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = Color(0xFF8C7FA8), maxLines = 1, overflow = TextOverflow.Ellipsis)
-        }
-        Text(
-            text = if (p.conAcceso) "Con acceso" else "Sin acceso",
-            fontFamily = Poppins, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold,
-            color = if (p.conAcceso) Color(0xFF0F7A6C) else Color(0xFF8C7FA8),
-            modifier = Modifier
-                .clip(RoundedCornerShape(999.dp))
-                .background(if (p.conAcceso) Color(0xFFE8FBF6) else Color(0xFFF4F1FB))
-                .padding(horizontal = 11.dp, vertical = 6.dp)
-        )
     }
 }

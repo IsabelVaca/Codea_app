@@ -11,6 +11,7 @@ import mx.tec.codea.data.api.LoginBody
 import mx.tec.codea.data.api.RefreshBody
 import mx.tec.codea.data.api.TokenDto
 import mx.tec.codea.data.local.SessionStore
+import mx.tec.codea.domain.Invite
 import mx.tec.codea.domain.Session
 import retrofit2.HttpException
 import java.io.IOException
@@ -56,11 +57,11 @@ class SessionRepository(
     }
 
     suspend fun login(email: String, password: String) {
-        save(authApi.login(LoginBody(email.trim(), password)))
+        save(authApi.login(LoginBody(Invite.cleanEmail(email), password)))
     }
 
     suspend fun activate(email: String, code: String, password: String) {
-        save(authApi.activate(ActivateBody(email.trim(), code.trim(), password)))
+        save(authApi.activate(ActivateBody(Invite.cleanEmail(email), Invite.cleanCode(code), password)))
     }
 
     // guarda los tokens nuevos. si la respuesta no trae `me` (refrescar), se conservan el nombre y los roles.

@@ -87,13 +87,21 @@ data object CheckInDoneRoute
 @Serializable
 data object AvisosFundacionRoute
 
-// the "centro" tab has two screens, so it is a graph like MyDayGraph: the
-// bottom bar keeps "centro" selected while "crear sala" is open on top of it.
+// la pestaña "Avisos" del admin (antes "Centro"): publicar un aviso y ver el historial.
+// es un grafo como los demás del admin, aunque por ahora tiene una sola pantalla.
 @Serializable
-data object AdminCentroGraph
+data object AdminAvisosGraph
 
 @Serializable
-data object AdminCentroRoute
+data object AdminAvisosRoute
+
+// "docentes" tiene dos listas (Docentes y Salas): todo lo que abre (detalle de docente o de sala,
+// alta de asistente, crear sala) deja la barra inferior en "Docentes".
+@Serializable
+data object AdminDocentesGraph
+
+@Serializable
+data object AdminDocentesRoute
 
 @Serializable
 data object AdminCrearSalaRoute
@@ -101,14 +109,6 @@ data object AdminCrearSalaRoute
 // detalle de una sala: viaja el id, no el objeto.
 @Serializable
 data class AdminSalaDetalleRoute(val salaId: String)
-
-// "docentes" is still a single screen.
-@Serializable
-data object AdminDocentesRoute
-
-
-@Serializable
-data object AdminDocentesGraph
 
 @Serializable
 data object AdminAltaAsistenteRoute
@@ -206,7 +206,7 @@ data class RutinasAdminDetalleRoute(val rutinaId: String)
 // "agregar momento" abre sobre el detalle de la rutina que lo recibe.
 @Serializable
 data class RutinasAdminAgregarMomentoRoute(val rutinaId: String)
-// "Mi cuenta": perfil, cambiar contraseña y cerrar sesión. la abren el admin (Centro), el padre (Hoy)
+// "Mi cuenta": perfil, cambiar contraseña y cerrar sesión. la abren el admin (Ajustes), el padre (Hoy)
 // y la docente (Menú → Mi perfil).
 @Serializable
 data object AccountRoute

@@ -42,7 +42,7 @@ fun OrdenRutinaScreen(
         ) {
             item(key = "header") {
                 Column(Modifier.padding(bottom = 6.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    BackHeader(overline = "Ajustes · Rutinas", title = "Nueva rutina", onBackClick = onBack)
+                    BackHeader(title = "Nueva rutina", onBackClick = onBack)
                     SeccionLabel("PASO 3 DE 3")
                     Text(
                         "Arrastra de las rayitas para dejar los momentos en orden.",

@@ -57,7 +57,6 @@ fun MenuAdminScreen(
     Scaffold(
         topBar = {
             BackHeader(
-                overline = "Ajustes",
                 title = "Menú del día",
                 onBackClick = onBack,
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),

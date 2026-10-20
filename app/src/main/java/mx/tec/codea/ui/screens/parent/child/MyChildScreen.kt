@@ -53,7 +53,6 @@ fun MyChildScreen(
     ) {
         item {
             ScreenHeader(
-                overline = stringResource(R.string.mychild_overline),
                 title = child?.fullName ?: stringResource(R.string.nav_parent_child),
             )
         }

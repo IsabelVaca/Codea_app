@@ -57,7 +57,7 @@ fun CatalogoMomentosScreen(
             modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            BackHeader(overline = "Ajustes · Rutinas", title = "Nueva rutina", onBackClick = onBack)
+            BackHeader(title = "Nueva rutina", onBackClick = onBack)
             SeccionLabel("PASO 2 DE 3")
             Text(
                 "Toca para incluir. Cada momento trae su registro rápido.",

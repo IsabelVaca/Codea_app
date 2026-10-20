@@ -32,7 +32,7 @@ La regla de dependencias: `ui` conoce a `data` y a `domain`; `data` conoce a `do
 
 ## Nombres
 
-- **El archivo se llama como el tipo principal que contiene**, en PascalCase: `CentroScreen.kt` para `CentroScreen`.
+- **El archivo se llama como el tipo principal que contiene**, en PascalCase: `FamiliasScreen.kt` para `FamiliasScreen`.
 - **Sufijos:** `…Screen`, `…ViewModel`, `…UiState`, `…Repository`, `…Api`, `…Dto` (lo que llega), `…Body` (lo que se manda), `…Validator`, `…Error`, `…Worker`, `…Test`; los fakes de prueba empiezan con `Fake…`.
 - **Identificadores en inglés y textos en español**, como en la práctica 2 y en la API. Los textos de la interfaz viven en `strings.xml`, nunca en el código.
 - **Glosario** para no tener dos nombres de la misma cosa:
@@ -49,7 +49,7 @@ La regla de dependencias: `ui` conoce a `data` y a `domain`; `data` conoce a `do
 
 Lo que hoy no cumple (se corrige cuando se toque cada archivo para conectarlo a la API):
 
-- Archivos en minúscula o con otro nombre que su composable: `centroScreen.kt`, `crearSalaScreen.kt`, `docenteScreenAdmin.kt` (`DocenteScreen`), `infanteScreenAdmin.kt` (`InfanteScreen`), `salaDetalleScreen.kt` (`SalaAdminDetalleScreen`), etc.
+- Archivos en minúscula o con otro nombre que su composable: `avisosAdminScreen.kt`, `crearSalaScreen.kt`, `docenteScreenAdmin.kt` (`DocenteScreen`), `infanteScreenAdmin.kt` (`InfanteScreen`), `salaDetalleScreen.kt` (`SalaAdminDetalleScreen`), etc.
 - Modelos en español y en inglés para la misma persona (`Infante` y `Child`, `Docente` y `Teacher`): se unifican con el glosario.
 
 ## Dominio

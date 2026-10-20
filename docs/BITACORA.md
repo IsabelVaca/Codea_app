@@ -296,6 +296,38 @@ Sin correos ni SMTP: el admin manda la invitación por WhatsApp y el padre solo 
 - **Ética:** ETL-27 pasa a ✅ (el borrado directo se vio en el teléfono); ETL-28 sigue en 🟡 por el aviso a las otras familias.
 - **Verificado:** `./gradlew :app:testDebugUnitTest` sin fallas y la app instalada en el teléfono. **Sin commit.**
 
+## 2026-10-19 (noche) · Admin: Centro pasa a Avisos y las salas a Docentes; sin sobretítulos
+
+- **Pestaña Avisos** (antes «Centro»): solo publicar el aviso y el historial. Ícono de megáfono. Ruta `AdminAvisosGraph`, pantalla `avisosAdminScreen.kt`, ViewModel `AvisosAdminViewModel`. Sigue siendo la primera pestaña del admin.
+- **Docentes con selector Docentes | Salas** (como Familias). Salas trae la ocupación que estaba en Centro y «+ Crear sala»; el detalle de sala y crear sala ahora cuelgan de `AdminDocentesGraph`, así que la barra se queda en «Docentes».
+- **Por la checada de Paola que no aparecía:** la lista de docentes solo se recargaba con cambios hechos desde el mismo teléfono; la checada llega desde el teléfono de la docente. Ahora se vuelve a pedir al abrir la pestaña y se puede jalar hacia abajo para recargar. Quien no ha checado dice «Sin checar» (antes «Checó --:--»). La tarjeta amarilla de resumen se quitó de las dos listas a pedido del usuario.
+- **Sin sobretítulos:** a pedido del usuario se quitó la línea gris de arriba («Estancia La Oruga · Administración», «Familias», «Ajustes · Rutinas»…) en las pantallas de los tres perfiles, también en Hoy y Fotos del padre. Se dejó solo donde lleva un dato (reporte, elegir niños, resumen guiado, Mi día y el chat de la docente). Se borraron 10 textos sin uso de `strings.xml`.
+- **Verificado:** `assembleDebug` y `./gradlew test` en verde; en el emulador se vieron Avisos y Docentes → Salas. No se probó la lista de docentes, jalar para recargar ni abrir una sala (el emulador se estaba usando a la vez).
+- **Imagen de los avisos** (después del recorrido en el emulador): se ve completa y con su relación de aspecto, con tope de 320 dp de alto (una vertical queda centrada); antes llenaba el ancho y se recortaba. La vista previa al publicar usa el mismo `AvisoImagen`. En el emulador las fotos no salían porque la base de desarrollo local seguía en `a96b2c7d5f65` y el API llevaba 26 h sin recargar (`--reload` no vio los cambios): se corrió `alembic upgrade head` (hasta `d74a0f6c4e15`) y se reinició el contenedor. Los avisos publicados antes de eso quedaron sin imagen.
+
+## 2026-10-19 (noche) · Incidente: cuentas que no se activaban y datos borrados en producción
+
+Detalle completo en [`INCIDENTE-2026-10-19.md`](INCIDENTE-2026-10-19.md).
+
+- **«El código no es válido»:** el código no estaba roto. Las cuentas se dieron de alta desde el emulador, que apuntaba al servidor local, y se intentaron activar desde la tablet en el servidor compartido, donde no existen.
+- **La tablet no se conectaba:** un APK de Android Studio apuntaba a `localhost`. Se le instaló uno que apunta a `https://api.codeaapp.site/api/v1/` y `local.properties` quedó con esa dirección.
+- **Datos perdidos:** `seed_demo.py --borrar-todo` se corrió sobre `codea_prod` y borró 16 cuentas, 6 fotos y 3 avisos. No hay respaldo.
+- **Endurecimiento desplegado en producción** (antes de hallar la causa): el código y el correo se limpian de caracteres invisibles y el campo del código pone el guion solo. 338 pruebas de la API y 138 de la app en verde. **Falta el commit.**
+- **Decisión:** todos trabajan contra el servidor compartido; `guarderia-api/.env.dev` es la configuración del backend local, sin secretos reales.
+- **Pendientes:** respaldos de la base y del almacén, candado al seed, límite de volúmenes de SeaweedFS, `API_BASE_URL` por omisión a la API y volver a dar de alta las cuentas reales.
+
+## 2026-10-19 (noche) · Admin: rediseño de las pestañas
+
+Cambios de diseño pedidos por el usuario y revisados en el emulador contra la API compartida (`api.codeaapp.site`):
+
+- **Avisos:** botón «+ Nuevo aviso» arriba; el formulario aparece al tocarlo, en una sola tarjeta (para quién, texto, imagen, «Cancelar» y «Publicar») y se cierra al publicar. Sin las etiquetas «Publicar aviso del centro» ni «Historial de avisos». El estado abierto o cerrado vive en `AvisosAdminViewModel`.
+- **Docentes, Salas, Infantes y Padres:** el botón de agregar pasa arriba de la lista; se quitaron la tarjeta de resumen y las etiquetas debajo del selector («DOCENTES ACTIVOS», «OCUPACIÓN DE SALAS», «INFANTES INSCRITOS», «PADRES Y TUTORES»). La tarjeta de padres usa el mismo diseño que la de infantes.
+- **Filtro Activos | Todos** (`FiltroActivos.kt`) en docentes, infantes y padres: por omisión solo los activos; con «Todos», los dados de baja llevan «De baja» en gris. Una docente sin sala dice «Sin sala» (antes « • 0 niños»).
+- **Ajustes:** una tarjeta agrupada con ícono (un solo color, el morado de las demás pantallas), título y una línea por opción; «Mi cuenta» aparte; sin las etiquetas «La estancia» y «Mi sesión».
+- **Sin sobretítulos** en las pantallas de los tres perfiles (ver la entrada del rediseño de Centro).
+- **Borrar personas:** la API no tiene endpoint para borrar a nadie; solo dar de baja y reactivar (`/teachers`, `/parents`, `/children` con `deactivate` y `reactivate`). La baja cierra las sesiones y conserva el historial. Si hace falta borrar de verdad (solicitud de cancelación de datos), la propuesta es un endpoint que anonimice.
+- **Verificado:** `assembleDebug` compila; cada pantalla revisada en el emulador. Sin pruebas nuevas (solo diseño).
+
 ## 2026-10-19 (noche) · Mi sala de la docente, rediseño de la disposición
 
 - **Qué pidió el usuario:** rehacer Mi sala por completo (disposición y forma de mostrar la información, no solo el estilo), con los mismos datos de hoy y sin componentes de más; libertad para no copiar a las otras pantallas; menos colores; fuera los patrones «de IA» (línea chica sobre el título, títulos en mayúsculas con espaciado, `·` entre palabras, etiquetas tipo píldora, punto flotante sobre el chat). Una primera versión solo cambió colores y tipografía y la estructura quedó igual: el usuario lo rechazó («me refería también a la disposición de elementos»). La versión que quedó cambia la estructura.

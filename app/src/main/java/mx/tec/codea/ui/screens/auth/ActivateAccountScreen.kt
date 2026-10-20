@@ -14,12 +14,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import mx.tec.codea.R
 import mx.tec.codea.domain.AuthValidator
+import mx.tec.codea.domain.Invite
 import mx.tec.codea.ui.state.AuthFormState
 import mx.tec.codea.ui.theme.CodeaTheme
 
@@ -36,11 +38,12 @@ fun ActivateAccountScreen(
     initialCode: String = "",
 ) {
     var email by rememberSaveable { mutableStateOf(initialEmail) }
-    var code by rememberSaveable { mutableStateOf(initialCode) }
+    // el código se guarda limpio (solo letras y números); el guion lo dibuja CodeDashTransformation.
+    var code by rememberSaveable { mutableStateOf(Invite.cleanCode(initialCode)) }
     // si llega otro enlace con la pantalla abierta, se reemplaza lo escrito.
     LaunchedEffect(initialEmail, initialCode) {
         if (initialEmail.isNotBlank()) email = initialEmail
-        if (initialCode.isNotBlank()) code = initialCode
+        if (initialCode.isNotBlank()) code = Invite.cleanCode(initialCode)
     }
     var password by remember { mutableStateOf("") }
     var confirmation by remember { mutableStateOf("") }
@@ -60,9 +63,11 @@ fun ActivateAccountScreen(
         Spacer(Modifier.height(12.dp))
         AuthTextField(
             value = code,
-            onValueChange = { code = it.uppercase() },
+            onValueChange = { code = Invite.cleanCode(it) },
             label = stringResource(R.string.auth_code),
             enabled = !form.loading,
+            capitalization = KeyboardCapitalization.Characters,
+            visualTransformation = CodeDashTransformation,
         )
         Spacer(Modifier.height(12.dp))
         PasswordField(

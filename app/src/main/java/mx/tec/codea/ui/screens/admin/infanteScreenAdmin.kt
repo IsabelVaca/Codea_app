@@ -101,15 +101,16 @@ fun InfanteCard(infante: Infante, onClick: () -> Unit = {}) {
 
             }
 
+            // dado de baja: «De baja» en gris en lugar de la sala.
             Surface(
                 modifier = Modifier.padding(end = 9.dp),
-                color = Color(0xFFEDE9FE),
+                color = if (infante.baja) Color(0xFFF4F1FB) else Color(0xFFEDE9FE),
                 shape = RoundedCornerShape(percent = 50)
             ) {
                 Text(
-                    text = infante.sala,
+                    text = if (infante.baja) "De baja" else infante.sala,
                     modifier = Modifier.padding(horizontal = 9.dp, vertical = 3.dp),
-                    color = Color(0xFF6D28D9),
+                    color = if (infante.baja) Color(0xFFA79BBF) else Color(0xFF6D28D9),
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 12.sp
                 )

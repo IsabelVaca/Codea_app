@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.FamilyRestroom
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.PhotoLibrary
@@ -71,11 +72,11 @@ enum class TopLevelDestination(
         roles = setOf(Role.TEACHER),
     ),
 
-    // the admin tabs. each is a single screen for now, so its route is not a graph.
-    CENTRO(
-        route = AdminCentroGraph,
-        icon = Icons.Filled.Home,
-        labelRes = R.string.nav_admin_centro,
+    // the admin tabs. each one is a graph: what opens from a tab keeps that tab selected.
+    AVISOS(
+        route = AdminAvisosGraph,
+        icon = Icons.Filled.Campaign,
+        labelRes = R.string.nav_admin_avisos,
         isLocked = false,
         roles = setOf(Role.ADMIN),
     ),

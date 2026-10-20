@@ -46,7 +46,6 @@ fun FamilyNoticesScreen(
     ) {
         item {
             BackHeader(
-                overline = stringResource(R.string.notices_overline),
                 title = stringResource(R.string.notices_title),
                 onBackClick = onBackClick,
             )

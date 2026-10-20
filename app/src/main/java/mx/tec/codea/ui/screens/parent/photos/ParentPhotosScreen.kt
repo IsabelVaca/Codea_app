@@ -141,11 +141,6 @@ fun ParentPhotosScreen(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Column {
                     Text(
-                        "ESTANCIA LA ORUGA · FAMILIA",
-                        style = TextStyle(fontFamily = Poppins, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp, color = Muted),
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
                         "Fotos de $nombreNino",
                         style = TextStyle(fontFamily = Poppins, fontSize = 27.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.5).sp, color = Ink),
                     )

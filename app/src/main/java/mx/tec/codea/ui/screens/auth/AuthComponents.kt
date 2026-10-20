@@ -34,7 +34,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -100,6 +104,8 @@ fun AuthTextField(
     keyboardType: KeyboardType = KeyboardType.Text,
     imeAction: ImeAction = ImeAction.Next,
     enabled: Boolean = true,
+    capitalization: KeyboardCapitalization = KeyboardCapitalization.None,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
 ) {
     OutlinedTextField(
         value = value,
@@ -107,7 +113,13 @@ fun AuthTextField(
         label = { Text(label) },
         singleLine = true,
         enabled = enabled,
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
+        visualTransformation = visualTransformation,
+        keyboardOptions = KeyboardOptions(
+            keyboardType = keyboardType,
+            imeAction = imeAction,
+            capitalization = capitalization,
+            autoCorrectEnabled = false,
+        ),
         shape = RoundedCornerShape(16.dp),
         modifier = modifier.fillMaxWidth(),
     )
@@ -215,4 +227,19 @@ fun authErrorText(error: AuthError): String = when (error) {
     AuthError.PasswordIsEmail -> stringResource(R.string.auth_error_password_is_email)
     AuthError.PasswordsDontMatch -> stringResource(R.string.auth_error_passwords_dont_match)
     AuthError.CurrentPasswordRequired -> stringResource(R.string.auth_error_current_required)
+}
+
+// el campo del código guarda solo letras y números ("YZ5EPEKV") y lo dibuja con el guion ("YZ5E-PEKV").
+// así el guion aparece solo al escribir, y pegar el código con o sin guion da lo mismo.
+object CodeDashTransformation : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        val raw = text.text
+        val shown = if (raw.length <= 4) raw else raw.take(4) + "-" + raw.drop(4)
+        val mapping = object : OffsetMapping {
+            // después de la cuarta letra hay un carácter más (el guion).
+            override fun originalToTransformed(offset: Int): Int = if (offset <= 4 || raw.length <= 4) offset else offset + 1
+            override fun transformedToOriginal(offset: Int): Int = if (offset <= 4) offset else (offset - 1).coerceAtMost(raw.length)
+        }
+        return TransformedText(AnnotatedString(shown), mapping)
+    }
 }

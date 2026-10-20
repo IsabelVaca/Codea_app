@@ -19,7 +19,7 @@
     <string name="nav_locked_description">Sección bloqueada</string>
 
     <!-- admin bottom navigation labels -->
-    <string name="nav_admin_centro">Centro</string>
+    <string name="nav_admin_avisos">Avisos</string>
     <string name="nav_admin_docentes">Docentes</string>
     <string name="nav_admin_familias">Familias</string>
     <string name="nav_admin_ajustes">Ajustes</string>
@@ -130,10 +130,6 @@
     <string name="dictation_unavailable">Servicio de voz no disponible en este dispositivo</string>
 
     <!-- my room screen -->
-    <string name="my_room_overline">Estancia La Oruga</string>
-    <string name="admin_overline">Estancia La Oruga · Administración</string>
-    <string name="chats_inbox_overline">Estancia La Oruga</string>
-    <string name="chats_inbox_overline_parent">Estancia La Oruga · Familia</string>
     <string name="my_room_title">Sala %1$s</string>
     <string name="my_room_title_generic">Mi sala</string>
     <string name="my_room_present">Presente</string>
@@ -180,7 +176,6 @@
     <string name="notice_seen">Ya lo vi</string>
 
     <!-- child profile (ficha del niño) -->
-    <string name="profile_overline">Mi sala</string>
     <string name="profile_age_room">%1$s · %2$s</string>
     <string name="profile_allergies_title">Alergias</string>
     <string name="profile_notes_title">Aviso de la familia</string>
@@ -213,7 +208,6 @@
     <string name="fix_save">Guardar</string>
 
     <!-- family notices (avisos de casa) -->
-    <string name="notices_overline">Mi sala</string>
     <string name="notices_title">Avisos de casa · hoy</string>
     <string name="notices_unseen">Sin ver (%1$d)</string>
     <string name="notices_seen">Ya vistos (%1$d)</string>
@@ -282,7 +276,6 @@
     <string name="menu_logout_dialog_body">Tendrás que volver a entrar con tu correo y tu contraseña.</string>
 
     <!-- checker screen (inside menú) -->
-    <string name="checker_overline">Menú · Checador</string>
     <string name="checker_title">Registrar entrada</string>
     <string name="checker_title_registered">Tu jornada de hoy</string>
     <plurals name="checker_minutes_early">
@@ -310,7 +303,6 @@
     <string name="checker_exit_auto_body">No registraste tu salida, así que se cerró sola a las 9:00 pm.</string>
 
     <!-- check-in done screen (inside menú) -->
-    <string name="checker_done_overline">Checador</string>
     <string name="checker_done_title">Entrada registrada</string>
     <string name="checker_done_title_late">Entrada con retardo</string>
     <string name="checker_done_headline">¡Entrada registrada!</string>
@@ -328,7 +320,6 @@
     <string name="checker_done_go_to_my_day">Ir a Mi día</string>
 
     <!-- parent: Mi hijo -->
-    <string name="mychild_overline">Estancia La Oruga · Familia</string>
     <string name="mychild_loading">Cargando los datos de tu hijo…</string>
     <string name="mychild_data_title">Datos de tu hijo</string>
     <string name="mychild_full_name">Nombre completo</string>
@@ -453,7 +444,6 @@
     <string name="auth_error_passwords_dont_match">Las contraseñas no coinciden.</string>
     <string name="auth_error_current_required">Escribe tu contraseña actual.</string>
     <string name="account_title">Mi cuenta</string>
-    <string name="account_overline">Perfil</string>
     <string name="account_email">Correo</string>
     <string name="account_children">Mis hijos</string>
     <string name="account_change_password">Cambiar contraseña</string>

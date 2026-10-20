@@ -126,9 +126,6 @@ private fun InboxScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         ScreenHeader(
-            overline = stringResource(
-                if (isParent) R.string.chats_inbox_overline_parent else R.string.chats_inbox_overline,
-            ),
             title = stringResource(
                 if (isParent) R.string.chats_inbox_title_parent else R.string.chats_inbox_title,
             ),

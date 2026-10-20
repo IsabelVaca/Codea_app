@@ -63,7 +63,6 @@ fun ParentCalendarScreen(
     ) {
         item {
             ScreenHeader(
-                overline = "ESTANCIA LA ORUGA · FAMILIA",
                 title = "Calendario de ${monthData.childFirstName}",
             )
         }

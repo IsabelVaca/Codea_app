@@ -62,7 +62,6 @@ fun HorarioScreen(
     Scaffold(
         topBar = {
             BackHeader(
-                overline = "Ajustes",
                 title = "Horario",
                 onBackClick = onBack,
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),

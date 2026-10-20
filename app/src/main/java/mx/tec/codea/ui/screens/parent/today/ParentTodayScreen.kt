@@ -79,7 +79,6 @@ fun ParentTodayScreen(
     ) {
         item {
             HoyHeader(
-                contexto = "ESTANCIA LA ORUGA · FAMILIA",
                 titulo = "El día de ${summary.childFirstName}",
                 pendientes = pendientes,
                 onAbrirNotif = {

@@ -66,7 +66,6 @@ fun InscribirInfanteScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         BackHeader(
-            overline = "Familias",
             title = "Inscribir a un infante",
             onBackClick = onBack,
         )

@@ -117,7 +117,6 @@ fun MenuScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         ScreenHeader(
-            overline = stringResource(R.string.my_room_overline),
             title = stringResource(R.string.menu_title),
         )
         TeacherCard(teacher = teacher, checkIn = checkIn)
