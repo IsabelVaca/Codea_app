@@ -48,7 +48,15 @@ Desde el 19/oct hay una API pública con HTTPS (túnel de Cloudflare, [decisión
 | Fotos (la usa la app sola, con URLs firmadas) | `https://archivos.codeaapp.site` |
 
 1. En `local.properties` (no se versiona) pon `API_BASE_URL=https://api.codeaapp.site/api/v1/` y corre `./gradlew installDebug`. Para volver a tu backend local, borra la línea. Un APK de release ya apunta ahí sin configurar nada.
-2. **Cuenta:** aquí no existe la contraseña `codea1234`. Pide al responsable del servidor tu correo y tu código de acceso, y entra con «Es mi primera vez: activar mi cuenta».
+2. **Cuenta:** aquí no existe la contraseña `codea1234`. Las 14 cuentas del seed ya están activas con una contraseña común que **no se escribe en el repo (es público)**: pídela en el grupo del equipo. Entra con «Iniciar sesión». Usa una cuenta distinta a la de los demás para no pisar el check-in ni la rutina del día.
+
+   | Rol | Correos |
+   |---|---|
+   | Admin | `admin@oruga.test` |
+   | Docente (Preescolar 2) | `paola.sanchez@oruga.test` (principal), `karla.robles@oruga.test`, `luis.medina@oruga.test` |
+   | Docente (Maternal) | `fernando.rios@oruga.test` (principal), `karla.vega@oruga.test` |
+   | Docente (Preescolar 1) | `gabriela.ortiz@oruga.test` (principal), `andres.cano@oruga.test` |
+   | Padre | `laura.iglesias@oruga.test`, `carlos.gomez@oruga.test`, `andrea.torres@oruga.test`, `sofia.ruiz@oruga.test`, `marisol.hernandez@oruga.test`, `jorge.flores@oruga.test` |
 3. Comprueba que está vivo: `https://api.codeaapp.site/api/v1/health/ready` debe responder `{"status":"ok","database":"ok"}`.
 
 Lo que hay que saber:
