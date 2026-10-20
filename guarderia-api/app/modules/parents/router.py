@@ -6,7 +6,7 @@ from app.core.db import Db
 from app.core.security import AdminUser
 
 from . import service
-from .schemas import ParentCreate, ParentOut
+from .schemas import ParentCreate, ParentLinkChildren, ParentOut
 
 router = APIRouter(tags=["padres"])
 
@@ -26,6 +26,12 @@ async def create_parent(db: Db, current: AdminUser, data: ParentCreate) -> Paren
 @router.get("/parents/{parent_id}", response_model=ParentOut)
 async def get_parent(db: Db, _: AdminUser, parent_id: uuid.UUID) -> ParentOut:
     return await service.get_parent(db, parent_id)
+
+
+@router.post("/parents/{parent_id}/children", response_model=ParentOut)
+async def link_children(db: Db, current: AdminUser, parent_id: uuid.UUID, data: ParentLinkChildren) -> ParentOut:
+    """Liga más hijos (inscritos) a un padre que ya existe. No le crea un código nuevo."""
+    return await service.link_children(db, parent_id, data, current.user.id)
 
 
 @router.post("/parents/{parent_id}/deactivate", response_model=ParentOut)

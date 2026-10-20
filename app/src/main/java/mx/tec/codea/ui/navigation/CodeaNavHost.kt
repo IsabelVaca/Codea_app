@@ -803,6 +803,17 @@ fun CodeaNavHost(
                 PadreDetalleScreen(
                     padre = padre,
                     hijosNombres = hijosNombres,
+                    // solo niños inscritos (no dados de baja) que todavía no son suyos.
+                    hijosParaVincular = infantes.filter { !it.baja && it.id !in padre.hijoIds }.map { it.id to it.nombre },
+                    onVincularHijos = { ids ->
+                        padresViewModel.vincularHijos(padre.id, ids, onSuccess = {
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(
+                                    if (ids.size == 1) "Niño vinculado a \"${padre.nombre}\"" else "${ids.size} niños vinculados a \"${padre.nombre}\""
+                                )
+                            }
+                        })
+                    },
                     onToggleAcceso = { padresViewModel.toggleAcceso(padre.id) },
                     onReenviarInvitacion = {
                         padresViewModel.reenviarInvitacion(padre.id, onSuccess = {
@@ -832,7 +843,8 @@ fun CodeaNavHost(
                     correoError = uiState.correoError,
                     parentesco = uiState.parentesco,
                     onElegirParentesco = inscribirPadreViewModel::onElegirParentesco,
-                    hijosDisponibles = infantesDisponibles.map { it.id to it.nombre },
+                    // solo los niños inscritos: a uno dado de baja no se le liga un padre nuevo.
+                    hijosDisponibles = infantesDisponibles.filter { !it.baja }.map { it.id to it.nombre },
                     hijosSeleccionados = uiState.hijosSeleccionados,
                     onToggleHijo = inscribirPadreViewModel::onToggleHijo,
                     canGuardar = uiState.canGuardar,

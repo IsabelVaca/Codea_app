@@ -144,6 +144,12 @@ data class ParentCreateBody(
     @SerialName("child_ids") val childIds: List<Int>,
 )
 
+// hijos que se ligan a un padre que ya existe (el parentesco es el que ya tiene).
+@Serializable
+data class ParentChildrenBody(
+    @SerialName("child_ids") val childIds: List<Int>,
+)
+
 @Serializable
 data class AnnouncementBody(
     // puede ir vacío si el aviso trae una imagen.

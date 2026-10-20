@@ -4,6 +4,7 @@ import mx.tec.codea.data.api.AnnouncementBody
 import mx.tec.codea.data.api.ApiClient
 import mx.tec.codea.data.api.ChildClassroomBody
 import mx.tec.codea.data.api.ChildCreateBody
+import mx.tec.codea.data.api.ParentChildrenBody
 import mx.tec.codea.data.api.CenterDto
 import mx.tec.codea.data.api.CenterScheduleBody
 import mx.tec.codea.data.api.ChildDto
@@ -165,6 +166,10 @@ class PadreApiRepository {
                 AccessCodeNotice(creado.fullName, it.code, shortDateOf(it.expiresAt).orEmpty(), creado.phone, creado.email, it.link),
             )
         }
+    }
+
+    suspend fun vincularHijos(padreId: String, hijoIds: List<String>) {
+        api.linkParentChildren(padreId, ParentChildrenBody(childIds = hijoIds.map { it.toInt() }))
     }
 
     suspend fun setAcceso(padreId: String, conAcceso: Boolean) {

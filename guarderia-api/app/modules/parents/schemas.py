@@ -40,3 +40,11 @@ class ParentCreate(BaseModel):
     email: str
     relationship: Relationship
     child_ids: list[int]
+
+
+class ParentLinkChildren(BaseModel):
+    """Hijos que se ligan a un padre que ya existe. El parentesco es el que ya tiene con sus otros hijos;
+    solo hace falta mandarlo si todavía no está ligado a ninguno."""
+
+    child_ids: list[int]
+    relationship: Relationship | None = None
