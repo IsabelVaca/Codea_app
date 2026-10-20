@@ -3,9 +3,12 @@ package mx.tec.codea.ui.screens.auth
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
@@ -31,6 +34,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -47,7 +51,11 @@ import androidx.compose.ui.unit.dp
 import mx.tec.codea.R
 import mx.tec.codea.domain.AuthError
 import mx.tec.codea.domain.AuthValidator
+import mx.tec.codea.domain.PasswordStrength
 import mx.tec.codea.ui.state.AuthFormState
+import mx.tec.codea.ui.theme.Amber
+import mx.tec.codea.ui.theme.Coral
+import mx.tec.codea.ui.theme.Teal
 
 // el marco de las pantallas de entrada: logo, título y el formulario, con scroll para pantallas chicas.
 @Composable
@@ -225,8 +233,45 @@ fun authErrorText(error: AuthError): String = when (error) {
     AuthError.PasswordTooShort -> stringResource(R.string.auth_error_password_too_short, AuthValidator.PASSWORD_MIN)
     AuthError.PasswordTooLong -> stringResource(R.string.auth_error_password_too_long, AuthValidator.PASSWORD_MAX)
     AuthError.PasswordIsEmail -> stringResource(R.string.auth_error_password_is_email)
+    AuthError.PasswordWeak -> stringResource(R.string.auth_error_password_weak)
     AuthError.PasswordsDontMatch -> stringResource(R.string.auth_error_passwords_dont_match)
     AuthError.CurrentPasswordRequired -> stringResource(R.string.auth_error_current_required)
+}
+
+// la etiqueta y la barrita de seguridad mientras se escribe la contraseña nueva: nada con el campo vacío,
+// y conforme cumple las reglas (tamaño, mayúscula, número) sube de Baja (roja, 25%) a Alta (verde, 100%).
+@Composable
+fun PasswordStrengthMeter(password: String, modifier: Modifier = Modifier) {
+    if (password.isEmpty()) return
+    val (texto, color, fraccion) = when (AuthValidator.strength(password)) {
+        PasswordStrength.WEAK -> Triple(stringResource(R.string.auth_password_strength_weak), Coral, 0.25f)
+        PasswordStrength.MEDIUM -> Triple(stringResource(R.string.auth_password_strength_medium), Amber, 0.5f)
+        PasswordStrength.STRONG -> Triple(stringResource(R.string.auth_password_strength_strong), Teal, 1f)
+    }
+    Column(modifier = modifier.fillMaxWidth().padding(top = 6.dp)) {
+        Text(
+            text = texto,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = color,
+        )
+        Box(
+            modifier = Modifier
+                .padding(top = 4.dp)
+                .fillMaxWidth()
+                .height(6.dp)
+                .clip(RoundedCornerShape(50))
+                .background(color.copy(alpha = 0.2f)),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(fraccion)
+                    .clip(RoundedCornerShape(50))
+                    .background(color),
+            )
+        }
+    }
 }
 
 // el campo del código guarda solo letras y números ("YZ5EPEKV") y lo dibuja con el guion ("YZ5E-PEKV").

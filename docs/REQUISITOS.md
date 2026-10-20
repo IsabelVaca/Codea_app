@@ -40,7 +40,7 @@ Catálogo tomado del tablero de Teams (buckets *Req. de CODEA*, *Req. base*, *Re
 
 | ID | Requisito | Estado | Evidencia / qué falta |
 |---|---|---|---|
-| RNF01 | Contraseñas de más de 8 caracteres | ✅ | Mínimo 9 y máximo 128, en la app (`AuthValidator`) y en la API (`rules.check_password`); 8 no pasa. Probado en ambos lados. |
+| RNF01 | Contraseñas con mínimo de caracteres y complejidad | ✅ | Mínimo 6 y máximo 128 en la app (`AuthValidator`) y en la API (`rules.check_password`); 5 no pasa. La app además exige una mayúscula y un número, con un medidor de seguridad (Baja/Media/Alta) al activar la cuenta; esa parte no está repetida en la API. Probado en ambos lados. |
 | RNF02 | Control de acceso por roles (RBAC) | ✅ | `require_role` + permisos por registro. Matriz de los 77 endpoints en [`api/matriz-de-roles.md`](api/matriz-de-roles.md), generada del código y comprobada en `tests/test_access_matrix.py` (sin token 401, rol no permitido 403, fuera de alcance 404). Probado con una mutación: al romper `can_see_child` fallan 5 pruebas. |
 | RNF03 | Contraseñas almacenadas como hash | ✅ | Argon2id (`pwdlib`) en `app_user.password_hash`; los refresh tokens y los códigos de acceso solo se guardan como SHA-256. |
 | RNF04 | Disponibilidad del 99 % | ❌ | Desde el 19/oct hay un servidor público con HTTPS (`api.codeaapp.site`, túnel de Cloudflare) y desde el 20/oct respaldo diario, pero corre en una sola Mac y **no hay monitoreo** que mida la disponibilidad. Existen `/health/live` y `/health/ready`. |

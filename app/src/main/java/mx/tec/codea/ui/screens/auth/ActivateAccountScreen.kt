@@ -76,6 +76,13 @@ fun ActivateAccountScreen(
             label = stringResource(R.string.auth_password_new),
             enabled = !form.loading,
         )
+        Text(
+            text = stringResource(R.string.auth_password_rule, AuthValidator.PASSWORD_MIN),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 6.dp),
+        )
+        PasswordStrengthMeter(password)
         Spacer(Modifier.height(12.dp))
         PasswordField(
             value = confirmation,
@@ -83,12 +90,6 @@ fun ActivateAccountScreen(
             label = stringResource(R.string.auth_password_confirm),
             imeAction = ImeAction.Done,
             enabled = !form.loading,
-        )
-        Text(
-            text = stringResource(R.string.auth_password_rule, AuthValidator.PASSWORD_MIN),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 6.dp),
         )
         AuthErrorText(form)
         Spacer(Modifier.height(20.dp))

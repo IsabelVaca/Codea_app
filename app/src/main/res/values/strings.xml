@@ -422,7 +422,10 @@
     <string name="auth_activate_title">Activa tu cuenta</string>
     <string name="auth_activate_subtitle">Usa el código que te dio la dirección y elige tu contraseña.</string>
     <string name="auth_code">Código (por ejemplo K7QX-M4PZ)</string>
-    <string name="auth_password_rule">Mínimo %1$d caracteres.</string>
+    <string name="auth_password_rule">Mínimo %1$d caracteres, una mayúscula y un número.</string>
+    <string name="auth_password_strength_weak">Seguridad: Baja</string>
+    <string name="auth_password_strength_medium">Seguridad: Media</string>
+    <string name="auth_password_strength_strong">Seguridad: Alta</string>
     <string name="auth_activate_button">Activar y entrar</string>
     <string name="auth_back_to_login">Ya tengo cuenta: iniciar sesión</string>
     <string name="auth_error_email_required">Escribe tu correo.</string>
@@ -431,6 +434,7 @@
     <string name="auth_error_password_too_short">La contraseña debe tener al menos %1$d caracteres.</string>
     <string name="auth_error_password_too_long">La contraseña no puede pasar de %1$d caracteres.</string>
     <string name="auth_error_password_is_email">La contraseña no puede ser tu correo.</string>
+    <string name="auth_error_password_weak">A la contraseña le falta una mayúscula o un número.</string>
     <string name="auth_error_passwords_dont_match">Las contraseñas no coinciden.</string>
     <string name="auth_error_current_required">Escribe tu contraseña actual.</string>
     <string name="account_title">Mi cuenta</string>
