@@ -13,6 +13,21 @@ object Invite {
     private val CODE = Regex("^[A-Z0-9]{4}-?[A-Z0-9]{4}$")
     private val EMAIL = Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")
 
+    // lo que se escribe o se pega en el campo del código: solo letras y números, en mayúsculas y hasta 8.
+    // así no estorban el guion, los espacios ni los caracteres invisibles que a veces trae un texto copiado de WhatsApp.
+    fun cleanCode(raw: String): String =
+        raw.uppercase().filter { it in 'A'..'Z' || it in '0'..'9' }.take(CODE_LENGTH)
+
+    // el código limpio como se ve en pantalla: "YZ5E" -> "YZ5E", "YZ5EPE" -> "YZ5E-PE".
+    fun formatCode(clean: String): String =
+        if (clean.length <= 4) clean else clean.take(4) + "-" + clean.drop(4)
+
+    // el correo sin espacios ni caracteres invisibles (de formato, como U+200B o U+2068) y en minúsculas.
+    fun cleanEmail(raw: String): String =
+        raw.filterNot { it.isWhitespace() || Character.getType(it) == Character.FORMAT.toInt() }.lowercase()
+
+    const val CODE_LENGTH = 8
+
     // el teléfono como lo pide wa.me: solo dígitos y con lada de país. un número de 10 dígitos es de México (52).
     // null si no alcanza a ser un teléfono, y entonces el mensaje se manda con el selector de compartir.
     fun whatsAppPhone(phone: String?): String? {
@@ -55,7 +70,6 @@ object Invite {
         val code = params["code"]?.trim()?.uppercase().orEmpty()
         if (!EMAIL.matches(email) || !CODE.matches(code)) return null
         // con o sin guion, el código queda como XXXX-XXXX.
-        val clean = code.replace("-", "")
-        return InviteLink(email, "${clean.take(4)}-${clean.drop(4)}")
+        return InviteLink(email, formatCode(cleanCode(code)))
     }
 }

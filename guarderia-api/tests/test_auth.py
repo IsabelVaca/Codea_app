@@ -154,6 +154,24 @@ async def test_new_teacher_activates_with_code(client, world):
     assert listed["paola@test.dev"]["access_code"] is None
 
 
+async def test_activates_with_text_copied_from_whatsapp(client, world):
+    # al copiar de WhatsApp pueden venir aislantes de dirección (U+2068/U+2069), espacios de ancho cero
+    # (U+200B) o un guion largo; nada de eso debe hacer que el código o el correo dejen de coincidir.
+    code = (await create_teacher(client, world))["access_code"]["code"]
+    pasted_code = "\u2068" + code.replace("-", "\u2013") + "\u200b\u2069"
+    pasted_email = "\u2068Paola@test.dev\u2069 "
+    response = await client.post(
+        "/auth/activate", json={"email": pasted_email, "code": pasted_code, "password": NEW_PASSWORD}
+    )
+    assert response.status_code == 200
+    assert (await login(client, "\u200bpaola@test.dev", NEW_PASSWORD)).status_code == 200
+
+
+async def test_teacher_email_with_invisible_characters_is_stored_clean(client, world):
+    created = await create_teacher(client, world, email="\u2068Paola@Test.dev\u2069")
+    assert created["email"] == "paola@test.dev"
+
+
 async def test_code_is_single_use(client, world):
     code = (await create_teacher(client, world))["access_code"]["code"]
     body = {"email": "paola@test.dev", "code": code, "password": NEW_PASSWORD}
