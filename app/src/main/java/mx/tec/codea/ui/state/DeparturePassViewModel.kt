@@ -39,8 +39,11 @@ class DeparturePassViewModel : ViewModel() {
     val pending: Int
         get() = DepartureRules.pending(entries)
 
+    // true cuando la lista ya llegó de la API: con lo guardado en pantalla todavía no se puede finalizar el día.
+    private var actualizada by mutableStateOf(false)
+
     val canFinishDay: Boolean
-        get() = DepartureRules.canFinishDay(entries, loaded = !loading && !failed)
+        get() = DepartureRules.canFinishDay(entries, loaded = actualizada && !loading && !failed)
 
     fun load(room: Int) {
         classroomId = room
@@ -54,8 +57,14 @@ class DeparturePassViewModel : ViewModel() {
         if (showLoading) loading = true
         failed = false
         viewModelScope.launch {
+            // lo guardado de hoy (ApiCache) sale al instante; la lista de la API lo reemplaza al llegar.
+            if (entries.isEmpty()) runCatching { repository.departuresGuardadas(room) }.getOrNull()?.let {
+                entries = it
+                loading = false
+            }
             try {
                 entries = repository.departures(room)
+                actualizada = true
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

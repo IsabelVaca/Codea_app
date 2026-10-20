@@ -1,6 +1,13 @@
 package mx.tec.codea.data
 
 import android.graphics.Bitmap
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ListSerializer
+import mx.tec.codea.data.api.ChildDetailDto
+import mx.tec.codea.data.api.DepartureSheetDto
+import mx.tec.codea.data.offline.Offline
+import mx.tec.codea.data.offline.cachedResponse
+import mx.tec.codea.data.offline.fetchAndCache
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import mx.tec.codea.data.api.ApiClient
@@ -39,16 +46,25 @@ class TeacherApiRepository {
 
     private val api get() = ApiClient.api
 
-    suspend fun me(): MeDto = api.me()
+    // las lecturas se guardan en la caché (ApiCache) y cada una tiene su "…Guardado()" con lo último que se vio.
+    // las de "hoy" llevan la fecha en la llave: lo de ayer nunca se muestra como si fuera de hoy.
+    suspend fun me(): MeDto = fetchAndCache("me", MeDto.serializer()) { api.me() }
+    suspend fun meGuardado(): MeDto? = cachedResponse("me", MeDto.serializer())
 
     // ----- checador -----
 
     // null = todavía no checa hoy.
     suspend fun checkInToday(): CheckInRecord? {
-        val el: JsonElement = api.checkInToday()
-        if (el is JsonNull) return null
-        return ApiClient.json.decodeFromJsonElement(CheckInDto.serializer(), el).toRecord()
+        val hoy = fetchAndCache("checkin:${hoyIso()}", CheckInHoy.serializer()) {
+            val el: JsonElement = api.checkInToday()
+            CheckInHoy(if (el is JsonNull) null else ApiClient.json.decodeFromJsonElement(CheckInDto.serializer(), el))
+        }
+        return hoy.registro?.toRecord()
     }
+
+    // lo guardado de la checada de hoy: null = no hay nada guardado; registro = null quiere decir que todavía no checa.
+    suspend fun checkInGuardado(): CheckInGuardado? =
+        cachedResponse("checkin:${hoyIso()}", CheckInHoy.serializer())?.let { CheckInGuardado(it.registro?.toRecord()) }
 
     // la salida del día: la API pide haber registrado la entrada.
     suspend fun checkOut(): CheckInRecord = api.checkOut().toRecord()
@@ -64,9 +80,19 @@ class TeacherApiRepository {
     suspend fun day(childId: Int): DayDto = api.childDay(childId, null)
 
     // la ficha: alergias y edad del niño, sus tutores con teléfono y las personas autorizadas a recogerlo.
-    suspend fun childProfile(childId: Int): ChildProfile {
-        val detail = api.childDetail(childId)
-        val pickups = api.pickups(childId)
+    suspend fun childProfile(childId: Int): ChildProfile = ficha(
+        fetchAndCache("child:$childId", ChildDetailDto.serializer()) { api.childDetail(childId) },
+        fetchAndCache("pickups:$childId", PICKUPS) { api.pickups(childId) },
+    )
+
+    // la ficha con lo último que se guardó, si están las dos partes.
+    suspend fun childProfileGuardado(childId: Int): ChildProfile? {
+        val detail = cachedResponse("child:$childId", ChildDetailDto.serializer()) ?: return null
+        val pickups = cachedResponse("pickups:$childId", PICKUPS) ?: return null
+        return ficha(detail, pickups)
+    }
+
+    private fun ficha(detail: ChildDetailDto, pickups: List<PickupDto>): ChildProfile {
         return ChildProfile(
             allergies = detail.allergies?.trim()?.ifBlank { null },
             ageText = ChildProfileRules.ageText(detail.birthDate, hoyLocal()),
@@ -86,7 +112,11 @@ class TeacherApiRepository {
 
     // los niños que vinieron hoy, con quién puede recoger a cada uno y la salida de los que ya se fueron.
     suspend fun departures(classroomId: Int): List<DepartureEntry> =
-        api.departures(classroomId).children.map { it.toEntry() }
+        fetchAndCache("departures:$classroomId:${hoyIso()}", DepartureSheetDto.serializer()) { api.departures(classroomId) }
+            .children.map { it.toEntry() }
+
+    suspend fun departuresGuardadas(classroomId: Int): List<DepartureEntry>? =
+        cachedResponse("departures:$classroomId:${hoyIso()}", DepartureSheetDto.serializer())?.children?.map { it.toEntry() }
 
     suspend fun registerDeparture(childId: String, choice: PickupChoice) {
         val body = when (choice.kind) {
@@ -110,9 +140,19 @@ class TeacherApiRepository {
 
     // ----- rutina -----
 
-    suspend fun routine(classroomId: Int): RoutineDto = api.routine(classroomId)
+    suspend fun routine(classroomId: Int): RoutineDto =
+        fetchAndCache(llaveRutina(classroomId), RoutineDto.serializer()) { api.routine(classroomId) }
 
-    suspend fun confirm(momentId: Int): RoutineDto = api.confirmMoment(momentId)
+    suspend fun routineGuardada(classroomId: Int): RoutineDto? = cachedResponse(llaveRutina(classroomId), RoutineDto.serializer())
+
+    // la rutina que regresa la API al confirmar también se guarda: así la caché no se queda con el momento anterior.
+    suspend fun confirm(momentId: Int): RoutineDto {
+        val dto = api.confirmMoment(momentId)
+        runCatching { Offline.apiCache?.write(llaveRutina(dto.classroomId), dto, RoutineDto.serializer()) }
+        return dto
+    }
+
+    private fun llaveRutina(classroomId: Int) = "routine:$classroomId:${hoyIso()}"
 
     // si hay foto, primero se sube a /media y el reporte lleva su media_id.
     suspend fun createReport(momentId: Int, report: Report, photo: Bitmap? = null) {
@@ -196,3 +236,11 @@ fun RoutineDto.toRoutine() = Routine(
         )
     },
 )
+
+// la checada de hoy como se guarda en la caché: registro = null quiere decir que todavía no checa.
+@Serializable
+data class CheckInHoy(val registro: CheckInDto? = null)
+
+private val PICKUPS = ListSerializer(PickupDto.serializer())
+
+data class CheckInGuardado(val registro: CheckInRecord?)

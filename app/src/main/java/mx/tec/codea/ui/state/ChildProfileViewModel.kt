@@ -31,12 +31,18 @@ class ChildProfileViewModel : ViewModel() {
         loading = true
         failed = false
         viewModelScope.launch {
+            // lo guardado (ApiCache) sale al instante; la ficha de la API lo reemplaza al llegar.
+            runCatching { repository.childProfileGuardado(id) }.getOrNull()?.let {
+                profile = it
+                loading = false
+            }
             try {
                 profile = repository.childProfile(id)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                failed = true
+                // con la ficha guardada en pantalla, un error de red no la tapa.
+                if (profile == null) failed = true
             } finally {
                 loading = false
             }
