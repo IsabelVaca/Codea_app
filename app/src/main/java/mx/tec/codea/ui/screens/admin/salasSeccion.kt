@@ -40,7 +40,6 @@ fun SalasSeccion(
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
         // el botón de agregar va arriba de la lista, igual que en Docentes.
         CrearSalaButton(onClick = onCrearSala)
-        SeccionLabel("OCUPACIÓN DE SALAS")
         if (salas.isEmpty()) {
             Text(
                 "Todavía no hay salas.",

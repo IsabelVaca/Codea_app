@@ -3,7 +3,6 @@ package mx.tec.codea.ui.screens.admin
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -90,7 +89,6 @@ fun FamiliasScreen(
 
             when (seccion) {
                 SeccionFamilias.INFANTES -> {
-                    Box(modifier = lateral) { SeccionLabel("INFANTES INSCRITOS") }
                     Column {
                         infantes.forEach { infante ->
                             InfanteCard(infante = infante, onClick = { onInfanteClick(infante) })
@@ -100,7 +98,6 @@ fun FamiliasScreen(
                 }
 
                 SeccionFamilias.PADRES -> {
-                    Box(modifier = lateral) { SeccionLabel("PADRES Y TUTORES") }
                     Column(modifier = lateral, verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         padres.forEachIndexed { i, p ->
                             val (bg, fg) = avatarColores[i % avatarColores.size]
