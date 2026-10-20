@@ -119,7 +119,6 @@ fun AvisosAdminScreen(
                 onCancelar = onCancelar,
             )
 
-            SeccionLabel("Historial de avisos")
             if (avisos.isEmpty()) {
                 Text(
                     "Todavía no se ha publicado ningún aviso.",

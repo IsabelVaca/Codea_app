@@ -25,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -57,6 +58,9 @@ fun FamiliasScreen(
 ) {
     // al volver de un detalle se queda en la lista donde estaba.
     var seleccion by rememberSaveable { mutableIntStateOf(SeccionFamilias.INFANTES.ordinal) }
+    // por omisión solo los activos; «Todos» muestra también a los dados de baja.
+    var soloInfantesActivos by rememberSaveable { mutableStateOf(true) }
+    var soloPadresActivos by rememberSaveable { mutableStateOf(true) }
     val seccion = SeccionFamilias.entries[seleccion]
 
     Scaffold(
@@ -91,8 +95,15 @@ fun FamiliasScreen(
                 // el botón de inscribir va arriba de la lista, igual que en Docentes y Salas.
                 SeccionFamilias.INFANTES -> {
                     InscribirInfanteButton(onClick = onInscribirInfante, modifier = lateral)
+                    FiltroActivos(
+                        soloActivos = soloInfantesActivos,
+                        activos = infantes.count { !it.baja },
+                        total = infantes.size,
+                        onCambio = { soloInfantesActivos = it },
+                        modifier = lateral,
+                    )
                     Column {
-                        infantes.forEach { infante ->
+                        infantes.filter { !soloInfantesActivos || !it.baja }.forEach { infante ->
                             InfanteCard(infante = infante, onClick = { onInfanteClick(infante) })
                         }
                     }
@@ -100,8 +111,15 @@ fun FamiliasScreen(
 
                 SeccionFamilias.PADRES -> {
                     BotonInscribirPadre(onClick = onInscribirPadre, modifier = lateral)
+                    FiltroActivos(
+                        soloActivos = soloPadresActivos,
+                        activos = padres.count { it.conAcceso },
+                        total = padres.size,
+                        onCambio = { soloPadresActivos = it },
+                        modifier = lateral,
+                    )
                     Column {
-                        padres.forEach { p -> PadreFila(p) { onPadreClick(p) } }
+                        padres.filter { !soloPadresActivos || it.conAcceso }.forEach { p -> PadreFila(p) { onPadreClick(p) } }
                     }
                 }
             }

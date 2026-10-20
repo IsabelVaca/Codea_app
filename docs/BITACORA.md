@@ -316,3 +316,15 @@ Detalle completo en [`INCIDENTE-2026-10-19.md`](INCIDENTE-2026-10-19.md).
 - **Decisión:** todos trabajan contra el servidor compartido; `guarderia-api/.env.dev` es la configuración del backend local, sin secretos reales.
 - **Pendientes:** respaldos de la base y del almacén, candado al seed, límite de volúmenes de SeaweedFS, `API_BASE_URL` por omisión a la API y volver a dar de alta las cuentas reales.
 
+## 2026-10-19 (noche) · Admin: rediseño de las pestañas
+
+Cambios de diseño pedidos por el usuario y revisados en el emulador contra la API compartida (`api.codeaapp.site`):
+
+- **Avisos:** botón «+ Nuevo aviso» arriba; el formulario aparece al tocarlo, en una sola tarjeta (para quién, texto, imagen, «Cancelar» y «Publicar») y se cierra al publicar. Sin las etiquetas «Publicar aviso del centro» ni «Historial de avisos». El estado abierto o cerrado vive en `AvisosAdminViewModel`.
+- **Docentes, Salas, Infantes y Padres:** el botón de agregar pasa arriba de la lista; se quitaron la tarjeta de resumen y las etiquetas debajo del selector («DOCENTES ACTIVOS», «OCUPACIÓN DE SALAS», «INFANTES INSCRITOS», «PADRES Y TUTORES»). La tarjeta de padres usa el mismo diseño que la de infantes.
+- **Filtro Activos | Todos** (`FiltroActivos.kt`) en docentes, infantes y padres: por omisión solo los activos; con «Todos», los dados de baja llevan «De baja» en gris. Una docente sin sala dice «Sin sala» (antes « • 0 niños»).
+- **Ajustes:** una tarjeta agrupada con ícono (un solo color, el morado de las demás pantallas), título y una línea por opción; «Mi cuenta» aparte; sin las etiquetas «La estancia» y «Mi sesión».
+- **Sin sobretítulos** en las pantallas de los tres perfiles (ver la entrada del rediseño de Centro).
+- **Borrar personas:** la API no tiene endpoint para borrar a nadie; solo dar de baja y reactivar (`/teachers`, `/parents`, `/children` con `deactivate` y `reactivate`). La baja cierra las sesiones y conserva el historial. Si hace falta borrar de verdad (solicitud de cancelación de datos), la propuesta es un endpoint que anonimice.
+- **Verificado:** `assembleDebug` compila; cada pantalla revisada en el emulador. Sin pruebas nuevas (solo diseño).
+

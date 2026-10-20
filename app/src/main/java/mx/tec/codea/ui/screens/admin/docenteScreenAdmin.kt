@@ -39,6 +39,7 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import mx.tec.codea.domain.Sala
@@ -67,6 +68,8 @@ fun DocenteScreen(
 ){
     // al volver de un detalle (o de crear una sala) se queda en la lista donde estaba.
     var seleccion by rememberSaveable { mutableIntStateOf(SeccionDocentes.DOCENTES.ordinal) }
+    // por omisión solo las activas; «Todos» muestra también a las dadas de baja.
+    var soloActivas by rememberSaveable { mutableStateOf(true) }
     val seccion = SeccionDocentes.entries[seleccion]
 
     Scaffold(
@@ -107,8 +110,15 @@ fun DocenteScreen(
                     SeccionDocentes.DOCENTES -> {
                         // el botón de agregar va arriba de la lista, igual que en Salas.
                         DarDeAltaAsistenteButton(onClick = onDarDeAltaAsistente, modifier = lateral)
+                        FiltroActivos(
+                            soloActivos = soloActivas,
+                            activos = docentes.count { !it.baja },
+                            total = docentes.size,
+                            onCambio = { soloActivas = it },
+                            modifier = lateral,
+                        )
                         Column(modifier = Modifier.padding(bottom = 16.dp)) {
-                            docentes.forEach { docente ->
+                            docentes.filter { !soloActivas || !it.baja }.forEach { docente ->
                                 val ninosDelDocente = infantes.count { it.sala == docente.sala }
                                 DocenteCard(docente = docente, ninosEnSala = ninosDelDocente, onClick = { onDocenteClick(docente) })
                             }
@@ -179,7 +189,7 @@ fun DocenteCard(docente: Docente, ninosEnSala: Int, onClick: () -> Unit = {}) {
                 ) {
                     //sala
                     Text(
-                        text = docente.sala + " • ",
+                        text = (docente.sala.ifBlank { "Sin sala" }) + " • ",
                         modifier = Modifier,
                         color = Color(red = 138, green = 128, blue = 165),
                         fontSize = 13.sp,
@@ -202,15 +212,18 @@ fun DocenteCard(docente: Docente, ninosEnSala: Int, onClick: () -> Unit = {}) {
 
             }
 
-            // sin checada todavía: la pastilla va en gris.
-            val checo = docente.horaChecada != null
+            // sin checada todavía (o dada de baja): la pastilla va en gris.
+            val checo = docente.horaChecada != null && !docente.baja
             Surface(
                 modifier = Modifier.padding(end = 9.dp),
                 color = if (checo) Color(0xFFEDE9FE) else Color(0xFFF4F1FB),
                 shape = RoundedCornerShape(percent = 50)
             ) {
                 Text(
-                    text = docente.horaChecada?.let { "Checó $it" } ?: "Sin checar",
+                    text = when {
+                        docente.baja -> "De baja"
+                        else -> docente.horaChecada?.let { "Checó $it" } ?: "Sin checar"
+                    },
                     modifier = Modifier.padding(horizontal = 9.dp, vertical = 3.dp),
                     color = if (checo) Color(0xFF6D28D9) else Color(0xFFA79BBF),
                     fontWeight = FontWeight.ExtraBold,
