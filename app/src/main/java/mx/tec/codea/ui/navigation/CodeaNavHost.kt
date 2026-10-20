@@ -581,7 +581,7 @@ fun CodeaNavHost(
                     onCrearSala = { navController.navigate(AdminCrearSalaRoute) },
                     cargando = docentesViewModel.cargando,
                     onRecargar = {
-                        docentesViewModel.cargar()
+                        docentesViewModel.cargar(conIndicador = true)
                         salasViewModel.cargar()
                         infantesViewModel.cargar()
                     },

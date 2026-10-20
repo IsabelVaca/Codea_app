@@ -28,6 +28,8 @@ class InfantesAdminViewModel : ViewModel() {
     fun cargar() {
         if (!ApiConfig.isAdmin) return
         viewModelScope.launch {
+            // lo guardado (ApiCache) sale al instante; lo de la API lo reemplaza al llegar.
+            if (_infantes.value.isEmpty()) repository.cached()?.let { _infantes.value = it }
             try {
                 _infantes.value = repository.getAll()
             } catch (e: CancellationException) {

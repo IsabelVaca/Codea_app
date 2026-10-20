@@ -71,6 +71,8 @@ class AvisosAdminViewModel(application: Application) : AndroidViewModel(applicat
     fun cargarAvisos() {
         if (!ApiConfig.isAdmin) return
         viewModelScope.launch {
+            // lo guardado (ApiCache) sale al instante; lo de la API lo reemplaza al llegar.
+            if (_avisos.value.isEmpty()) repository.cached()?.let { _avisos.value = it }
             try {
                 _avisos.value = repository.getAll()
             } catch (e: CancellationException) {

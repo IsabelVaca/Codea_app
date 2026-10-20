@@ -59,6 +59,16 @@ data class CachedChildEntity(
     val arrivedAt: String? = null,
 )
 
+// la última respuesta de la API de cada lista o pantalla (docentes, salas, el día del niño…), como JSON.
+// sirve para mostrar algo al instante mientras llega lo nuevo. La llave lleva el usuario: "usuario|nombre".
+@Entity(tableName = "cached_response")
+data class CachedResponseEntity(
+    @PrimaryKey val key: String,
+    val userId: String,
+    val json: String,
+    val savedAt: Long,
+)
+
 @Dao
 interface OfflineDao {
 
@@ -95,6 +105,15 @@ interface OfflineDao {
     @Query("SELECT * FROM cached_child WHERE classroomId = :classroomId ORDER BY fullName")
     suspend fun children(classroomId: Int): List<CachedChildEntity>
 
+    @Query("SELECT * FROM cached_response WHERE `key` = :key")
+    suspend fun response(key: String): CachedResponseEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun putResponse(entity: CachedResponseEntity)
+
+    @Query("DELETE FROM cached_response")
+    suspend fun clearResponses()
+
     // la lista nueva reemplaza a la vieja completa, o no cambia nada.
     @Transaction
     suspend fun replaceRoom(room: CachedRoomEntity, children: List<CachedChildEntity>) {
@@ -105,8 +124,8 @@ interface OfflineDao {
 }
 
 @Database(
-    entities = [PendingAttendanceEntity::class, CachedRoomEntity::class, CachedChildEntity::class],
-    version = 4,
+    entities = [PendingAttendanceEntity::class, CachedRoomEntity::class, CachedChildEntity::class, CachedResponseEntity::class],
+    version = 5,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -132,6 +151,16 @@ abstract class AppDatabase : RoomDatabase() {
         val MIGRATION_3_4 = object : Migration(3, 4) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE cached_child ADD COLUMN arrivedAt TEXT")
+            }
+        }
+
+        // versión 5: la caché de respuestas de la API (admin y padre).
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `cached_response` (`key` TEXT NOT NULL, `userId` TEXT NOT NULL, " +
+                        "`json` TEXT NOT NULL, `savedAt` INTEGER NOT NULL, PRIMARY KEY(`key`))"
+                )
             }
         }
     }

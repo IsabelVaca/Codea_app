@@ -23,7 +23,7 @@ class DocentesAdminViewModel : ViewModel() {
     private val _docentes = MutableStateFlow<List<Docente>>(emptyList())
     val docentes: StateFlow<List<Docente>> = _docentes.asStateFlow()
 
-    // true mientras se piden las docentes: la pestaña Docentes muestra el indicador de "jalar para recargar".
+    // true solo mientras dura un "jalar para recargar"; las recargas de fondo (al abrir la pestaña) no lo encienden.
     // va antes del init: el init llama a cargar(), que lo usa.
     var cargando by mutableStateOf(false)
         private set
@@ -35,10 +35,12 @@ class DocentesAdminViewModel : ViewModel() {
 
     // se llama también al abrir la pestaña Docentes: la checada de una docente se hace desde su teléfono
     // y aquí no llega ningún DataEvents, así que sin esto la hora no aparecía hasta reiniciar la app.
-    fun cargar() {
+    fun cargar(conIndicador: Boolean = false) {
         if (!ApiConfig.isAdmin) return
         viewModelScope.launch {
-            cargando = true
+            // lo guardado (ApiCache) sale al instante; lo de la API lo reemplaza al llegar.
+            if (_docentes.value.isEmpty()) repository.cached()?.let { _docentes.value = it }
+            if (conIndicador) cargando = true
             try {
                 _docentes.value = repository.getAll()
             } catch (e: CancellationException) {

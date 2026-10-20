@@ -44,6 +44,11 @@ class RutinasAdminViewModel : ViewModel() {
     fun cargar() {
         if (!ApiConfig.isAdmin) return
         viewModelScope.launch {
+            // lo guardado (ApiCache) sale al instante; lo de la API lo reemplaza al llegar.
+            if (_rutinas.value.isEmpty()) repository.cached()?.let { (rutinas, momentos) ->
+                _rutinas.value = rutinas
+                _momentos.value = momentos
+            }
             _cargando.value = true
             try {
                 val (rutinas, momentos) = repository.getAll()

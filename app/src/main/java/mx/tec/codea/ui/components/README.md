@@ -33,3 +33,7 @@ Toda pantalla empieza igual, en los tres perfiles:
 - **Selector de hijo** para el padre (HN4).
 - **Indicador de carga y de error** reutilizable: hoy cada pantalla improvisa o solo usa el snackbar.
 - **Estado vacío** reutilizable para listas sin datos.
+
+## Imágenes con URL firmada
+
+`ImagenEstable.kt` (`imagenEstable(url)`): las fotos y las imágenes de los avisos llegan con una URL firmada que cambia en cada carga. Le da a Coil la URL sin la firma como llave de memoria y de disco, para que una imagen que ya se vio no se vuelva a bajar. La usan `AvisoImagen` y las fotos del padre.

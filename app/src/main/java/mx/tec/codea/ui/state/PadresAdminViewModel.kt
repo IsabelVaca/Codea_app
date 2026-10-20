@@ -28,6 +28,8 @@ class PadresAdminViewModel : ViewModel() {
     fun cargar() {
         if (!ApiConfig.isAdmin) return
         viewModelScope.launch {
+            // lo guardado (ApiCache) sale al instante; lo de la API lo reemplaza al llegar.
+            if (_padres.value.isEmpty()) repository.cached()?.let { _padres.value = it }
             try {
                 _padres.value = repository.getAll()
             } catch (e: CancellationException) {

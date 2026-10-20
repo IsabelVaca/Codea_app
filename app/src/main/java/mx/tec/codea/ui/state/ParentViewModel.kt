@@ -13,6 +13,7 @@ import mx.tec.codea.data.api.ApiConfig
 import mx.tec.codea.data.api.CalendarDto
 import mx.tec.codea.data.api.DayDto
 import mx.tec.codea.data.api.FeedItemDto
+import mx.tec.codea.data.api.MeDto
 import mx.tec.codea.data.api.toUserMessage
 import mx.tec.codea.data.clockOf
 import mx.tec.codea.data.api.WeeklySummaryDto
@@ -113,24 +114,27 @@ class ParentViewModel : ViewModel() {
         cargar()
     }
 
+    // de qué hijo ya se mostró lo guardado: se muestra una vez por hijo (al abrir la app o al cambiar de hijo),
+    // para no tapar con datos viejos lo que ya llegó de la API.
+    private var guardadoMostradoDe: Int? = null
+
     fun cargar() {
         if (!ApiConfig.isParent) return
         viewModelScope.launch {
+            // 1. lo guardado (ApiCache): la familia ve al instante lo último que vio, aunque haya cerrado la app.
+            if (children.isEmpty()) runCatching { repository.meGuardado()?.let { aplicarPerfil(it) } }
+            childId?.let { mostrarGuardado(it) }
+            // 2. la API, que reemplaza lo guardado.
             try {
-                val me = repository.me()
-                children = me.parent?.children.orEmpty().map { ChildOption(it.id, it.name, it.fullName) }
-                // la recarga que sigue a cada cambio conserva al hijo elegido.
-                val hijo = ChildChoice.pick(children, childId) ?: return@launch
-                childId = hijo.id
-                selectedChildId = hijo.id
-                childName = hijo.fullName
-                childFirstName = hijo.firstName
+                aplicarPerfil(repository.me()) ?: return@launch
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 DataEvents.notice("No se pudo cargar tu perfil: ${e.toUserMessage()}")
                 return@launch
             }
+            // si no había perfil guardado (primera vez), lo guardado del hijo se busca ahora que ya se sabe quién es.
+            childId?.let { mostrarGuardado(it) }
             // cada parte se pide por separado: si una falla, las demás se muestran.
             parte("el día") { cargarDia() }
             parte("el calendario") { cargarMes() }
@@ -138,6 +142,28 @@ class ParentViewModel : ViewModel() {
             parte("los datos de tu hijo") { cargarHijo() }
             parte("las fotos") { cargarFotos() }
         }
+    }
+
+    // los hijos de la familia y el elegido; la recarga que sigue a cada cambio conserva al hijo elegido.
+    private fun aplicarPerfil(me: MeDto): ChildOption? {
+        children = me.parent?.children.orEmpty().map { ChildOption(it.id, it.name, it.fullName) }
+        val hijo = ChildChoice.pick(children, childId) ?: return null
+        childId = hijo.id
+        selectedChildId = hijo.id
+        childName = hijo.fullName
+        childFirstName = hijo.firstName
+        return hijo
+    }
+
+    // lo guardado de este hijo: el día, el mes, la semana, sus datos y sus fotos. Si algo no está guardado, se queda como está.
+    private suspend fun mostrarGuardado(id: Int) {
+        if (guardadoMostradoDe == id) return
+        guardadoMostradoDe = id
+        runCatching { repository.dayGuardado(id, selectedDate)?.let { aplicarDia(it) } }
+        runCatching { repository.calendarGuardado(id, mesMostrado())?.let { monthData = it.toMonthData() } }
+        runCatching { repository.weeklyGuardado(id)?.let { weekly = it.toResumen() } }
+        runCatching { repository.childGuardado(id)?.let { myChild = it.toMyChild() } }
+        runCatching { repository.photosGuardadas(id)?.let { lista -> photos = lista.map { it.toFoto() } } }
     }
 
     // la familia cambia de hijo: lo del anterior se quita para no mostrarlo mientras carga el nuevo.
@@ -171,7 +197,10 @@ class ParentViewModel : ViewModel() {
 
     private suspend fun cargarDia() {
         val id = childId ?: return
-        val dia = repository.day(id, selectedDate)
+        aplicarDia(repository.day(id, selectedDate))
+    }
+
+    private fun aplicarDia(dia: DayDto) {
         summary = dia.toSummary()
         timeline = dia.timeline.map { it.toEvent() }
         menu = dia.menu?.toMenu()?.takeUnless { it.vacio }
@@ -193,9 +222,11 @@ class ParentViewModel : ViewModel() {
 
     private suspend fun cargarMes() {
         val id = childId ?: return
-        val mes = String.format(Locale.US, "%04d-%02d", shownYear, shownMonth + 1)
-        monthData = repository.calendar(id, mes).toMonthData()
+        monthData = repository.calendar(id, mesMostrado()).toMonthData()
     }
+
+    // "2026-10": el mes que muestra el calendario.
+    private fun mesMostrado() = String.format(Locale.US, "%04d-%02d", shownYear, shownMonth + 1)
 
     // ---------------- resumen semanal ----------------
 
