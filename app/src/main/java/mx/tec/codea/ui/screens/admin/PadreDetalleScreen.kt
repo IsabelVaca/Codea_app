@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -140,6 +142,9 @@ fun PadreDetalleScreen(
                 }
                 BotonAccionPadre("Reenviar invitación", Color(0xFFF4F1FB), Color(0xFF4A4066), onReenviarInvitacion)
             }
+
+            // el mismo espacio final que los demás detalles, para que el último botón no quede pegado a la barra.
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
