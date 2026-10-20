@@ -51,6 +51,7 @@ internal fun PadreFila(p: Padre, onClick: () -> Unit) {
             )
             .clickable(onClick = onClick),
         color = Color.White,
+        border = BorderStroke(1.dp, Color(0xFFE6E0F2)),
         shape = RoundedCornerShape(18.dp)
     ) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {

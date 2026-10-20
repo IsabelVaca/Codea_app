@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -117,6 +118,7 @@ fun PersonasAutorizadasScreen(
                     onClick = { onInfanteClick(infante) },
                     shape = RoundedCornerShape(20.dp),
                     color = MaterialTheme.colorScheme.surfaceContainerLowest,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                     tonalElevation = 1.dp,
                 ) {
                     Row(
@@ -259,6 +261,7 @@ private fun PersonaCard(persona: PersonaAutorizada, onQuitar: () -> Unit) {
     Surface(
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surfaceContainerLowest,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         tonalElevation = 1.dp,
     ) {
         Row(

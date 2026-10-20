@@ -2,6 +2,7 @@ package mx.tec.codea.ui.screens.admin
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -60,17 +61,19 @@ fun SalasSeccion(
 @Composable
 private fun SalaOcupacionCard(sala: Sala, ninosActuales: Int, onClick: () -> Unit) {
     val ocupacion = if (sala.cupoMaximo > 0) (ninosActuales / sala.cupoMaximo.toFloat()).coerceIn(0f, 1f) else 0f
+    val forma = RoundedCornerShape(22.dp)
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .shadow(
                 elevation = 6.dp,
-                shape = RoundedCornerShape(22.dp),
+                shape = forma,
                 ambientColor = Color.Black.copy(alpha = 0.12f),
                 spotColor = Color.Black.copy(alpha = 0.12f)
             )
-            .clip(RoundedCornerShape(22.dp))
+            .clip(forma)
             .background(Color.White)
+            .border(1.dp, Color(0xFFE6E0F2), forma)
             .clickable(onClick = onClick)
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(9.dp)

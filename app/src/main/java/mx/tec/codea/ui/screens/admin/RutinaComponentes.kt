@@ -35,12 +35,14 @@ import sh.calvin.reorderable.ReorderableCollectionItemScope
 @Composable
 fun ReorderableCollectionItemScope.FilaMomentoArrastrable(i: Int, m: MomentoRutina, arrastrando: Boolean) {
     val elev by animateDpAsState(if (arrastrando) 16.dp else 6.dp, label = "elev")
+    val forma = RoundedCornerShape(22.dp)
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(elev, RoundedCornerShape(22.dp), ambientColor = Color(0x1F2A2140), spotColor = Color(0x1F2A2140))
-            .clip(RoundedCornerShape(22.dp))
+            .shadow(elev, forma, ambientColor = Color(0x1F2A2140), spotColor = Color(0x1F2A2140))
+            .clip(forma)
             .background(Color.White)
+            .border(1.dp, Color(0xFFE6E0F2), forma)
             .padding(13.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(9.dp)

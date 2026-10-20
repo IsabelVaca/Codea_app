@@ -46,6 +46,7 @@ fun InfanteCard(infante: Infante, onClick: () -> Unit = {}) {
         spotColor = Color.Black.copy(alpha = 0.30f)
     ).clickable(onClick = onClick),
         color = Color(red = 255, green = 255, blue = 255),
+        border = BorderStroke(1.dp, Color(0xFFE6E0F2)),
         shape = RoundedCornerShape(18.dp))
     {
         Row(

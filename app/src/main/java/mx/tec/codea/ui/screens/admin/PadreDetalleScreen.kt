@@ -1,6 +1,7 @@
 package mx.tec.codea.ui.screens.admin
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -151,12 +152,14 @@ fun PadreDetalleScreen(
 
 @Composable
 private fun InfoTarjeta(etiqueta: String, valor: String) {
+    val forma = RoundedCornerShape(22.dp)
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(6.dp, RoundedCornerShape(22.dp), ambientColor = Color(0x0F2A2140), spotColor = Color(0x0F2A2140))
-            .clip(RoundedCornerShape(22.dp))
+            .shadow(6.dp, forma, ambientColor = Color(0x0F2A2140), spotColor = Color(0x0F2A2140))
+            .clip(forma)
             .background(Color.White)
+            .border(1.dp, Color(0xFFE6E0F2), forma)
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(3.dp)
     ) {

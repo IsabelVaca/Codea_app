@@ -1,6 +1,7 @@
 package mx.tec.codea.ui.screens.admin
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -159,6 +160,7 @@ fun SalaAdminDetalleScreen(
             SeccionLabel("Niños en esta sala")
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 ninos.forEach { n ->
+                    val formaNino = RoundedCornerShape(24.dp)
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(13.dp),
@@ -166,12 +168,13 @@ fun SalaAdminDetalleScreen(
                             .fillMaxWidth()
                             .shadow(
                                 elevation = 4.dp,
-                                shape = RoundedCornerShape(24.dp),
+                                shape = formaNino,
                                 ambientColor = Color.Black.copy(alpha = 0.10f),
                                 spotColor = Color.Black.copy(alpha = 0.10f)
                             )
-                            .clip(RoundedCornerShape(24.dp))
+                            .clip(formaNino)
                             .background(Color.White)
+                            .border(1.dp, Color(0xFFE6E0F2), formaNino)
                             .padding(14.dp)
                     ) {
                         Box(

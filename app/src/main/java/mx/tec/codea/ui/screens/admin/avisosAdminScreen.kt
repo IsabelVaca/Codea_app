@@ -2,6 +2,7 @@ package mx.tec.codea.ui.screens.admin
 
 import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -180,12 +181,14 @@ private fun NuevoAvisoCard(
     onPublicar: () -> Unit,
     onCancelar: () -> Unit,
 ) {
+    val formaFormulario = RoundedCornerShape(22.dp)
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(6.dp, RoundedCornerShape(22.dp), ambientColor = Color.Black.copy(alpha = 0.12f), spotColor = Color.Black.copy(alpha = 0.12f))
-            .clip(RoundedCornerShape(22.dp))
+            .shadow(6.dp, formaFormulario, ambientColor = Color.Black.copy(alpha = 0.12f), spotColor = Color.Black.copy(alpha = 0.12f))
+            .clip(formaFormulario)
             .background(Color.White)
+            .border(1.dp, Color(0xFFE6E0F2), formaFormulario)
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
@@ -309,12 +312,14 @@ private fun CampoAviso(valor: String, onCambio: (String) -> Unit, placeholder: S
 @Composable
 private fun AvisoCard(aviso: Aviso) {
     val paraTodos = aviso.destino == null
+    val forma = RoundedCornerShape(22.dp)
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(6.dp, RoundedCornerShape(22.dp), ambientColor = Color.Black.copy(alpha = 0.12f), spotColor = Color.Black.copy(alpha = 0.12f))
-            .clip(RoundedCornerShape(22.dp))
+            .shadow(6.dp, forma, ambientColor = Color.Black.copy(alpha = 0.12f), spotColor = Color.Black.copy(alpha = 0.12f))
+            .clip(forma)
             .background(Color.White)
+            .border(1.dp, Color(0xFFE6E0F2), forma)
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {

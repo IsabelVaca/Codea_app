@@ -1,6 +1,7 @@
 package mx.tec.codea.ui.screens.admin
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -112,12 +113,14 @@ fun AjustesScreen(
 // una tarjeta blanca que agrupa varias filas, como la configuración del teléfono.
 @Composable
 private fun AjustesGrupo(contenido: @Composable ColumnScope.() -> Unit) {
+    val forma = RoundedCornerShape(22.dp)
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(6.dp, RoundedCornerShape(22.dp), ambientColor = Color.Black.copy(alpha = 0.10f), spotColor = Color.Black.copy(alpha = 0.10f))
-            .clip(RoundedCornerShape(22.dp))
-            .background(Color.White),
+            .shadow(6.dp, forma, ambientColor = Color.Black.copy(alpha = 0.10f), spotColor = Color.Black.copy(alpha = 0.10f))
+            .clip(forma)
+            .background(Color.White)
+            .border(1.dp, Color(0xFFE6E0F2), forma),
         content = contenido,
     )
 }
