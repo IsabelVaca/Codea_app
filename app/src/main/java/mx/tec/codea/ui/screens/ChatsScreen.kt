@@ -63,13 +63,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.draw.shadow
 import mx.tec.codea.R
 import mx.tec.codea.domain.ChatMessage
 import mx.tec.codea.domain.ChatRules
 import mx.tec.codea.domain.Conversation
 import mx.tec.codea.domain.MessageStatus
 import mx.tec.codea.ui.components.BackHeader
+import mx.tec.codea.ui.components.CodeaColores
+import mx.tec.codea.ui.components.InitialsAvatar
+import mx.tec.codea.ui.components.Pastilla
 import mx.tec.codea.ui.theme.CodeaTheme
+import mx.tec.codea.ui.theme.Poppins
 import mx.tec.codea.ui.components.ScreenHeader
 
 // the chat tab. the teacher sees an inbox (one row per child) and opens a conversation;
@@ -142,9 +149,7 @@ private fun InboxScreen(
                     text = stringResource(
                         if (loaded) R.string.chats_inbox_empty else R.string.chats_inbox_loading,
                     ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.Gris,
                     textAlign = TextAlign.Center,
                 )
             }
@@ -168,32 +173,31 @@ private fun ConversationRow(
     showGuardians: Boolean,
     onClick: () -> Unit,
 ) {
+    // tarjeta blanca con las iniciales en lila, como las listas del admin.
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(18.dp))
+            .padding(horizontal = 2.dp, vertical = 2.dp)
+            .shadow(6.dp, RoundedCornerShape(18.dp), ambientColor = Color(0x1A2A2140), spotColor = Color(0x1A2A2140))
+            .clip(RoundedCornerShape(18.dp))
+            .background(Color.White)
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        InitialsAvatar(initials = iniciales(conversation.childName), size = 46.dp)
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
+            verticalArrangement = Arrangement.spacedBy(1.dp),
         ) {
-            Text(
-                text = conversation.childName,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold,
-            )
+            Text(conversation.childName, fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
             // de quién es el chat: la mamá o el papá del niño. el papá ya sabe que es su chat, así que solo lo ve la docente.
             if (showGuardians) {
                 ChatRules.guardiansLabel(conversation.guardians)?.let { label ->
                     Text(
                         text = label,
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary,
+                        fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Morado,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -201,8 +205,7 @@ private fun ConversationRow(
             }
             Text(
                 text = conversation.lastText ?: stringResource(R.string.chats_no_messages_short),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -210,27 +213,25 @@ private fun ConversationRow(
 
         Column(horizontalAlignment = Alignment.End) {
             conversation.lastTime?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Text(it, fontFamily = Poppins, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.Gris)
             }
             if (conversation.unreadCount > 0) {
                 Text(
                     text = conversation.unreadCount.toString(),
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onTertiary,
+                    fontFamily = Poppins, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = Color.White,
                     modifier = Modifier
                         .padding(top = 4.dp)
-                        .background(MaterialTheme.colorScheme.tertiary, RoundedCornerShape(10.dp))
+                        .background(CodeaColores.Violeta, RoundedCornerShape(10.dp))
                         .padding(horizontal = 8.dp, vertical = 2.dp),
                 )
             }
         }
     }
 }
+
+// "Diego Álvarez" -> "DÁ", como en Mi sala.
+private fun iniciales(nombre: String): String =
+    nombre.split(" ").filter { it.isNotBlank() }.take(2).joinToString("") { it.first().uppercase() }
 
 @Composable
 private fun ConversationScreen(
@@ -266,17 +267,14 @@ private fun ConversationScreen(
             .padding(horizontal = 22.dp, vertical = 16.dp)
             .imePadding(),
     ) {
-        // la docente ve de quién es el chat: el niño de título y su mamá o papá arriba.
+        // la docente ve de quién es el chat: el niño de título y su mamá o papá en una pastilla abajo (sin sobretítulo).
         val guardians = if (isParent) null else ChatRules.guardiansLabel(conversation.guardians)
         BackHeader(
-            overline = guardians ?: stringResource(
-                if (isParent) R.string.chats_parent_of else R.string.chats_family_of,
-                conversation.childName.substringBefore(" "),
-            ),
             title = if (isParent) stringResource(R.string.chats_parent_title) else conversation.childName,
             onBackClick = onBackClick,
-            modifier = Modifier.padding(bottom = 12.dp),
+            modifier = Modifier.padding(bottom = if (guardians == null) 12.dp else 8.dp),
         )
+        guardians?.let { Pastilla(it, modifier = Modifier.padding(bottom = 12.dp)) }
 
         if (messages.isEmpty()) {
             Box(
@@ -287,8 +285,7 @@ private fun ConversationScreen(
             ) {
                 Text(
                     text = stringResource(R.string.chats_no_messages),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.Gris,
                     textAlign = TextAlign.Center,
                 )
             }
@@ -298,6 +295,8 @@ private fun ConversationScreen(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
+                // un poco de aire para que no se corte la sombra de las burbujas.
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp, vertical = 6.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 items(messages, key = { it.clientId ?: it.id }) { message ->
@@ -357,13 +356,13 @@ private fun AttachSheet(onDismiss: () -> Unit, onCamera: () -> Unit, onGallery: 
             AttachOption(
                 icon = Icons.Filled.PhotoCamera,
                 label = stringResource(R.string.chats_attach_camera),
-                tint = MaterialTheme.colorScheme.tertiary,
+                tint = CodeaColores.Morado,
                 onClick = onCamera,
             )
             AttachOption(
                 icon = Icons.Filled.PhotoLibrary,
                 label = stringResource(R.string.chats_attach_gallery),
-                tint = MaterialTheme.colorScheme.primary,
+                tint = CodeaColores.Morado,
                 onClick = onGallery,
             )
         }
@@ -380,12 +379,12 @@ private fun AttachOption(icon: ImageVector, label: String, tint: Color, onClick:
         Box(
             modifier = Modifier
                 .size(56.dp)
-                .background(tint.copy(alpha = 0.14f), RoundedCornerShape(18.dp)),
+                .background(CodeaColores.Lila, RoundedCornerShape(18.dp)),
             contentAlignment = Alignment.Center,
         ) {
             Icon(imageVector = icon, contentDescription = null, tint = tint)
         }
-        Text(text = label, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+        Text(text = label, fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.Ink)
     }
 }
 
@@ -443,12 +442,12 @@ private fun PhotoPreview(uri: Uri, onClose: () -> Unit, onSend: (String) -> Unit
             )
             IconButton(
                 onClick = { onSend(caption) },
-                modifier = Modifier.background(MaterialTheme.colorScheme.tertiary, RoundedCornerShape(14.dp)),
+                modifier = Modifier.background(CodeaColores.Violeta, RoundedCornerShape(14.dp)),
             ) {
                 Icon(
                     imageVector = Icons.Filled.Send,
                     contentDescription = stringResource(R.string.chats_send),
-                    tint = MaterialTheme.colorScheme.onTertiary,
+                    tint = Color.White,
                 )
             }
         }
@@ -463,16 +462,16 @@ private fun MessageBubble(
 ) {
     val containerColor =
         if (message.isMine) {
-            MaterialTheme.colorScheme.tertiary
+            CodeaColores.Violeta
         } else {
-            MaterialTheme.colorScheme.surfaceContainer
+            Color.White
         }
 
     val contentColor =
         if (message.isMine) {
-            MaterialTheme.colorScheme.onTertiary
+            Color.White
         } else {
-            MaterialTheme.colorScheme.onSurface
+            CodeaColores.Ink
         }
 
     val shape =
@@ -512,6 +511,8 @@ private fun MessageBubble(
         Column(
             modifier = Modifier
                 .fillMaxWidth(0.78f)
+                // la burbuja blanca lleva la misma sombra suave de las tarjetas para que se despegue del fondo.
+                .shadow(if (message.isMine) 0.dp else 4.dp, shape, ambientColor = Color(0x1A2A2140), spotColor = Color(0x1A2A2140))
                 .background(containerColor, shape)
                 .clickable(enabled = message.status == MessageStatus.FAILED && message.clientId != null) {
                     message.clientId?.let(onRetry)
@@ -543,8 +544,7 @@ private fun MessageBubble(
             if (message.text.isNotBlank()) {
                 Text(
                     text = message.text,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
+                    fontFamily = Poppins, fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium,
                     color = contentColor,
                     modifier = if (message.hasImage) Modifier.padding(horizontal = 10.dp, vertical = 2.dp) else Modifier,
                 )
@@ -553,8 +553,7 @@ private fun MessageBubble(
             if (!message.hasImage || message.text.isNotBlank()) {
                 Text(
                     text = statusText,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
+                    fontFamily = Poppins, fontSize = 11.sp, fontWeight = FontWeight.SemiBold,
                     color = contentColor.copy(alpha = 0.7f),
                     modifier = if (message.hasImage) {
                         Modifier
@@ -662,14 +661,14 @@ private fun MessageComposer(
         IconButton(
             onClick = onAttach,
             modifier = Modifier.background(
-                color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.18f),
+                color = CodeaColores.Lila,
                 shape = RoundedCornerShape(14.dp),
             ),
         ) {
             Icon(
                 imageVector = Icons.Filled.Add,
                 contentDescription = stringResource(R.string.chats_attach),
-                tint = MaterialTheme.colorScheme.secondary,
+                tint = CodeaColores.Morado,
             )
         }
 
@@ -678,10 +677,18 @@ private fun MessageComposer(
             onValueChange = { messageText = it },
             modifier = Modifier.weight(1f),
             placeholder = {
-                Text(stringResource(R.string.chats_message_hint))
+                Text(stringResource(R.string.chats_message_hint), fontFamily = Poppins, color = CodeaColores.Gris)
             },
+            textStyle = TextStyle(fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = CodeaColores.Ink),
             shape = RoundedCornerShape(18.dp),
             maxLines = 3,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
+                focusedBorderColor = CodeaColores.Morado,
+                unfocusedBorderColor = CodeaColores.Lila,
+                cursorColor = CodeaColores.Morado,
+            ),
         )
 
         IconButton(
@@ -692,14 +699,14 @@ private fun MessageComposer(
                 }
             },
             modifier = Modifier.background(
-                color = MaterialTheme.colorScheme.tertiary,
+                color = CodeaColores.Violeta,
                 shape = RoundedCornerShape(14.dp),
             ),
         ) {
             Icon(
                 imageVector = Icons.Filled.Send,
                 contentDescription = stringResource(R.string.chats_send),
-                tint = MaterialTheme.colorScheme.onTertiary,
+                tint = Color.White,
             )
         }
     }

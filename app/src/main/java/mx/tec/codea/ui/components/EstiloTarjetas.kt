@@ -1,4 +1,4 @@
-package mx.tec.codea.ui.screens.parent
+package mx.tec.codea.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,9 +19,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import mx.tec.codea.ui.theme.Poppins
 
-// las pantallas del padre usan el mismo estilo que las del admin: tarjetas blancas con sombra,
-// lila con morado para lo que resalta y gris para lo secundario. los colores son fijos, como en el admin.
-object PadreColores {
+// el estilo común de la app, el mismo del admin: tarjetas blancas con sombra, lila con morado para lo que resalta
+// y gris para lo secundario. lo usan las pantallas del padre y de la docente. los colores son fijos, como en el admin.
+object CodeaColores {
     val Ink = Color(0xFF2A2140)
     val Morado = Color(0xFF6D28D9)
     val Lila = Color(0xFFEDE9FE)
@@ -37,7 +37,7 @@ object PadreColores {
 
 // la tarjeta blanca de siempre (como InfoTarjeta en el detalle del admin).
 @Composable
-fun TarjetaPadre(
+fun TarjetaBlanca(
     modifier: Modifier = Modifier,
     padding: Dp = 16.dp,
     espacio: Dp = 10.dp,
@@ -57,11 +57,11 @@ fun TarjetaPadre(
 
 // un dato: la etiqueta chica en gris y el valor en negritas, igual que en el detalle del admin.
 @Composable
-fun DatoPadre(etiqueta: String, valor: String, modifier: Modifier = Modifier, colorValor: Color = PadreColores.Ink) {
+fun DatoTarjeta(etiqueta: String, valor: String, modifier: Modifier = Modifier, colorValor: Color = CodeaColores.Ink) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(3.dp)) {
         Text(
             etiqueta.uppercase(), fontFamily = Poppins, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold,
-            letterSpacing = 1.1.sp, color = PadreColores.Gris,
+            letterSpacing = 1.1.sp, color = CodeaColores.Gris,
         )
         Text(valor, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = colorValor)
     }
@@ -69,14 +69,14 @@ fun DatoPadre(etiqueta: String, valor: String, modifier: Modifier = Modifier, co
 
 // la pastilla de la derecha de las tarjetas: lila con morado, o gris si es algo apagado.
 @Composable
-fun PastillaPadre(texto: String, modifier: Modifier = Modifier, apagada: Boolean = false) {
+fun Pastilla(texto: String, modifier: Modifier = Modifier, apagada: Boolean = false) {
     Text(
         texto,
         modifier = modifier
             .clip(RoundedCornerShape(50))
-            .background(if (apagada) PadreColores.Campo else PadreColores.Lila)
+            .background(if (apagada) CodeaColores.Campo else CodeaColores.Lila)
             .padding(horizontal = 10.dp, vertical = 4.dp),
         fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold,
-        color = if (apagada) PadreColores.Gris else PadreColores.Morado,
+        color = if (apagada) CodeaColores.Gris else CodeaColores.Morado,
     )
 }

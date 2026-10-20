@@ -12,9 +12,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -29,14 +28,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import mx.tec.codea.R
 import mx.tec.codea.domain.AuthError
 import mx.tec.codea.domain.AuthValidator
 import mx.tec.codea.ui.components.BackHeader
+import mx.tec.codea.ui.components.CodeaColores
+import mx.tec.codea.ui.components.DatoTarjeta
+import mx.tec.codea.ui.components.ScreenHeader
+import mx.tec.codea.ui.components.TarjetaBlanca
 import mx.tec.codea.ui.screens.auth.FormErrorText
 import mx.tec.codea.ui.screens.auth.PasswordField
 import mx.tec.codea.ui.screens.auth.authErrorText
 import mx.tec.codea.ui.theme.CodeaTheme
+import mx.tec.codea.ui.theme.Poppins
 
 // "Mi cuenta": quién soy, cambiar la contraseña y cerrar sesión. la pantalla solo dibuja: el estado y las
 // llamadas a la API viven en AccountViewModel.
@@ -73,54 +78,41 @@ fun AccountScreen(
                 onBackClick = onBackClick,
             )
         } else {
-            Text(
-                text = stringResource(R.string.account_title),
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-            )
+            ScreenHeader(title = stringResource(R.string.account_title))
         }
 
-        Card(shape = RoundedCornerShape(22.dp), modifier = Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(name.ifBlank { "…" }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                if (email.isNotBlank()) {
-                    Text(
-                        text = stringResource(R.string.account_email) + ": " + email,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                if (children.isNotEmpty()) {
-                    Text(
-                        text = stringResource(R.string.account_children) + ": " + children.joinToString(", "),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 4.dp),
-                    )
-                }
-            }
+        // tarjeta blanca como las del admin: el nombre y abajo cada dato con su etiqueta.
+        TarjetaBlanca(padding = 18.dp, espacio = 12.dp) {
+            Text(name.ifBlank { "…" }, fontFamily = Poppins, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.Ink)
+            if (email.isNotBlank()) DatoTarjeta(stringResource(R.string.account_email), email)
+            if (children.isNotEmpty()) DatoTarjeta(stringResource(R.string.account_children), children.joinToString(", "))
         }
         if (loadError != null) FormErrorText(loadError)
 
-        OutlinedButton(
+        Button(
             onClick = { showChangeDialog = true },
-            shape = RoundedCornerShape(22.dp),
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.Lila, contentColor = CodeaColores.Morado),
+            elevation = ButtonDefaults.buttonElevation(0.dp),
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
                 stringResource(R.string.account_change_password),
-                fontWeight = FontWeight.Bold,
+                fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(vertical = 6.dp),
             )
         }
+        // en rojo suave, como "Cerrar sesión" del menú de la docente.
         Button(
             onClick = { showLogoutDialog = true },
-            shape = RoundedCornerShape(22.dp),
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.RojoSuave, contentColor = CodeaColores.Rojo),
+            elevation = ButtonDefaults.buttonElevation(0.dp),
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
                 stringResource(R.string.account_logout),
-                fontWeight = FontWeight.Bold,
+                fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(vertical = 6.dp),
             )
         }

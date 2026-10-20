@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -14,18 +13,21 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import mx.tec.codea.R
 import mx.tec.codea.domain.AttendanceStatus
 import mx.tec.codea.domain.Child
 import mx.tec.codea.domain.FamilyNote
 import mx.tec.codea.domain.RoomRules
 import mx.tec.codea.ui.components.BackHeader
+import mx.tec.codea.ui.components.CodeaColores
 import mx.tec.codea.ui.components.NoticeCard
 import mx.tec.codea.ui.components.avatarColorAt
 import mx.tec.codea.ui.theme.CodeaTheme
+import mx.tec.codea.ui.theme.Poppins
 
-// "Avisos de casa": todas las notas que dejaron los papás hoy. arriba las que faltan por ver, abajo las que ya se vieron.
-// es la misma tarjeta de Mi sala, para cuando hay más de tres avisos.
+// "Avisos de casa": todas las notas que dejaron los papás hoy. arriba las que faltan por ver (con borde ámbar y
+// botones), abajo las que ya se vieron. sin títulos de grupo: la tarjeta ya dice si falta por ver.
 @Composable
 fun FamilyNoticesScreen(
     children: List<Child>,
@@ -55,15 +57,13 @@ fun FamilyNoticesScreen(
             item {
                 Text(
                     text = stringResource(R.string.notices_empty),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.Gris,
                     modifier = Modifier.padding(vertical = 24.dp),
                 )
             }
         }
 
         if (unseen.isNotEmpty()) {
-            item { GroupTitle(stringResource(R.string.notices_unseen, unseen.size)) }
             items(unseen, key = { "unseen-${it.note.id}" }) { notice ->
                 NoticeCard(
                     child = notice.child,
@@ -78,7 +78,6 @@ fun FamilyNoticesScreen(
         }
 
         if (seen.isNotEmpty()) {
-            item { GroupTitle(stringResource(R.string.notices_seen, seen.size)) }
             items(seen, key = { "seen-${it.note.id}" }) { notice ->
                 NoticeCard(
                     child = notice.child,
@@ -92,16 +91,6 @@ fun FamilyNoticesScreen(
             }
         }
     }
-}
-
-@Composable
-private fun GroupTitle(text: String) {
-    Text(
-        text = text.uppercase(),
-        style = MaterialTheme.typography.labelMedium,
-        fontWeight = FontWeight.ExtraBold,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
 }
 
 @Preview(showBackground = true, heightDp = 800)

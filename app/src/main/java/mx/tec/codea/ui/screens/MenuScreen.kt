@@ -3,6 +3,20 @@ package mx.tec.codea.ui.screens
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.automirrored.outlined.Logout
+import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.Campaign
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.sp
+import mx.tec.codea.ui.components.CodeaColores
+import mx.tec.codea.ui.components.Pastilla
+import mx.tec.codea.ui.components.TarjetaBlanca
+import mx.tec.codea.ui.theme.Poppins
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -19,7 +33,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -114,7 +127,7 @@ fun MenuScreen(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 22.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         ScreenHeader(
             title = stringResource(R.string.menu_title),
@@ -126,95 +139,93 @@ fun MenuScreen(
             onClick = onCheckerClick,
             modifier = Modifier.onSizeChanged { checkerSize = it },
         )
-        MenuOption.entries.forEach { option ->
-            val esAvisos = option == MenuOption.NOTICES
+        // las opciones en una tarjeta agrupada, como Ajustes del admin.
+        TarjetaBlanca(padding = 0.dp, espacio = 0.dp) {
+            MenuOption.entries.forEachIndexed { i, option ->
+                val esAvisos = option == MenuOption.NOTICES
+                if (i > 0) HorizontalDivider(modifier = Modifier.padding(start = 70.dp), color = Color(0xFFF1EEF8))
+                MenuRow(
+                    icono = if (esAvisos) Icons.Outlined.Campaign else Icons.Outlined.AccountCircle,
+                    title = stringResource(option.titleRes),
+                    // los avisos no llevan subtítulo fijo: el número de nuevos va en el globito.
+                    subtitle = if (esAvisos) null else stringResource(option.subtitleRes),
+                    badge = if (esAvisos) avisosPendientes else 0,
+                    onClick = { onOptionClick(option) },
+                )
+            }
+        }
+        // cerrar sesión va aparte, en rojo, como las acciones que no se deshacen en el admin.
+        TarjetaBlanca(padding = 0.dp, espacio = 0.dp) {
             MenuRow(
-                title = stringResource(option.titleRes),
-                // los avisos no llevan subtítulo fijo: el número de nuevos va en el badge.
-                subtitle = if (esAvisos) null else stringResource(option.subtitleRes),
-                badge = if (esAvisos) avisosPendientes else 0,
-                onClick = { onOptionClick(option) },
+                icono = Icons.AutoMirrored.Outlined.Logout,
+                title = stringResource(R.string.menu_logout),
+                subtitle = null,
+                titleColor = CodeaColores.Rojo,
+                onClick = { showLogoutDialog = true },
             )
         }
-        MenuRow(
-            title = stringResource(R.string.menu_logout),
-            subtitle = null,
-            titleColor = MaterialTheme.colorScheme.error,
-            onClick = { showLogoutDialog = true },
-        )
     }
 
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
-            title = { Text(stringResource(R.string.menu_logout_dialog_title)) },
-            text = { Text(stringResource(R.string.menu_logout_dialog_body)) },
+            title = { Text(stringResource(R.string.menu_logout_dialog_title), fontFamily = Poppins, fontWeight = FontWeight.ExtraBold) },
+            text = { Text(stringResource(R.string.menu_logout_dialog_body), fontFamily = Poppins) },
+            containerColor = Color.White,
             confirmButton = {
                 TextButton(
                     onClick = {
                         showLogoutDialog = false
                         onLogoutConfirm()
                     },
-                ) { Text(stringResource(R.string.menu_logout)) }
+                ) { Text(stringResource(R.string.menu_logout), fontFamily = Poppins, fontWeight = FontWeight.Bold, color = CodeaColores.Rojo) }
             },
             dismissButton = {
                 TextButton(onClick = { showLogoutDialog = false }) {
-                    Text(stringResource(R.string.common_cancel))
+                    Text(stringResource(R.string.common_cancel), fontFamily = Poppins, fontWeight = FontWeight.Bold, color = CodeaColores.GrisTexto)
                 }
             },
         )
     }
 }
 
-// the teacher, her room and her shift, and a line that says if she already checked in.
+// la miss, su sala y su horario, con el estado de su entrada en una pastilla (como «Checó» en Docentes del admin).
 @Composable
 private fun TeacherCard(teacher: Teacher, checkIn: CheckInRecord?) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(22.dp))
-            .padding(15.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(13.dp),
-    ) {
-        InitialsAvatar(initials = teacher.initials, color = MaterialTheme.colorScheme.primary)
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(
-                text = stringResource(R.string.menu_teacher_name, teacher.fullName),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.ExtraBold,
-            )
-            Text(
-                text = stringResource(
-                    R.string.menu_teacher_shift,
-                    teacher.roomName,
-                    formatTimeOfDay(teacher.shiftStartMinutes),
-                    formatTimeOfDay(teacher.shiftEndMinutes),
-                ),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            val (text, color) = when {
-                checkIn == null ->
-                    stringResource(R.string.menu_no_check_in) to MaterialTheme.colorScheme.error
-                checkIn.isLate ->
-                    stringResource(R.string.menu_checked_in_late, formatTimeOfDay(checkIn.arrivalMinutes)) to
-                        MaterialTheme.colorScheme.secondary
-                else ->
-                    stringResource(R.string.menu_checked_in, formatTimeOfDay(checkIn.arrivalMinutes)) to
-                        MaterialTheme.colorScheme.onTertiaryContainer
+    TarjetaBlanca(padding = 14.dp) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+            Box(
+                modifier = Modifier.size(50.dp).clip(RoundedCornerShape(20.dp)).background(CodeaColores.Lila),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(teacher.initials, color = CodeaColores.Morado, fontWeight = FontWeight.Bold, fontSize = 18.sp)
             }
-            Text(
-                text = text,
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold,
-                color = color,
-            )
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Text(
+                    stringResource(R.string.menu_teacher_name, teacher.fullName),
+                    fontFamily = Poppins, fontSize = 17.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black,
+                )
+                Text(
+                    stringResource(
+                        R.string.menu_teacher_shift,
+                        teacher.roomName,
+                        formatTimeOfDay(teacher.shiftStartMinutes),
+                        formatTimeOfDay(teacher.shiftEndMinutes),
+                    ),
+                    fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto,
+                )
+                val texto = when {
+                    checkIn == null -> stringResource(R.string.menu_no_check_in)
+                    checkIn.isLate -> stringResource(R.string.menu_checked_in_late, formatTimeOfDay(checkIn.arrivalMinutes))
+                    else -> stringResource(R.string.menu_checked_in, formatTimeOfDay(checkIn.arrivalMinutes))
+                }
+                Pastilla(texto, modifier = Modifier.padding(top = 2.dp), apagada = checkIn == null)
+            }
         }
     }
 }
 
-// the check-in card. coral means "you still have to do this", green means "done".
+// la tarjeta del checador. Mientras falta la entrada lleva un borde morado; ya registrada, queda como las demás.
 @Composable
 private fun CheckerCard(
     checkIn: CheckInRecord?,
@@ -226,12 +237,6 @@ private fun CheckerCard(
     // this works for a real finger and also for the automatic tap.
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(targetValue = if (isPressed) 0.96f else 1f, label = "checkerScale")
-    val accent = if (checkIn == null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary
-    val accentContainer = if (checkIn == null) {
-        MaterialTheme.colorScheme.errorContainer
-    } else {
-        MaterialTheme.colorScheme.tertiaryContainer
-    }
 
     Surface(
         onClick = onClick,
@@ -240,125 +245,89 @@ private fun CheckerCard(
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
-            },
+            }
+            .shadow(6.dp, RoundedCornerShape(22.dp), ambientColor = Color(0x1A2A2140), spotColor = Color(0x1A2A2140)),
         shape = RoundedCornerShape(22.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
-        border = BorderStroke(2.dp, accent),
+        color = Color.White,
+        border = if (checkIn == null) BorderStroke(2.dp, CodeaColores.Morado) else null,
         interactionSource = interactionSource,
-    ) {
-        Row(
-            modifier = Modifier.padding(15.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(13.dp),
-        ) {
-            // the icon is a ring inside a light square, like in the prototype.
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .background(accentContainer, RoundedCornerShape(16.dp)),
-                contentAlignment = Alignment.Center,
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(22.dp)
-                        .border(3.dp, accent, CircleShape),
-                )
-            }
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.menu_checker_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.ExtraBold,
-                )
-                Text(
-                    text = if (checkIn == null) {
-                        stringResource(R.string.menu_checker_subtitle)
-                    } else {
-                        if (checkIn.departureMinutes == null) {
-                            stringResource(R.string.menu_checker_subtitle_done, formatTimeOfDay(checkIn.arrivalMinutes))
-                        } else {
-                            stringResource(
-                                R.string.menu_checker_subtitle_out,
-                                formatTimeOfDay(checkIn.arrivalMinutes),
-                                formatTimeOfDay(checkIn.departureMinutes),
-                            )
-                        }
-                    },
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null,
-                tint = accent,
-            )
-        }
-    }
-}
-
-// a plain white row of the menu, with a title, an optional subtitle and an arrow.
-@Composable
-private fun MenuRow(
-    title: String,
-    subtitle: String?,
-    onClick: () -> Unit,
-    titleColor: Color = MaterialTheme.colorScheme.onSurface,
-    subtitleColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
-    // más de 0: un globito coral con el número, antes de la flecha.
-    badge: Int = 0,
-) {
-    Surface(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
+            // el ícono: un anillo dentro de un cuadro lila, como los íconos de Ajustes.
+            Box(
+                modifier = Modifier.size(40.dp).background(CodeaColores.Lila, RoundedCornerShape(12.dp)),
+                contentAlignment = Alignment.Center,
             ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = titleColor,
-                )
-                if (subtitle != null) {
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = subtitleColor,
-                    )
-                }
+                Box(modifier = Modifier.size(18.dp).border(3.dp, CodeaColores.Morado, CircleShape))
             }
-            if (badge > 0) {
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                Text(stringResource(R.string.menu_checker_title), fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Ink)
                 Text(
-                    text = badge.toString(),
-                    modifier = Modifier
-                        .padding(end = 8.dp)
-                        .defaultMinSize(minWidth = 24.dp)
-                        .background(Color(0xFFFF7A5A), RoundedCornerShape(50))
-                        .padding(horizontal = 8.dp, vertical = 3.dp),
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color(0xFF2A2140),
-                    textAlign = TextAlign.Center,
+                    text = when {
+                        checkIn == null -> stringResource(R.string.menu_checker_subtitle)
+                        checkIn.departureMinutes == null ->
+                            stringResource(R.string.menu_checker_subtitle_done, formatTimeOfDay(checkIn.arrivalMinutes))
+                        else -> stringResource(
+                            R.string.menu_checker_subtitle_out,
+                            formatTimeOfDay(checkIn.arrivalMinutes),
+                            formatTimeOfDay(checkIn.departureMinutes),
+                        )
+                    },
+                    fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto,
                 )
             }
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.outline,
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = CodeaColores.Gris)
+        }
+    }
+}
+
+// una fila de las tarjetas agrupadas (como en Ajustes del admin): ícono en cuadro lila, título, una línea y la flecha.
+@Composable
+private fun MenuRow(
+    icono: ImageVector,
+    title: String,
+    subtitle: String?,
+    onClick: () -> Unit,
+    titleColor: Color = CodeaColores.Ink,
+    // más de 0: un globito morado con el número, antes de la flecha.
+    badge: Int = 0,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        Box(
+            modifier = Modifier.size(40.dp).clip(RoundedCornerShape(12.dp))
+                .background(if (titleColor == CodeaColores.Rojo) CodeaColores.RojoSuave else CodeaColores.Lila),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(icono, contentDescription = null, tint = if (titleColor == CodeaColores.Rojo) CodeaColores.Rojo else CodeaColores.Morado, modifier = Modifier.size(22.dp))
+        }
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
+            Text(title, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = titleColor)
+            if (subtitle != null) {
+                Text(subtitle, fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto, maxLines = 1)
+            }
+        }
+        if (badge > 0) {
+            Text(
+                text = badge.toString(),
+                modifier = Modifier
+                    .defaultMinSize(minWidth = 24.dp)
+                    .background(CodeaColores.Morado, RoundedCornerShape(50))
+                    .padding(horizontal = 8.dp, vertical = 3.dp),
+                fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, color = Color.White,
+                textAlign = TextAlign.Center,
             )
         }
+        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = CodeaColores.Gris)
     }
 }

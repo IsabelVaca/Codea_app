@@ -22,16 +22,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -41,12 +40,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import mx.tec.codea.R
 import mx.tec.codea.domain.AttendanceStatus
 import mx.tec.codea.domain.Child
@@ -56,10 +57,15 @@ import mx.tec.codea.domain.Contact
 import mx.tec.codea.domain.FamilyNote
 import mx.tec.codea.domain.RoomRules
 import mx.tec.codea.ui.components.BackHeader
+import mx.tec.codea.ui.components.CodeaColores
+import mx.tec.codea.ui.components.DatoTarjeta
 import mx.tec.codea.ui.components.InitialsAvatar
 import mx.tec.codea.ui.components.NoticeCard
+import mx.tec.codea.ui.components.Pastilla
+import mx.tec.codea.ui.components.TarjetaBlanca
 import mx.tec.codea.ui.components.avatarColorAt
 import mx.tec.codea.ui.theme.CodeaTheme
+import mx.tec.codea.ui.theme.Poppins
 
 // la ficha de un niño: todo lo suyo en un solo lugar y las acciones que la docente necesita.
 // los datos que vienen de Mi sala (asistencia, avisos, resumen) se pintan siempre; los que se piden al abrir
@@ -101,13 +107,12 @@ fun ChildProfileScreen(
             horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             InitialsAvatar(initials = child.initials, color = avatarColorAt(avatarIndex), size = 56.dp)
-            val line = listOfNotNull(profile?.ageText, roomName.ifBlank { null }).joinToString(" · ")
-            if (line.isNotBlank()) {
-                Text(
-                    text = line,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+            // la edad y la sala, una abajo de la otra (sin "·"); la sala en pastilla como en el admin.
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                profile?.ageText?.let {
+                    Text(it, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Ink)
+                }
+                if (roomName.isNotBlank()) Pastilla(roomName)
             }
         }
 
@@ -115,8 +120,8 @@ fun ChildProfileScreen(
             Callout(
                 title = stringResource(R.string.profile_absent_title),
                 body = stringResource(R.string.profile_absent_body),
-                container = MaterialTheme.colorScheme.surfaceVariant,
-                content = MaterialTheme.colorScheme.onSurfaceVariant,
+                container = CodeaColores.Lila,
+                content = CodeaColores.Morado,
                 withWarningIcon = false,
             )
         }
@@ -126,8 +131,8 @@ fun ChildProfileScreen(
             Callout(
                 title = stringResource(R.string.profile_allergies_title),
                 body = allergies,
-                container = MaterialTheme.colorScheme.errorContainer,
-                content = MaterialTheme.colorScheme.onErrorContainer,
+                container = CodeaColores.RojoSuave,
+                content = CodeaColores.Rojo,
                 withWarningIcon = true,
             )
         }
@@ -140,53 +145,36 @@ fun ChildProfileScreen(
                 R.string.profile_medications_title to health.medications,
                 R.string.profile_other_notes_title to health.otherNotes,
             ).filter { (_, text) -> text.isNotBlank() }.forEach { (title, text) ->
-                Callout(
-                    title = stringResource(title),
-                    body = text,
-                    container = MaterialTheme.colorScheme.primaryContainer,
-                    content = MaterialTheme.colorScheme.onPrimaryContainer,
-                    withWarningIcon = false,
-                )
+                TarjetaBlanca(padding = 14.dp) { DatoTarjeta(stringResource(title), text) }
             }
         }
 
         // los avisos de hoy de este niño, completos. los vistos se quedan, ya sin botones.
         child.notes.sortedByDescending { it.id }.forEach { note ->
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                SectionLabel(stringResource(R.string.profile_notes_title))
-                NoticeCard(
-                    child = child,
-                    note = note,
-                    avatarColor = avatarColorAt(avatarIndex),
-                    seen = note.id in seenNoteIds,
-                    onReply = onChatClick,
-                    onSeen = { onNoteSeen(note.id) },
-                )
-            }
+            NoticeCard(
+                child = child,
+                note = note,
+                avatarColor = avatarColorAt(avatarIndex),
+                seen = note.id in seenNoteIds,
+                onReply = onChatClick,
+                onSeen = { onNoteSeen(note.id) },
+            )
         }
 
         Button(
             onClick = onChatClick,
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 56.dp),
-            shape = RoundedCornerShape(18.dp),
+                .heightIn(min = 54.dp),
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.Violeta, contentColor = Color.White),
+            elevation = ButtonDefaults.buttonElevation(0.dp),
         ) {
-            Icon(Icons.Filled.Chat, contentDescription = null, modifier = Modifier.padding(end = 10.dp))
-            Text(
-                text = stringResource(R.string.profile_write_family),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-            )
+            Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null, modifier = Modifier.padding(end = 10.dp))
+            Text(stringResource(R.string.profile_write_family), fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold)
         }
 
-        SectionLabel(stringResource(R.string.profile_today_title))
-        Surface(
-            shape = RoundedCornerShape(20.dp),
-            color = MaterialTheme.colorScheme.surfaceContainerLowest,
-            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-        ) {
-            Column {
+        TarjetaBlanca(padding = 0.dp, espacio = 0.dp) {
                 TodayRow(
                     label = stringResource(R.string.profile_summary_label),
                     value = if (child.hasSummaryToday) {
@@ -205,12 +193,12 @@ fun ChildProfileScreen(
                 if (!isPresent) {
                     Text(
                         text = stringResource(R.string.profile_summary_blocked),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 16.dp),
+                        fontFamily = Poppins, fontSize = 12.sp, lineHeight = 17.sp, fontWeight = FontWeight.SemiBold,
+                        color = CodeaColores.Gris,
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
                     )
                 }
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                HorizontalDivider(color = CodeaColores.Campo)
                 TodayRow(
                     label = stringResource(R.string.profile_attendance_label),
                     value = if (isPresent) {
@@ -222,7 +210,6 @@ fun ChildProfileScreen(
                     actionEnabled = true,
                     onActionClick = { fixing = true },
                 )
-            }
         }
 
         ContactsSection(
@@ -247,16 +234,6 @@ fun ChildProfileScreen(
 }
 
 @Composable
-private fun SectionLabel(text: String) {
-    Text(
-        text = text.uppercase(),
-        style = MaterialTheme.typography.labelMedium,
-        fontWeight = FontWeight.ExtraBold,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-}
-
-@Composable
 private fun Callout(
     title: String,
     body: String,
@@ -267,7 +244,7 @@ private fun Callout(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(container, RoundedCornerShape(18.dp))
+            .background(container, RoundedCornerShape(22.dp))
             .padding(16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -275,13 +252,8 @@ private fun Callout(
             Icon(Icons.Filled.Warning, contentDescription = null, tint = content, modifier = Modifier.size(24.dp))
         }
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.ExtraBold,
-                color = content,
-            )
-            Text(text = body, style = MaterialTheme.typography.bodyLarge, color = content)
+            Text(title, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, color = content)
+            Text(body, fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Medium, color = content)
         }
     }
 }
@@ -298,25 +270,18 @@ private fun TodayRow(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 64.dp)
-            .padding(horizontal = 16.dp),
+            .padding(start = 16.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                text = value,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-        }
-        TextButton(onClick = onActionClick, enabled = actionEnabled, modifier = Modifier.heightIn(min = 48.dp)) {
-            Text(actionText, fontWeight = FontWeight.Bold)
+        DatoTarjeta(label, value, modifier = Modifier.weight(1f))
+        TextButton(
+            onClick = onActionClick,
+            enabled = actionEnabled,
+            modifier = Modifier.heightIn(min = 48.dp),
+            colors = ButtonDefaults.textButtonColors(contentColor = CodeaColores.Violeta, disabledContentColor = CodeaColores.Gris),
+        ) {
+            Text(actionText, fontFamily = Poppins, fontWeight = FontWeight.Bold)
             Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
         }
     }
@@ -331,43 +296,53 @@ private fun ContactsSection(
     onRetry: () -> Unit,
 ) {
     when {
-        loading -> Text(
+        // con lo guardado en el teléfono la ficha ya se ve; el "cargando" solo sale la primera vez.
+        loading && profile == null -> Text(
             text = stringResource(R.string.profile_loading),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.Gris,
         )
 
         failed || profile == null -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
                 text = stringResource(R.string.profile_failed),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto,
             )
-            OutlinedButton(onClick = onRetry, modifier = Modifier.heightIn(min = 48.dp)) {
-                Text(stringResource(R.string.profile_retry), fontWeight = FontWeight.Bold)
+            Button(
+                onClick = onRetry,
+                modifier = Modifier.heightIn(min = 44.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.Lila, contentColor = CodeaColores.Morado),
+                elevation = ButtonDefaults.buttonElevation(0.dp),
+            ) {
+                Text(stringResource(R.string.profile_retry), fontFamily = Poppins, fontWeight = FontWeight.Bold)
             }
         }
 
+        // cada grupo en su tarjeta blanca, con el título adentro (sin etiquetas de sección).
         else -> Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             if (profile.guardians.isNotEmpty()) {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    SectionLabel(stringResource(R.string.profile_family_title))
+                TarjetaBlanca(espacio = 4.dp) {
+                    TituloTarjeta(stringResource(R.string.profile_family_title))
                     profile.guardians.forEach { ContactRow(it) }
                 }
             }
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                SectionLabel(stringResource(R.string.profile_pickups_title))
+            TarjetaBlanca(espacio = 4.dp) {
+                TituloTarjeta(stringResource(R.string.profile_pickups_title))
                 if (profile.pickups.isEmpty()) {
                     Text(
                         text = stringResource(R.string.profile_pickups_empty),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.Gris,
                     )
                 }
                 profile.pickups.forEach { ContactRow(it) }
             }
         }
     }
+}
+
+@Composable
+private fun TituloTarjeta(text: String) {
+    Text(text, fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.Ink)
 }
 
 @Composable
@@ -384,24 +359,23 @@ private fun ContactRow(contact: Contact) {
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = contact.name,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                text = listOfNotNull(contact.relationship, contact.phone?.ifBlank { null }).joinToString(" · ")
-                    .ifBlank { stringResource(R.string.profile_no_phone) },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Text(contact.name, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Ink)
+            // parentesco y teléfono en líneas separadas, sin "·".
+            val relationship = contact.relationship?.ifBlank { null }
+            val phone = contact.phone?.ifBlank { null }
+            if (relationship == null && phone == null) {
+                Text(stringResource(R.string.profile_no_phone), fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.Gris)
+            }
+            relationship?.let { Text(it, fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto) }
+            phone?.let { Text(it, fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto) }
         }
         if (dialable != null) {
-            OutlinedButton(
+            Button(
                 onClick = { dial(context, dialable, noDialer) },
-                modifier = Modifier.heightIn(min = 48.dp),
+                modifier = Modifier.heightIn(min = 44.dp),
                 shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.Lila, contentColor = CodeaColores.Morado),
+                elevation = ButtonDefaults.buttonElevation(0.dp),
             ) {
                 Icon(
                     Icons.Filled.Call,
@@ -410,7 +384,7 @@ private fun ContactRow(contact: Contact) {
                         .padding(end = 6.dp)
                         .size(18.dp),
                 )
-                Text(stringResource(R.string.profile_call), fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.profile_call), fontFamily = Poppins, fontWeight = FontWeight.Bold)
             }
         }
     }

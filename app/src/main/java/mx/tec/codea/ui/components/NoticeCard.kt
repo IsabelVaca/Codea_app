@@ -1,6 +1,7 @@
 package mx.tec.codea.ui.components
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,24 +15,28 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import mx.tec.codea.R
 import mx.tec.codea.domain.AttendanceStatus
 import mx.tec.codea.domain.Child
 import mx.tec.codea.domain.FamilyNote
 import mx.tec.codea.ui.theme.CodeaTheme
+import mx.tec.codea.ui.theme.Poppins
 
 // un aviso que un papá mandó desde casa, con su texto completo para leerlo sin abrir otra pantalla.
 // "Responder" abre el chat del niño; "Ya lo vi" lo quita de lo pendiente (solo en este teléfono).
+// tarjeta blanca como las del admin; si falta por ver lleva el borde ámbar de lo pendiente (como en Mi sala).
 // si el aviso ya se vio, los botones se ocultan y la tarjeta queda tranquila (se usa en "Avisos de casa").
 @Composable
 fun NoticeCard(
@@ -43,66 +48,56 @@ fun NoticeCard(
     onSeen: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
-        color = if (seen) {
-            MaterialTheme.colorScheme.surfaceContainerLow
-        } else {
-            MaterialTheme.colorScheme.secondary.copy(alpha = 0.16f)
-        },
+    val forma = RoundedCornerShape(22.dp)
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(6.dp, forma, ambientColor = Color(0x1A2A2140), spotColor = Color(0x1A2A2140))
+            .clip(forma)
+            .background(Color.White)
+            .then(if (seen) Modifier else Modifier.border(2.dp, MaterialTheme.colorScheme.secondary, forma))
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                InitialsAvatar(initials = child.initials, color = avatarColor, size = 40.dp)
-                Text(
-                    text = if (note.time.isBlank()) {
-                        child.name
-                    } else {
-                        stringResource(R.string.notice_from, child.name, note.time)
-                    },
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
+            InitialsAvatar(initials = child.initials, color = avatarColor, size = 40.dp)
+            // el nombre y abajo la hora, sin "·".
+            Column {
+                Text(child.name, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.Ink)
+                if (note.time.isNotBlank()) {
+                    Text(note.time, fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.Gris)
+                }
             }
+        }
 
-            Text(
-                text = note.text,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
+        Text(
+            text = note.text,
+            fontFamily = Poppins, fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium, color = CodeaColores.Ink,
+        )
 
-            if (!seen) {
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    OutlinedButton(
-                        onClick = onReply,
-                        modifier = Modifier.heightIn(min = 48.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        // sobre el fondo ámbar el lila por omisión casi no se lee: se pinta con el color del texto.
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
-                        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f)),
-                    ) {
-                        Text(stringResource(R.string.notice_reply), fontWeight = FontWeight.Bold)
-                    }
-                    Button(
-                        onClick = onSeen,
-                        modifier = Modifier.heightIn(min = 48.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.tertiary,
-                            contentColor = MaterialTheme.colorScheme.onTertiary,
-                        ),
-                    ) {
-                        Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.padding(end = 6.dp))
-                        Text(stringResource(R.string.notice_seen), fontWeight = FontWeight.Bold)
-                    }
+        if (!seen) {
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Button(
+                    onClick = onReply,
+                    modifier = Modifier.heightIn(min = 44.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.Lila, contentColor = CodeaColores.Morado),
+                    elevation = ButtonDefaults.buttonElevation(0.dp),
+                ) {
+                    Text(stringResource(R.string.notice_reply), fontFamily = Poppins, fontWeight = FontWeight.Bold)
+                }
+                Button(
+                    onClick = onSeen,
+                    modifier = Modifier.heightIn(min = 44.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.Violeta, contentColor = Color.White),
+                    elevation = ButtonDefaults.buttonElevation(0.dp),
+                ) {
+                    Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.padding(end = 6.dp))
+                    Text(stringResource(R.string.notice_seen), fontFamily = Poppins, fontWeight = FontWeight.Bold)
                 }
             }
         }

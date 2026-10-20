@@ -41,9 +41,9 @@ import mx.tec.codea.domain.ChildHealthRules
 import mx.tec.codea.domain.Contact
 import mx.tec.codea.domain.MyChild
 import mx.tec.codea.ui.components.ScreenHeader
-import mx.tec.codea.ui.screens.parent.DatoPadre
-import mx.tec.codea.ui.screens.parent.PadreColores
-import mx.tec.codea.ui.screens.parent.TarjetaPadre
+import mx.tec.codea.ui.components.DatoTarjeta
+import mx.tec.codea.ui.components.CodeaColores
+import mx.tec.codea.ui.components.TarjetaBlanca
 import mx.tec.codea.ui.theme.CodeaTheme
 import mx.tec.codea.ui.theme.Poppins
 
@@ -73,8 +73,8 @@ fun MyChildScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    CircularProgressIndicator(color = PadreColores.Morado)
-                    Text(stringResource(R.string.mychild_loading), fontFamily = Poppins, fontWeight = FontWeight.SemiBold, color = PadreColores.Gris)
+                    CircularProgressIndicator(color = CodeaColores.Morado)
+                    Text(stringResource(R.string.mychild_loading), fontFamily = Poppins, fontWeight = FontWeight.SemiBold, color = CodeaColores.Gris)
                 }
             }
         } else {
@@ -94,7 +94,7 @@ fun MyChildScreen(
                 Text(
                     stringResource(R.string.mychild_data_hint),
                     modifier = Modifier.padding(horizontal = 4.dp),
-                    fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = PadreColores.Gris,
+                    fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.Gris,
                 )
             }
             item(key = "salud") {
@@ -106,8 +106,8 @@ fun MyChildScreen(
 
 @Composable
 private fun DatoCard(etiqueta: String, valor: String?) {
-    TarjetaPadre(padding = 14.dp) {
-        DatoPadre(etiqueta, valor?.ifBlank { null } ?: stringResource(R.string.mychild_unknown))
+    TarjetaBlanca(padding = 14.dp) {
+        DatoTarjeta(etiqueta, valor?.ifBlank { null } ?: stringResource(R.string.mychild_unknown))
     }
 }
 
@@ -122,9 +122,9 @@ private fun HealthCard(saved: ChildHealth, saving: Boolean, onSave: (ChildHealth
     var notes by rememberSaveable(saved) { mutableStateOf(saved.otherNotes) }
     val edited = ChildHealth(allergies, conditions, intolerances, medications, notes)
 
-    TarjetaPadre(modifier = modifier, espacio = 12.dp) {
-        Text(stringResource(R.string.mychild_health_title), fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = PadreColores.Ink)
-        Text(stringResource(R.string.mychild_health_hint), fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Medium, color = PadreColores.GrisTexto)
+    TarjetaBlanca(modifier = modifier, espacio = 12.dp) {
+        Text(stringResource(R.string.mychild_health_title), fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.Ink)
+        Text(stringResource(R.string.mychild_health_hint), fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Medium, color = CodeaColores.GrisTexto)
         CampoSalud(allergies, { allergies = it }, R.string.mychild_allergies, R.string.mychild_allergies_example)
         CampoSalud(conditions, { conditions = it }, R.string.mychild_conditions, R.string.mychild_conditions_example)
         CampoSalud(intolerances, { intolerances = it }, R.string.mychild_intolerances, R.string.mychild_intolerances_example)
@@ -136,7 +136,7 @@ private fun HealthCard(saved: ChildHealth, saving: Boolean, onSave: (ChildHealth
             enabled = !saving && ChildHealthRules.canSave(saved, edited),
             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
             shape = RoundedCornerShape(14.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = PadreColores.Violeta, contentColor = Color.White),
+            colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.Violeta, contentColor = Color.White),
             elevation = ButtonDefaults.buttonElevation(0.dp),
         ) {
             Text(stringResource(if (saving) R.string.mychild_saving else R.string.mychild_save), fontFamily = Poppins, fontWeight = FontWeight.Bold)
@@ -151,13 +151,13 @@ private fun CampoSalud(value: String, onChange: (String) -> Unit, label: Int, ex
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
             stringResource(label).uppercase(), fontFamily = Poppins, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold,
-            letterSpacing = 1.1.sp, color = if (tooLong) PadreColores.Rojo else PadreColores.Gris,
+            letterSpacing = 1.1.sp, color = if (tooLong) CodeaColores.Rojo else CodeaColores.Gris,
         )
         BasicTextField(
             value = value,
             onValueChange = onChange,
-            textStyle = TextStyle(fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = PadreColores.Ink),
-            cursorBrush = SolidColor(PadreColores.Violeta),
+            textStyle = TextStyle(fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = CodeaColores.Ink),
+            cursorBrush = SolidColor(CodeaColores.Violeta),
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
             modifier = Modifier.fillMaxWidth(),
             decorationBox = { interno ->
@@ -166,11 +166,11 @@ private fun CampoSalud(value: String, onChange: (String) -> Unit, label: Int, ex
                         .fillMaxWidth()
                         .heightIn(min = 48.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(PadreColores.Campo)
+                        .background(CodeaColores.Campo)
                         .padding(horizontal = 14.dp, vertical = 12.dp)
                 ) {
                     if (value.isEmpty()) {
-                        Text(stringResource(example), fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = PadreColores.Gris)
+                        Text(stringResource(example), fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = CodeaColores.Gris)
                     }
                     interno()
                 }
@@ -179,7 +179,7 @@ private fun CampoSalud(value: String, onChange: (String) -> Unit, label: Int, ex
         if (tooLong) {
             Text(
                 stringResource(R.string.mychild_too_long, ChildHealthRules.MAX_LENGTH),
-                fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = PadreColores.Rojo,
+                fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.Rojo,
             )
         }
     }

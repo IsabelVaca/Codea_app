@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -14,37 +13,35 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import mx.tec.codea.ui.theme.Amber
+import androidx.compose.ui.unit.sp
 import mx.tec.codea.ui.theme.CodeaTheme
-import mx.tec.codea.ui.theme.Coral
-import mx.tec.codea.ui.theme.Teal
 import mx.tec.codea.ui.theme.Violet
 
-// the colors of the avatars. the color is a ui decision, so it is not in the domain:
-// the screen picks it with the position of the child in the list.
-private val avatarColors = listOf(Amber, Coral, Violet, Teal)
-
-fun avatarColorAt(index: Int): Color = avatarColors[index % avatarColors.size]
+// every avatar looks like the admin ones: lavender background and violet initials.
+// avatarColorAt stays so the callers do not change, but it always returns the violet.
+fun avatarColorAt(@Suppress("UNUSED_PARAMETER") index: Int): Color = CodeaColores.Morado
 
 // a rounded square with the initials of a person, like "KR" or "SM".
+// color = the color of the initials; background = lavender, or white over a lavender card.
 @Composable
 fun InitialsAvatar(
     initials: String,
-    color: Color,
+    color: Color = CodeaColores.Morado,
     modifier: Modifier = Modifier,
     size: Dp = 46.dp,
+    background: Color = CodeaColores.Lila,
 ) {
     Box(
         modifier = modifier
             .size(size)
-            .background(color, RoundedCornerShape(14.dp)),
+            .background(background, RoundedCornerShape(size * 0.38f)),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = initials,
-            style = MaterialTheme.typography.titleSmall,
+            fontSize = (size.value * 0.36f).sp,
             fontWeight = FontWeight.Bold,
-            color = Color.White,
+            color = color,
         )
     }
 }

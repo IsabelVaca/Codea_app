@@ -4,6 +4,8 @@ ViewModels. Las pantallas solo dibujan y llaman funciones de aquí; el estado sa
 
 **Caché (admin y padre, desde el 20/oct):** `DocentesAdminViewModel`, `SalasAdminViewModel`, `InfantesAdminViewModel`, `PadresAdminViewModel`, `AvisosAdminViewModel`, `RutinasAdminViewModel`, `AvisosViewModel` y `ParentViewModel` muestran primero lo que guardó el repositorio (`cached()` / `…Guardado()`) y luego lo reemplazan con la API, así no se quedan vacíos al abrir la app ni al cambiar de pestaña. En Docentes, el indicador de carga solo sale al jalar hacia abajo (`cargar(conIndicador = true)`); las recargas al abrir la pestaña son silenciosas. `ParentViewModel` muestra lo guardado una vez por hijo (`guardadoMostradoDe`), para no tapar lo que ya llegó de la API.
 
+**Caché (docente, desde el 20/oct):** `CodeaViewModel.cargar()` pinta primero lo guardado (`mostrarGuardado()`: perfil, Mi sala, checada y rutina de hoy) si todavía no hay niños en pantalla, y luego lo de la API. La rutina guardada no mueve el momento elegido (`aplicarRutina(dto, desdeCache = true)`). `ChildProfileViewModel` muestra la ficha guardada y solo marca error si no hay nada que mostrar. `DeparturePassViewModel` muestra las salidas guardadas, pero «Finalizar día» solo se habilita con la lista recién traída de la API (`actualizada`).
+
 ## Los ViewModels
 
 | Archivo | Rol | Qué maneja | Estilo de estado |

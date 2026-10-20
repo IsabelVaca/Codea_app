@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import mx.tec.codea.domain.Routine
+import mx.tec.codea.ui.components.CodeaColores
 import mx.tec.codea.ui.screens.admin.BotonPrincipal
 import mx.tec.codea.ui.theme.Poppins
 
@@ -53,18 +54,18 @@ fun RutinaDeHoyScreen(
                         .fillMaxWidth()
                         .padding(bottom = 6.dp)
                         .clip(RoundedCornerShape(24.dp))
-                        .background(Color(0xFFEFE9FF))
+                        .background(CodeaColores.Lila)
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     Text(
-                        "Rutina · ${routine.name}",
-                        fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF4A3A80),
+                        routine.name,
+                        fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.Morado,
                     )
                     Text(
                         "Esta es la rutina que coordinación asignó a tu sala para hoy. " +
                             "Sin horarios: tú solo confirmas cada momento cuando termina.",
-                        fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, color = Color(0xFF5B4B8A),
+                        fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Medium, color = CodeaColores.Morado,
                     )
                 }
             }
@@ -132,8 +133,8 @@ fun RutinaDeHoyScreen(
 
         Spacer(Modifier.height(14.dp))
         BotonPrincipal(
-            if (momentos.isEmpty()) "Ir a mi día" else "Comenzar el día · ${momentos.size} momentos",
-            Color(0xFF6C4BF6),
+            if (momentos.isEmpty()) "Ir a mi día" else "Comenzar el día",
+            CodeaColores.Violeta,
             onComenzar,
         )
     }

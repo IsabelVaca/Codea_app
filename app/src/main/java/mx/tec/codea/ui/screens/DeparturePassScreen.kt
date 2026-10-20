@@ -1,6 +1,5 @@
 package mx.tec.codea.ui.screens
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,9 +14,9 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -36,14 +36,17 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import mx.tec.codea.R
 import mx.tec.codea.domain.DepartureEntry
 import mx.tec.codea.domain.PickupChoice
 import mx.tec.codea.domain.PickupKind
 import mx.tec.codea.ui.components.BackHeader
+import mx.tec.codea.ui.components.CodeaColores
 import mx.tec.codea.ui.components.InitialsAvatar
 import mx.tec.codea.ui.components.avatarColorAt
 import mx.tec.codea.ui.theme.CodeaTheme
+import mx.tec.codea.ui.theme.Poppins
 
 // el pase de salida: lo último del día. la docente toca a cada niño que se va, elige quién lo recoge (de las personas que
 // registró el admin y sus tutores) y se guarda la hora. con todos fuera aparece "Finalizar día", que termina su turno.
@@ -83,14 +86,12 @@ fun DeparturePassScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = stringResource(R.string.departure_hint),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto,
                     )
                     if (!loading && !failed && entries.isNotEmpty()) {
                         Text(
                             text = stringResource(R.string.departure_progress, departed, entries.size),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.ExtraBold,
+                            fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.Ink,
                         )
                     }
                 }
@@ -102,21 +103,25 @@ fun DeparturePassScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        CircularProgressIndicator()
-                        Text(stringResource(R.string.departure_loading), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        CircularProgressIndicator(color = CodeaColores.Morado)
+                        Text(stringResource(R.string.departure_loading), fontFamily = Poppins, fontWeight = FontWeight.SemiBold, color = CodeaColores.Gris)
                     }
                 }
                 failed -> item {
                     Column(modifier = Modifier.padding(vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(stringResource(R.string.departure_failed), color = MaterialTheme.colorScheme.error)
-                        OutlinedButton(onClick = onRetry) { Text(stringResource(R.string.departure_retry)) }
+                        Text(stringResource(R.string.departure_failed), fontFamily = Poppins, fontWeight = FontWeight.SemiBold, color = CodeaColores.Rojo)
+                        Button(
+                            onClick = onRetry,
+                            shape = RoundedCornerShape(14.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.Lila, contentColor = CodeaColores.Morado),
+                            elevation = ButtonDefaults.buttonElevation(0.dp),
+                        ) { Text(stringResource(R.string.departure_retry), fontFamily = Poppins, fontWeight = FontWeight.Bold) }
                     }
                 }
                 entries.isEmpty() -> item {
                     Text(
                         text = stringResource(R.string.departure_empty),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.Gris,
                         modifier = Modifier.padding(vertical = 24.dp),
                     )
                 }
@@ -146,13 +151,14 @@ fun DeparturePassScreen(
                     enabled = !finishing,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 56.dp),
-                    shape = RoundedCornerShape(18.dp),
+                        .heightIn(min = 54.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.Violeta, contentColor = Color.White),
+                    elevation = ButtonDefaults.buttonElevation(0.dp),
                 ) {
                     Text(
                         text = stringResource(if (finishing) R.string.departure_finishing else R.string.departure_finish),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
+                        fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold,
                     )
                 }
             } else if (!loading && !failed) {
@@ -162,8 +168,7 @@ fun DeparturePassScreen(
                         entries.count { !it.departed },
                         entries.count { !it.departed },
                     ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
@@ -207,11 +212,13 @@ private fun DepartureRow(
     onRegisterClick: () -> Unit,
     onUndoClick: () -> Unit,
 ) {
+    // tarjeta blanca como las del admin; el que ya salió queda en lila.
     Surface(
-        shape = RoundedCornerShape(20.dp),
-        color = if (entry.departed) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.surfaceContainerLowest,
-        border = BorderStroke(1.dp, if (entry.departed) Color.Transparent else MaterialTheme.colorScheme.outlineVariant),
-        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        color = if (entry.departed) CodeaColores.Lila else Color.White,
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(6.dp, RoundedCornerShape(18.dp), ambientColor = Color(0x1A2A2140), spotColor = Color(0x1A2A2140)),
     ) {
         Row(
             modifier = Modifier
@@ -220,38 +227,45 @@ private fun DepartureRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            InitialsAvatar(initials = initialsOf(entry.name), color = avatarColor, size = 48.dp)
+            InitialsAvatar(
+                initials = initialsOf(entry.name),
+                color = avatarColor,
+                size = 48.dp,
+                background = if (entry.departed) Color.White else CodeaColores.Lila,
+            )
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(
-                    text = entry.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = if (entry.departed) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurface,
-                )
+                Text(entry.name, fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
                 Text(
                     text = if (entry.departed) {
                         stringResource(R.string.departure_row_done, entry.time.orEmpty(), entry.pickedUpBy.orEmpty())
                     } else {
                         stringResource(R.string.departure_row_pending)
                     },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (entry.departed) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold,
+                    color = if (entry.departed) CodeaColores.Morado else CodeaColores.GrisTexto,
                 )
             }
             if (busy) {
-                CircularProgressIndicator(modifier = Modifier.padding(end = 12.dp))
+                CircularProgressIndicator(modifier = Modifier.padding(end = 12.dp), color = CodeaColores.Morado)
             } else if (entry.departed) {
-                TextButton(onClick = onUndoClick, enabled = enabled, modifier = Modifier.heightIn(min = 48.dp)) {
-                    Text(stringResource(R.string.departure_undo), fontWeight = FontWeight.Bold)
+                TextButton(
+                    onClick = onUndoClick,
+                    enabled = enabled,
+                    modifier = Modifier.heightIn(min = 48.dp),
+                    colors = ButtonDefaults.textButtonColors(contentColor = CodeaColores.Violeta),
+                ) {
+                    Text(stringResource(R.string.departure_undo), fontFamily = Poppins, fontWeight = FontWeight.Bold)
                 }
             } else {
                 Button(
                     onClick = onRegisterClick,
                     enabled = enabled,
-                    modifier = Modifier.heightIn(min = 48.dp),
+                    modifier = Modifier.heightIn(min = 44.dp),
                     shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.Violeta, contentColor = Color.White),
+                    elevation = ButtonDefaults.buttonElevation(0.dp),
                 ) {
-                    Text(stringResource(R.string.departure_register), fontWeight = FontWeight.ExtraBold)
+                    Text(stringResource(R.string.departure_register), fontFamily = Poppins, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -294,7 +308,7 @@ private fun PickupChooserDialog(
                                 val detail = listOfNotNull(
                                     choice.relationship,
                                     stringResource(R.string.departure_guardian_tag).takeIf { choice.kind == PickupKind.GUARDIAN },
-                                ).joinToString(" · ")
+                                ).joinToString(", ")
                                 if (detail.isNotBlank()) {
                                     Text(detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }

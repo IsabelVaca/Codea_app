@@ -2,7 +2,7 @@
 
 Pantallas del padre. Pestañas: **Hoy, Calendario, Fotos, Chat, Mi hijo**. Todas leen de `ParentViewModel` (`ui/state/`), que carga de la API. Los archivos `*SampleData.kt` conservan los **modelos de interfaz** (`TimelineEvent`, `DaySummary`, `CalendarDay`, `RequestedDocument`…) y, además, objetos con datos de ejemplo de la etapa sin backend.
 
-**Estilo (desde el 20/oct):** el mismo del admin. Las piezas comunes están en `ParentStyle.kt`: `PadreColores` (lila `EDE9FE` con morado `6D28D9`, gris para lo secundario, violeta `5B3FE0` para el botón principal), `TarjetaPadre` (tarjeta blanca con sombra), `DatoPadre` (etiqueta gris y valor en negritas) y `PastillaPadre`. Sin etiquetas de sección ni sobretítulos, y lo que no tiene dato no se muestra (por ejemplo, las métricas de Hoy si la maestra no llenó el resumen, o «Ánimo» en el resumen semanal si no hay registro).
+**Estilo (desde el 20/oct):** el mismo del admin. Las piezas comunes están en `ui/components/EstiloTarjetas.kt` (antes `ParentStyle.kt`; desde el 20/oct también las usa la docente): `CodeaColores` (lila `EDE9FE` con morado `6D28D9`, gris para lo secundario, violeta `5B3FE0` para el botón principal), `TarjetaBlanca` (tarjeta blanca con sombra), `DatoTarjeta` (etiqueta gris y valor en negritas) y `Pastilla`. Sin etiquetas de sección ni sobretítulos, y lo que no tiene dato no se muestra (por ejemplo, las métricas de Hoy si la maestra no llenó el resumen, o «Ánimo» en el resumen semanal si no hay registro).
 
 | Carpeta | Pantalla | Estado |
 |---|---|---|
