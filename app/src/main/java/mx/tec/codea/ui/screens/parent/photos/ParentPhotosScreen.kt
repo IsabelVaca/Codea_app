@@ -1,82 +1,70 @@
 package mx.tec.codea.ui.screens.parent.photos
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import coil3.compose.AsyncImage
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import coil3.compose.AsyncImage
+import mx.tec.codea.ui.components.ScreenHeader
+import mx.tec.codea.ui.screens.parent.PadreColores
 import mx.tec.codea.ui.theme.CodeaTheme
-
-// ---------- Colores ----------
-// los colores salen del tema para que la pantalla se vea bien en claro y en oscuro.
-private val Ink: Color @Composable get() = MaterialTheme.colorScheme.onBackground
-private val Muted: Color @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
-private val Body: Color @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
-private val Bg: Color @Composable get() = MaterialTheme.colorScheme.background
-private val Line: Color @Composable get() = MaterialTheme.colorScheme.outlineVariant
-private val SelectedRow: Color @Composable get() = MaterialTheme.colorScheme.surfaceContainerHigh
-private val Accent = Color(0xFFF0A202)
-private val Incident = Color(0xFFC9503A)
-private val ViewerBg = Color(0xFF1D1830)
-
-// Agrega poppins_*.ttf en res/font. Si no, usa FontFamily.Default.
-// private val Poppins = FontFamily(
-//     Font(R.font.poppins_medium, FontWeight.Medium),
-//     Font(R.font.poppins_semibold, FontWeight.SemiBold),
-//     Font(R.font.poppins_bold, FontWeight.Bold),
-//     Font(R.font.poppins_extrabold, FontWeight.ExtraBold),
-// )
-private val Poppins = FontFamily.Default
+import mx.tec.codea.ui.theme.Poppins
 
 // ---------- Modelo ----------
-enum class Categoria(val label: String, val dot: Color) {
-    TODAS("Todas", Color(0xFF8C7FA8)),
-    ACTIVIDADES("Actividades", Color(0xFF8B7BE0)),
-    COMIDAS("Comidas", Accent),
-    SIESTA("Siesta", Color(0xFF5FBF9A)),
-    INCIDENTES("Incidentes", Incident),
-}
-
-enum class Tono(val a: Color, val b: Color) {
-    LAVANDA(Color(0xFFEBE6FC), Color(0xFFE0D8F8)),
-    AMARILLO(Color(0xFFFDF2D2), Color(0xFFF9E6AB)),
-    MENTA(Color(0xFFE3F7EF), Color(0xFFCDEEE1)),
-    DURAZNO(Color(0xFFFDE7E1), Color(0xFFF8D3C8)),
+enum class Categoria(val label: String) {
+    TODAS("Todas"),
+    ACTIVIDADES("Actividades"),
+    COMIDAS("Comidas"),
+    SIESTA("Siesta"),
+    INCIDENTES("Incidentes"),
 }
 
 data class Foto(
@@ -85,41 +73,27 @@ data class Foto(
     val fecha: String,
     val etiqueta: String,
     val categoria: Categoria,
-    val tono: Tono,
     val hora: String,
     val maestra: String,
     val nota: String,
-    val url: String? = null, // reemplazar placeholder por Coil AsyncImage
+    val url: String? = null,
 ) {
     val esIncidente get() = categoria == Categoria.INCIDENTES
 }
 
-// es "get()" (se arma al usarse) y no un valor de archivo: si no, al crear Foto desde otro lugar, Categoria y este archivo
-// se inicializan uno dentro del otro y Categoria.ACTIVIDADES llega null (crash al abrir el rol de padre).
-val fotosDemo: List<Foto> get() = listOf(
-    Foto(1, "Hoy", "mar 29 sep", "Trazos", Categoria.ACTIVIDADES, Tono.LAVANDA, "10:15", "Maestra Laura", "Mateo practicó líneas curvas con crayones gruesos. Ya sostiene muy bien el crayón."),
-    Foto(2, "Hoy", "mar 29 sep", "Patio", Categoria.ACTIVIDADES, Tono.AMARILLO, "11:00", "Maestra Sofía", "Juego libre en el patio con sus compañeros de sala."),
-    Foto(3, "Hoy", "mar 29 sep", "Rodilla", Categoria.INCIDENTES, Tono.DURAZNO, "12:40", "Maestra Sofía", "Raspón leve en la rodilla al correr. Se limpió y se aplicó hielo 10 min. Siguió jugando con normalidad."),
-    Foto(4, "Hoy", "mar 29 sep", "Colación", Categoria.COMIDAS, Tono.DURAZNO, "13:00", "Maestra Laura", "Comió todo el arroz y la mitad de la fruta."),
-    Foto(5, "Hoy", "mar 29 sep", "Siesta", Categoria.SIESTA, Tono.LAVANDA, "14:00", "Maestra Laura", "Durmió 1 h 20 min."),
-    Foto(6, "Hoy", "mar 29 sep", "Música", Categoria.ACTIVIDADES, Tono.MENTA, "15:30", "Maestra Ana", "Clase de música con panderos y maracas."),
-    Foto(7, "Ayer", "lun 28 sep", "Lectura", Categoria.ACTIVIDADES, Tono.MENTA, "09:40", "Maestra Laura", "Cuento en círculo: \"El pollito curioso\"."),
-    Foto(8, "Ayer", "lun 28 sep", "Pintura", Categoria.ACTIVIDADES, Tono.AMARILLO, "11:20", "Maestra Ana", "Pintura con dedos, colores primarios."),
-    Foto(9, "Ayer", "lun 28 sep", "Desayuno", Categoria.COMIDAS, Tono.AMARILLO, "08:45", "Maestra Laura", "Desayunó avena y plátano."),
-    Foto(10, "Ayer", "lun 28 sep", "Bloques", Categoria.ACTIVIDADES, Tono.LAVANDA, "12:10", "Maestra Sofía", "Construyó una torre de 8 bloques."),
-    Foto(11, "Ayer", "lun 28 sep", "Siesta", Categoria.SIESTA, Tono.MENTA, "14:05", "Maestra Laura", "Durmió 1 h."),
-)
+// el fondo del visor: casi negro, para que la foto resalte.
+private val FondoVisor = Color(0xFF1D1830)
 
 // ---------- Pantalla ----------
+// las fotos del niño, con el estilo del admin: chips para filtrar, miniaturas en cuadrícula y el visor completo.
 @Composable
 fun ParentPhotosScreen(
-    nombreNino: String = "Mateo",
-    fotos: List<Foto> = fotosDemo,
+    nombreNino: String = "",
+    fotos: List<Foto> = emptyList(),
     onDescargar: (Foto) -> Unit = {},
     onBorrar: (Foto) -> Unit = {},
 ) {
     var filtro by remember { mutableStateOf(Categoria.TODAS) }
-    var menuAbierto by remember { mutableStateOf(false) }
     var visorIndex by remember { mutableStateOf<Int?>(null) }
     var confirmarBorrado by remember { mutableStateOf<Foto?>(null) }
 
@@ -128,66 +102,58 @@ fun ParentPhotosScreen(
     }
     val grupos = remember(filtradas) { filtradas.groupBy { it.dia to it.fecha } }
 
-    Scaffold(
-        containerColor = Bg,
-    ) { padding ->
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 20.dp),
-            horizontalArrangement = Arrangement.spacedBy(5.dp),
-            verticalArrangement = Arrangement.spacedBy(5.dp),
-        ) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(3),
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 20.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        item(span = { GridItemSpan(maxLineSpan) }) {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                ScreenHeader(title = if (nombreNino.isBlank()) "Fotos" else "Fotos de $nombreNino")
+                if (fotos.isNotEmpty()) {
+                    FiltroCategorias(
+                        fotos = fotos,
+                        elegida = filtro,
+                        onElegir = { filtro = it },
+                    )
+                }
+                Spacer(Modifier.height(2.dp))
+            }
+        }
+
+        // sin fotos (todavía no hay, o la categoría elegida no tiene) la pantalla lo dice en vez de quedar vacía.
+        if (filtradas.isEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                Column {
-                    Text(
-                        "Fotos de $nombreNino",
-                        style = TextStyle(fontFamily = Poppins, fontSize = 27.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.5).sp, color = Ink),
-                    )
-                    Spacer(Modifier.height(14.dp))
-                    MenuCategorias(
-                        seleccionada = filtro,
-                        abierto = menuAbierto,
-                        conteo = { c -> if (c == Categoria.TODAS) fotos.size else fotos.count { it.categoria == c } },
-                        onToggle = { menuAbierto = !menuAbierto },
-                        onElegir = { filtro = it; menuAbierto = false },
-                    )
-                    Spacer(Modifier.height(18.dp))
+                Text(
+                    text = if (fotos.isEmpty()) "Todavía no hay fotos de $nombreNino. Cuando la maestra suba una, la verás aquí."
+                    else "No hay fotos en esta categoría.",
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                    fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, lineHeight = 20.sp, color = PadreColores.Gris,
+                )
+            }
+        }
+
+        grupos.forEach { (clave, lista) ->
+            item(span = { GridItemSpan(maxLineSpan) }, key = "h-${clave.first}-${clave.second}") {
+                Row(
+                    Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Bottom,
+                ) {
+                    Text(clave.first, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, color = PadreColores.Ink)
+                    Text(clave.second, fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = PadreColores.GrisTexto)
                 }
             }
-
-            // sin fotos (todavía no hay, o la categoría elegida no tiene) la pantalla lo dice en vez de quedar vacía.
-            if (filtradas.isEmpty()) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    Text(
-                        text = if (fotos.isEmpty()) "Todavía no hay fotos de $nombreNino. Cuando la maestra suba una, la verás aquí."
-                        else "No hay fotos en esta categoría.",
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
-                        style = TextStyle(fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, lineHeight = 21.sp, color = Muted),
-                    )
-                }
-            }
-
-            grupos.forEach { (clave, lista) ->
-                item(span = { GridItemSpan(maxLineSpan) }, key = "h-${clave.first}") {
-                    Row(
-                        Modifier.fillMaxWidth().padding(top = 6.dp, bottom = 5.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Bottom,
-                    ) {
-                        Text(clave.first, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Ink)
-                        Text(clave.second, fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = Muted)
-                    }
-                }
-                items(lista, key = { it.id }) { foto ->
-                    Miniatura(foto) { visorIndex = filtradas.indexOf(foto) }
-                }
+            items(lista, key = { it.id }) { foto ->
+                Miniatura(foto) { visorIndex = filtradas.indexOf(foto) }
             }
         }
     }
 
     visorIndex?.let { i ->
-        val foto = filtradas[i]
+        val foto = filtradas.getOrNull(i) ?: return@let
         VisorFoto(
             foto = foto,
             posicion = "${i + 1} de ${filtradas.size}",
@@ -202,76 +168,45 @@ fun ParentPhotosScreen(
     confirmarBorrado?.let { foto ->
         AlertDialog(
             onDismissRequest = { confirmarBorrado = null },
-            title = { Text("¿Borrar esta foto?") },
-            text = { Text("Se borra para siempre y ya no la verá nadie, ni tú ni la maestra. No se puede deshacer.") },
+            title = { Text("¿Borrar esta foto?", fontFamily = Poppins, fontWeight = FontWeight.ExtraBold) },
+            text = { Text("Se borra para siempre y ya no la verá nadie, ni tú ni la maestra. No se puede deshacer.", fontFamily = Poppins) },
             confirmButton = {
                 TextButton(onClick = {
                     confirmarBorrado = null
                     visorIndex = null
                     onBorrar(foto)
-                }) { Text("Borrar") }
+                }) { Text("Borrar", fontFamily = Poppins, fontWeight = FontWeight.Bold, color = PadreColores.Rojo) }
             },
-            dismissButton = { TextButton(onClick = { confirmarBorrado = null }) { Text("Cancelar") } },
+            dismissButton = {
+                TextButton(onClick = { confirmarBorrado = null }) {
+                    Text("Cancelar", fontFamily = Poppins, fontWeight = FontWeight.Bold, color = PadreColores.GrisTexto)
+                }
+            },
+            containerColor = Color.White,
         )
     }
 }
 
-// ---------- Menú desplegable (acordeón) ----------
+// ---------- Filtro (como «Activos | Todos» del admin) ----------
+// solo salen las categorías que tienen fotos, con su número.
 @Composable
-private fun MenuCategorias(
-    seleccionada: Categoria,
-    abierto: Boolean,
-    conteo: (Categoria) -> Int,
-    onToggle: () -> Unit,
-    onElegir: (Categoria) -> Unit,
-) {
-    val rot by animateFloatAsState(if (abierto) 180f else 0f, label = "chevron")
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
-            .border(1.5.dp, Line, RoundedCornerShape(16.dp))
+private fun FiltroCategorias(fotos: List<Foto>, elegida: Categoria, onElegir: (Categoria) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Row(
-            Modifier.fillMaxWidth().height(52.dp).clickable(onClick = onToggle).padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                seleccionada.label,
-                modifier = Modifier.weight(1f),
-                fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Ink,
-            )
-            Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = Ink, modifier = Modifier.rotate(rot))
-        }
-        AnimatedVisibility(visible = abierto, enter = expandVertically(), exit = shrinkVertically()) {
-            Column(
-                Modifier.fillMaxWidth().drawBehind {
-                    drawLine(Color(0xFFF1EDF7), Offset(0f, 0f), Offset(size.width, 0f), 1.dp.toPx())
-                }.padding(6.dp)
-            ) {
-                Categoria.entries.forEach { c ->
-                    val on = c == seleccionada
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(44.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(if (on) SelectedRow else Color.Transparent)
-                            .clickable { onElegir(c) }
-                            .padding(horizontal = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        Box(Modifier.size(8.dp).clip(CircleShape).background(c.dot))
-                        Text(
-                            c.label, Modifier.weight(1f),
-                            fontFamily = Poppins, fontSize = 14.sp,
-                            fontWeight = if (on) FontWeight.Bold else FontWeight.Medium, color = Ink,
-                        )
-                        Text("${conteo(c)}", fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Muted)
-                    }
-                }
+        Categoria.entries.forEach { c ->
+            val n = if (c == Categoria.TODAS) fotos.size else fotos.count { it.categoria == c }
+            if (n > 0 || c == elegida) {
+                FilterChip(
+                    selected = c == elegida,
+                    onClick = { onElegir(c) },
+                    label = { Text("${c.label} · $n", fontFamily = Poppins, fontWeight = FontWeight.Bold) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = PadreColores.Lila,
+                        selectedLabelColor = PadreColores.Morado,
+                    ),
+                )
             }
         }
     }
@@ -283,8 +218,8 @@ private fun Miniatura(foto: Foto, onClick: () -> Unit) {
     Box(
         Modifier
             .aspectRatio(1f)
-            .clip(RoundedCornerShape(12.dp))
-            .rayado(foto.tono)
+            .clip(RoundedCornerShape(14.dp))
+            .background(PadreColores.Lila)
             .clickable(onClick = onClick)
     ) {
         if (foto.url != null) {
@@ -295,46 +230,28 @@ private fun Miniatura(foto: Foto, onClick: () -> Unit) {
                 modifier = Modifier.matchParentSize(),
             )
         }
-        Etiqueta(foto.etiqueta, Modifier.align(Alignment.BottomStart).padding(6.dp))
+        Text(
+            foto.etiqueta,
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(6.dp)
+                .clip(RoundedCornerShape(50))
+                .background(Color.White.copy(alpha = 0.9f))
+                .padding(horizontal = 7.dp, vertical = 2.dp),
+            fontFamily = Poppins, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = PadreColores.Morado,
+        )
         if (foto.esIncidente) {
             Text(
                 "Incidente",
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(6.dp)
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(Incident)
-                    .padding(horizontal = 6.dp, vertical = 2.dp),
-                fontFamily = Poppins, fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.White,
+                    .clip(RoundedCornerShape(50))
+                    .background(PadreColores.Rojo)
+                    .padding(horizontal = 7.dp, vertical = 2.dp),
+                fontFamily = Poppins, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.White,
             )
         }
-    }
-}
-
-@Composable
-private fun Etiqueta(texto: String, modifier: Modifier = Modifier, grande: Boolean = false) {
-    Text(
-        texto,
-        modifier = modifier
-            .clip(RoundedCornerShape(if (grande) 8.dp else 5.dp))
-            .background(Color.White.copy(alpha = 0.85f))
-            .padding(horizontal = if (grande) 10.dp else 5.dp, vertical = if (grande) 5.dp else 2.dp),
-        fontFamily = FontFamily.Monospace,
-        fontSize = if (grande) 12.sp else 9.sp,
-        fontWeight = FontWeight.Medium,
-        color = Color(0xFF5D5578),
-    )
-}
-
-// Placeholder rayado diagonal
-private fun Modifier.rayado(tono: Tono): Modifier = drawBehind {
-    drawRect(tono.a)
-    val paso = 12.dp.toPx()
-    val ancho = paso * 1.414f / 2f
-    var x = -size.height
-    while (x < size.width + size.height) {
-        drawLine(tono.b, Offset(x, size.height), Offset(x + size.height, 0f), strokeWidth = ancho)
-        x += paso * 2 * 0.707f * 2
     }
 }
 
@@ -350,7 +267,7 @@ private fun VisorFoto(
     onBorrar: () -> Unit,
 ) {
     Dialog(onDismissRequest = onCerrar, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        Column(Modifier.fillMaxSize().background(ViewerBg).systemBarsPadding()) {
+        Column(Modifier.fillMaxSize().background(FondoVisor).systemBarsPadding()) {
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -359,15 +276,14 @@ private fun VisorFoto(
                     Icon(Icons.Default.Close, "Cerrar", tint = Color.White)
                 }
                 Text(
-                    posicion, Modifier.weight(1f),
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    posicion, Modifier.weight(1f), textAlign = TextAlign.Center,
                     fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color.White.copy(alpha = 0.8f),
                 )
                 Spacer(Modifier.size(40.dp))
             }
             Box(
                 Modifier.weight(1f).fillMaxWidth().padding(horizontal = 14.dp)
-                    .clip(RoundedCornerShape(20.dp)).rayado(foto.tono),
+                    .clip(RoundedCornerShape(20.dp)).background(Color.White.copy(alpha = 0.06f)),
                 contentAlignment = Alignment.Center,
             ) {
                 if (foto.url != null) {
@@ -377,54 +293,60 @@ private fun VisorFoto(
                         contentScale = ContentScale.Fit,
                         modifier = Modifier.matchParentSize(),
                     )
-                } else {
-                    Etiqueta("foto · ${foto.etiqueta}", grande = true)
                 }
-                BotonRedondo(onAnterior, Color.White.copy(alpha = 0.8f), Modifier.align(Alignment.CenterStart).padding(start = 10.dp)) {
-                    Icon(Icons.Default.ChevronLeft, "Anterior", tint = Ink)
+                BotonRedondo(onAnterior, Color.White.copy(alpha = 0.85f), Modifier.align(Alignment.CenterStart).padding(start = 10.dp)) {
+                    Icon(Icons.Default.ChevronLeft, "Anterior", tint = PadreColores.Ink)
                 }
-                BotonRedondo(onSiguiente, Color.White.copy(alpha = 0.8f), Modifier.align(Alignment.CenterEnd).padding(end = 10.dp)) {
-                    Icon(Icons.Default.ChevronRight, "Siguiente", tint = Ink)
+                BotonRedondo(onSiguiente, Color.White.copy(alpha = 0.85f), Modifier.align(Alignment.CenterEnd).padding(end = 10.dp)) {
+                    Icon(Icons.Default.ChevronRight, "Siguiente", tint = PadreColores.Ink)
                 }
             }
             Spacer(Modifier.height(14.dp))
+            // la hoja de abajo: quién la subió, cuándo, su nota y las acciones.
             Column(
                 Modifier.fillMaxWidth()
                     .clip(RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp))
-                    .background(Bg)
-                    .padding(start = 22.dp, end = 22.dp, top = 20.dp, bottom = 30.dp)
+                    .background(Color.White)
+                    .padding(start = 22.dp, end = 22.dp, top = 20.dp, bottom = 30.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Box(Modifier.size(36.dp).clip(CircleShape).background(Color(0xFFE6E0FB)), contentAlignment = Alignment.Center) {
-                        Text(foto.maestra.trim().take(1).uppercase(), fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color(0xFF6A5BB5))
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Box(
+                        Modifier.size(40.dp).clip(RoundedCornerShape(14.dp)).background(PadreColores.Lila),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(foto.maestra.trim().take(1).uppercase(), fontWeight = FontWeight.Bold, fontSize = 15.sp, color = PadreColores.Morado)
                     }
-                    Column {
-                        Text(foto.maestra, fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Ink)
-                        Text("${foto.dia} · ${foto.hora}", fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = Muted)
+                    Column(Modifier.weight(1f)) {
+                        Text(foto.maestra, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, color = PadreColores.Ink)
+                        Text("${foto.dia} · ${foto.hora}", fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = PadreColores.GrisTexto)
                     }
+                    Text(
+                        foto.etiqueta,
+                        modifier = Modifier.clip(RoundedCornerShape(50)).background(if (foto.esIncidente) PadreColores.RojoSuave else PadreColores.Lila)
+                            .padding(horizontal = 10.dp, vertical = 4.dp),
+                        fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold,
+                        color = if (foto.esIncidente) PadreColores.Rojo else PadreColores.Morado,
+                    )
                 }
-                Spacer(Modifier.height(10.dp))
-                Text(foto.nota, fontFamily = Poppins, fontSize = 14.sp, lineHeight = 21.sp, color = Body)
-                Spacer(Modifier.height(16.dp))
+                if (foto.nota.isNotBlank()) {
+                    Text(foto.nota, fontFamily = Poppins, fontSize = 14.sp, lineHeight = 21.sp, fontWeight = FontWeight.Medium, color = PadreColores.Ink)
+                }
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Button(
                         onClick = onDescargar,
                         modifier = Modifier.weight(1f).height(48.dp),
                         shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Ink, contentColor = Bg),
-                    ) { Text("Descargar", fontFamily = Poppins, fontWeight = FontWeight.SemiBold) }
-                    OutlinedButton(
+                        colors = ButtonDefaults.buttonColors(containerColor = PadreColores.Violeta, contentColor = Color.White),
+                        elevation = ButtonDefaults.buttonElevation(0.dp),
+                    ) { Text("Descargar", fontFamily = Poppins, fontWeight = FontWeight.Bold) }
+                    Button(
                         onClick = onBorrar,
                         modifier = Modifier.weight(1f).height(48.dp),
                         shape = RoundedCornerShape(14.dp),
-                        border = BorderStroke(1.5.dp, Color(0xFFE4DEF2)),
-                        colors = ButtonDefaults.outlinedButtonColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest, contentColor = Ink),
-                    ) {
-                        Text(
-                            "Borrar",
-                            fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
-                        )
-                    }
+                        colors = ButtonDefaults.buttonColors(containerColor = PadreColores.RojoSuave, contentColor = PadreColores.Rojo),
+                        elevation = ButtonDefaults.buttonElevation(0.dp),
+                    ) { Text("Borrar", fontFamily = Poppins, fontWeight = FontWeight.Bold) }
                 }
             }
         }
@@ -443,6 +365,6 @@ private fun BotonRedondo(onClick: () -> Unit, fondo: Color, modifier: Modifier =
 @Composable
 private fun ParentPhotosScreenPreview() {
     CodeaTheme {
-        ParentPhotosScreen()
+        ParentPhotosScreen(nombreNino = "Mateo")
     }
 }

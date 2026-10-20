@@ -8,15 +8,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import mx.tec.codea.domain.ChildOption
 import mx.tec.codea.ui.theme.CodeaTheme
+import mx.tec.codea.ui.theme.Poppins
 
 // la tira para cambiar de hijo, arriba de las pestañas del padre. solo se dibuja con más de un hijo.
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,7 +42,11 @@ fun ChildSwitcher(
             FilterChip(
                 selected = child.id == selectedId,
                 onClick = { onSelect(child.id) },
-                label = { Text(child.firstName) },
+                label = { Text(child.firstName, fontFamily = Poppins, fontWeight = FontWeight.Bold) },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = Color(0xFFEDE9FE),
+                    selectedLabelColor = Color(0xFF6D28D9),
+                ),
                 modifier = Modifier.semantics { contentDescription = "Ver a ${child.fullName}" },
             )
         }

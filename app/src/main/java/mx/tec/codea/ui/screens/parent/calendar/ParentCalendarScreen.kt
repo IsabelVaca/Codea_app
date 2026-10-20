@@ -1,6 +1,5 @@
 package mx.tec.codea.ui.screens.parent.calendar
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,8 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,12 +36,18 @@ import mx.tec.codea.domain.DiaSemana
 import mx.tec.codea.domain.EstadoDia
 import mx.tec.codea.domain.ResumenSemana
 import mx.tec.codea.ui.components.ScreenHeader
-import mx.tec.codea.ui.theme.Amber
+import mx.tec.codea.ui.screens.parent.PadreColores
+import mx.tec.codea.ui.screens.parent.TarjetaPadre
 import mx.tec.codea.ui.theme.CodeaTheme
-import mx.tec.codea.ui.theme.Coral
-import mx.tec.codea.ui.theme.Teal
-import mx.tec.codea.ui.theme.TealDeep
-import mx.tec.codea.ui.theme.TealWash
+import mx.tec.codea.ui.theme.Poppins
+
+// los colores de cada día: completo en morado, con nota en verde y ausente en rojo (los mismos del admin).
+private fun colorDe(status: DayAttendanceStatus): Color? = when (status) {
+    DayAttendanceStatus.FULL_DAY -> PadreColores.Morado
+    DayAttendanceStatus.WITH_NOTE -> PadreColores.Verde
+    DayAttendanceStatus.ABSENT -> PadreColores.Rojo
+    DayAttendanceStatus.NO_RECORD -> null
+}
 
 @Composable
 fun ParentCalendarScreen(
@@ -59,16 +62,15 @@ fun ParentCalendarScreen(
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            ScreenHeader(
-                title = "Calendario de ${monthData.childFirstName}",
-            )
+            ScreenHeader(title = "Calendario de ${monthData.childFirstName}")
         }
 
         item {
-            CalendarGrid(
+            MesCard(
+                mes = monthData.monthName,
                 days = monthData.days,
                 startOffset = monthData.startOffset,
                 selectedDayNumber = selectedDayNumber,
@@ -79,322 +81,169 @@ fun ParentCalendarScreen(
             )
         }
 
-        item {
-            AttendanceLegendCard()
-        }
-
-        item {
-            MonthlySummaryCard(
-                // "Octubre 2026" -> "Octubre"
-                monthText = monthData.monthName.substringBefore(' ').ifBlank { "El mes" },
-                summaryText = monthData.summaryText,
-            )
-        }
-
-        if (resumenSemana != null) {
+        if (monthData.summaryText.isNotBlank()) {
             item {
-                WeeklySummaryCard(resumen = resumenSemana)
-            }
-        }
-    }
-}
-
-// el resumen de la semana (RF-12): cómo estuvo cada día y los totales, en palabras.
-@Composable
-private fun WeeklySummaryCard(resumen: ResumenSemana) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shadowElevation = 4.dp,
-    ) {
-        Column(
-            modifier = Modifier.padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            Text(
-                text = "Resumen de la semana",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                text = resumen.rango,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                resumen.dias.forEach { dia -> DiaDeLaSemana(dia) }
-            }
-            WeeklyLine("Asistió", "${resumen.diasAsistidos} ${if (resumen.diasAsistidos == 1) "día" else "días"}" +
-                if (resumen.diasAusente > 0) " · faltó ${resumen.diasAusente}" else "")
-            WeeklyLine("Ánimo", resumen.animo)
-            WeeklyLine("Comidas", resumen.comidas)
-            WeeklyLine("Siesta promedio", resumen.siesta)
-            if (resumen.cambios > 0) WeeklyLine("Cambios de pañal", resumen.cambios.toString())
-            if (resumen.notasFamilia > 0) WeeklyLine("Tus notas", resumen.notasFamilia.toString())
-            if (resumen.logros.isNotEmpty()) {
-                Text(
-                    text = "Logros de la semana",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(top = 4.dp),
-                )
-                resumen.logros.forEach { logro ->
+                TarjetaPadre(espacio = 6.dp) {
                     Text(
-                        text = "• $logro",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        // "Octubre 2026" -> "Octubre"
+                        monthData.monthName.substringBefore(' ').ifBlank { "El mes" },
+                        fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = PadreColores.Ink,
                     )
+                    Text(monthData.summaryText, fontFamily = Poppins, fontSize = 13.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium, color = PadreColores.GrisTexto)
                 }
             }
         }
+
+        if (resumenSemana != null) {
+            item { SemanaCard(resumen = resumenSemana) }
+        }
     }
 }
 
+// el mes en una tarjeta: su nombre, la cuadrícula y la leyenda de los colores.
 @Composable
-private fun DiaDeLaSemana(dia: DiaSemana) {
-    val (marca, color) = when (dia.estado) {
-        EstadoDia.ASISTIO -> "✓" to Teal
-        EstadoDia.FALTO -> "✗" to Coral
-        EstadoDia.SIN_REGISTRO -> "·" to MaterialTheme.colorScheme.outline
-    }
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = dia.letra,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
-            text = marca,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.ExtraBold,
-            color = color,
-        )
-    }
-}
-
-@Composable
-private fun WeeklyLine(label: String, value: String) {
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            text = "$label:",
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-    }
-}
-
-@Composable
-private fun CalendarGrid(
+private fun MesCard(
+    mes: String,
     days: List<CalendarDay>,
+    startOffset: Int,
     selectedDayNumber: Int,
     onDayClick: (CalendarDay) -> Unit,
-    startOffset: Int,
 ) {
-    val totalSlots = startOffset + days.size
-    val weekDays = listOf("L", "M", "M", "J", "V", "S", "D")
-
-    Column(
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            weekDays.forEach { dayLetter ->
+    TarjetaPadre(espacio = 8.dp) {
+        if (mes.isNotBlank()) {
+            Text(mes, fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = PadreColores.Ink, modifier = Modifier.padding(bottom = 4.dp))
+        }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            listOf("L", "M", "M", "J", "V", "S", "D").forEach { letra ->
                 Text(
-                    text = dayLetter,
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = MaterialTheme.colorScheme.outline,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.weight(1f),
+                    letra, modifier = Modifier.weight(1f), textAlign = TextAlign.Center,
+                    fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, color = PadreColores.Gris,
                 )
             }
         }
-
-        var slotIndex = 0
-        while (slotIndex < totalSlots) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
+        val total = startOffset + days.size
+        var inicio = 0
+        while (inicio < total) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 for (col in 0 until 7) {
-                    val currentSlot = slotIndex + col
-                    if (currentSlot >= startOffset && currentSlot < totalSlots) {
-                        val dayIndex = currentSlot - startOffset
-                        val day = days[dayIndex]
-                        CalendarDayCell(
-                            day = day,
-                            isSelected = day.dayNumber == selectedDayNumber,
-                            onClick = { onDayClick(day) },
-                            modifier = Modifier.weight(1f),
-                        )
+                    val slot = inicio + col
+                    if (slot in startOffset until total) {
+                        val day = days[slot - startOffset]
+                        DiaCelda(day, day.dayNumber == selectedDayNumber, { onDayClick(day) }, Modifier.weight(1f))
                     } else {
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 }
             }
-            slotIndex += 7
+            inicio += 7
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Leyenda(PadreColores.Morado, "Completo")
+            Leyenda(PadreColores.Verde, "Con nota")
+            Leyenda(PadreColores.Rojo, "No asistió")
         }
     }
 }
 
+// un día: el elegido en morado; los que tienen registro en lila con su punto de color; los demás, en gris.
 @Composable
-private fun CalendarDayCell(
-    day: CalendarDay,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val isHasRecord = day.status != DayAttendanceStatus.NO_RECORD
-
-    val containerColor = when {
-        isSelected -> MaterialTheme.colorScheme.primary
-        isHasRecord -> MaterialTheme.colorScheme.surfaceContainerLowest
-        else -> Color.Transparent
-    }
-
-    val textColor = when {
-        isSelected -> Color.White
-        isHasRecord -> MaterialTheme.colorScheme.onSurface
-        // los días sin registro se leen en claro y en oscuro, pero más suaves que los que tienen algo.
-        else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-    }
-
-    val dotColor = when {
-        isSelected -> Color.White
-        day.status == DayAttendanceStatus.FULL_DAY -> Teal
-        day.status == DayAttendanceStatus.WITH_NOTE -> Amber
-        day.status == DayAttendanceStatus.ABSENT -> Coral
-        else -> null
-    }
-
-    val border = when {
-        isSelected -> BorderStroke(1.5.dp, Color.Black)
-        isHasRecord -> BorderStroke(1.2.dp, Color.Black)
-        else -> null
-    }
-
-    Surface(
+private fun DiaCelda(day: CalendarDay, elegido: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val conRegistro = day.status != DayAttendanceStatus.NO_RECORD
+    Column(
         modifier = modifier
-            .aspectRatio(0.85f)
-            .clip(RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        color = containerColor,
-        border = border,
-        shadowElevation = if (isHasRecord && !isSelected) 2.dp else 0.dp,
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Text(
-                text = day.dayNumber.toString(),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = if (isHasRecord || isSelected) FontWeight.Bold else FontWeight.SemiBold,
-                color = textColor,
+            .aspectRatio(0.9f)
+            .clip(RoundedCornerShape(14.dp))
+            .background(
+                when {
+                    elegido -> PadreColores.Morado
+                    conRegistro -> PadreColores.Campo
+                    else -> Color.Transparent
+                }
             )
+            .clickable(onClick = onClick),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            day.dayNumber.toString(),
+            fontFamily = Poppins, fontSize = 14.sp,
+            fontWeight = if (conRegistro || elegido) FontWeight.ExtraBold else FontWeight.SemiBold,
+            color = when {
+                elegido -> Color.White
+                conRegistro -> PadreColores.Ink
+                else -> PadreColores.Gris
+            },
+        )
+        val punto = if (elegido && conRegistro) Color.White else colorDe(day.status)
+        Spacer(Modifier.height(3.dp))
+        Box(Modifier.size(6.dp).clip(CircleShape).background(punto ?: Color.Transparent))
+    }
+}
 
-            if (dotColor != null) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Box(
-                    modifier = Modifier
-                        .size(6.dp)
-                        .background(dotColor, CircleShape,)
-                )
-            } else {
-                Spacer(modifier = Modifier.height(10.dp))
+@Composable
+private fun Leyenda(color: Color, texto: String) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Box(Modifier.size(8.dp).clip(CircleShape).background(color))
+        Text(texto, fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = PadreColores.GrisTexto)
+    }
+}
+
+// el resumen de la semana (RF-12): cómo estuvo cada día y los totales, con el estilo de los datos del admin.
+@Composable
+private fun SemanaCard(resumen: ResumenSemana) {
+    TarjetaPadre(espacio = 12.dp) {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text("Resumen de la semana", fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = PadreColores.Ink)
+            Text(resumen.rango, fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = PadreColores.GrisTexto)
+        }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            resumen.dias.forEach { dia -> DiaDeLaSemana(dia) }
+        }
+        Linea("Asistió", "${resumen.diasAsistidos} ${if (resumen.diasAsistidos == 1) "día" else "días"}" +
+            if (resumen.diasAusente > 0) " · faltó ${resumen.diasAusente}" else "")
+        // lo que la maestra no registró en la semana ("—") no se muestra.
+        listOf("Ánimo" to resumen.animo, "Comidas" to resumen.comidas, "Siesta promedio" to resumen.siesta)
+            .filter { (_, valor) -> valor.isNotBlank() && valor != "—" }
+            .forEach { (etiqueta, valor) -> Linea(etiqueta, valor) }
+        if (resumen.cambios > 0) Linea("Cambios de pañal", resumen.cambios.toString())
+        if (resumen.notasFamilia > 0) Linea("Tus notas", resumen.notasFamilia.toString())
+        if (resumen.logros.isNotEmpty()) {
+            Text("Logros de la semana", fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold, color = PadreColores.Ink, modifier = Modifier.padding(top = 2.dp))
+            resumen.logros.forEach { logro ->
+                Text("• $logro", fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Medium, color = PadreColores.Ink)
             }
         }
     }
 }
 
+// un día de la semana: la letra y una pastilla con la marca (asistió, faltó o sin registro).
 @Composable
-private fun AttendanceLegendCard() {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shadowElevation = 2.dp,
-    ) {
-        Column(
-            modifier = Modifier.padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            LegendRow(
-                dotColor = Teal,
-                label = "Día completo, sin novedad",
-            )
-            LegendRow(
-                dotColor = Amber,
-                label = "Con nota de la maestra",
-            )
-            LegendRow(
-                dotColor = Coral,
-                label = "No asistió",
-            )
-        }
+private fun DiaDeLaSemana(dia: DiaSemana) {
+    val (marca, fondo, color) = when (dia.estado) {
+        EstadoDia.ASISTIO -> Triple("✓", PadreColores.Lila, PadreColores.Morado)
+        EstadoDia.FALTO -> Triple("✗", PadreColores.RojoSuave, PadreColores.Rojo)
+        EstadoDia.SIN_REGISTRO -> Triple("·", PadreColores.Campo, PadreColores.Gris)
     }
-}
-
-@Composable
-private fun LegendRow(
-    dotColor: Color,
-    label: String,
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(dia.letra, fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, color = PadreColores.Gris)
         Box(
-            modifier = Modifier
-                .size(10.dp)
-                .background(dotColor, CircleShape)
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
+            Modifier.size(32.dp).clip(RoundedCornerShape(10.dp)).background(fondo),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(marca, fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold, color = color)
+        }
     }
 }
 
+// una línea del resumen: la etiqueta en gris a la izquierda y el valor en negritas a la derecha.
 @Composable
-private fun MonthlySummaryCard(monthText: String, summaryText: String) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
-        color = TealWash,
-    ) {
-        Column(
-            modifier = Modifier.padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            Text(
-                text = "$monthText en una línea",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.ExtraBold,
-                color = TealDeep,
-            )
-            Text(
-                text = summaryText,
-                style = MaterialTheme.typography.bodyMedium,
-                color = TealDeep.copy(alpha = 0.85f),
-                lineHeight = 21.sp,
-            )
-        }
+private fun Linea(etiqueta: String, valor: String) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Text(etiqueta, fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = PadreColores.GrisTexto)
+        Text(valor, fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = PadreColores.Ink, textAlign = TextAlign.End, modifier = Modifier.padding(start = 12.dp))
     }
 }
 

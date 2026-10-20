@@ -334,3 +334,10 @@ Cambios de diseño pedidos por el usuario y revisados en el emulador contra la A
 - **App:** en el detalle del padre, sección «Vincular a otro niño» (solo niños inscritos que todavía no son suyos) con botón «Vincular». Al inscribir un padre nuevo, la lista de hijos ya no ofrece niños dados de baja.
 - **Falta desplegar la API** en el servidor compartido para que «Vincular» funcione desde la app.
 
+## 2026-10-20 · Padres: pantallas con el estilo del admin
+
+- **Auditoría:** las pantallas del padre ya jalaban todo de la API (día, línea de tiempo, menú, calendario, resumen semanal, «Mi hijo» y fotos). Lo que no era real: la lista `fotosDemo` (solo valor por omisión; se quitó) y el fondo rayado de cuatro colores de las fotos (`Tono`; se quitó del modelo y del ViewModel). Fotos tampoco usaba Poppins de verdad (`FontFamily.Default`).
+- **Lo que no tiene dato ya no sale:** las métricas de Hoy (ánimo, comidas, pañal, siesta) si la maestra no llenó el resumen; «Ánimo», «Comidas» y «Siesta promedio» del resumen semanal si no hay registro; «Todavía no hay notas de este día» va en gris (el ViewModel ya no lo inventa como si fuera una nota).
+- **Estilo:** `ParentStyle.kt` con las piezas del admin. Hoy, Calendario, Fotos y Mi hijo con tarjetas blancas, lila con morado y sin etiquetas de sección («SU DÍA, PASO A PASO», «… en una línea»). Calendario: el mes en una tarjeta con su nombre y la leyenda dentro; colores por estado morado, verde y rojo. Fotos: chips como el filtro del admin en lugar del menú desplegable. Mi hijo: cada dato en su tarjeta (sin «Nombre completo», que ya es el título) y campos de salud lila. `MenuCard` (también en Mi día de la docente) y el selector de hijo con los mismos colores.
+- **Verificado** en el emulador contra la API compartida con una cuenta de padre: Hoy, Calendario y Mi hijo. Fotos solo en el estado vacío (los niños de esa cuenta no tienen fotos). Chat no se tocó (es la misma pantalla de la docente). `./gradlew test` 138 en verde.
+

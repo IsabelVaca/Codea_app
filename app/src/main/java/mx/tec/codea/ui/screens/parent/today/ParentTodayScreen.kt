@@ -8,21 +8,18 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,26 +27,26 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import mx.tec.codea.domain.MenuDelDia
+import mx.tec.codea.ui.components.MenuCard
+import mx.tec.codea.ui.screens.parent.PadreColores
+import mx.tec.codea.ui.screens.parent.PastillaPadre
+import mx.tec.codea.ui.screens.parent.TarjetaPadre
 import mx.tec.codea.ui.screens.parent.notifications.HoyHeader
 import mx.tec.codea.ui.screens.parent.notifications.NotifUi
 import mx.tec.codea.ui.screens.parent.notifications.PanelNotificaciones
 import mx.tec.codea.ui.theme.CodeaTheme
-import mx.tec.codea.ui.theme.Coral
-import mx.tec.codea.ui.theme.CoralDeep
-import mx.tec.codea.ui.theme.CoralWash
-import mx.tec.codea.ui.theme.Lavender
-import mx.tec.codea.ui.theme.Teal
-import mx.tec.codea.ui.theme.TealDeep
-import mx.tec.codea.domain.MenuDelDia
-import mx.tec.codea.ui.components.MenuCard
-import mx.tec.codea.ui.theme.TealWash
-import mx.tec.codea.ui.theme.VioletDeep
+import mx.tec.codea.ui.theme.Poppins
 
+// "Hoy" del padre, con el estilo del admin: tarjetas blancas, lila con morado y sin etiquetas de sección.
 @Composable
 fun ParentTodayScreen(
     modifier: Modifier = Modifier,
@@ -75,7 +72,7 @@ fun ParentTodayScreen(
             .fillMaxSize()
             .imePadding(),
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
             HoyHeader(
@@ -91,46 +88,39 @@ fun ParentTodayScreen(
             )
         }
 
-        item {
-            DateBannerCard(
-                dateText = summary.dateFormatted,
-                onNavigateToCalendar = onNavigateToCalendar,
-            )
-        }
+        item { FechaCard(fecha = summary.dateFormatted, onVerMes = onNavigateToCalendar) }
 
-        item {
-            ChildSummaryCard(summary = summary)
-        }
+        item { NinoCard(summary = summary) }
 
-        item {
-            MetricsGrid(summary = summary)
+        // solo las métricas que la maestra ya llenó; sin resumen del día no sale ninguna.
+        val metricas = listOf(
+            "Ánimo" to summary.mood,
+            "Comidas" to summary.meals,
+            "Pañal / baño" to summary.diaperOrBathroom,
+            "Siesta" to summary.napDuration,
+        ).filter { (_, valor) -> valor != "—" && valor.isNotBlank() }
+        if (metricas.isNotEmpty()) {
+            item { Metricas(metricas) }
         }
 
         menu?.let { item { MenuCard(menu = it) } }
 
-        item {
-            Text(
-                text = "SU DÍA, PASO A PASO",
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = 1.3.sp,
-                color = MaterialTheme.colorScheme.outline,
-                modifier = Modifier.padding(top = 8.dp, bottom = 2.dp),
-            )
+        if (timelineEvents.isEmpty()) {
+            item {
+                Text(
+                    "Todavía no hay actividades registradas este día.",
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = PadreColores.Gris,
+                )
+            }
         }
-
-        items(
-            items = timelineEvents,
-            key = { it.id },
-        ) { event ->
-            TimelineEventCard(event = event)
-        }
+        items(items = timelineEvents, key = { it.id }) { event -> EventoCard(event) }
 
         item {
-            HomeNoticeCard(
-                childFirstName = summary.childFirstName,
-                onSendNote = onSendNote,
-                modifier = Modifier.padding(top = 8.dp, bottom = 16.dp),
+            AvisoDesdeCasa(
+                nombre = summary.childFirstName,
+                onEnviar = onSendNote,
+                modifier = Modifier.padding(top = 4.dp, bottom = 16.dp),
             )
         }
     }
@@ -141,351 +131,132 @@ fun ParentTodayScreen(
     }
 }
 
+// el día que se está viendo y el atajo al calendario.
 @Composable
-private fun DateBannerCard(
-    dateText: String,
-    onNavigateToCalendar: () -> Unit,
-) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surfaceContainer,
-    ) {
+private fun FechaCard(fecha: String, onVerMes: () -> Unit) {
+    TarjetaPadre(padding = 14.dp) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(10.dp)
-                        .background(Teal, CircleShape)
-                )
-                Text(
-                    text = dateText,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            }
-
-            OutlinedButton(
-                onClick = onNavigateToCalendar,
-                shape = RoundedCornerShape(14.dp),
-                border = null,
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                    contentColor = MaterialTheme.colorScheme.primary,
-                ),
-                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
-            ) {
-                Text(
-                    text = "Ver el mes",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.ExtraBold,
-                )
+            Text(
+                fecha, modifier = Modifier.weight(1f).padding(start = 4.dp),
+                fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = PadreColores.Ink,
+            )
+            TextButton(onClick = onVerMes) {
+                Text("Ver el mes", fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, color = PadreColores.Morado)
             }
         }
     }
 }
 
+// el niño: iniciales en lila como las tarjetas del admin, su nombre, su sala y la nota del día.
 @Composable
-private fun ChildSummaryCard(summary: DaySummary) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        color = CoralWash,
-    ) {
-        Column(
-            modifier = Modifier.padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
+private fun NinoCard(summary: DaySummary) {
+    TarjetaPadre(espacio = 12.dp) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+            Box(
+                modifier = Modifier
+                    .size(50.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(PadreColores.Lila),
+                contentAlignment = Alignment.Center,
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(52.dp)
-                        .background(Coral, CircleShape),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = summary.childInitials,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color.White,
-                    )
-                }
-
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
-                ) {
-                    Text(
-                        text = summary.childFullName,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        // la tarjeta es de un color claro fijo (CoralWash): el texto no sigue el modo oscuro.
-                        color = mx.tec.codea.ui.theme.Ink,
-                    )
-                    Text(
-                        text = summary.childGroup,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = CoralDeep.copy(alpha = 0.8f),
-                    )
+                Text(summary.childInitials, color = PadreColores.Morado, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(summary.childFullName, fontFamily = Poppins, fontSize = 17.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
+                if (summary.childGroup.isNotBlank()) {
+                    Text(summary.childGroup, fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = PadreColores.GrisTexto)
                 }
             }
-
-            Text(
-                text = summary.generalNote,
-                style = MaterialTheme.typography.bodyMedium,
-                color = mx.tec.codea.ui.theme.Ink.copy(alpha = 0.85f),
-                lineHeight = 21.sp,
-            )
         }
+        // sin nota de la maestra, el aviso va en gris para que no parezca una nota.
+        Text(
+            summary.generalNote.ifBlank { "Todavía no hay notas de este día." },
+            fontFamily = Poppins, fontSize = 14.sp, lineHeight = 21.sp, fontWeight = FontWeight.Medium,
+            color = if (summary.generalNote.isBlank()) PadreColores.Gris else PadreColores.Ink,
+        )
     }
 }
 
+// las métricas del día de dos en dos: etiqueta chica en gris y valor en morado.
 @Composable
-private fun MetricsGrid(summary: DaySummary) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            MetricCard(
-                label = "ÁNIMO",
-                value = summary.mood,
-                containerColor = Lavender,
-                valueColor = VioletDeep,
-                modifier = Modifier.weight(1f),
-            )
-            MetricCard(
-                label = "COMIDAS",
-                value = summary.meals,
-                containerColor = TealWash,
-                valueColor = TealDeep,
-                modifier = Modifier.weight(1f),
-            )
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            MetricCard(
-                label = "PAÑAL / BAÑO",
-                value = summary.diaperOrBathroom,
-                containerColor = Color(0xFFFFF8E7),
-                valueColor = Color(0xFF8A6400),
-                modifier = Modifier.weight(1f),
-            )
-            MetricCard(
-                label = "SIESTA",
-                value = summary.napDuration,
-                containerColor = CoralWash,
-                valueColor = CoralDeep,
-                modifier = Modifier.weight(1f),
-            )
-        }
-    }
-}
-
-@Composable
-private fun MetricCard(
-    label: String,
-    value: String,
-    containerColor: Color,
-    valueColor: Color,
-    modifier: Modifier = Modifier,
-) {
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
-        color = containerColor,
-    ) {
-        Column(
-            modifier = Modifier.padding(14.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            Text(
-                text = label.uppercase(),
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp,
-                color = valueColor.copy(alpha = 0.7f),
-            )
-            Text(
-                text = value,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.ExtraBold,
-                color = valueColor,
-            )
-        }
-    }
-}
-
-@Composable
-private fun TimelineEventCard(event: TimelineEvent) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shadowElevation = 2.dp,
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    modifier = Modifier.weight(1f),
-                ) {
-                    val dotColor = when (event.type) {
-                        TimelineEventType.CHECK_IN, TimelineEventType.ARRIVAL, TimelineEventType.MEAL, TimelineEventType.DEPARTURE -> Teal
-                        TimelineEventType.ACTIVITY, TimelineEventType.NAP -> MaterialTheme.colorScheme.primary
+private fun Metricas(metricas: List<Pair<String, String>>) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        metricas.chunked(2).forEach { fila ->
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                fila.forEach { (etiqueta, valor) ->
+                    TarjetaPadre(modifier = Modifier.weight(1f), padding = 14.dp, espacio = 4.dp) {
+                        Text(etiqueta.uppercase(), fontFamily = Poppins, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.1.sp, color = PadreColores.Gris)
+                        Text(valor, fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = PadreColores.Morado)
                     }
-
-                    Box(
-                        modifier = Modifier
-                            .size(12.dp)
-                            .background(dotColor, RoundedCornerShape(4.dp))
-                    )
-
-                    Text(
-                        text = event.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
                 }
-
-                Text(
-                    text = event.time,
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.outline,
-                )
+                // si queda una sola en la fila, ocupa la mitad igual que las demás.
+                if (fila.size == 1) Box(Modifier.weight(1f))
             }
-
-            Text(
-                text = event.description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = 22.dp),
-            )
         }
     }
 }
 
+// un momento del día: la hora en pastilla, el título y lo que escribió la maestra.
 @Composable
-private fun HomeNoticeCard(
-    childFirstName: String,
-    onSendNote: (String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    var noteText by remember { mutableStateOf("") }
-    var isSubmitted by remember { mutableStateOf(value = false) }
+private fun EventoCard(event: TimelineEvent) {
+    TarjetaPadre(padding = 14.dp, espacio = 6.dp) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            if (event.time.isNotBlank()) PastillaPadre(event.time)
+            Text(event.title, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, color = PadreColores.Ink)
+        }
+        if (event.description.isNotBlank()) {
+            Text(event.description, fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Medium, color = PadreColores.GrisTexto)
+        }
+    }
+}
 
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
-        color = TealWash,
-    ) {
-        Column(
-            modifier = Modifier.padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Text(
-                text = "Aviso desde casa",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.ExtraBold,
-                color = TealDeep,
-            )
-
-            Text(
-                text = "Cuéntale a la asistente cómo amaneció $childFirstName.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = TealDeep.copy(alpha = 0.85f),
-            )
-
-            OutlinedTextField(
-                value = noteText,
-                onValueChange = {
-                    noteText = it
-                    if (isSubmitted) isSubmitted = false
-                },
-                placeholder = {
-                    Text(
-                        text = "Escribe una nota o aviso para hoy...",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                    )
-                },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 2,
-                maxLines = 4,
-                shape = RoundedCornerShape(16.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    disabledContainerColor = Color.White,
-                    focusedBorderColor = Teal,
-                    unfocusedBorderColor = Teal.copy(alpha = 0.3f),
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                ),
-            )
-
-            Button(
-                onClick = {
-                    if (noteText.isNotBlank()) {
-                        onSendNote(noteText)
-                        noteText = ""
-                        isSubmitted = true
+// la nota de la familia para la asistente, con el mismo campo y botón que el formulario de Avisos.
+@Composable
+private fun AvisoDesdeCasa(nombre: String, onEnviar: (String) -> Unit, modifier: Modifier = Modifier) {
+    var texto by remember { mutableStateOf("") }
+    TarjetaPadre(modifier = modifier, espacio = 10.dp) {
+        Text("Aviso desde casa", fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = PadreColores.Ink)
+        BasicTextField(
+            value = texto,
+            onValueChange = { texto = it },
+            textStyle = TextStyle(fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = PadreColores.Ink),
+            cursorBrush = SolidColor(PadreColores.Violeta),
+            modifier = Modifier.fillMaxWidth(),
+            decorationBox = { interno ->
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 72.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(PadreColores.Campo)
+                        .padding(horizontal = 14.dp, vertical = 12.dp)
+                ) {
+                    if (texto.isEmpty()) {
+                        Text(
+                            "Cuéntale a la asistente cómo amaneció $nombre…",
+                            fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = PadreColores.Gris,
+                        )
                     }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = noteText.isNotBlank(),
-                shape = RoundedCornerShape(18.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Teal,
-                    contentColor = Color.White,
-                    disabledContainerColor = Teal.copy(alpha = 0.4f),
-                    disabledContentColor = Color.White.copy(alpha = 0.7f),
-                ),
-                contentPadding = PaddingValues(14.dp),
-            ) {
-                Text(
-                    text = if (isSubmitted) "¡Nota enviada para hoy!" else "Enviar nota de hoy",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.ExtraBold,
-                )
-            }
-
-            if (isSubmitted) {
-                Text(
-                    text = "✓ La nota fue enviada a la asistente.",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = TealDeep,
-                )
-            }
+                    interno()
+                }
+            },
+        )
+        Button(
+            onClick = {
+                onEnviar(texto)
+                texto = ""
+            },
+            enabled = texto.isNotBlank(),
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = PadreColores.Violeta, contentColor = Color.White),
+            shape = RoundedCornerShape(14.dp),
+            elevation = ButtonDefaults.buttonElevation(0.dp),
+        ) {
+            Text("Enviar nota de hoy", fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.Bold)
         }
     }
 }

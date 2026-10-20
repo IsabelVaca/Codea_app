@@ -33,7 +33,6 @@ import mx.tec.codea.ui.screens.parent.calendar.CalendarMonthData
 import mx.tec.codea.ui.screens.parent.calendar.DayAttendanceStatus
 import mx.tec.codea.ui.screens.parent.photos.Categoria
 import mx.tec.codea.ui.screens.parent.photos.Foto
-import mx.tec.codea.ui.screens.parent.photos.Tono
 import mx.tec.codea.data.toMenu
 import mx.tec.codea.domain.MenuDelDia
 import mx.tec.codea.ui.screens.parent.today.DaySummary
@@ -314,7 +313,7 @@ class ParentViewModel : ViewModel() {
             childInitials = iniciales,
             childGroup = listOfNotNull(child.classroom?.name, child.centerName.ifBlank { null }).joinToString(" · "),
             dateFormatted = if (date == hoy) "Hoy · ${fechaLarga(date)}" else fechaLarga(date),
-            generalNote = s?.generalNote?.ifBlank { null } ?: "Todavía no hay notas de este día.",
+            generalNote = s?.generalNote.orEmpty().trim(),
             mood = when (s?.mood) {
                 "HAPPY" -> "Contento"
                 "CALM" -> "Tranquilo"
@@ -414,7 +413,6 @@ class ParentViewModel : ViewModel() {
             fecha = SimpleDateFormat("EEE d MMM", es).format(dia.time).replace(".", "").lowercase(es),
             etiqueta = etiqueta,
             categoria = categoria,
-            tono = Tono.entries[id % Tono.entries.size],
             hora = clockOf(takenAt) ?: "",
             maestra = teacherName,
             nota = note ?: "",
