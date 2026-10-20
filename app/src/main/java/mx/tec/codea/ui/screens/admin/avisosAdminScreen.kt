@@ -90,7 +90,6 @@ fun AvisosAdminScreen(
             modifier = Modifier.verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            SeccionLabel("Publicar aviso del centro")
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 DestinoDropdown(
                     salas = salas,
