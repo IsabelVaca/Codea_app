@@ -18,7 +18,7 @@ La docente solo ve su sala (`ensure_classroom_access`).
 
 | Hecho | Pendiente |
 |---|---|
-| CRUD completo, cupo, asistentes, "Mi sala" | Impedir pasarse del cupo al mover niños (verificar la regla) |
+| CRUD completo, cupo, asistentes, "Mi sala" | Impedir pasarse del cupo al inscribir o mover niños (hoy la API no lo revisa) |
 | | Auditar altas y bajas |
 
 Pruebas: `tests/test_admin.py`, `tests/test_teacher_day.py`.

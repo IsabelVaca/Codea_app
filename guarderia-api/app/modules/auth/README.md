@@ -32,10 +32,10 @@ Piezas compartidas: `core/tokens.py` (JWT, refresh, códigos), `core/passwords.p
 |---|---|
 | Login, activar con código, refresh con rotación y detección de reuso, logout, cambio de contraseña, cerrar sesiones, códigos nuevos y de recuperación, baja que corta el acceso | Límite en `refresh` (los refresh tokens tienen entropía alta, el riesgo es bajo) |
 | **Límite de intentos** (ver abajo) y **auditoría** de logins, códigos y bajas (`modules/audit`) | Lista de sesiones abiertas; segundo factor para el admin |
-| 31 pruebas en `tests/test_auth.py` y 23 en `tests/test_security.py` | Sin correos: la invitación la manda el admin por WhatsApp (decisión del equipo) |
+| 33 pruebas en `tests/test_auth.py`, 23 en `tests/test_security.py` y 7 en `tests/test_invitations.py` (enlace y `assetlinks`) | Sin correos: la invitación la manda el admin por WhatsApp (decisión del equipo) |
 | | Rotación de la llave del JWT (`kid`), tarea que borre refresh tokens y códigos vencidos |
 
-Diseño y decisiones: [`docs/plan/04-api-login-jwt.md`](../../../../docs/plan/04-api-login-jwt.md). Diferencias con ese plan: `POST /me/password` devuelve `200 TokenOut` (y no 204) para que quien cambia su contraseña siga dentro; el código se acepta con o sin guion y en cualquier mayúscula.
+Diseño y decisiones: [`docs/plan/04-api-login-jwt.md`](../../../../docs/plan/04-api-login-jwt.md). Diferencias con ese plan: `POST /me/password` devuelve `200 TokenOut` (y no 204) para que quien cambia su contraseña siga dentro; el código se acepta con o sin guion y en cualquier mayúscula: `normalize_code` solo compara letras y números, así que tampoco estorban los espacios ni los caracteres invisibles que trae un texto copiado de WhatsApp. El correo pasa por `rules.clean_email` (sin espacios ni invisibles, en minúsculas) en el alta, el login y la activación.
 
 ## Límite de intentos (`throttle.py`)
 
@@ -51,4 +51,4 @@ Se cuentan los fallos de `/auth/login` y de `/auth/activate` (el código es cort
 - Los fallos se guardan por correo aunque la cuenta no exista, así el bloqueo no delata qué correos están registrados.
 - Entrar bien borra los fallos de ese correo. Se guarda en Postgres (`auth_attempt`), por eso vale con varios procesos de la API.
 - Riesgo conocido: alguien puede bloquear la cuenta de otra persona 15 minutos fallando a propósito. Se acepta a cambio de frenar la fuerza bruta; la ventana es corta.
-- Detrás de un proxy, `request.client` debe traer la IP real (`uvicorn --proxy-headers` y un proxy de confianza); si no, el límite por IP vería a todos como la misma.
+- Detrás de un proxy, `request.client` debe traer la IP real (`uvicorn --proxy-headers` y un proxy de confianza); si no, el límite por IP vería a todos como la misma. En producción ya está: `docker-compose.prod.yml` arranca uvicorn con `--proxy-headers` y solo confía en la red interna del túnel.

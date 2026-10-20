@@ -17,8 +17,16 @@ Solo se agregan filas: la API no tiene forma de editarlas ni de borrarlas (`PUT`
 | `PASSWORD_CHANGED`, `SESSIONS_CLOSED` | cuenta propia | `revoked` (cuántas sesiones) |
 | `TOKEN_REUSE_DETECTED` | llegó un refresh token ya rotado (posible robo) | — |
 | `ACCESS_CODE_ISSUED`, `USER_INVITED` | el admin genera un código o invita | `purpose` o `role` |
-| `USER_CREATED`, `USER_UPDATED`, `USER_DEACTIVATED`, `USER_REACTIVATED` | altas, cambios y bajas de docentes y padres | `role`, sala, turno, hijos |
+| `USER_CREATED`, `USER_UPDATED`, `USER_DEACTIVATED`, `USER_REACTIVATED` | altas, cambios y bajas de docentes y padres (también ligar más hijos a un padre) | `role`, sala, turno, hijos (`linked_children`) |
 | `CHILD_ENROLLED`, `CHILD_UPDATED`, `CHILD_DEACTIVATED`, `CHILD_REACTIVATED` | inscripción, cambio de sala y bajas | sala |
+| `CHILD_HEALTH_UPDATED` | la familia o el admin cambian la salud del niño | `fields` (qué campos; nunca su contenido) |
+| `PICKUP_ADDED`, `PICKUP_REMOVED` | el admin agrega o quita una persona autorizada | `pickup_id` |
+| `CHILD_DEPARTED`, `CHILD_DEPARTURE_UNDONE` | la docente registra o quita la salida del niño | `picked_up_by` |
+| `CENTER_UPDATED` | cambios del centro (`PATCH /center`) | campos, ubicación, radio y horario |
+| `MENU_SAVED`, `MENU_DELETED` | el admin guarda o quita el menú del día | `date` |
+| `MEDIA_DELETED_BY_FAMILY` | un padre borra una foto | `children` si salían niños de otras familias |
+
+`MEDIA_DELETION_APPROVED` y `MEDIA_DELETION_REJECTED` siguen en `service.py` y en filas viejas, pero ya no se generan: la revisión de borrado se quitó el 19/oct.
 
 **Nunca se guardan** contraseñas, códigos de acceso, tokens ni sus hashes (hay una prueba que lo verifica en `tests/test_security.py`).
 El correo que se escribió en un login fallido sí queda (`actor_email`): hace falta para investigar un ataque y se considera dato personal (ver la clasificación de datos en `docs/entrega/`).
@@ -32,4 +40,4 @@ El correo que se escribió en un login fallido sí queda (`actor_email`): hace f
 
 ## Lo que todavía no se registra
 
-Lectura de fotos y documentos, reportes y mensajes (esas tablas ya guardan quién las creó: `recorded_by`, `marked_by`…), y cambios del centro (`PATCH /center`).
+Lectura de fotos y documentos, reportes y mensajes (esas tablas ya guardan quién las creó: `recorded_by`, `marked_by`…), y cambios de salas y plantillas de rutina.

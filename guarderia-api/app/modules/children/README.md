@@ -18,7 +18,7 @@ Edad válida: de 0 a 12 años (`core/rules.py`, igual que `InfanteValidator` en 
 | Hecho | Pendiente |
 |---|---|
 | Alta, edición, baja, alcance por rol | Varios tutores al inscribir (el modelo `parent_child_rel` ya lo permite) |
-| | Más datos del expediente (contactos de emergencia, información médica) si el cliente lo pide |
-| | Auditar quién consultó o cambió un expediente (dato sensible de menores) |
+| Datos de salud que escribe la familia (alergias, condiciones médicas, intolerancias, medicamentos, otras indicaciones) | Más datos del expediente (contactos de emergencia) si el cliente lo pide |
+| Los cambios quedan en la bitácora (`CHILD_ENROLLED`, `CHILD_UPDATED`, `CHILD_HEALTH_UPDATED`, bajas) | Auditar quién consultó un expediente (dato sensible de menores) |
 
 Pruebas: `tests/test_admin.py` (`test_enroll_child_*`, `test_child_scope`) y `tests/test_departures_and_health.py` (salud).

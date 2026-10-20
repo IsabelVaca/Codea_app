@@ -17,6 +17,6 @@ Tablas: `teacher` (con su sala y turno), `shift`.
 | Hecho | Pendiente |
 |---|---|
 | CRUD con baja y reactivación, turnos | Crear y editar turnos (hoy solo se listan) |
-| | Con JWT propio, "cerrar sesiones" deberá invalidar los refresh tokens, no solo llamar a Firebase |
+| La baja cierra sus sesiones con `revoke_all_sessions` (sube `token_version` y revoca sus refresh tokens) | |
 
 Pruebas: `tests/test_admin.py` (`test_teacher_rules_and_changes`).

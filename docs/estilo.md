@@ -30,6 +30,8 @@ mx/tec/codea/
 
 La regla de dependencias: `ui` conoce a `data` y a `domain`; `data` conoce a `domain`; `domain` no conoce a nadie.
 
+Lo que hoy no cumple este árbol: no hay Hilt (DI manual en `di/AppContainer.kt`, creado en `CodeaApplication`); la red vive en `data/api/` (no `remote/`) y sin `Mappers.kt`; Room y el worker de asistencia están en `data/offline/` (no hay `trabajo/`); no hay `notificaciones/`.
+
 ## Nombres
 
 - **El archivo se llama como el tipo principal que contiene**, en PascalCase: `FamiliasScreen.kt` para `FamiliasScreen`.
@@ -49,7 +51,7 @@ La regla de dependencias: `ui` conoce a `data` y a `domain`; `data` conoce a `do
 
 Lo que hoy no cumple (se corrige cuando se toque cada archivo para conectarlo a la API):
 
-- Archivos en minúscula o con otro nombre que su composable: `avisosAdminScreen.kt`, `crearSalaScreen.kt`, `docenteScreenAdmin.kt` (`DocenteScreen`), `infanteScreenAdmin.kt` (`InfanteScreen`), `salaDetalleScreen.kt` (`SalaAdminDetalleScreen`), etc.
+- Archivos en minúscula o con otro nombre que su composable: `avisosAdminScreen.kt`, `crearSalaScreen.kt`, `docenteScreenAdmin.kt` (`DocenteScreen`), `infanteScreenAdmin.kt` (`InfanteCard`), `salaDetalleScreen.kt` (`SalaAdminDetalleScreen`), etc.
 - Modelos en español y en inglés para la misma persona (`Infante` y `Child`, `Docente` y `Teacher`): se unifican con el glosario.
 
 ## Dominio
@@ -144,7 +146,7 @@ Práctica 10 y anexo de imágenes.
 Práctica 7.
 
 - En `ui/theme/`: `Color.kt` (esquemas claro y oscuro), `Type.kt`, `Shape.kt` y `Espaciado.kt` (seis pasos: 4, 8, 12, 16, 24, 32 dp).
-- **Color por rol, no por número:** nadie escribe `Color(0xFF…)` en una pantalla. Hoy hay unos 250 en `ui/screens/`; se mueven al tema (o a `DomainColors.kt`) conforme se toquen las pantallas.
+- **Color por rol, no por número:** nadie escribe `Color(0xFF…)` en una pantalla. Hoy hay unos 230 en `ui/screens/` (sobre todo en `admin/`); las del padre y la docente ya usan `CodeaColores` de `ui/components/EstiloTarjetas.kt`. Se mueven al tema (o a `DomainColors.kt`) conforme se toquen las pantallas.
 - El modo oscuro sigue al sistema; sin color dinámico, para que la app se vea igual en todos los teléfonos.
 - Accesibilidad: `contentDescription` en íconos e imágenes con significado, áreas táctiles de 48 dp y textos que crecen con la fuente del sistema.
 
@@ -157,7 +159,7 @@ Práctica 11.
 - Fakes con prefijo `Fake` que implementan la interfaz (no Retrofit); lo que la prueba no usa lanza `error("no se usa en estas pruebas")`.
 - Cada prueba: preparar, actuar, comprobar. Probar las orillas de cada regla (9 y 10 caracteres, 60 y 61 m).
 - En Compose, buscar por texto o por `contentDescription`, como lo haría TalkBack, no por `testTag`.
-- Nombres: el curso usa `snake_case` en español (`tocar_publicar_dos_veces_manda_un_solo_aviso`); las pruebas actuales de `domain/` usan inglés (`late_registersButMarksTheDelay`). Dentro de un archivo, un solo estilo; los archivos nuevos siguen al curso.
+- Nombres: el curso usa `snake_case` en español (`tocar_publicar_dos_veces_manda_un_solo_aviso`); las primeras pruebas de `domain/` usan inglés (`late_registersButMarksTheDelay`) y algunas nuevas, frases en español entre comillas invertidas (`HorarioRulesTest`, `MenuRulesTest`, `OfflineAttendanceTest`). Dentro de un archivo, un solo estilo; los archivos nuevos siguen al curso.
 
 ## Comentarios
 

@@ -7,10 +7,10 @@ Lo compartido por todos los módulos.
 | `config.py` | `Settings` (pydantic-settings): lee `.env`. `JWT_SECRET` es obligatorio (mínimo 32 caracteres) y no tiene valor por omisión |
 | `db.py` | Motor asíncrono, `Db` (una sesión por petición), `Base`, mixins `TimestampMixin`/`IdMixin`, `str_enum` (enums guardados como texto) |
 | `passwords.py` | Argon2id con `pwdlib`; corre en un hilo aparte porque tarda a propósito; compara contra un hash falso si el correo no existe |
-| `tokens.py` | JWT HS256 (`PyJWT`, algoritmo fijado al verificar), refresh token aleatorio, hash SHA-256 y códigos `XXXX-XXXX` |
+| `tokens.py` | JWT HS256 (`PyJWT`, algoritmo fijado al verificar), refresh token aleatorio, hash SHA-256 y códigos `XXXX-XXXX`; `normalize_code` compara el código solo con letras y números (sin guion, espacios ni invisibles) |
 | `security.py` | `CurrentUser` (persona con roles), `get_current_user` (decodifica el JWT), `revoke_all_sessions`, `require_role`, atajos `AdminUser`, `TeacherUser`, `ParentUser`, `StaffUser`, `AnyUser`, `AdminOrParent`, y el permiso por registro (`can_see_child`, `get_child_in_scope`, `ensure_classroom_access`) |
 | `errors.py` | `ApiError(status, code, title, detail, **extra)` y el formato Problem Details para todos los errores |
-| `rules.py` | Validaciones iguales a las de `domain/` en la app (nombre, teléfono, correo, cupo, edad) |
+| `rules.py` | Validaciones iguales a las de `domain/` en la app (nombre, teléfono, correo, cupo, edad, contraseña); `clean_email` quita espacios y caracteres invisibles del correo (alta, login y activación) |
 | `clock.py` | `now()`, `local_now(tz)`, `local_today(tz)`; las pruebas fijan el reloj aquí |
 | `storage.py` | Cliente S3: URLs firmadas de subida (5 min) y de descarga (10 min), bucket |
 | `pagination.py` | Paginación por cursor (`Page`, `parse_cursor`) |
@@ -28,7 +28,7 @@ La vigencia del token se compara con `clock.now()` (no con el reloj de PyJWT) pa
 
 ## Pendiente
 
-- **Rate limiting y cabeceras de seguridad:** un middleware nuevo (y el `CORSMiddleware` configurado) en `main.py`.
-- **Auditoría:** helper `audit(db, current, action, entity, id)` que escriba en `audit_log`.
+Ya están el límite de intentos (`modules/auth/throttle.py`), las cabeceras de seguridad y el CORS cerrado (`main.py`) y la bitácora (`audit.record` en `modules/audit`). Falta:
+
 - **Rotación de la llave del JWT** (`kid` en el header) y llave en Docker secrets.
 - **Logs estructurados** sin datos personales.

@@ -5,7 +5,7 @@ Prefijo `/children/{child_id}`. Tablas: `child_document` (título, vencimiento, 
 | Endpoint | Rol | Qué hace |
 |---|---|---|
 | `GET /children/{id}/documents` | admin o padre | Documentos pedidos, cada uno vigente o faltante |
-| `PUT /children/{id}/documents/{doc}` | ver `router.py` | Sube o reemplaza un documento con el mismo permiso temporal que las fotos |
+| `PUT /children/{id}/documents/{doc}` | admin o padre (sus hijos) | Sube o reemplaza un documento con el mismo permiso temporal que las fotos (un `media_id` que subió quien llama) |
 | `GET /children/{id}/authorized-pickups` | cualquiera con alcance | Personas autorizadas a recoger |
 | `POST /children/{id}/authorized-pickups` | **solo admin** | Agrega una persona (queda en la auditoría) |
 | `DELETE /children/{id}/authorized-pickups/{person}` | **solo admin** | Quita una persona (queda en la auditoría) |

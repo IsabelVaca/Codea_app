@@ -1,6 +1,6 @@
 # `menus`: menú del día (HN3)
 
-El admin captura lo que se come cada día del centro; las familias lo ven en Hoy y la docente en Mi día. Tabla: `daily_menu` (centro, fecha, `breakfast`, `lunch`, `snack`, quién lo guardó). Hay uno por centro y por día; cada comida es opcional, pero el menú lleva al menos una.
+El admin captura lo que se come cada día del centro; las familias lo ven en Hoy (Mi día de la docente ya no lo muestra desde su rediseño del 20/oct). Tabla: `daily_menu` (centro, fecha, `breakfast`, `lunch`, `snack`, quién lo guardó). Hay uno por centro y por día; cada comida es opcional, pero el menú lleva al menos una.
 
 | Endpoint | Rol | Qué hace |
 |---|---|---|
@@ -17,7 +17,7 @@ El admin captura lo que se come cada día del centro; las familias lo ven en Hoy
 | Hecho | Pendiente |
 |---|---|
 | Capturar, consultar por rango, reemplazar y quitar; menú dentro del día del niño | Menús por sala o por grupo de edad |
-| Pantalla del admin (Ajustes → Menú del día), tarjeta en Hoy de la familia y en Mi día | Copiar el menú de una semana a otra |
+| Pantalla del admin (Ajustes → Menú del día) y tarjeta en Hoy de la familia | Copiar el menú de una semana a otra |
 | | Alergias del niño contra el menú (avisar a la familia) |
 | | Verlo en un teléfono |
 

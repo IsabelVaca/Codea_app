@@ -1,6 +1,6 @@
 # API: login con correo, contraseña y JWT
 
-> **Estado (2026-10-17): implementado** en la rama `feature/login-jwt` (API y app), sin subir. Diferencias con este diseño: la contraseña lleva de **9** a 128 caracteres (RNF01 dice "mayores a 8"); `POST /me/password` devuelve `200 TokenOut` y no 204, para que quien la cambia siga dentro; un código nuevo deja sin vigencia a los anteriores; y quien está de baja recibe `403 USER_INACTIVE` aunque su token ya no coincida. La referencia vigente es [`guarderia-api/app/modules/auth/README.md`](../../guarderia-api/app/modules/auth/README.md).
+> **Estado (2026-10-20): implementado y en `main`** (se hizo en `feature/login-jwt` el 17/oct y se integró después; API y app). Diferencias con este diseño: la contraseña lleva de **9** a 128 caracteres (RNF01 dice "mayores a 8"); `POST /me/password` devuelve `200 TokenOut` y no 204, para que quien la cambia siga dentro; un código nuevo deja sin vigencia a los anteriores; y quien está de baja recibe `403 USER_INACTIVE` aunque su token ya no coincida. Después (19/oct) el código se compara solo con letras y números y al correo se le quitan espacios y caracteres invisibles, por lo que se copia de WhatsApp. `POST /auth/password/forgot` se descartó: no hay correo. La fase de seguridad está marcada al final. La referencia vigente es [`guarderia-api/app/modules/auth/README.md`](../../guarderia-api/app/modules/auth/README.md).
 
 El login propio reemplaza a Firebase Auth. La regla de la propuesta se queda: **el token dice quién eres y Postgres dice qué puedes hacer**. El JWT solo lleva el id de la persona; el rol, el alcance y si está activa se leen de la base en cada request, como ya hace `get_current_user`. Así, dar de baja a alguien corta su acceso en el siguiente request.
 
@@ -140,12 +140,12 @@ De 8 a 128 caracteres y distinta del correo. El tope de 128 evita que alguien ma
 
 Queda fuera de este plan y se revisa después:
 
-- Límite de intentos por IP y por correo en login, activar y refresh (Redis o tabla), y bloqueo temporal.
-- Respuesta con el mismo tiempo para correo existente y no existente (verificar contra un hash falso).
+- **Hecho (18/oct)** en login y activar, con tabla (`auth_attempt`): límite de intentos por IP y por correo, y bloqueo temporal. En refresh no.
+- **Hecho:** respuesta con el mismo tiempo para correo existente y no existente (verificar contra un hash falso).
 - Rotación de la llave del JWT (`kid` en el header) y llave en Docker secrets.
 - Política de contraseñas más fuerte y revisión contra contraseñas filtradas.
-- Auditoría de logins, códigos generados y bajas.
-- Lista de sesiones abiertas y "cerrar las demás sesiones" desde la app.
+- **Hecho (18/oct):** auditoría de logins, códigos generados y bajas (`audit_log`).
+- Lista de sesiones abiertas y "cerrar las demás sesiones" desde la app (la API ya tiene `DELETE /me/sessions`; la app no lo usa).
 - Tarea que borre refresh tokens y códigos vencidos.
 - Segundo factor para el `ADMIN`.
-- HTTPS obligatorio y HSTS (Cloudflare).
+- **Hecho (19/oct):** HTTPS con el túnel de Cloudflare (`api.codeaapp.site`) y HSTS fuera de desarrollo.

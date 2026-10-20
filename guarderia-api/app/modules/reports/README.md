@@ -16,9 +16,9 @@ Mismas reglas que `ReportValidator` en la app.
 
 | Hecho | Pendiente |
 |---|---|
-| Reportes a varios niños, con foto, línea de tiempo, resumen del día, **resumen semanal** (API) | Mostrar el resumen semanal en la app del padre |
+| Reportes a varios niños, con foto, línea de tiempo, resumen del día, **resumen semanal** (en la app del padre, en Calendario) | |
 | | **Exportar o imprimir reportes** (HN1) |
 | | **Consulta con IA** (CRF-04): el dictado ocurre en la app con el reconocedor del sistema; el backend no hace nada con IA |
 | | Editar o anular un reporte (hoy solo se crea) |
 
-Pruebas: `tests/test_weekly_summary.py` (6), `tests/test_teacher_day.py` (`test_report_rules`), `tests/test_media_documents.py` (`test_photo_report_reaches_the_family`), `tests/test_parent_views.py` (`test_today_screen`).
+Pruebas: `tests/test_weekly_summary.py` (7), `tests/test_teacher_day.py` (`test_report_rules`), `tests/test_media_documents.py` (`test_photo_report_reaches_the_family`), `tests/test_parent_views.py` (`test_today_screen`).

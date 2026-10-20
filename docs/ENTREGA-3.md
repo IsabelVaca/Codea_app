@@ -1,18 +1,18 @@
 # Checklist del RETO_ENTREGA_3 (rúbrica final)
 
 Entrega: **jueves 22 de octubre de 2026, 23:59**, en Canvas, un solo PDF por grupo. Vale 100 puntos.
-Estado a 2026-10-18 por la noche. Los entregables nuevos están en `docs/entrega/` (ya existen ocho documentos, con partes **[completar por el equipo]**).
+Estado a 2026-10-20. Los entregables nuevos están en `docs/entrega/` (ya existen ocho documentos, con partes **[completar por el equipo]**).
 
 ## Parte 1: Sistema funcionando
 
 | Elemento | Estado | Pendiente |
 |---|---|---|
 | App Android (build release firmado) | 🟡 | Crear keystore, `signingConfig` y activar minificación. |
-| Backend propio | 🟡 | Desplegarlo en una URL pública. |
-| Integración completa | 🟡 | Probar de punta a punta los tres roles contra el backend desplegado. |
+| Backend propio | ✅ | Desplegado desde el 19/oct en `https://api.codeaapp.site/api/v1/` (túnel de Cloudflare desde una Mac, base en Aiven, fotos en `archivos.codeaapp.site`), con respaldo diario de la base y las fotos desde el 20/oct. **Riesgo:** corre en una sola Mac, que no se debe dormir. |
+| Integración completa | 🟡 | La app del equipo apunta al servidor compartido y se probaron partes de los tres roles contra él ([`RECORRIDO.md`](RECORRIDO.md), [`BITACORA.md`](BITACORA.md)). Falta un recorrido completo de los tres roles en un teléfono con la versión final. |
 | Persistencia | ✅ | Postgres. |
 | Cámara, multimedia, sensores | ✅ | Cámara (reportes y chat), selector de fotos, micrófono (dictado) y marcador del teléfono (botón Llamar). **Ya no usa GPS** (el checador se simplificó el 18/oct). |
-| Operación sin conexión | 🟡 | **Asistencia de Mi sala** sin conexión: Room (cola de marcas y caché de la última Mi sala). Probado en el teléfono con la API apagada. Lo demás (reportes, fotos, chat, check-in) requiere conexión. |
+| Operación sin conexión | 🟡 | **Asistencia de Mi sala** sin conexión: Room (cola de marcas y caché de la última Mi sala). Probado en el teléfono con la API apagada. Desde el 20/oct los tres roles **ven** lo último que cargaron (Room, `cached_response`). Escribir lo demás (reportes, fotos, chat, check-in, pase de salida) requiere conexión. |
 | Sincronización posterior | 🟡 | WorkManager manda la cola solo al volver la red (reintento con espera creciente, colapsa marcas repetidas). Probado de punta a punta; solo cubre la asistencia. |
 | Datos realistas | ✅ | `python -m app.seed`. |
 
@@ -24,16 +24,16 @@ Estado a 2026-10-18 por la noche. Los entregables nuevos están en `docs/entrega
 | Validación de permisos, anti-IDOR | ✅ | RBAC + 404 fuera de alcance. [`api/matriz-de-roles.md`](api/matriz-de-roles.md) y `tests/test_access_matrix.py` (matriz de roles, IDOR de padre, docente, chat y fotos). |
 | Consultas parametrizadas | ✅ | SQLAlchemy ORM; pruebas de inyección en login, filtros y texto guardado (`test_access_matrix.py`). |
 | Rate limiting y bloqueo | ✅ | 5 fallos por correo y 30 por IP en 15 min en `/auth/login` y `/auth/activate`; `429` con `retry_after_s`. Pruebas en `tests/test_security.py`. Pendiente: límite en endpoints que no son de entrada. |
-| HTTPS, HSTS, cabeceras | 🟡 | Cabeceras listas (`nosniff`, `X-Frame-Options`, CSP, `Referrer-Policy`, `Permissions-Policy`, `Cache-Control: no-store`, CORS cerrado) y HSTS fuera de `ENV=dev`. **Falta HTTPS** (despliegue público). |
-| Secretos fuera del código | 🟡 | `.env` está ignorado; cambiar valores por defecto. |
+| HTTPS, HSTS, cabeceras | ✅ | HTTPS con el certificado de Cloudflare en `api.codeaapp.site` y `archivos.codeaapp.site`; la API responde `Strict-Transport-Security: max-age=31536000; includeSubDomains` (comprobado el 20/oct) y las cabeceras (`nosniff`, `X-Frame-Options`, CSP, `Referrer-Policy`, `Permissions-Policy`, `Cache-Control: no-store`, CORS cerrado). |
+| Secretos fuera del código | 🟡 | `.env` y `.env.prod` están ignorados: la base de Aiven, el token del túnel, las llaves del almacén y la llave JWT de producción solo viven en `.env.prod` de la Mac servidor. `.env.dev` es para desarrollo y no trae secretos reales. Falta cambiar los valores de ejemplo de `.env.example`. |
 | Escaneo dinámico (OWASP ZAP) | ❌ | Correrlo y documentar hallazgos y mitigaciones. |
 
 ## Parte 3: Pruebas y matriz de trazabilidad
 
 | Elemento | Estado |
 |---|---|
-| Pruebas del backend | ✅ 324 pruebas con pytest contra Postgres real (corridas el 18/oct). |
-| Pruebas JVM de la app | ✅ 125 pruebas (dominio, reglas de Mi sala y del pase de salida, invitación, sesión con servidor falso); contadas, no corridas en esta revisión. |
+| Pruebas del backend | ✅ 343 pruebas con pytest contra Postgres real (corridas el 20/oct, todas en verde). |
+| Pruebas JVM de la app | ✅ 140 pruebas (dominio, reglas de Mi sala y del pase de salida, invitación, duraciones, sesión con servidor falso); corridas el 20/oct, todas en verde. |
 | Pruebas de interfaz | ❌ Solo `ExampleInstrumentedTest`. |
 | Matriz de trazabilidad (ID, descripción, criterio, evidencia, resultado, estado) | 🟡 [`entrega/matriz-trazabilidad.md`](entrega/matriz-trazabilidad.md) existe; hay que repasarla contra el estado final de [`REQUISITOS.md`](REQUISITOS.md). |
 
@@ -72,7 +72,7 @@ Punto de partida: la app maneja datos de menores, fotos y documentos. Las tablas
 ## Parte 7: Presentación (15 min)
 
 Guion de tiempos: 2 min problema y alcance · 5 min demo en dispositivo físico · 2 min pruebas y matriz · 2 min seguridad · 1 min capacidad diferenciadora · 3 min documentación e implantación y dilemas éticos.
-Pendiente: guion, video de respaldo de ~3 min, APK de release.
+Pendiente: guion, video de respaldo de ~3 min, APK de release. Para la demo, la Mac servidor debe estar prendida y despierta, y el teléfono con internet (cualquier red: la API es pública).
 
 ## Contenido del PDF final (15 puntos)
 
