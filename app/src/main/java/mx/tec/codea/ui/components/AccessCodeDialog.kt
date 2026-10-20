@@ -30,19 +30,27 @@ import mx.tec.codea.data.AccessCodeNotice
 import mx.tec.codea.domain.Invite
 import mx.tec.codea.ui.theme.CodeaTheme
 
-// la invitación de alguien recién dado de alta. la API da el código una sola vez (en la base solo queda su hash),
-// así que este diálogo es la única oportunidad de mandarlo. el botón principal abre WhatsApp con el mensaje listo
+// la invitación de alguien recién dado de alta, o un código nuevo que pidió el admin ("Reenviar invitación").
+// la API da el código una sola vez (en la base solo queda su hash), así que este diálogo es la única oportunidad
+// de mandarlo. si la persona ya tenía cuenta (passwordReset), el código y el mensaje son para poner una contraseña nueva. el botón principal abre WhatsApp con el mensaje listo
 // (enlace que abre la app y, por si no abre, el correo y el código escritos); "Compartir" usa cualquier otra app.
 @Composable
 fun AccessCodeDialog(notice: AccessCodeNotice, onDismiss: () -> Unit) {
     val context = LocalContext.current
-    val message = if (notice.link != null) {
-        stringResource(
+    val message = when {
+        notice.passwordReset && notice.link != null -> stringResource(
+            R.string.reset_message_with_link,
+            notice.personName, notice.link, notice.email.orEmpty(), notice.code, notice.expiresAt,
+        )
+        notice.passwordReset -> stringResource(
+            R.string.reset_message_no_link,
+            notice.personName, notice.email.orEmpty(), notice.code, notice.expiresAt,
+        )
+        notice.link != null -> stringResource(
             R.string.invite_message_with_link,
             notice.personName, notice.link, notice.email.orEmpty(), notice.code, notice.expiresAt,
         )
-    } else {
-        stringResource(
+        else -> stringResource(
             R.string.invite_message_no_link,
             notice.personName, notice.email.orEmpty(), notice.code, notice.expiresAt,
         )
@@ -54,7 +62,10 @@ fun AccessCodeDialog(notice: AccessCodeNotice, onDismiss: () -> Unit) {
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    text = stringResource(R.string.access_code_body, notice.personName, notice.expiresAt),
+                    text = stringResource(
+                        if (notice.passwordReset) R.string.access_code_body_reset else R.string.access_code_body,
+                        notice.personName, notice.expiresAt,
+                    ),
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Text(

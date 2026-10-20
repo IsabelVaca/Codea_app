@@ -451,5 +451,19 @@
     <string name="access_code_share">Compartir</string>
     <string name="access_code_close">Listo</string>
     <string name="invite_message_with_link">Hola %1$s, la estancia La Oruga te invita a Codea.\n\nToca este enlace para crear tu cuenta:\n%2$s\n\nSi no se abre la app: instálala, toca «Es mi primera vez» y escribe tu correo (%3$s) y este código: %4$s\n\nEl código vence el %5$s.</string>
+    <string name="access_code_body_reset">%1$s ya tiene cuenta: con este código pone una contraseña nueva. Solo se muestra ahora y vence el %2$s.</string>
+    <string name="reset_message_with_link">Hola %1$s, aquí está tu código para poner una contraseña nueva en Codea.
+
+Toca este enlace:
+%2$s
+
+Si no se abre la app: ábrela, toca «Es mi primera vez» y escribe tu correo (%3$s) y este código: %4$s
+
+El código vence el %5$s.</string>
+    <string name="reset_message_no_link">Hola %1$s, aquí está tu código para poner una contraseña nueva en Codea.
+
+Abre la app, toca «Es mi primera vez» y escribe tu correo (%2$s) y este código: %3$s
+
+El código vence el %4$s.</string>
     <string name="invite_message_no_link">Hola %1$s, la estancia La Oruga te invita a Codea.\n\nPara crear tu cuenta: instala la app, toca «Es mi primera vez» y escribe tu correo (%2$s) y este código: %3$s\n\nEl código vence el %4$s.</string>
 </resources>

@@ -71,6 +71,21 @@ class DocentesAdminViewModel : ViewModel() {
         launchAction { repository.cambiarSala(docenteId, nuevaSala) }
     }
 
+    // código nuevo para que la docente active su cuenta (o ponga una contraseña nueva si ya tenía); sale en el diálogo
+    // del código de acceso. no avisa a DataEvents.changed: no cambia nada de la lista.
+    fun reenviarInvitacion(docenteId: String) {
+        val docente = getDocente(docenteId) ?: return
+        viewModelScope.launch {
+            try {
+                repository.nuevoCodigo(docente)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                DataEvents.notice("No se pudo generar el código: ${e.toUserMessage()}")
+            }
+        }
+    }
+
     // alterna: si está de baja la reactiva, si no la da de baja.
     fun darDeBaja(docenteId: String) {
         val actual = getDocente(docenteId) ?: return

@@ -674,7 +674,8 @@ fun CodeaNavHost(
                         docentesViewModel.cambiarSala(docenteId = docente.id, nuevaSala = nuevaSala)
                     },
                     onDarDeBaja = { docentesViewModel.darDeBaja(docente.id) },
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    onReenviarInvitacion = { docentesViewModel.reenviarInvitacion(docente.id) },
                 )
             }
             composable<AdminAltaAsistenteRoute> {

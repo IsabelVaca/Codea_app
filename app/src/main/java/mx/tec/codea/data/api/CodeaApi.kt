@@ -76,6 +76,11 @@ interface CodeaApi {
     @POST("teachers/{id}/reactivate")
     suspend fun reactivateTeacher(@Path("id") id: String): TeacherDto
 
+    // código de acceso nuevo para cualquier persona (solo admin): invitación si nunca entró, contraseña nueva si ya entró.
+    // deja sin vigencia el código anterior. el id de una docente es el de su usuario.
+    @POST("users/{id}/access-code")
+    suspend fun accessCode(@Path("id") userId: String): AccessCodeDto
+
     // ----- infantes -----
     @GET("children")
     suspend fun children(): List<ChildDto>

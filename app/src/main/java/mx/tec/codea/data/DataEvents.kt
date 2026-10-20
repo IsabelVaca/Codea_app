@@ -14,6 +14,8 @@ data class AccessCodeNotice(
     val phone: String? = null,
     val email: String? = null,
     val link: String? = null,
+    // true = la persona ya tenía cuenta y el código es para poner una contraseña nueva (no una invitación).
+    val passwordReset: Boolean = false,
 )
 
 // tres avisos globales entre los ViewModels:
