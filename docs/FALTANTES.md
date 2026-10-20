@@ -61,7 +61,7 @@ Puesto al día después del PR #9 (`e2e5564`). **Los documentos ya se pusieron a
 - **Probar «Mi hijo» en el teléfono**: guardar alergias y demás datos y ver el cambio en la ficha de la docente.
 - **Paginación de fotos** y probar la galería con una foto real (falla #10 de [`RECORRIDO.md`](RECORRIDO.md)). La solicitud de borrado está por quitarse (ver abajo).
 - Calendario: cambiar de mes y que tocar un día abra Hoy de ese día.
-- Chat. ~~Menú del día (HN3)~~: hecho y probado en el teléfono el 19/oct, en Hoy y en Mi día.
+- Chat. ~~Menú del día (HN3)~~: hecho y probado en el teléfono el 19/oct, en Hoy y en Mi día (el 20/oct se quitó de Mi día; sigue en Hoy de la familia).
 
 ## Cambios pedidos por el equipo (18/oct)
 

@@ -33,20 +33,19 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import mx.tec.codea.R
-import mx.tec.codea.domain.MenuDelDia
 import mx.tec.codea.domain.Routine
 import mx.tec.codea.domain.RoutineRules
 import mx.tec.codea.domain.Subprocess
 import mx.tec.codea.domain.SubprocessStatus
-import mx.tec.codea.ui.components.MenuCard
 import mx.tec.codea.ui.components.ScreenHeader
 import mx.tec.codea.ui.theme.CodeaTheme
-import mx.tec.codea.ui.theme.Sun
 
 // the "mi día" screen: the routine of today. the teacher taps any moment to pick it,
 // and the picked one opens as a big card with its actions.
@@ -70,8 +69,6 @@ fun MyDayScreen(
     departureReady: Boolean = false,
     departurePresent: Int = 0,
     onDepartureClick: () -> Unit = {},
-    // lo que se come hoy; null = todavía no hay menú y no se muestra nada.
-    menu: MenuDelDia? = null,
 ) {
     // al terminar la rutina la pantalla se mueve sola hasta el pase de salida (el último paso) y lo deja a media pantalla:
     // así se nota que es lo que sigue.
@@ -90,19 +87,15 @@ fun MyDayScreen(
         verticalArrangement = Arrangement.spacedBy(11.dp),
     ) {
         item {
-            ScreenHeader(
-                overline = routine.name,
-                title = stringResource(R.string.my_day_title),
-            )
+            ScreenHeader(title = stringResource(R.string.my_day_title))
         }
-        menu?.let { item(key = "menu") { MenuCard(menu = it, titulo = "MENÚ DE HOY") } }
         if (rollCallTotal > 0) {
             item(key = "roll-call") {
                 RollCallCard(present = rollCallPresent, total = rollCallTotal, onClick = onRollCallClick)
             }
         }
         item {
-            RoutineProgressCard(current = routine.currentStep, total = routine.subprocesses.size)
+            RoutineTitle()
         }
         // each moment picks the design that matches its status, and the picked one is big.
         items(routine.subprocesses, key = { it.number }) { subprocess ->
@@ -221,11 +214,14 @@ private fun DepartureStep(ready: Boolean, present: Int, onClick: () -> Unit, mod
 // ya con niños marcados queda tranquila, con el avance y una forma de revisar la lista.
 @Composable
 private fun RollCallCard(present: Int, total: Int, onClick: () -> Unit) {
+    val colors = MaterialTheme.colorScheme
     val pending = present == 0
+    // pendiente = lavanda (hay que hacerlo); hecho = casi blanco (ya quedó tranquilo).
+    val contentColor = if (pending) colors.onPrimaryContainer else colors.onSurface
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(22.dp),
-        color = if (pending) MaterialTheme.colorScheme.secondary.copy(alpha = 0.22f) else MaterialTheme.colorScheme.tertiaryContainer,
+        color = if (pending) colors.primaryContainer else colors.surfaceContainer,
     ) {
         Row(
             modifier = Modifier
@@ -239,7 +235,7 @@ private fun RollCallCard(present: Int, total: Int, onClick: () -> Unit) {
                     text = stringResource(R.string.roll_call_title),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.ExtraBold,
-                    color = if (pending) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onTertiaryContainer,
+                    color = contentColor,
                 )
                 Text(
                     text = if (pending) {
@@ -248,51 +244,41 @@ private fun RollCallCard(present: Int, total: Int, onClick: () -> Unit) {
                         pluralStringResource(R.plurals.roll_call_card_progress, total, present, total)
                     },
                     style = MaterialTheme.typography.bodyMedium,
-                    color = if (pending) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onTertiaryContainer,
+                    color = contentColor,
                 )
             }
             Text(
                 text = stringResource(if (pending) R.string.roll_call_card_action else R.string.roll_call_card_review),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.ExtraBold,
-                color = if (pending) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onTertiaryContainer,
+                color = contentColor,
             )
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
-                tint = if (pending) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onTertiaryContainer,
+                tint = contentColor,
             )
         }
     }
 }
 
-// the light purple card that says how far the teacher is in the routine.
+// el título de la lista de momentos: solo "Rutina", sin caja ni contador de avance.
 @Composable
-private fun RoutineProgressCard(current: Int, total: Int) {
-    Row(
-        modifier = Modifier
+private fun RoutineTitle(modifier: Modifier = Modifier) {
+    Text(
+        text = stringResource(R.string.my_day_routine_title),
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.onBackground,
+        modifier = modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(22.dp))
-            .padding(horizontal = 17.dp, vertical = 15.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Text(
-            text = stringResource(R.string.my_day_routine_steps),
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.ExtraBold,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Pill(
-            text = stringResource(R.string.my_day_progress, current, total),
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        )
-    }
+            .padding(top = 8.dp)
+            .semantics { heading() },
+    )
 }
 
-// a small row for every moment that is not picked. the colors say its status:
-// green = done, amber = in progress, grey = not started.
+// una fila chica por cada momento que no está elegido. el tono violeta dice su estado:
+// lavanda = en curso, casi blanco = hecho, gris violáceo = sin empezar.
 @Composable
 private fun SubprocessRow(
     subprocess: Subprocess,
@@ -302,8 +288,8 @@ private fun SubprocessRow(
 ) {
     val colors = MaterialTheme.colorScheme
     val (containerColor, contentColor) = when (subprocess.status) {
-        SubprocessStatus.DONE -> colors.tertiaryContainer to colors.onTertiaryContainer
-        SubprocessStatus.ACTIVE -> colors.secondary.copy(alpha = 0.16f) to colors.onSurface
+        SubprocessStatus.DONE -> colors.surfaceContainer to colors.onSurface
+        SubprocessStatus.ACTIVE -> colors.primaryContainer to colors.onPrimaryContainer
         SubprocessStatus.PENDING -> colors.surfaceVariant to colors.onSurfaceVariant
     }
 
@@ -347,14 +333,14 @@ private fun SubprocessRow(
     }
 }
 
-// the small rounded square at the start of each row: a check when it is done,
-// and the number of the moment when it is not.
+// el cuadrito del inicio de cada fila: una palomita suave si ya se hizo, el número en violeta pleno si está en curso
+// y el número en gris si todavía no empieza.
 @Composable
 private fun StepBadge(subprocess: Subprocess) {
     val colors = MaterialTheme.colorScheme
     val badgeColor = when (subprocess.status) {
-        SubprocessStatus.DONE -> colors.tertiary
-        SubprocessStatus.ACTIVE -> colors.secondary
+        SubprocessStatus.DONE -> colors.primary.copy(alpha = 0.16f)
+        SubprocessStatus.ACTIVE -> colors.primary
         SubprocessStatus.PENDING -> colors.outlineVariant
     }
     Box(
@@ -367,7 +353,7 @@ private fun StepBadge(subprocess: Subprocess) {
             Icon(
                 imageVector = Icons.Filled.Check,
                 contentDescription = stringResource(R.string.my_day_done_description),
-                tint = colors.onTertiary,
+                tint = colors.primary,
                 modifier = Modifier.size(14.dp),
             )
         } else {
@@ -375,14 +361,14 @@ private fun StepBadge(subprocess: Subprocess) {
                 text = subprocess.number.toString(),
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.ExtraBold,
-                color = if (subprocess.status == SubprocessStatus.ACTIVE) colors.onSecondary else colors.onSurfaceVariant,
+                color = if (subprocess.status == SubprocessStatus.ACTIVE) colors.onPrimary else colors.onSurfaceVariant,
             )
         }
     }
 }
 
-// the big dark card of the picked moment. the buttons it shows depend on the rules:
-// done and in progress moments can have reports, only the one in progress can be confirmed.
+// la tarjeta grande violeta del momento elegido. los botones que muestra dependen de las reglas:
+// los momentos hechos y en curso pueden tener reportes, solo el que está en curso se puede confirmar.
 @Composable
 private fun SelectedSubprocessCard(
     subprocess: Subprocess,
@@ -391,14 +377,15 @@ private fun SelectedSubprocessCard(
     onConfirmClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // on a dark card we use "inverse" colors, so the text is light.
-    val contentColor = MaterialTheme.colorScheme.inverseOnSurface
+    // sobre el violeta pleno el texto es "onPrimary" (blanco en claro; tinta en oscuro) y los botones usan los mismos dos colores al revés.
+    val colors = MaterialTheme.colorScheme
+    val contentColor = colors.onPrimary
     val canReport = RoutineRules.canReport(subprocess)
 
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(26.dp),
-        color = MaterialTheme.colorScheme.inverseSurface,
+        color = colors.primary,
         contentColor = contentColor,
     ) {
         Column(
@@ -411,20 +398,16 @@ private fun SelectedSubprocessCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    text = stringResource(subprocess.status.stepLabelRes(), subprocess.number),
+                    text = stringResource(R.string.my_day_step_number, subprocess.number),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.ExtraBold,
                     color = contentColor.copy(alpha = 0.7f),
                 )
-                val timeLabel = subprocess.timeLabel()
-                if (timeLabel != null) {
-                    // yellow means "time" in the prototype. it stays the same in dark mode.
-                    Pill(
-                        text = timeLabel,
-                        containerColor = Sun.copy(alpha = 0.22f),
-                        contentColor = Sun,
-                    )
-                }
+                Pill(
+                    text = subprocess.statusLabel(),
+                    containerColor = contentColor.copy(alpha = 0.18f),
+                    contentColor = contentColor,
+                )
             }
             Text(
                 text = subprocess.name,
@@ -449,7 +432,7 @@ private fun SelectedSubprocessCard(
             )
 
             if (canReport) {
-                // the main action is amber and big.
+                // la acción principal es grande y va en el color contrario al de la tarjeta.
                 Button(
                     onClick = onMakeReportClick,
                     modifier = Modifier
@@ -457,8 +440,8 @@ private fun SelectedSubprocessCard(
                         .padding(top = 4.dp),
                     shape = RoundedCornerShape(18.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary,
-                        contentColor = MaterialTheme.colorScheme.onSecondary,
+                        containerColor = colors.onPrimary,
+                        contentColor = colors.primary,
                     ),
                     contentPadding = PaddingValues(14.dp),
                 ) {
@@ -475,7 +458,7 @@ private fun SelectedSubprocessCard(
                 }
             }
             if (RoutineRules.canConfirm(subprocess)) {
-                // the second action is almost transparent, so it does not compete.
+                // la segunda acción es casi transparente, para que no compita.
                 Button(
                     onClick = onConfirmClick,
                     modifier = Modifier.fillMaxWidth(),
@@ -496,22 +479,12 @@ private fun SelectedSubprocessCard(
     }
 }
 
-// the line on top of the big card, like "subproceso 4 · en curso".
-private fun SubprocessStatus.stepLabelRes(): Int = when (this) {
-    SubprocessStatus.DONE -> R.string.my_day_step_done
-    SubprocessStatus.ACTIVE -> R.string.my_day_step_active
-    SubprocessStatus.PENDING -> R.string.my_day_step_pending
-}
-
-// the text of the yellow time pill. a moment that has not started has no time.
+// lo que dice la píldora de la tarjeta grande: el estado y, si ya hay hora, desde cuándo o cuándo terminó.
 @Composable
-private fun Subprocess.timeLabel(): String? {
-    val time = time ?: return null
-    return when (status) {
-        SubprocessStatus.DONE -> stringResource(R.string.my_day_done_at, time)
-        SubprocessStatus.ACTIVE -> stringResource(R.string.my_day_active_since, time)
-        SubprocessStatus.PENDING -> null
-    }
+private fun Subprocess.statusLabel(): String = when (status) {
+    SubprocessStatus.DONE -> time?.let { stringResource(R.string.my_day_done_at, it) } ?: stringResource(R.string.my_day_status_done)
+    SubprocessStatus.ACTIVE -> time?.let { stringResource(R.string.my_day_active_since, it) } ?: stringResource(R.string.my_day_status_active)
+    SubprocessStatus.PENDING -> stringResource(R.string.my_day_status_pending)
 }
 
 // a small rounded label, like "4 de 9" or "desde 11:20".

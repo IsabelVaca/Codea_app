@@ -217,7 +217,6 @@ fun CodeaNavHost(
                         departureReady = DepartureRules.routineFinished(viewModel.routine),
                         departurePresent = viewModel.presentCount,
                         onDepartureClick = { navController.navigate(DeparturePassRoute) },
-                        menu = viewModel.menuHoy,
                     )
                 } else {
                     DayNotStartedScreen(
