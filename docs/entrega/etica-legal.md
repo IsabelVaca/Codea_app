@@ -52,7 +52,7 @@ Cada requisito dice **cómo se comprueba** (una prueba, un comando, una inspecci
 
 | ID | Requisito | Cómo se verifica | Estado | Evidencia o hueco |
 |---|---|---|---|---|
-| ETL-18 | Las contraseñas se guardan con un hash lento; tienen entre 6 y 128 caracteres (además, en la app, una mayúscula y un número) y no pueden ser el correo. | Pruebas: `tests/test_auth.py` (reglas de contraseña) y `AuthValidatorTest` en la app. Inspección de `core/passwords.py`. | ✅ | Argon2id. |
+| ETL-18 | Las contraseñas se guardan con un hash lento; tienen entre 9 y 128 caracteres (además, en la app, una mayúscula y un número) y no pueden ser el correo. | Pruebas: `tests/test_auth.py` (reglas de contraseña) y `AuthValidatorTest` en la app. Inspección de `core/passwords.py`. | ✅ | Argon2id. |
 | ETL-19 | Los tokens y los códigos de acceso no se guardan en claro. | Inspección: `refresh_token.token_hash` e `invitation.code_hash` (SHA-256). | ✅ | |
 | ETL-20 | Tras 5 intentos fallidos por correo (o 30 por IP) en 15 minutos, el acceso se bloquea temporalmente y el bloqueo no revela qué correos existen. | Pruebas: `tests/test_security.py` (`test_five_failures_lock…`, `test_unknown_emails_are_locked_the_same_way`). | ✅ | |
 | ETL-21 | Todas las respuestas llevan cabeceras de seguridad; HSTS en producción. | Pruebas: `test_security_headers_on_every_response`, `test_hsts_only_outside_development`. Comando contra el servidor desplegado: `curl -sI https://api.codeaapp.site/api/v1/health/live`. | ✅ | Probado en código y, el 19/oct, contra `api.codeaapp.site`: llegan `Strict-Transport-Security`, `X-Content-Type-Options`, `X-Frame-Options` y `Cache-Control: no-store` (`docs/BITACORA.md`, «Producción en codeaapp.site»). |

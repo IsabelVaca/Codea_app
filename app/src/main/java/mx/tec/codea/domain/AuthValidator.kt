@@ -20,9 +20,9 @@ enum class PasswordStrength { WEAK, MEDIUM, STRONG }
 
 object AuthValidator {
 
-    // RNF01: mínimo de caracteres. el tope evita mandar textos enormes que gasten CPU en el servidor.
+    // RNF01: "mayores a 8 caracteres" → 9 o más. el tope evita mandar textos enormes que gasten CPU en el servidor.
     // la mayúscula y el número (abajo, PasswordWeak) solo los exige la app: la API no los repite.
-    const val PASSWORD_MIN = 6
+    const val PASSWORD_MIN = 9
     const val PASSWORD_MAX = 128
 
     fun login(email: String, password: String): AuthError? = when {

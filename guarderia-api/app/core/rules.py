@@ -53,12 +53,12 @@ def check_age(birth_date: date, today: date) -> int:
     return age_on(birth_date, today)
 
 
-PASSWORD_MIN = 6
+PASSWORD_MIN = 9
 PASSWORD_MAX = 128
 
 
 def check_password(password: str, email: str | None = None) -> str:
-    """Al menos PASSWORD_MIN caracteres (RNF01; la app además pide una mayúscula y un número, solo del
+    """Más de 8 caracteres (RNF01; la app además pide una mayúscula y un número, solo del
     lado de la app), y un tope para que nadie mande textos enormes y gaste CPU en Argon2."""
     if password is None or len(password) < PASSWORD_MIN:
         raise ApiError(422, "PASSWORD_TOO_SHORT", f"La contraseña debe tener al menos {PASSWORD_MIN} caracteres")

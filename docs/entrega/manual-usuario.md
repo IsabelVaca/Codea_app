@@ -30,7 +30,7 @@ Codea es la aplicación de la estancia infantil **La Oruga** para llevar el día
 
 Escribe solo las letras y los números del código: **la app pone el guion sola** y lo pasa a mayúsculas; también puedes pegarlo copiado de WhatsApp. **Solo se puede usar una vez y dura 7 días.** Si venció, pide otro a la dirección. Quien no esté dado de alta por el administrador no tiene código y no puede crear una cuenta.
 
-Reglas de la contraseña: de **6 a 128 caracteres**, con al menos una mayúscula y un número, y no puede ser igual a tu correo. Con 5 no pasa. Al escribirla en "Activar mi cuenta" se ve un medidor de seguridad (Baja, Media, Alta).
+Reglas de la contraseña: de **9 a 128 caracteres**, con al menos una mayúscula y un número, y no puede ser igual a tu correo. Con 8 no pasa. Al escribirla en "Activar mi cuenta" se ve un medidor de seguridad (Baja, Media, Alta).
 
 ### 1.2 Entrar cada día
 

@@ -206,14 +206,14 @@ async def test_password_rules_on_activation(client, world):
     def body(password):
         return {"email": "paola@test.dev", "code": code, "password": password}
 
-    short = await client.post("/auth/activate", json=body("12345"))  # 5 caracteres: no basta
+    short = await client.post("/auth/activate", json=body("12345678"))  # 8 caracteres: no basta
     assert short.status_code == 422 and short.json()["code"] == "PASSWORD_TOO_SHORT"
     huge = await client.post("/auth/activate", json=body("x" * 129))
     assert huge.json()["code"] == "PASSWORD_TOO_LONG"
     is_email = await client.post("/auth/activate", json=body("paola@test.dev"))
     assert is_email.json()["code"] == "PASSWORD_IS_EMAIL"
-    # 6 caracteres sí, y el código sigue sirviendo porque los intentos fallidos no lo gastan
-    assert (await client.post("/auth/activate", json=body("123456"))).status_code == 200
+    # 9 caracteres sí, y el código sigue sirviendo porque los intentos fallidos no lo gastan
+    assert (await client.post("/auth/activate", json=body("123456789"))).status_code == 200
 
 
 async def test_new_code_replaces_the_old_one(client, world):

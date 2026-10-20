@@ -5,7 +5,8 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 // las mismas reglas de longitud que la API (guarderia-api/app/core/rules.py, check_password); la mayúscula y
-// el número solo los pide la app. las orillas son las que importan: RNF01 dice "mínimo 6", así que 5 no pasa y 6 sí.
+// el número solo los pide la app. las orillas son las que importan: RNF01 dice "mayores a 8 caracteres",
+// así que 8 no pasa y 9 sí.
 class AuthValidatorTest {
 
     @Test
@@ -16,9 +17,9 @@ class AuthValidatorTest {
     }
 
     @Test
-    fun cinco_caracteres_no_bastan_y_seis_si() {
-        assertEquals(AuthError.PasswordTooShort, AuthValidator.activate("a@b.mx", "K7QX-M4PZ", "Abc12", "Abc12"))
-        assertNull(AuthValidator.activate("a@b.mx", "K7QX-M4PZ", "Abc123", "Abc123"))
+    fun ocho_caracteres_no_bastan_y_nueve_si() {
+        assertEquals(AuthError.PasswordTooShort, AuthValidator.activate("a@b.mx", "K7QX-M4PZ", "Abcde123", "Abcde123"))
+        assertNull(AuthValidator.activate("a@b.mx", "K7QX-M4PZ", "Abcde1234", "Abcde1234"))
     }
 
     @Test
