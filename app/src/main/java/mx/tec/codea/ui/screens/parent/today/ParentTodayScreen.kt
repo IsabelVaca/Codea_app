@@ -37,9 +37,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import mx.tec.codea.domain.MenuDelDia
 import mx.tec.codea.ui.components.MenuCard
-import mx.tec.codea.ui.screens.parent.PadreColores
-import mx.tec.codea.ui.screens.parent.PastillaPadre
-import mx.tec.codea.ui.screens.parent.TarjetaPadre
+import mx.tec.codea.ui.components.CodeaColores
+import mx.tec.codea.ui.components.Pastilla
+import mx.tec.codea.ui.components.TarjetaBlanca
 import mx.tec.codea.ui.screens.parent.notifications.HoyHeader
 import mx.tec.codea.ui.screens.parent.notifications.NotifUi
 import mx.tec.codea.ui.screens.parent.notifications.PanelNotificaciones
@@ -110,7 +110,7 @@ fun ParentTodayScreen(
                 Text(
                     "Todavía no hay actividades registradas este día.",
                     modifier = Modifier.padding(vertical = 8.dp),
-                    fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = PadreColores.Gris,
+                    fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.Gris,
                 )
             }
         }
@@ -134,7 +134,7 @@ fun ParentTodayScreen(
 // el día que se está viendo y el atajo al calendario.
 @Composable
 private fun FechaCard(fecha: String, onVerMes: () -> Unit) {
-    TarjetaPadre(padding = 14.dp) {
+    TarjetaBlanca(padding = 14.dp) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -142,10 +142,10 @@ private fun FechaCard(fecha: String, onVerMes: () -> Unit) {
         ) {
             Text(
                 fecha, modifier = Modifier.weight(1f).padding(start = 4.dp),
-                fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = PadreColores.Ink,
+                fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Ink,
             )
             TextButton(onClick = onVerMes) {
-                Text("Ver el mes", fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, color = PadreColores.Morado)
+                Text("Ver el mes", fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.Morado)
             }
         }
     }
@@ -154,21 +154,21 @@ private fun FechaCard(fecha: String, onVerMes: () -> Unit) {
 // el niño: iniciales en lila como las tarjetas del admin, su nombre, su sala y la nota del día.
 @Composable
 private fun NinoCard(summary: DaySummary) {
-    TarjetaPadre(espacio = 12.dp) {
+    TarjetaBlanca(espacio = 12.dp) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             Box(
                 modifier = Modifier
                     .size(50.dp)
                     .clip(RoundedCornerShape(20.dp))
-                    .background(PadreColores.Lila),
+                    .background(CodeaColores.Lila),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(summary.childInitials, color = PadreColores.Morado, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                Text(summary.childInitials, color = CodeaColores.Morado, fontWeight = FontWeight.Bold, fontSize = 18.sp)
             }
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(summary.childFullName, fontFamily = Poppins, fontSize = 17.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
                 if (summary.childGroup.isNotBlank()) {
-                    Text(summary.childGroup, fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = PadreColores.GrisTexto)
+                    Text(summary.childGroup, fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto)
                 }
             }
         }
@@ -176,7 +176,7 @@ private fun NinoCard(summary: DaySummary) {
         Text(
             summary.generalNote.ifBlank { "Todavía no hay notas de este día." },
             fontFamily = Poppins, fontSize = 14.sp, lineHeight = 21.sp, fontWeight = FontWeight.Medium,
-            color = if (summary.generalNote.isBlank()) PadreColores.Gris else PadreColores.Ink,
+            color = if (summary.generalNote.isBlank()) CodeaColores.Gris else CodeaColores.Ink,
         )
     }
 }
@@ -188,9 +188,9 @@ private fun Metricas(metricas: List<Pair<String, String>>) {
         metricas.chunked(2).forEach { fila ->
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 fila.forEach { (etiqueta, valor) ->
-                    TarjetaPadre(modifier = Modifier.weight(1f), padding = 14.dp, espacio = 4.dp) {
-                        Text(etiqueta.uppercase(), fontFamily = Poppins, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.1.sp, color = PadreColores.Gris)
-                        Text(valor, fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = PadreColores.Morado)
+                    TarjetaBlanca(modifier = Modifier.weight(1f), padding = 14.dp, espacio = 4.dp) {
+                        Text(etiqueta.uppercase(), fontFamily = Poppins, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.1.sp, color = CodeaColores.Gris)
+                        Text(valor, fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.Morado)
                     }
                 }
                 // si queda una sola en la fila, ocupa la mitad igual que las demás.
@@ -203,13 +203,13 @@ private fun Metricas(metricas: List<Pair<String, String>>) {
 // un momento del día: la hora en pastilla, el título y lo que escribió la maestra.
 @Composable
 private fun EventoCard(event: TimelineEvent) {
-    TarjetaPadre(padding = 14.dp, espacio = 6.dp) {
+    TarjetaBlanca(padding = 14.dp, espacio = 6.dp) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            if (event.time.isNotBlank()) PastillaPadre(event.time)
-            Text(event.title, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, color = PadreColores.Ink)
+            if (event.time.isNotBlank()) Pastilla(event.time)
+            Text(event.title, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.Ink)
         }
         if (event.description.isNotBlank()) {
-            Text(event.description, fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Medium, color = PadreColores.GrisTexto)
+            Text(event.description, fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Medium, color = CodeaColores.GrisTexto)
         }
     }
 }
@@ -218,13 +218,13 @@ private fun EventoCard(event: TimelineEvent) {
 @Composable
 private fun AvisoDesdeCasa(nombre: String, onEnviar: (String) -> Unit, modifier: Modifier = Modifier) {
     var texto by remember { mutableStateOf("") }
-    TarjetaPadre(modifier = modifier, espacio = 10.dp) {
-        Text("Aviso desde casa", fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = PadreColores.Ink)
+    TarjetaBlanca(modifier = modifier, espacio = 10.dp) {
+        Text("Aviso desde casa", fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.Ink)
         BasicTextField(
             value = texto,
             onValueChange = { texto = it },
-            textStyle = TextStyle(fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = PadreColores.Ink),
-            cursorBrush = SolidColor(PadreColores.Violeta),
+            textStyle = TextStyle(fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = CodeaColores.Ink),
+            cursorBrush = SolidColor(CodeaColores.Violeta),
             modifier = Modifier.fillMaxWidth(),
             decorationBox = { interno ->
                 Box(
@@ -232,13 +232,13 @@ private fun AvisoDesdeCasa(nombre: String, onEnviar: (String) -> Unit, modifier:
                         .fillMaxWidth()
                         .heightIn(min = 72.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(PadreColores.Campo)
+                        .background(CodeaColores.Campo)
                         .padding(horizontal = 14.dp, vertical = 12.dp)
                 ) {
                     if (texto.isEmpty()) {
                         Text(
                             "Cuéntale a la asistente cómo amaneció $nombre…",
-                            fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = PadreColores.Gris,
+                            fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = CodeaColores.Gris,
                         )
                     }
                     interno()
@@ -252,7 +252,7 @@ private fun AvisoDesdeCasa(nombre: String, onEnviar: (String) -> Unit, modifier:
             },
             enabled = texto.isNotBlank(),
             modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = PadreColores.Violeta, contentColor = Color.White),
+            colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.Violeta, contentColor = Color.White),
             shape = RoundedCornerShape(14.dp),
             elevation = ButtonDefaults.buttonElevation(0.dp),
         ) {

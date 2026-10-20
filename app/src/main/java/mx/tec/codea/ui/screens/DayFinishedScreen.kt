@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
@@ -17,17 +17,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import mx.tec.codea.R
 import mx.tec.codea.domain.CheckInRecord
 import mx.tec.codea.domain.formatTimeOfDay
+import mx.tec.codea.ui.components.CodeaColores
 import mx.tec.codea.ui.components.ScreenHeader
 import mx.tec.codea.ui.theme.CodeaTheme
+import mx.tec.codea.ui.theme.Poppins
 
 // lo que ve la docente después de "Finalizar día": su turno terminó y su salida quedó registrada.
 // reemplaza a la rutina en Mi día hasta que llegue el día siguiente.
@@ -53,19 +56,21 @@ fun DayFinishedScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
+            // el mismo cuadro lila con la palomita morada que al checar la entrada.
             Box(
                 modifier = Modifier
-                    .size(72.dp)
-                    .background(MaterialTheme.colorScheme.tertiary, CircleShape),
+                    .size(84.dp)
+                    .clip(RoundedCornerShape(28.dp))
+                    .background(CodeaColores.Lila),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(Icons.Filled.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(36.dp))
+                Icon(Icons.Filled.Check, contentDescription = null, tint = CodeaColores.Morado, modifier = Modifier.size(42.dp))
             }
             Text(
                 text = stringResource(R.string.day_finished_headline, teacherName),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
+                fontFamily = Poppins, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.onBackground, textAlign = TextAlign.Center,
+                modifier = Modifier.padding(top = 8.dp),
             )
             record.departureMinutes?.let { minutes ->
                 Text(
@@ -73,15 +78,13 @@ fun DayFinishedScreen(
                         if (record.autoClosed) R.string.day_finished_auto else R.string.day_finished_exit,
                         formatTimeOfDay(minutes),
                     ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto,
                     textAlign = TextAlign.Center,
                 )
             }
             Text(
                 text = stringResource(R.string.day_finished_tomorrow),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto,
                 textAlign = TextAlign.Center,
             )
         }

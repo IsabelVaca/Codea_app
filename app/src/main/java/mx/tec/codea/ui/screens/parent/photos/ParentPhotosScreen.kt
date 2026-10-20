@@ -55,7 +55,7 @@ import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
 import mx.tec.codea.ui.components.ScreenHeader
 import mx.tec.codea.ui.components.imagenEstable
-import mx.tec.codea.ui.screens.parent.PadreColores
+import mx.tec.codea.ui.components.CodeaColores
 import mx.tec.codea.ui.theme.CodeaTheme
 import mx.tec.codea.ui.theme.Poppins
 
@@ -131,7 +131,7 @@ fun ParentPhotosScreen(
                     text = if (fotos.isEmpty()) "Todavía no hay fotos de $nombreNino. Cuando la maestra suba una, la verás aquí."
                     else "No hay fotos en esta categoría.",
                     modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-                    fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, lineHeight = 20.sp, color = PadreColores.Gris,
+                    fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, lineHeight = 20.sp, color = CodeaColores.Gris,
                 )
             }
         }
@@ -143,8 +143,8 @@ fun ParentPhotosScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.Bottom,
                 ) {
-                    Text(clave.first, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, color = PadreColores.Ink)
-                    Text(clave.second, fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = PadreColores.GrisTexto)
+                    Text(clave.first, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.Ink)
+                    Text(clave.second, fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto)
                 }
             }
             items(lista, key = { it.id }) { foto ->
@@ -176,11 +176,11 @@ fun ParentPhotosScreen(
                     confirmarBorrado = null
                     visorIndex = null
                     onBorrar(foto)
-                }) { Text("Borrar", fontFamily = Poppins, fontWeight = FontWeight.Bold, color = PadreColores.Rojo) }
+                }) { Text("Borrar", fontFamily = Poppins, fontWeight = FontWeight.Bold, color = CodeaColores.Rojo) }
             },
             dismissButton = {
                 TextButton(onClick = { confirmarBorrado = null }) {
-                    Text("Cancelar", fontFamily = Poppins, fontWeight = FontWeight.Bold, color = PadreColores.GrisTexto)
+                    Text("Cancelar", fontFamily = Poppins, fontWeight = FontWeight.Bold, color = CodeaColores.GrisTexto)
                 }
             },
             containerColor = Color.White,
@@ -204,8 +204,8 @@ private fun FiltroCategorias(fotos: List<Foto>, elegida: Categoria, onElegir: (C
                     onClick = { onElegir(c) },
                     label = { Text("${c.label} · $n", fontFamily = Poppins, fontWeight = FontWeight.Bold) },
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = PadreColores.Lila,
-                        selectedLabelColor = PadreColores.Morado,
+                        selectedContainerColor = CodeaColores.Lila,
+                        selectedLabelColor = CodeaColores.Morado,
                     ),
                 )
             }
@@ -220,7 +220,7 @@ private fun Miniatura(foto: Foto, onClick: () -> Unit) {
         Modifier
             .aspectRatio(1f)
             .clip(RoundedCornerShape(14.dp))
-            .background(PadreColores.Lila)
+            .background(CodeaColores.Lila)
             .clickable(onClick = onClick)
     ) {
         if (foto.url != null) {
@@ -239,7 +239,7 @@ private fun Miniatura(foto: Foto, onClick: () -> Unit) {
                 .clip(RoundedCornerShape(50))
                 .background(Color.White.copy(alpha = 0.9f))
                 .padding(horizontal = 7.dp, vertical = 2.dp),
-            fontFamily = Poppins, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = PadreColores.Morado,
+            fontFamily = Poppins, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Morado,
         )
         if (foto.esIncidente) {
             Text(
@@ -248,7 +248,7 @@ private fun Miniatura(foto: Foto, onClick: () -> Unit) {
                     .align(Alignment.TopEnd)
                     .padding(6.dp)
                     .clip(RoundedCornerShape(50))
-                    .background(PadreColores.Rojo)
+                    .background(CodeaColores.Rojo)
                     .padding(horizontal = 7.dp, vertical = 2.dp),
                 fontFamily = Poppins, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.White,
             )
@@ -296,10 +296,10 @@ private fun VisorFoto(
                     )
                 }
                 BotonRedondo(onAnterior, Color.White.copy(alpha = 0.85f), Modifier.align(Alignment.CenterStart).padding(start = 10.dp)) {
-                    Icon(Icons.Default.ChevronLeft, "Anterior", tint = PadreColores.Ink)
+                    Icon(Icons.Default.ChevronLeft, "Anterior", tint = CodeaColores.Ink)
                 }
                 BotonRedondo(onSiguiente, Color.White.copy(alpha = 0.85f), Modifier.align(Alignment.CenterEnd).padding(end = 10.dp)) {
-                    Icon(Icons.Default.ChevronRight, "Siguiente", tint = PadreColores.Ink)
+                    Icon(Icons.Default.ChevronRight, "Siguiente", tint = CodeaColores.Ink)
                 }
             }
             Spacer(Modifier.height(14.dp))
@@ -313,39 +313,39 @@ private fun VisorFoto(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Box(
-                        Modifier.size(40.dp).clip(RoundedCornerShape(14.dp)).background(PadreColores.Lila),
+                        Modifier.size(40.dp).clip(RoundedCornerShape(14.dp)).background(CodeaColores.Lila),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text(foto.maestra.trim().take(1).uppercase(), fontWeight = FontWeight.Bold, fontSize = 15.sp, color = PadreColores.Morado)
+                        Text(foto.maestra.trim().take(1).uppercase(), fontWeight = FontWeight.Bold, fontSize = 15.sp, color = CodeaColores.Morado)
                     }
                     Column(Modifier.weight(1f)) {
-                        Text(foto.maestra, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, color = PadreColores.Ink)
-                        Text("${foto.dia} · ${foto.hora}", fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = PadreColores.GrisTexto)
+                        Text(foto.maestra, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.Ink)
+                        Text("${foto.dia} · ${foto.hora}", fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto)
                     }
                     Text(
                         foto.etiqueta,
-                        modifier = Modifier.clip(RoundedCornerShape(50)).background(if (foto.esIncidente) PadreColores.RojoSuave else PadreColores.Lila)
+                        modifier = Modifier.clip(RoundedCornerShape(50)).background(if (foto.esIncidente) CodeaColores.RojoSuave else CodeaColores.Lila)
                             .padding(horizontal = 10.dp, vertical = 4.dp),
                         fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold,
-                        color = if (foto.esIncidente) PadreColores.Rojo else PadreColores.Morado,
+                        color = if (foto.esIncidente) CodeaColores.Rojo else CodeaColores.Morado,
                     )
                 }
                 if (foto.nota.isNotBlank()) {
-                    Text(foto.nota, fontFamily = Poppins, fontSize = 14.sp, lineHeight = 21.sp, fontWeight = FontWeight.Medium, color = PadreColores.Ink)
+                    Text(foto.nota, fontFamily = Poppins, fontSize = 14.sp, lineHeight = 21.sp, fontWeight = FontWeight.Medium, color = CodeaColores.Ink)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Button(
                         onClick = onDescargar,
                         modifier = Modifier.weight(1f).height(48.dp),
                         shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = PadreColores.Violeta, contentColor = Color.White),
+                        colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.Violeta, contentColor = Color.White),
                         elevation = ButtonDefaults.buttonElevation(0.dp),
                     ) { Text("Descargar", fontFamily = Poppins, fontWeight = FontWeight.Bold) }
                     Button(
                         onClick = onBorrar,
                         modifier = Modifier.weight(1f).height(48.dp),
                         shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = PadreColores.RojoSuave, contentColor = PadreColores.Rojo),
+                        colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.RojoSuave, contentColor = CodeaColores.Rojo),
                         elevation = ButtonDefaults.buttonElevation(0.dp),
                     ) { Text("Borrar", fontFamily = Poppins, fontWeight = FontWeight.Bold) }
                 }

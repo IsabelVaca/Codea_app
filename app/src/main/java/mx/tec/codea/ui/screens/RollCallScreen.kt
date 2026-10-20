@@ -44,6 +44,11 @@ import mx.tec.codea.domain.Child
 import mx.tec.codea.ui.components.BackHeader
 import mx.tec.codea.ui.components.InitialsAvatar
 import mx.tec.codea.ui.components.avatarColorAt
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.unit.sp
+import mx.tec.codea.ui.components.CodeaColores
+import mx.tec.codea.ui.theme.Poppins
 import mx.tec.codea.ui.theme.CodeaTheme
 
 // el pase de lista: el primer paso del día, en "Mi día". toda la sala en una lista; se toca a cada niño que llegó.
@@ -78,8 +83,7 @@ fun RollCallScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = stringResource(R.string.roll_call_hint),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto,
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -93,12 +97,15 @@ fun RollCallScreen(
                             color = MaterialTheme.colorScheme.onSurface,
                         )
                         if (presentCount < sorted.size) {
-                            OutlinedButton(
+                            // en lila, como los botones de agregar del admin.
+                            Button(
                                 onClick = onMarkAllPresent,
-                                modifier = Modifier.heightIn(min = 48.dp),
+                                modifier = Modifier.heightIn(min = 44.dp),
                                 shape = RoundedCornerShape(14.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.Lila, contentColor = CodeaColores.Morado),
+                                elevation = ButtonDefaults.buttonElevation(0.dp),
                             ) {
-                                Text(stringResource(R.string.roll_call_mark_all), fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.roll_call_mark_all), fontFamily = Poppins, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -131,13 +138,11 @@ fun RollCallScreen(
                 .fillMaxWidth()
                 .padding(horizontal = 22.dp, vertical = 12.dp)
                 .heightIn(min = 56.dp),
-            shape = RoundedCornerShape(18.dp),
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.Violeta, contentColor = Color.White),
+            elevation = ButtonDefaults.buttonElevation(0.dp),
         ) {
-            Text(
-                text = stringResource(R.string.roll_call_done),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-            )
+            Text(text = stringResource(R.string.roll_call_done), fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -155,12 +160,13 @@ private fun RollCallRow(
         child.name,
     )
 
+    // tarjeta blanca como las del admin; presente, en lila con la palomita morada.
     Surface(
-        shape = RoundedCornerShape(20.dp),
-        color = if (isPresent) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.surfaceContainerLowest,
-        border = BorderStroke(1.dp, if (isPresent) Color.Transparent else MaterialTheme.colorScheme.outlineVariant),
+        shape = RoundedCornerShape(18.dp),
+        color = if (isPresent) CodeaColores.Lila else Color.White,
         modifier = Modifier
             .fillMaxWidth()
+            .shadow(6.dp, RoundedCornerShape(18.dp), ambientColor = Color(0x1A2A2140), spotColor = Color(0x1A2A2140))
             .toggleable(value = isPresent, role = Role.Checkbox, onValueChange = onPresentChange)
             .semantics { contentDescription = description },
     ) {
@@ -171,20 +177,19 @@ private fun RollCallRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            InitialsAvatar(initials = child.initials, color = avatarColor, size = 48.dp)
+            InitialsAvatar(
+                initials = child.initials,
+                color = avatarColor,
+                size = 48.dp,
+                background = if (isPresent) Color.White else CodeaColores.Lila,
+            )
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = child.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isPresent) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurface,
-                )
+                Text(child.name, fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
                 // la hora a la que se le pasó lista (RF-03).
                 if (isPresent && child.arrivalTime != null) {
                     Text(
-                        text = stringResource(R.string.roll_call_arrived_at, child.arrivalTime),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        stringResource(R.string.roll_call_arrived_at, child.arrivalTime),
+                        fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.Morado,
                     )
                 }
             }
@@ -193,25 +198,24 @@ private fun RollCallRow(
                     modifier = Modifier
                         .size(32.dp)
                         .background(
-                            color = if (isPresent) MaterialTheme.colorScheme.tertiary else Color.Transparent,
+                            color = if (isPresent) CodeaColores.Morado else Color.Transparent,
                             shape = CircleShape,
                         )
                         .border(
                             width = 2.dp,
-                            color = if (isPresent) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.outline,
+                            color = if (isPresent) CodeaColores.Morado else CodeaColores.Gris,
                             shape = CircleShape,
                         ),
                     contentAlignment = Alignment.Center,
                 ) {
                     if (isPresent) {
-                        Icon(Icons.Filled.Check, contentDescription = null, tint = MaterialTheme.colorScheme.onTertiary)
+                        Icon(Icons.Filled.Check, contentDescription = null, tint = Color.White)
                     }
                 }
                 Text(
                     text = stringResource(if (isPresent) R.string.my_room_present else R.string.my_room_absent),
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isPresent) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = Poppins, fontSize = 11.sp, fontWeight = FontWeight.Bold,
+                    color = if (isPresent) CodeaColores.Morado else CodeaColores.Gris,
                 )
             }
         }

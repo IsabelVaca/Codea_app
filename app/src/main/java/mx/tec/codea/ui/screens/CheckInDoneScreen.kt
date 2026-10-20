@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -36,7 +35,12 @@ import androidx.compose.ui.unit.dp
 import mx.tec.codea.R
 import mx.tec.codea.domain.CheckInRecord
 import mx.tec.codea.domain.formatTimeOfDay
-import mx.tec.codea.ui.components.ScreenHeader
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.sp
+import mx.tec.codea.ui.components.CodeaColores
+import mx.tec.codea.ui.components.TarjetaBlanca
+import mx.tec.codea.ui.theme.Poppins
 import mx.tec.codea.ui.theme.CodeaTheme
 
 // the feedback after the check-in (screen 3 and e3 of the prototype).
@@ -48,8 +52,9 @@ fun CheckInDoneScreen(
     onGoToMyDayClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // late check-ins are amber, the normal ones are green.
-    val accent = if (record.isLate) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.tertiary
+    // con retardo, ámbar (lo que pide atención); a tiempo, lila con morado como el resto de la app.
+    val acento = if (record.isLate) MaterialTheme.colorScheme.secondary else CodeaColores.Morado
+    val fondoAcento = if (record.isLate) MaterialTheme.colorScheme.secondary.copy(alpha = 0.16f) else CodeaColores.Lila
     val time = formatTimeOfDay(record.arrivalMinutes)
 
     Column(
@@ -58,44 +63,36 @@ fun CheckInDoneScreen(
             .padding(horizontal = 22.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        ScreenHeader(
-            title = stringResource(
-                if (record.isLate) R.string.checker_done_title_late else R.string.checker_done_title,
-            ),
-        )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.weight(0.4f))
 
+        // sin título arriba: el encabezado de en medio ya dice lo que pasó.
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             Box(
-                modifier = Modifier
-                    .size(72.dp)
-                    .background(accent, CircleShape),
+                modifier = Modifier.size(84.dp).clip(RoundedCornerShape(28.dp)).background(fondoAcento),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     imageVector = if (record.isLate) Icons.Filled.Info else Icons.Filled.Check,
                     contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(36.dp),
+                    tint = acento,
+                    modifier = Modifier.size(42.dp),
                 )
             }
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = stringResource(
                     if (record.isLate) R.string.checker_done_headline_late else R.string.checker_done_headline,
                 ),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
+                fontFamily = Poppins, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.onBackground, textAlign = TextAlign.Center,
             )
             Text(
                 text = stringResource(R.string.checker_done_time_place, time, record.placeName),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto,
             )
             Text(
                 text = if (record.isLate) {
@@ -103,31 +100,20 @@ fun CheckInDoneScreen(
                 } else {
                     stringResource(R.string.checker_done_greeting, teacherName)
                 },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto,
             )
         }
 
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        // lo que sigue, en una tarjeta blanca con sus íconos en cuadro lila.
+        TarjetaBlanca(espacio = 14.dp) {
             if (record.isLate) {
-                DoneItem(
-                    icon = Icons.Filled.Info,
-                    text = stringResource(R.string.checker_done_coordination),
-                    color = MaterialTheme.colorScheme.secondary,
-                )
+                DoneItem(Icons.Filled.Info, stringResource(R.string.checker_done_coordination))
             } else {
-                DoneItem(
-                    icon = Icons.Filled.Check,
-                    text = stringResource(R.string.checker_done_no_paper),
-                    color = MaterialTheme.colorScheme.tertiary,
-                )
+                DoneItem(Icons.Filled.Check, stringResource(R.string.checker_done_no_paper))
             }
             DoneItem(
-                icon = Icons.Filled.Refresh,
-                text = stringResource(
-                    if (record.isLate) R.string.checker_done_day_starts else R.string.checker_done_exit,
-                ),
-                color = MaterialTheme.colorScheme.primary,
+                Icons.Filled.Refresh,
+                stringResource(if (record.isLate) R.string.checker_done_day_starts else R.string.checker_done_exit),
             )
         }
 
@@ -136,27 +122,27 @@ fun CheckInDoneScreen(
         Button(
             onClick = onGoToMyDayClick,
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.Violeta, contentColor = Color.White),
+            elevation = ButtonDefaults.buttonElevation(0.dp),
             contentPadding = PaddingValues(16.dp),
         ) {
-            Text(
-                text = stringResource(R.string.checker_done_go_to_my_day),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-            )
+            Text(stringResource(R.string.checker_done_go_to_my_day), fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
 
-// one line of the list: a small colored icon and a text.
+// una línea de la tarjeta: el ícono en un cuadro lila y el texto.
 @Composable
-private fun DoneItem(icon: ImageVector, text: String, color: Color) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Icon(imageVector = icon, contentDescription = null, tint = color, modifier = Modifier.size(20.dp))
-        Text(text = text, style = MaterialTheme.typography.bodyMedium)
+private fun DoneItem(icon: ImageVector, text: String) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Box(
+            modifier = Modifier.size(36.dp).clip(RoundedCornerShape(12.dp)).background(CodeaColores.Lila),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(imageVector = icon, contentDescription = null, tint = CodeaColores.Morado, modifier = Modifier.size(20.dp))
+        }
+        Text(text, fontFamily = Poppins, fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.Ink)
     }
 }
 

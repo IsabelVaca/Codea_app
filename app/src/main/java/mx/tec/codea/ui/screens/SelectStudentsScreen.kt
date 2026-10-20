@@ -18,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -26,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -33,16 +35,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import mx.tec.codea.R
 import mx.tec.codea.domain.AttendanceStatus
 import mx.tec.codea.domain.Child
 import mx.tec.codea.domain.ReportValidator
 import mx.tec.codea.ui.components.BackHeader
+import mx.tec.codea.ui.components.CodeaColores
 import mx.tec.codea.ui.components.InfoBox
 import mx.tec.codea.ui.components.InitialsAvatar
 import mx.tec.codea.ui.components.avatarColorAt
 import mx.tec.codea.ui.state.ReportFormUiState
 import mx.tec.codea.ui.theme.CodeaTheme
+import mx.tec.codea.ui.theme.Poppins
 
 // step 3 of the report: which children does it talk about? (screen 6 and e2 of the prototype).
 @Composable
@@ -65,7 +70,6 @@ fun SelectStudentsScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         BackHeader(
-            overline = stringResource(R.string.students_overline, stringResource(uiState.type.labelRes())),
             title = stringResource(R.string.students_title),
             onBackClick = onBackClick,
         )
@@ -74,15 +78,15 @@ fun SelectStudentsScreen(
             InfoBox(
                 title = stringResource(R.string.students_none_title),
                 body = stringResource(R.string.students_none_body),
-                containerColor = MaterialTheme.colorScheme.errorContainer,
-                titleColor = MaterialTheme.colorScheme.onErrorContainer,
+                containerColor = CodeaColores.RojoSuave,
+                titleColor = CodeaColores.Rojo,
             )
         } else {
             InfoBox(
                 title = pluralStringResource(R.plurals.students_selected, selectedCount, selectedCount),
                 body = stringResource(R.string.students_families_notified),
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                titleColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                containerColor = CodeaColores.Lila,
+                titleColor = CodeaColores.Morado,
             )
         }
 
@@ -109,8 +113,8 @@ fun SelectStudentsScreen(
         InfoBox(
             title = stringResource(R.string.students_who_sees),
             body = whoSeesText(selectedChildren.map { it.firstName }),
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-            titleColor = MaterialTheme.colorScheme.onSurface,
+            containerColor = CodeaColores.Campo,
+            titleColor = CodeaColores.Ink,
         )
 
         Button(
@@ -119,19 +123,19 @@ fun SelectStudentsScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(54.dp),
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(14.dp),
+            colors = BotonVioleta(),
+            elevation = ButtonDefaults.buttonElevation(0.dp),
         ) {
             Text(
                 text = pluralStringResource(R.plurals.students_save, selectedCount, selectedCount),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
+                fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold,
             )
         }
         if (!uiState.canSave) {
             Text(
                 text = stringResource(R.string.students_save_hint),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.outline,
+                fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.Gris,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -139,7 +143,7 @@ fun SelectStudentsScreen(
     }
 }
 
-// "familias de mateo y sofía · coordinación de la estancia. el grupo no lo ve."
+// "familias de mateo y sofía y coordinación de la estancia. el grupo no lo ve."
 @Composable
 private fun whoSeesText(firstNames: List<String>): String {
     if (firstNames.isEmpty()) return stringResource(R.string.students_who_sees_none)
@@ -160,38 +164,35 @@ private fun StudentCard(
     isEnabled: Boolean,
     onClick: () -> Unit,
 ) {
+    // tarjeta blanca como las del admin; la elegida en lila con borde morado.
     Surface(
         onClick = onClick,
         enabled = isEnabled,
         modifier = Modifier
             .fillMaxWidth()
-            .alpha(if (isEnabled) 1f else 0.5f),
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
-        border = if (isSelected) {
-            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-        } else {
-            BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-        },
+            .alpha(if (isEnabled) 1f else 0.5f)
+            .shadow(6.dp, RoundedCornerShape(18.dp), ambientColor = Color(0x1A2A2140), spotColor = Color(0x1A2A2140)),
+        shape = RoundedCornerShape(18.dp),
+        color = if (isSelected) CodeaColores.Lila else Color.White,
+        border = if (isSelected) BorderStroke(2.dp, CodeaColores.Morado) else null,
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            InitialsAvatar(initials = child.initials, color = avatarColor)
+            InitialsAvatar(
+                initials = child.initials,
+                color = avatarColor,
+                background = if (isSelected) Color.White else CodeaColores.Lila,
+            )
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = child.name,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                )
+                Text(child.name, fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
                 Text(
                     text = stringResource(
                         if (child.attendance == AttendanceStatus.PRESENT) R.string.my_room_present else R.string.my_room_absent,
                     ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto,
                 )
             }
             CheckSquare(isChecked = isSelected)
@@ -208,9 +209,9 @@ private fun CheckSquare(isChecked: Boolean) {
             .size(28.dp)
             .then(
                 if (isChecked) {
-                    Modifier.background(MaterialTheme.colorScheme.primary, shape)
+                    Modifier.background(CodeaColores.Morado, shape)
                 } else {
-                    Modifier.border(2.dp, MaterialTheme.colorScheme.outline, shape)
+                    Modifier.border(2.dp, CodeaColores.Gris, shape)
                 },
             ),
         contentAlignment = Alignment.Center,
@@ -219,7 +220,7 @@ private fun CheckSquare(isChecked: Boolean) {
             Icon(
                 imageVector = Icons.Filled.Check,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimary,
+                tint = Color.White,
                 modifier = Modifier.size(16.dp),
             )
         }

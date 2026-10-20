@@ -13,6 +13,8 @@ import kotlinx.coroutines.launch
 import mx.tec.codea.data.DataEvents
 import mx.tec.codea.data.TeacherApiRepository
 import mx.tec.codea.data.api.ApiConfig
+import mx.tec.codea.data.api.MeDto
+import mx.tec.codea.data.api.RoutineDto
 import mx.tec.codea.data.api.toUserMessage
 import mx.tec.codea.data.horaActual
 import mx.tec.codea.data.hoyIso
@@ -110,20 +112,10 @@ class CodeaViewModel : ViewModel() {
     fun cargar() {
         if (!ApiConfig.isTeacher) return
         viewModelScope.launch {
+            // 1. lo guardado (al abrir la app): la miss ve al instante su día y su sala; la API lo reemplaza al llegar.
+            if (children.isEmpty()) mostrarGuardado()
             try {
-                val me = repository.me()
-                val t = me.teacher ?: return@launch
-                classroomId = t.classroom?.id
-                centerName = t.center.name
-                centerWorkDays = t.center.workDays.toSet()
-                teacher = Teacher(
-                    fullName = me.fullName,
-                    greetingName = "miss ${me.name}",
-                    roomName = t.classroom?.name ?: "Sin sala",
-                    // la entrada y la salida son las del centro, iguales para todas (las configura el admin).
-                    shiftStartMinutes = timeToMinutes(t.center.entryTime) ?: (8 * 60),
-                    shiftEndMinutes = timeToMinutes(t.center.exitTime) ?: (16 * 60),
-                )
+                if (!aplicarPerfil(repository.me())) return@launch
                 checkIn = repository.checkInToday()
                 val room = classroomId
                 if (room != null) {
@@ -161,6 +153,31 @@ class CodeaViewModel : ViewModel() {
         }
     }
 
+    // el perfil de la docente: su sala, el centro y su horario. false si la cuenta no es de docente.
+    private fun aplicarPerfil(me: MeDto): Boolean {
+        val t = me.teacher ?: return false
+        classroomId = t.classroom?.id
+        centerName = t.center.name
+        centerWorkDays = t.center.workDays.toSet()
+        teacher = Teacher(
+            fullName = me.fullName,
+            greetingName = "miss ${me.name}",
+            roomName = t.classroom?.name ?: "Sin sala",
+            // la entrada y la salida son las del centro, iguales para todas (las configura el admin).
+            shiftStartMinutes = timeToMinutes(t.center.entryTime) ?: (8 * 60),
+            shiftEndMinutes = timeToMinutes(t.center.exitTime) ?: (16 * 60),
+        )
+        return true
+    }
+
+    // lo último que se guardó: el perfil, Mi sala, la checada de hoy y la rutina de hoy (lo que haya).
+    private suspend fun mostrarGuardado() {
+        runCatching { repository.meGuardado()?.let { aplicarPerfil(it) } }
+        runCatching { cargarDesdeCache() }
+        runCatching { repository.checkInGuardado()?.let { checkIn = it.registro } }
+        classroomId?.let { room -> runCatching { repository.routineGuardada(room)?.let { aplicarRutina(it, desdeCache = true) } } }
+    }
+
     // Mi sala con lo último que se vio antes de perder la conexión. regresa false si todavía no había nada guardado.
     private suspend fun cargarDesdeCache(): Boolean {
         val cached = runCatching { Offline.cache.load() }.getOrNull() ?: return false
@@ -188,7 +205,11 @@ class CodeaViewModel : ViewModel() {
     }
 
     private suspend fun cargarRutina(room: Int) {
-        val dto = repository.routine(room)
+        aplicarRutina(repository.routine(room), desdeCache = false)
+    }
+
+    // desdeCache = true no gasta el "seguir el día": la rutina que llega de la API vuelve a elegir el momento activo.
+    private fun aplicarRutina(dto: RoutineDto, desdeCache: Boolean) {
         momentIds = dto.moments.associate { it.number to it.id }
         reportCounts = dto.moments.associate { it.number to it.reportCount }
         routine = dto.toRoutine()
@@ -199,7 +220,7 @@ class CodeaViewModel : ViewModel() {
             selectedSubprocessNumber = routine.activeSubprocess?.number
                 ?: if (DepartureRules.routineFinished(routine)) 0 else routine.subprocesses.firstOrNull()?.number
                 ?: 0
-            selectActiveAfterLoad = false
+            if (!desdeCache) selectActiveAfterLoad = false
         }
     }
 

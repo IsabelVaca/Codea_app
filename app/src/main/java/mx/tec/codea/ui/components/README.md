@@ -6,8 +6,10 @@ Piezas reutilizables entre pantallas.
 |---|---|
 | `CodeaBottomBar.kt` | Barra inferior; recibe las pestañas ya filtradas por rol |
 | `ScreenHeader.kt`, `BackHeader.kt` | Encabezados de pantalla (con y sin botón de regreso) |
-| `InfoBox.kt` | Recuadro informativo |
-| `InitialsAvatar.kt` | Círculo con iniciales |
+| `EstiloTarjetas.kt` | El estilo del admin para los tres roles: `CodeaColores` (lila `EDE9FE` con morado `6D28D9`, gris para lo secundario, violeta `5B3FE0` para el botón principal, rojo para cerrar sesión), `TarjetaBlanca` (tarjeta blanca con sombra suave), `DatoTarjeta` (etiqueta gris en mayúsculas y valor en negritas) y `Pastilla`. Antes era `parent/ParentStyle.kt` (`PadreColores`, `TarjetaPadre`, `DatoPadre`, `PastillaPadre`) |
+| `InfoBox.kt` | Recuadro informativo (Poppins; el color lo pone quien lo usa: lila, rojo suave o ámbar para lo pendiente) |
+| `InitialsAvatar.kt` | Cuadro redondeado con iniciales: **un solo color**, lila con iniciales moradas, como en el admin (desde el 20/oct; antes ámbar, coral, violeta y turquesa). `background = Color.White` sobre una tarjeta lila |
+| `NoticeCard.kt` | Aviso que dejó la familia: tarjeta blanca, borde ámbar mientras falta verlo, «Responder» lila y «Ya lo vi» violeta |
 | `PersonaDropdown.kt` | Selector de personas (docente, padre, infante) usado por los formularios de admin |
 | `AccessCodeDialog.kt` | El código de acceso de alguien recién dado de alta, con botón de compartir. La API lo da una sola vez, así que es la única oportunidad de copiarlo |
 | `DeviceLaunchers.kt` | `rememberTakePhoto` (cámara) y `rememberDictation` (voz a texto), con sus permisos |
@@ -18,7 +20,7 @@ Toda pantalla empieza igual, en los tres perfiles:
 
 - **Pestañas** (la barra inferior): `ScreenHeader(title)`.
 - **Pantallas que abren encima de una pestaña:** `BackHeader(title, onBackClick)`, con el botón redondo de regreso.
-- **Sin sobretítulo** (la línea gris de arriba, «Estancia La Oruga · Administración»): se quitó de todas las pantallas el 19/oct. `overline` es opcional y solo lo usan las que llevan un dato: el reporte («Subproceso 3 · Comida»), elegir niños («Reporte · …»), el resumen guiado («Resumen 2 de 5»), Mi día (el nombre de la rutina) y el chat de la docente (los papás).
+- **Sin sobretítulo** (la línea gris de arriba, «Estancia La Oruga · Administración»): se quitó de todas las pantallas el 19/oct, y el 20/oct también de las de la docente que lo usaban para un dato. Ese dato pasó a una `Pastilla` abajo del título (el resumen guiado, «Resumen 2 de 5», y los papás en el chat de la docente) o se quitó (el reporte y elegir niños). `overline` sigue en `BackHeader`/`ScreenHeader`, pero ninguna pantalla lo usa.
 - No se escriben encabezados a mano ni con `TopAppBar`. Desde el 18/oct las pantallas del admin (y la bandeja de Chats) siguen esta regla.
 
 ## Notas sobre `DeviceLaunchers.kt`

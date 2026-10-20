@@ -26,6 +26,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import mx.tec.codea.R
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
+import mx.tec.codea.ui.components.CodeaColores
+import mx.tec.codea.ui.theme.Poppins
 import mx.tec.codea.ui.theme.CodeaTheme
 
 // the screen "mi día" shows while the teacher has not checked in yet.
@@ -72,28 +77,29 @@ private fun DayNotStartedMessage(
             text = stringResource(R.string.day_not_started_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            // coral says "something is missing", the same color as the check-in card.
-            color = MaterialTheme.colorScheme.error,
+            // morado, como el anillo de la tarjeta del checador en el Menú.
+            color = CodeaColores.Morado,
             textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.height(10.dp))
         Text(
             text = stringResource(R.string.day_not_started_body),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.Medium,
+            color = CodeaColores.GrisTexto,
             textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.height(28.dp))
         Button(
             onClick = onCheckerClick,
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(18.dp),
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.Violeta, contentColor = Color.White),
+            elevation = ButtonDefaults.buttonElevation(0.dp),
             contentPadding = PaddingValues(16.dp),
         ) {
             Text(
                 text = stringResource(R.string.day_not_started_checker_button),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.ExtraBold,
+                fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold,
             )
         }
     }
@@ -106,13 +112,13 @@ private fun CheckerRingIcon() {
     Box(
         modifier = Modifier
             .size(84.dp)
-            .background(MaterialTheme.colorScheme.errorContainer, RoundedCornerShape(30.dp)),
+            .background(CodeaColores.Lila, RoundedCornerShape(30.dp)),
         contentAlignment = Alignment.Center,
     ) {
         Box(
             modifier = Modifier
                 .size(38.dp)
-                .border(5.dp, MaterialTheme.colorScheme.error, CircleShape),
+                .border(5.dp, CodeaColores.Morado, CircleShape),
         )
     }
 }

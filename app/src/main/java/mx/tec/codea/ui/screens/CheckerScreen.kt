@@ -20,7 +20,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -31,7 +30,11 @@ import mx.tec.codea.R
 import mx.tec.codea.domain.CheckInAttempt
 import mx.tec.codea.domain.CheckInRecord
 import mx.tec.codea.domain.CheckInStatus
+import mx.tec.codea.domain.formatDuration
 import mx.tec.codea.domain.formatTimeOfDay
+import mx.tec.codea.ui.components.CodeaColores
+import mx.tec.codea.ui.components.TarjetaBlanca
+import mx.tec.codea.ui.theme.Poppins
 import mx.tec.codea.ui.components.BackHeader
 import mx.tec.codea.ui.components.InfoBox
 import mx.tec.codea.ui.state.CheckerUiState
@@ -92,14 +95,14 @@ fun CheckerScreen(
                     body = stringResource(
                         if (registeredCheckIn.autoClosed) R.string.checker_exit_auto_body else R.string.checker_exit_done_body,
                     ),
-                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                    titleColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                    containerColor = CodeaColores.Lila,
+                    titleColor = CodeaColores.Morado,
                 )
             } else {
                 CheckInButton(
                     text = stringResource(R.string.checker_exit_button),
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    containerColor = CodeaColores.Violeta,
+                    contentColor = Color.White,
                     onClick = onCheckOutClick,
                 )
             }
@@ -113,8 +116,8 @@ fun CheckerScreen(
             InfoBox(
                 title = stringResource(R.string.checker_not_workday_title),
                 body = stringResource(R.string.checker_not_workday_body),
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                titleColor = MaterialTheme.colorScheme.onSurface,
+                containerColor = CodeaColores.Campo,
+                titleColor = CodeaColores.Ink,
             )
             return@Column
         }
@@ -123,8 +126,8 @@ fun CheckerScreen(
         when (uiState.status) {
             CheckInStatus.ON_TIME -> CheckInButton(
                 text = stringResource(R.string.checker_check_in),
-                containerColor = MaterialTheme.colorScheme.tertiary,
-                contentColor = MaterialTheme.colorScheme.onTertiary,
+                containerColor = CodeaColores.Violeta,
+                contentColor = Color.White,
                 onClick = onCheckInClick,
             )
             CheckInStatus.LATE -> LateActions(
@@ -144,36 +147,26 @@ private fun CurrentTime(uiState: CheckerUiState) {
     val shiftStart = formatTimeOfDay(attempt.shiftStartMinutes)
     val note = when (uiState.status) {
         CheckInStatus.ON_TIME -> if (uiState.minutesEarly > 0) {
-            pluralStringResource(R.plurals.checker_minutes_early, uiState.minutesEarly, uiState.minutesEarly)
+            stringResource(R.string.checker_minutes_early, formatDuration(uiState.minutesEarly))
         } else {
             stringResource(R.string.checker_on_time)
         }
-        CheckInStatus.LATE -> stringResource(R.string.checker_late_note, shiftStart, uiState.minutesLate)
+        CheckInStatus.LATE -> stringResource(R.string.checker_late_note, shiftStart, formatDuration(uiState.minutesLate))
     }
 
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text(
-            text = attempt.date,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+    // la hora en una tarjeta blanca, como los datos del admin: la fecha en gris, la hora grande y una línea abajo.
+    TarjetaBlanca(padding = 18.dp, espacio = 4.dp) {
+        Text(attempt.date, fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto)
         Text(
             text = formatTimeOfDay(attempt.arrivalMinutes),
-            fontSize = 40.sp,
-            lineHeight = 44.sp,
-            fontWeight = FontWeight.Bold,
-            // late turns the clock amber, like the prototype says.
-            color = if (uiState.status == CheckInStatus.LATE) {
-                MaterialTheme.colorScheme.secondary
-            } else {
-                MaterialTheme.colorScheme.onBackground
-            },
+            fontFamily = Poppins,
+            fontSize = 44.sp,
+            lineHeight = 48.sp,
+            fontWeight = FontWeight.ExtraBold,
+            // con retardo, la hora va en ámbar (lo que pide atención); a tiempo, en morado.
+            color = if (uiState.status == CheckInStatus.LATE) MaterialTheme.colorScheme.secondary else CodeaColores.Morado,
         )
-        Text(
-            text = note,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Text(note, fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto)
     }
 }
 
@@ -224,8 +217,8 @@ private fun AlreadyRegistered(record: CheckInRecord) {
             formatTimeOfDay(record.arrivalMinutes),
         ),
         body = stringResource(R.string.checker_exit_is_automatic),
-        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-        titleColor = MaterialTheme.colorScheme.onTertiaryContainer,
+        containerColor = CodeaColores.Lila,
+        titleColor = CodeaColores.Morado,
     )
 }
 
@@ -235,15 +228,12 @@ private fun CheckInButton(text: String, containerColor: Color, contentColor: Col
     Button(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(14.dp),
         colors = ButtonDefaults.buttonColors(containerColor = containerColor, contentColor = contentColor),
+        elevation = ButtonDefaults.buttonElevation(0.dp),
         contentPadding = PaddingValues(16.dp),
     ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.Bold,
-        )
+        Text(text = text, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold)
     }
 }
 
