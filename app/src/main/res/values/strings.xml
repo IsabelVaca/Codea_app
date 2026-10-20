@@ -33,13 +33,13 @@
 
     <!-- my day screen -->
     <string name="my_day_title">Mi día</string>
-    <string name="my_day_routine_steps">Subprocesos de la rutina</string>
-    <string name="my_day_progress">%1$d de %2$d</string>
+    <string name="my_day_routine_title">Rutina</string>
     <string name="my_day_done_description">Terminado</string>
-    <string name="my_day_step_active">Subproceso %1$d · en curso</string>
-    <string name="my_day_step_done">Subproceso %1$d · terminado</string>
-    <string name="my_day_step_pending">Subproceso %1$d · pendiente</string>
-    <string name="my_day_active_since">Desde %1$s</string>
+    <string name="my_day_step_number">Subproceso %1$d</string>
+    <string name="my_day_status_active">En curso</string>
+    <string name="my_day_status_done">Terminado</string>
+    <string name="my_day_status_pending">Pendiente</string>
+    <string name="my_day_active_since">En curso desde %1$s</string>
     <string name="my_day_done_at">Terminó %1$s</string>
     <string name="my_day_no_reports">Sin reportes en este momento.</string>
     <string name="my_day_not_started_yet">Todavía no empieza. Podrás reportar cuando esté en curso.</string>
@@ -62,14 +62,15 @@
 
     <!-- report flow -->
     <string name="report_overline">Subproceso %1$d · %2$s</string>
+    <string name="report_context">Subproceso %1$d: %2$s</string>
     <string name="report_new_title">Nuevo reporte</string>
     <string name="report_written_title">Reporte escrito</string>
     <string name="report_method_question">¿Cómo lo quieres levantar?</string>
     <string name="report_method_explanation">Las tres formas guardan lo mismo: elige la que te quede a mano en la actividad.</string>
     <string name="report_method_written">Escrito</string>
-    <string name="report_method_written_subtitle">Teclea la nota · 30 s</string>
+    <string name="report_method_written_subtitle">Teclea la nota en 30 s</string>
     <string name="report_method_dictation">Dictado</string>
-    <string name="report_method_dictation_subtitle">Habla y la app redacta · 10 s</string>
+    <string name="report_method_dictation_subtitle">Habla y la app redacta en 10 s</string>
     <string name="report_method_photo">Con foto</string>
     <string name="report_method_photo_subtitle">Toma la foto y luego describes</string>
     <string name="report_method_can_change">Se puede cambiar después</string>

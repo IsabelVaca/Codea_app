@@ -342,3 +342,28 @@ Cambios de diseño pedidos por el usuario y revisados en el emulador contra la A
 - **Textos (`strings.xml`):** sin `·` ni guiones entre palabras («Sala Maternal», conteos aparte del nombre del filtro); «Resumen pendiente» pasó a «Sin resumen» (igual que el filtro y cabe en la ficha); el aviso de cambios sin enviar son dos oraciones. `my_room_today_line` se reemplazó por `my_room_present_count` y `my_room_present_label`.
 - **No se tocaron** `NoticeCard`, `InitialsAvatar` ni `ScreenHeader`: los usan «Avisos de casa», el Menú y otras pantallas, que se rehacen aparte. Mi sala tiene sus propios componentes privados.
 - **Verificado:** compila e instalado en el dispositivo; con datos de ejemplo (sin tocar el servidor) se dibujaron los estados claro, oscuro, tableta, «nadie ha pasado lista» y ausentes abiertos; `./gradlew :app:testDebugUnitTest` 135 pruebas, 0 fallas. La prueba instrumentada de capturas era temporal y se borró. **Sin commit.**
+
+## 2026-10-20 · Mi día: sin el cuadro morado, solo el título «Rutina»
+
+- **Pedido del usuario:** en Mi día quitar el cuadro morado que explica qué está pasando y dejar solo un título que diga «Rutina».
+- **Qué cambió** (`MyDayScreen.kt`): `RoutineProgressCard` (la caja lila con «Subprocesos de la rutina» y la píldora «2 de 7») se reemplazó por `RoutineTitle`, un título simple «Rutina» sin caja ni contador. En `strings.xml`, `my_day_routine_steps` y `my_day_progress` se cambiaron por `my_day_routine_title`.
+- **No cambió:** el encabezado de la pantalla («Mi día» con la línea chica «Día completo · Maternal»), el menú de hoy, el pase de lista ni las tarjetas de los momentos.
+- **Verificado:** compila e instalado en el Pixel con la sesión abierta; el título aparece entre el pase de lista y el primer momento. **Sin commit.**
+
+## 2026-10-20 · Mi día de la docente: sin subtítulo ni menú, todo en violetas
+
+- **Pedido del usuario:** quitar el subtítulo de hasta arriba, quitar el menú de hoy, homologar los colores a morados y cambiar los colores oscuros y amarillos por unos que encajen más.
+- **Quitado** (`MyDayScreen.kt`): la línea chica «Día completo · Maternal» sobre «Mi día» y la tarjeta «Menú de hoy». Como el menú solo se leía ahí, también se quitaron el parámetro `menu` de la pantalla, el campo `menuHoy` y la consulta `menus.hoy()` de `CodeaViewModel`, y el argumento en `CodeaNavHost`. La familia sigue viendo el menú en Hoy (`MenuCard`, sin cambios) y el admin lo captura igual en Ajustes.
+- **Colores, solo violetas:**
+  - Momento elegido (antes casi negro con botón amarillo): violeta pleno (`primary`) con texto `onPrimary`; «Realizar reporte» va en el color contrario (blanco en claro, tinta en oscuro) con texto violeta, «Confirmar subproceso» translúcido y la píldora de la hora también.
+  - Filas de los momentos: en curso = lavanda (`primaryContainer`) con insignia violeta plena; hecho = casi blanco con palomita violeta suave; sin empezar = gris violáceo con número gris. Se quitaron el verde y el ámbar.
+  - Pase de lista: lavanda mientras falta hacerlo y casi blanco ya hecho (antes ámbar y verde).
+  - No se tocó la tarjeta violeta del pase de salida ni la fila con candado.
+- **Documentos al día:** `REQUISITOS` (HN3), `PLAN-ACCION` y `FALTANTES` ya no dicen que la docente ve el menú en Mi día. `RECORRIDO.md` queda como estaba: es el registro de lo que se probó el 19/oct.
+- **Verificado:** compila, `./gradlew :app:testDebugUnitTest` 138 pruebas sin fallas, instalado en el Pixel; visto en claro y en oscuro (se cambió el tema del sistema un momento y se restauró a «no»). Con los datos de hoy solo hay un momento en curso, así que las filas «hecho» y «en curso sin elegir» no se vieron en el teléfono. **Sin commit.**
+
+## 2026-10-20 · Mi día: sin el punto en «Subproceso 1 · en curso»
+
+- **Pedido del usuario:** quitar el punto entre «Subproceso 1» y «en curso», o reacomodarlo.
+- **Qué cambió** (`MyDayScreen.kt`, `strings.xml`): en la tarjeta grande del momento elegido, a la izquierda queda solo «Subproceso 1» y el estado pasó a la píldora de la derecha, que ya existía para la hora: «En curso desde 0:03», «Terminó 0:45» o «Pendiente»; sin hora dice solo «En curso» o «Terminado». Se cambiaron `my_day_step_active/done/pending` por `my_day_step_number` y `my_day_status_*`.
+- **Verificado:** compila e instalado en el Pixel; visto el momento en curso. **Sin commit.**

@@ -76,6 +76,7 @@ import mx.tec.codea.domain.RoomFilter
 import mx.tec.codea.domain.RoomNotice
 import mx.tec.codea.domain.RoomRules
 import mx.tec.codea.ui.theme.CodeaTheme
+import mx.tec.codea.ui.theme.muted
 
 // "Mi sala": la sala de un vistazo, de lo más urgente a lo menos.
 // 1) arriba: la sala, la fecha y cuántos niños hay hoy.
@@ -100,10 +101,6 @@ private val MinTileHeight = 190.dp
 private val CaptureBarSpace = 112.dp
 private val CardShape = RoundedCornerShape(16.dp)
 private val ControlShape = RoundedCornerShape(12.dp)
-
-// el gris de los textos secundarios: la tinta con algo de transparencia, así se lee igual en claro y en oscuro.
-private val ColorScheme.muted: Color
-    get() = onSurface.copy(alpha = 0.68f)
 
 // lo que espera a la docente (un aviso por ver, un chat sin leer, algo sin enviar): ámbar suave.
 private fun ColorScheme.attention(alpha: Float): Color = secondary.copy(alpha = alpha)

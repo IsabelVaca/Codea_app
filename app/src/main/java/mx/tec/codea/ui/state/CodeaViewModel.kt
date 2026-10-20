@@ -11,7 +11,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import mx.tec.codea.data.DataEvents
-import mx.tec.codea.data.MenuApiRepository
 import mx.tec.codea.data.TeacherApiRepository
 import mx.tec.codea.data.api.ApiConfig
 import mx.tec.codea.data.api.toUserMessage
@@ -30,7 +29,6 @@ import mx.tec.codea.domain.Child
 import mx.tec.codea.domain.DepartureRules
 import mx.tec.codea.domain.ErrorKind
 import mx.tec.codea.domain.MarkResult
-import mx.tec.codea.domain.MenuDelDia
 import mx.tec.codea.domain.Report
 import mx.tec.codea.domain.ReportValidator
 import mx.tec.codea.domain.RoomRules
@@ -44,7 +42,6 @@ import mx.tec.codea.domain.Teacher
 class CodeaViewModel : ViewModel() {
 
     private val repository = TeacherApiRepository()
-    private val menus = MenuApiRepository()
 
     // ids que la API necesita y la app no guarda en sus clases.
     // la sala de la docente: el pase de salida la necesita para pedir los niños de hoy.
@@ -67,10 +64,6 @@ class CodeaViewModel : ViewModel() {
         private set
 
     // null until the teacher checks in. menú, checador and mi día all read it.
-    // lo que se come hoy en el centro (HN3); null si todavía no lo capturan.
-    var menuHoy by mutableStateOf<MenuDelDia?>(null)
-        private set
-
     var checkIn by mutableStateOf<CheckInRecord?>(null)
         private set
 
@@ -132,8 +125,6 @@ class CodeaViewModel : ViewModel() {
                     shiftEndMinutes = timeToMinutes(t.center.exitTime) ?: (16 * 60),
                 )
                 checkIn = repository.checkInToday()
-                // el menú no es imprescindible: si no carga, Mi día se ve igual sin él.
-                menuHoy = runCatching { menus.hoy() }.getOrNull()?.takeUnless { it.vacio }
                 val room = classroomId
                 if (room != null) {
                     cargarRutina(room)
