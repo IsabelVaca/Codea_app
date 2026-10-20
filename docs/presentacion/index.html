@@ -53,7 +53,7 @@ b, strong { font-weight: 700; }
 
 /* Caja técnica: «Bajo el capó» */
 .capo { margin-top: auto; background: var(--night); color: #ECE7F7; border-radius: 24px; padding: 24px 28px 22px; position: relative; }
-.capo::before { content: "⚙ Bajo el capó"; display: inline-block; font-size: 14px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--sun); margin-bottom: 10px; }
+.capo::before { content: "Bajo el capó"; display: inline-block; font-size: 14px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--sun); margin-bottom: 10px; }
 .capo ul { list-style: none; display: grid; gap: 9px; }
 .capo li { font-size: 18.5px; line-height: 1.45; padding-left: 22px; position: relative; color: #D9D2EA; }
 .capo li::before { content: ""; position: absolute; left: 2px; top: 11px; width: 8px; height: 8px; border-radius: 2px; background: var(--violet); }
@@ -167,11 +167,11 @@ aside.notes { display: none; }
   <h2>Hoy el día de un niño se reparte entre libretas, hojas y WhatsApp</h2>
   <p class="lead">En una estancia infantil pasan muchas cosas en un día: quién llegó, qué comió, cuánto durmió, si se cayó en el patio, quién lo recogió. Casi nada de eso llega completo a la familia.</p>
   <div class="cards c3">
-    <div class="card violet-bg"><div class="ico">👩‍👧</div><h3>La familia</h3><p>No sabe si su hijo comió o durmió hasta que lo recoge. Pregunta por WhatsApp a un número personal de la asistente.</p></div>
-    <div class="card teal-bg"><div class="ico">🧑‍🏫</div><h3>La asistente</h3><p>Pasa lista a mano, anota en papel y contesta a cada familia por separado mientras cuida a 10 niños.</p></div>
-    <div class="card coral-bg"><div class="ico">🏫</div><h3>La dirección</h3><p>Lleva horarios, salas, cupos, menú y quién puede recoger a cada niño en hojas que nadie más ve.</p></div>
+    <div class="card violet-bg"><h3>La familia</h3><p>No sabe si su hijo comió o durmió hasta que lo recoge. Pregunta por WhatsApp a un número personal de la asistente.</p></div>
+    <div class="card teal-bg"><h3>La asistente</h3><p>Pasa lista a mano, anota en papel y contesta a cada familia por separado mientras cuida a 10 niños.</p></div>
+    <div class="card coral-bg"><h3>La dirección</h3><p>Lleva horarios, salas, cupos, menú y quién puede recoger a cada niño en hojas que nadie más ve.</p></div>
   </div>
-  <div class="card" style="margin-top:22px; display:flex; gap:20px; align-items:center"><div class="ico" style="margin:0">🔒</div><p style="font-size:20px">Además son <b>datos de menores</b>: fotos, alergias, quién vive con quién. No pueden andar en chats personales ni en hojas sueltas.</p></div>
+  <div class="card" style="margin-top:22px; display:flex; gap:20px; align-items:center"><p style="font-size:20px">Además son <b>datos de menores</b>: fotos, alergias, quién vive con quién. No pueden andar en chats personales ni en hojas sueltas.</p></div>
   <aside class="notes">Contar el problema desde las tres personas. Recalcar el último punto: son datos sensibles de niños, y eso explica por qué después hablamos tanto de seguridad y de ética.</aside>
 </section>
 
@@ -519,12 +519,12 @@ aside.notes { display: none; }
   <div class="top"><span class="sec"><i></i>Seguridad</span><span class="time">2 min</span></div>
   <h2>Son datos de niños: la seguridad va en cada capa</h2>
   <div class="cards c3" style="margin-top:28px">
-    <div class="card"><h3>🔑 Sesiones</h3><p>JWT de 5 min, renovación rotada con detección de reuso, tokens cifrados con Keystore. Dar de baja corta el acceso en la siguiente petición.</p></div>
-    <div class="card"><h3>🚪 Permisos</h3><p>Por rol (401 / 403) y por registro: lo que no es tuyo responde 404. Matriz de 77 rutas comprobada.</p></div>
-    <div class="card"><h3>💉 Inyección</h3><p>Todas las consultas con el ORM (SQLAlchemy), parametrizadas. Pruebas de inyección en login, filtros y texto guardado.</p></div>
-    <div class="card"><h3>🧱 Fuerza bruta</h3><p>Límite de intentos por correo y por IP en login y activación, con <code>429</code> y tiempo de espera.</p></div>
-    <div class="card"><h3>🔒 Transporte</h3><p>HTTPS con HSTS, cabeceras de seguridad (CSP, nosniff, X-Frame-Options), CORS cerrado. HTTP sin cifrar solo en desarrollo.</p></div>
-    <div class="card"><h3>🗝️ Secretos</h3><p>Llaves de la base, del almacén, del túnel y de JWT solo en el servidor (<code>.env.prod</code>), fuera del repositorio.</p></div>
+    <div class="card"><h3>Sesiones</h3><p>JWT de 5 min, renovación rotada con detección de reuso, tokens cifrados con Keystore. Dar de baja corta el acceso en la siguiente petición.</p></div>
+    <div class="card"><h3>Permisos</h3><p>Por rol (401 / 403) y por registro: lo que no es tuyo responde 404. Matriz de 77 rutas comprobada.</p></div>
+    <div class="card"><h3>Inyección</h3><p>Todas las consultas con el ORM (SQLAlchemy), parametrizadas. Pruebas de inyección en login, filtros y texto guardado.</p></div>
+    <div class="card"><h3>Fuerza bruta</h3><p>Límite de intentos por correo y por IP en login y activación, con <code>429</code> y tiempo de espera.</p></div>
+    <div class="card"><h3>Transporte</h3><p>HTTPS con HSTS, cabeceras de seguridad (CSP, nosniff, X-Frame-Options), CORS cerrado. HTTP sin cifrar solo en desarrollo.</p></div>
+    <div class="card"><h3>Secretos</h3><p>Llaves de la base, del almacén, del túnel y de JWT solo en el servidor (<code>.env.prod</code>), fuera del repositorio.</p></div>
   </div>
   <div class="card coral-bg" style="margin-top:22px"><p style="font-size:19px"><b>Pendiente y lo decimos:</b> el escaneo dinámico con OWASP ZAP, cifrar la base local del teléfono y cambiar los valores de ejemplo de <code>.env.example</code>.</p></div>
   <aside class="notes">Si preguntan por el chat: el administrador no puede leer las conversaciones (la API le devuelve lista vacía y 404), pero no es cifrado de extremo a extremo: quien tenga acceso a la base o a los respaldos podría leerlos. Eso está en el aviso de privacidad.</aside>
@@ -535,9 +535,9 @@ aside.notes { display: none; }
   <div class="top"><span class="sec"><i></i>Capacidad diferenciadora</span><span class="time">1 min</span></div>
   <h2>Lo que nos hace distintos</h2>
   <div class="cards c3" style="margin-top:36px">
-    <div class="card violet-bg"><div class="ico">🧭</div><h3>El día guiado de la asistente</h3><p>De checar a «Finalizar día» en un solo recorrido: la app dice qué sigue. Pensado para alguien con 10 niños alrededor y una mano libre, con dictado por voz.</p></div>
-    <div class="card teal-bg"><div class="ico">📶</div><h3>Sigue sirviendo sin señal</h3><p>Pase de lista sin internet que se manda solo y pantallas que muestran lo último guardado en los tres roles.</p></div>
-    <div class="card coral-bg"><div class="ico">🖐️</div><h3>La familia controla las fotos</h3><p>Si sale su hijo, puede borrar la foto al momento, del almacén y de todas las galerías, sin pedir permiso a nadie.</p></div>
+    <div class="card violet-bg"><h3>El día guiado de la asistente</h3><p>De checar a «Finalizar día» en un solo recorrido: la app dice qué sigue. Pensado para alguien con 10 niños alrededor y una mano libre, con dictado por voz.</p></div>
+    <div class="card teal-bg"><h3>Sigue sirviendo sin señal</h3><p>Pase de lista sin internet que se manda solo y pantallas que muestran lo último guardado en los tres roles.</p></div>
+    <div class="card coral-bg"><h3>La familia controla las fotos</h3><p>Si sale su hijo, puede borrar la foto al momento, del almacén y de todas las galerías, sin pedir permiso a nadie.</p></div>
   </div>
   <div class="capo" style="margin-top:30px"><ul>
     <li>Todo con lo que enseña el curso (Compose, Room, WorkManager, Retrofit, FastAPI, Postgres): sin Firebase ni servicios de Google para el funcionamiento central.</li>
@@ -582,10 +582,10 @@ aside.notes { display: none; }
   <div class="top"><span class="sec"><i></i>Documentación, implantación y ética</span><span class="time">3 min</span></div>
   <h2>Decisiones éticas que tomamos</h2>
   <div class="cards c2" style="margin-top:26px">
-    <div class="card"><h3>📍 ¿Ubicación de la asistente al checar?</h3><p>Probaría que está en la estancia, pero es vigilar a una trabajadora. <b>Decidimos no guardar ubicación:</b> el registro prueba la hora, no el lugar.</p></div>
-    <div class="card"><h3>📷 ¿Quién decide sobre una foto?</h3><p>La familia que sale en ella la puede borrar al momento. Si salen otros niños, <b>también se borra para sus familias</b>: pesa más quien no quiere aparecer.</p></div>
-    <div class="card"><h3>💬 ¿Puede la dirección leer los chats?</h3><p>Hoy no: la API se lo impide. Si un día hace falta por una queja grave: motivo por escrito, dos personas que autorizan, registro y aviso a los involucrados.</p></div>
-    <div class="card"><h3>👥 Reportes de grupo</h3><p>Un reporte de varios niños lo leen todas sus familias. «Mateo mordió a Sofía» expone a dos niños. Proponemos <b>no nombrar a otros niños</b> (falta un aviso en la pantalla del reporte).</p></div>
+    <div class="card"><h3>¿Ubicación de la asistente al checar?</h3><p>Probaría que está en la estancia, pero es vigilar a una trabajadora. <b>Decidimos no guardar ubicación:</b> el registro prueba la hora, no el lugar.</p></div>
+    <div class="card"><h3>¿Quién decide sobre una foto?</h3><p>La familia que sale en ella la puede borrar al momento. Si salen otros niños, <b>también se borra para sus familias</b>: pesa más quien no quiere aparecer.</p></div>
+    <div class="card"><h3>¿Puede la dirección leer los chats?</h3><p>Hoy no: la API se lo impide. Si un día hace falta por una queja grave: motivo por escrito, dos personas que autorizan, registro y aviso a los involucrados.</p></div>
+    <div class="card"><h3>Reportes de grupo</h3><p>Un reporte de varios niños lo leen todas sus familias. «Mateo mordió a Sofía» expone a dos niños. Proponemos <b>no nombrar a otros niños</b> (falta un aviso en la pantalla del reporte).</p></div>
   </div>
   <div class="capo" style="margin-top:24px"><ul><li>Cada criterio ético se escribió como requisito verificable (consentimiento, minimización, acceso, retención) y la clasificación de datos dice, por campo, nivel de sensibilidad, dónde vive, cómo se protege y cuánto se guarda.</li></ul></div>
   <aside class="notes">El de las fotos es el más discutible: elegimos que la familia que aparece decida, aunque otra familia pierda una foto que quería. Está explicado en etica-legal.md, dilema 1.</aside>
