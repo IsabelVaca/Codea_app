@@ -1,6 +1,7 @@
 package mx.tec.codea.ui.state
 
 import android.app.Application
+import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import mx.tec.codea.data.AvisoApiRepository
 import mx.tec.codea.data.DataEvents
+import mx.tec.codea.data.ImageCompressor
 import mx.tec.codea.data.api.ApiConfig
 import mx.tec.codea.data.api.toUserMessage
 import mx.tec.codea.domain.Aviso
@@ -25,6 +27,10 @@ class CentroViewModel(application: Application) : AndroidViewModel(application) 
     var avisoTexto by mutableStateOf("")
         private set
 
+    // la imagen que se va a publicar con el aviso; null = aviso solo de texto.
+    var avisoFoto by mutableStateOf<Uri?>(null)
+        private set
+
     // id de la sala a la que va el aviso; null = todas las salas.
     var destinoSalaId by mutableStateOf<String?>(null)
         private set
@@ -33,12 +39,13 @@ class CentroViewModel(application: Application) : AndroidViewModel(application) 
     private val _avisos = MutableStateFlow<List<Aviso>>(emptyList())
     val avisos: StateFlow<List<Aviso>> = _avisos.asStateFlow()
 
-    // mientras se manda, el botón se apaga para no publicar dos veces.
-    private var publicando by mutableStateOf(false)
+    // mientras se manda, el botón se apaga para no publicar dos veces y dice «Publicando…».
+    var publicando by mutableStateOf(false)
+        private set
 
     // se recalcula solo, no se guarda.
     val canPublicar: Boolean
-        get() = avisoTexto.isNotBlank() && !publicando
+        get() = (avisoTexto.isNotBlank() || avisoFoto != null) && !publicando
 
     init {
         // cada vez que algo cambia en el servidor (por ejemplo, un aviso nuevo), se vuelve a pedir.
@@ -65,24 +72,32 @@ class CentroViewModel(application: Application) : AndroidViewModel(application) 
         avisoTexto = texto
     }
 
+    fun onFotoChange(uri: Uri?) {
+        avisoFoto = uri
+    }
+
     fun onDestinoChange(salaId: String?) {
         destinoSalaId = salaId
     }
 
-    // manda el aviso a la sala elegida (o a todo el centro). si falla, el texto se queda
+    // manda el aviso (texto, imagen o ambos) a la sala elegida (o a todo el centro). si falla, el texto y la imagen se quedan
     // y el error sale en el snackbar.
     fun publicarAviso(onSuccess: () -> Unit = {}) {
         if (!canPublicar) return
         val texto = avisoTexto
         val destino = destinoSalaId
+        val foto = avisoFoto
         publicando = true
         launchAction(onSuccess = {
             publicando = false
             avisoTexto = ""
+            avisoFoto = null
             onSuccess()
         }) {
             try {
-                repository.publicar(texto, destino)
+                // la imagen se baja de tamaño y se endereza antes de subirla (el marco pide comprimir).
+                val jpeg = foto?.let { ImageCompressor.compress(getApplication<Application>().contentResolver, it) }
+                repository.publicar(texto, destino, jpeg)
             } catch (e: Exception) {
                 publicando = false
                 throw e

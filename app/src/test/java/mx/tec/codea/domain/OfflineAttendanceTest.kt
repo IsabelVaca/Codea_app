@@ -17,7 +17,9 @@ private class FakeStore : PendingStore {
     private val size = MutableStateFlow(0)
 
     override suspend fun add(childId: Int, status: String, date: String) {
-        rows += PendingAttendance(nextId++, childId, status, date)
+        // la hora de la marca: 1 s por cada fila, para poder comprobar cuál se mandó.
+        rows += PendingAttendance(nextId, childId, status, date, createdAt = nextId * 1000)
+        nextId++
         size.value = rows.size
     }
 
@@ -40,10 +42,12 @@ private class FakeStore : PendingStore {
 private class FakeRemote : AttendanceRemote {
     var failure: Exception? = null
     val received = mutableListOf<Triple<Int, String, String>>()
+    val markedAts = mutableListOf<Long?>()
 
-    override suspend fun send(childId: Int, status: String, date: String) {
+    override suspend fun send(childId: Int, status: String, date: String, markedAt: Long?) {
         failure?.let { throw it }
         received += Triple(childId, status, date)
+        markedAts += markedAt
     }
 }
 
@@ -125,9 +129,9 @@ class OfflineAttendanceTest {
         remote.failure = null
         // el niño 5 ya no es de la sala: el servidor lo rechaza para siempre.
         val rechazaAlCinco = object : AttendanceRemote {
-            override suspend fun send(childId: Int, status: String, date: String) {
+            override suspend fun send(childId: Int, status: String, date: String, markedAt: Long?) {
                 if (childId == 5) throw IllegalStateException("404")
-                remote.send(childId, status, date)
+                remote.send(childId, status, date, markedAt)
             }
         }
         val resultado = OfflineAttendance(store, rechazaAlCinco) { ErrorKind.PERMANENT }.flush()
@@ -157,5 +161,21 @@ class OfflineAttendanceTest {
         offline.mark(6, "ABSENT", "2026-10-17")
 
         assertEquals(mapOf(5 to "PRESENT"), offline.pendingMarks(today))
+    }
+
+    @Test
+    fun `una marca hecha sin conexion llega con la hora en que se hizo`() = runBlocking {
+        remote.failure = IOException("sin red")
+        offline.mark(5, "PRESENT", today)
+        remote.failure = null
+        offline.flush()
+        // la fila 1 de la cola se creó en el segundo 1.
+        assertEquals(listOf<Long?>(1000L), remote.markedAts)
+    }
+
+    @Test
+    fun `una marca que se manda al momento no lleva hora, la pone el servidor`() = runBlocking {
+        offline.mark(5, "PRESENT", today)
+        assertEquals(listOf<Long?>(null), remote.markedAts)
     }
 }

@@ -148,6 +148,7 @@ fun RoomChildDto.toChild() = Child(
     hasUnreadChat = hasUnreadChat,
     notes = notes.map { FamilyNote(id = it.id, text = it.text, time = clockOf(it.createdAt) ?: "") },
     hasSummaryToday = hasSummaryToday,
+    arrivalTime = clockOf(arrivedAt),
 )
 
 private fun DepartureChildDto.toEntry() = DepartureEntry(

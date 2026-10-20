@@ -20,7 +20,6 @@ import mx.tec.codea.domain.formatTimeOfDay
 import mx.tec.codea.domain.Infante
 import mx.tec.codea.domain.Padre
 import mx.tec.codea.domain.PersonaAutorizada
-import mx.tec.codea.domain.SolicitudBorrado
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -218,40 +217,16 @@ fun CenterDto.toHorario() = HorarioCentro(
     diasDeTrabajo = workDays.toSet(),
 )
 
-// solicitudes de borrado de fotos
-
-class SolicitudBorradoApiRepository {
-
-    suspend fun pendientes(): List<SolicitudBorrado> = ApiClient.api.deletionRequests("PENDING").map {
-        SolicitudBorrado(
-            id = it.id.toString(),
-            solicitante = it.requestedByName,
-            ninos = it.childNames,
-            motivo = it.reason,
-            fotoUrl = it.photoUrl,
-            fecha = formatearFecha(it.createdAt),
-        )
-    }
-
-    // borra la foto del servidor y de las galerías de las familias.
-    suspend fun aprobar(id: String) {
-        ApiClient.api.approveDeletion(id.toInt())
-    }
-
-    // la foto se queda.
-    suspend fun rechazar(id: String) {
-        ApiClient.api.rejectDeletion(id.toInt())
-    }
-}
-
 // avisos
 
 class AvisoApiRepository {
 
     // salaId = null: aviso para todo el centro.
-    suspend fun publicar(texto: String, salaId: String? = null) {
+    // jpeg = la imagen ya comprimida (ImageCompressor); el aviso lleva texto, imagen o ambos.
+    suspend fun publicar(texto: String, salaId: String? = null, jpeg: ByteArray? = null) {
+        val mediaId = jpeg?.let { MediaUploader.upload(it, "image/jpeg", "PHOTO") }
         ApiClient.api.publishAnnouncement(
-            AnnouncementBody(text = texto.trim(), classroomId = salaId?.toInt())
+            AnnouncementBody(text = texto.trim(), mediaId = mediaId, classroomId = salaId?.toInt())
         )
     }
 
@@ -263,6 +238,7 @@ class AvisoApiRepository {
             destino = it.classroomName ?: it.classroomId?.let { "Sala eliminada" },
             fecha = formatearFecha(it.createdAt),
             texto = it.text,
+            imagenUrl = it.mediaUrl,
         )
     }
 }

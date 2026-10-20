@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -48,11 +49,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import mx.tec.codea.domain.Aviso
 import mx.tec.codea.domain.Infante
 import mx.tec.codea.domain.Sala
@@ -60,7 +63,9 @@ import mx.tec.codea.ui.theme.CodeaTheme
 import mx.tec.codea.ui.theme.Poppins
 import mx.tec.codea.ui.theme.salaColor
 import mx.tec.codea.R
+import mx.tec.codea.ui.components.AvisoImagen
 import mx.tec.codea.ui.components.ScreenHeader
+import mx.tec.codea.ui.components.rememberPickPhoto
 import androidx.compose.ui.res.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,15 +76,19 @@ fun CentroScreen(
     onSalaClick: (Sala) -> Unit = {},
     avisoTexto: String,
     onAvisoTextoChange: (String) -> Unit,
+    avisoFoto: Uri? = null,                  // la imagen elegida para el aviso
+    onAvisoFotoChange: (Uri?) -> Unit = {},
     onPublicarAviso: () -> Unit,
     onCrearSala: () -> Unit,
     canPublicarAviso: Boolean,
+    publicando: Boolean = false,             // el aviso se está subiendo (con imagen puede tardar unos segundos)
     destinoSalaId: String? = null,           // null = todas las salas
     onDestinoChange: (String?) -> Unit = {},
     avisos: List<Aviso> = emptyList(),       // el historial, el más reciente primero
 ) {
     // si la sala elegida deja de existir, el aviso vuelve a ser para todas.
     val destino = salas.firstOrNull { it.id == destinoSalaId }
+    val elegirFoto = rememberPickPhoto { onAvisoFotoChange(it) }
     Scaffold(
         topBar = {
             ScreenHeader(
@@ -166,6 +175,7 @@ fun CentroScreen(
                     placeholder = if (destino == null) "Escribe el aviso para todas las salas…"
                     else "Escribe el aviso para ${destino.nombre}…"
                 )
+                FotoDelAviso(foto = avisoFoto, onElegir = elegirFoto, onQuitar = { onAvisoFotoChange(null) })
                 Button(
                     onClick = onPublicarAviso,
                     enabled = canPublicarAviso,
@@ -174,7 +184,7 @@ fun CentroScreen(
                     shape = RoundedCornerShape(16.dp),
                     elevation = ButtonDefaults.buttonElevation(0.dp)
                 ) {
-                    Text("Publicar aviso", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text(if (publicando) "Publicando…" else "Publicar aviso", fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -277,7 +287,38 @@ private fun CampoAviso(valor: String, onCambio: (String) -> Unit, placeholder: S
     )
 }
 
-// una fila del historial: etiqueta de destino + fecha, y el texto del aviso.
+// la imagen que va con el aviso: un botón para elegirla o, ya elegida, su vista previa con «Quitar».
+@Composable
+private fun FotoDelAviso(foto: Uri?, onElegir: () -> Unit, onQuitar: () -> Unit) {
+    if (foto == null) {
+        TextButton(onClick = onElegir, modifier = Modifier.fillMaxWidth()) {
+            Text("Agregar imagen", fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = CentroColores.Violeta)
+        }
+        return
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        AsyncImage(
+            model = foto,
+            contentDescription = "Imagen del aviso",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(160.dp)
+                .clip(RoundedCornerShape(18.dp))
+                .background(CentroColores.Campo)
+        )
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            TextButton(onClick = onElegir) {
+                Text("Cambiar imagen", fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = CentroColores.Violeta)
+            }
+            TextButton(onClick = onQuitar) {
+                Text("Quitar", fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = CentroColores.Gris)
+            }
+        }
+    }
+}
+
+// una fila del historial: etiqueta de destino + fecha, el texto del aviso y su imagen.
 @Composable
 private fun AvisoCard(aviso: Aviso) {
     val paraTodos = aviso.destino == null
@@ -306,10 +347,13 @@ private fun AvisoCard(aviso: Aviso) {
             )
             Text(aviso.fecha, fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 11.sp, color = CentroColores.Gris)
         }
-        Text(
-            aviso.texto, fontFamily = Poppins, fontWeight = FontWeight.SemiBold,
-            fontSize = 14.sp, lineHeight = 21.sp, color = CentroColores.Ink
-        )
+        if (aviso.texto.isNotBlank()) {
+            Text(
+                aviso.texto, fontFamily = Poppins, fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp, lineHeight = 21.sp, color = CentroColores.Ink
+            )
+        }
+        aviso.imagenUrl?.let { AvisoImagen(it) }
     }
 }
 

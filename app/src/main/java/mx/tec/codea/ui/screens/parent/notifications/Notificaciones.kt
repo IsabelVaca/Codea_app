@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import mx.tec.codea.ui.components.AvisoChip
+import mx.tec.codea.ui.components.AvisoImagen
 import mx.tec.codea.ui.components.AvisoColores
 import mx.tec.codea.ui.theme.Poppins
 
@@ -77,6 +78,7 @@ data class NotifUi(
     val tipo: TipoNotif,
     val fecha: String,
     val texto: String,
+    val imagenUrl: String? = null,
     val nueva: Boolean    // true solo durante la visita en la que se abrió el panel
 )
 
@@ -267,9 +269,12 @@ private fun NotifItem(n: NotifUi) {
                 fontSize = 11.sp, color = AvisoColores.GrisTexto
             )
         }
-        Text(
-            n.texto, fontFamily = Poppins, fontWeight = FontWeight.SemiBold,
-            fontSize = 13.sp, lineHeight = 19.5.sp, color = AvisoColores.Ink
-        )
+        if (n.texto.isNotBlank()) {
+            Text(
+                n.texto, fontFamily = Poppins, fontWeight = FontWeight.SemiBold,
+                fontSize = 13.sp, lineHeight = 19.5.sp, color = AvisoColores.Ink
+            )
+        }
+        n.imagenUrl?.let { AvisoImagen(it) }
     }
 }

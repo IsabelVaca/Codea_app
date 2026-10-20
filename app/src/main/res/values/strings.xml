@@ -233,6 +233,7 @@
     <string name="roll_call_done">Listo</string>
     <string name="roll_call_empty">Todavía no hay niños en tu sala.</string>
     <string name="roll_call_present_description">%1$s: presente. Toca para marcar falta.</string>
+    <string name="roll_call_arrived_at">Entró a las %1$s</string>
     <string name="roll_call_absent_description">%1$s: falta. Toca para marcar presente.</string>
     <string name="students_nobody_present">Nadie está presente todavía. Pasa lista en Mi día para poder reportar.</string>
 

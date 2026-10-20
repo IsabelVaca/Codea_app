@@ -79,7 +79,6 @@ import mx.tec.codea.ui.screens.SelectStudentsScreen
 import mx.tec.codea.ui.screens.admin.AltaAsistenteScreen
 import mx.tec.codea.ui.screens.ResumenDelDiaScreen
 import mx.tec.codea.ui.screens.admin.CentroScreen
-import mx.tec.codea.ui.screens.admin.SolicitudesBorradoScreen
 import mx.tec.codea.ui.screens.admin.CrearSalaScreen
 import mx.tec.codea.ui.screens.admin.DocenteDetalleScreen
 import mx.tec.codea.ui.screens.admin.DocenteOpcion
@@ -88,6 +87,7 @@ import mx.tec.codea.ui.screens.admin.InfanteDetalleScreen
 import mx.tec.codea.ui.screens.admin.FamiliasScreen
 import mx.tec.codea.ui.screens.admin.AjustesScreen
 import mx.tec.codea.ui.screens.admin.HorarioScreen
+import mx.tec.codea.ui.screens.admin.MenuAdminScreen
 import mx.tec.codea.ui.screens.admin.InscribirInfanteScreen
 import mx.tec.codea.ui.screens.admin.OpcionChip
 import mx.tec.codea.ui.screens.admin.InscribirPadreScreen
@@ -111,7 +111,6 @@ import mx.tec.codea.ui.state.AltaAsistenteViewModel
 import mx.tec.codea.ui.state.AvisosViewModel
 import mx.tec.codea.ui.state.ChatViewModel
 import mx.tec.codea.ui.state.CentroViewModel
-import mx.tec.codea.ui.state.SolicitudesBorradoViewModel
 import mx.tec.codea.ui.state.CheckerConfig
 import mx.tec.codea.ui.state.CheckerViewModel
 import mx.tec.codea.ui.state.ChildProfileViewModel
@@ -121,6 +120,7 @@ import mx.tec.codea.ui.state.CodeaViewModel
 import mx.tec.codea.ui.state.CrearSalaViewModel
 import mx.tec.codea.ui.state.DocentesAdminViewModel
 import mx.tec.codea.ui.state.HorarioAdminViewModel
+import mx.tec.codea.ui.state.MenuAdminViewModel
 import mx.tec.codea.ui.state.InfantesAdminViewModel
 import mx.tec.codea.ui.state.InscribirInfanteViewModel
 import mx.tec.codea.ui.state.InscribirPadreViewModel
@@ -218,6 +218,7 @@ fun CodeaNavHost(
                         departureReady = DepartureRules.routineFinished(viewModel.routine),
                         departurePresent = viewModel.presentCount,
                         onDepartureClick = { navController.navigate(DeparturePassRoute) },
+                        menu = viewModel.menuHoy,
                     )
                 } else {
                     DayNotStartedScreen(
@@ -549,7 +550,10 @@ fun CodeaNavHost(
                     },
                     avisoTexto = centroViewModel.avisoTexto,
                     onAvisoTextoChange = centroViewModel::onAvisoTextoChange,
+                    avisoFoto = centroViewModel.avisoFoto,
+                    onAvisoFotoChange = centroViewModel::onFotoChange,
                     canPublicarAviso = centroViewModel.canPublicar,
+                    publicando = centroViewModel.publicando,
                     onPublicarAviso = {
                         centroViewModel.publicarAviso(onSuccess = {
                             coroutineScope.launch {
@@ -597,27 +601,6 @@ fun CodeaNavHost(
                         })
                     },
                     onBack = { navController.popBackStack() }
-                )
-            }
-
-            composable<AdminSolicitudesBorradoRoute> {
-                val borradoViewModel: SolicitudesBorradoViewModel = viewModel()
-                val solicitudes by borradoViewModel.solicitudes.collectAsState()
-                val cargandoBorrado by borradoViewModel.cargando.collectAsState()
-                SolicitudesBorradoScreen(
-                    solicitudes = solicitudes,
-                    cargando = cargandoBorrado,
-                    onBackClick = { navController.popBackStack() },
-                    onAprobar = { solicitud ->
-                        borradoViewModel.aprobar(solicitud.id) {
-                            coroutineScope.launch { snackbarHostState.showSnackbar("Foto borrada") }
-                        }
-                    },
-                    onRechazar = { solicitud ->
-                        borradoViewModel.rechazar(solicitud.id) {
-                            coroutineScope.launch { snackbarHostState.showSnackbar("La foto se conserva") }
-                        }
-                    },
                 )
             }
 
@@ -897,6 +880,7 @@ fun CodeaNavHost(
         // parent tabs. each is only one screen. the data comes from ParentViewModel.
         composable<ParentTodayRoute> {
             val context = LocalContext.current
+            LaunchedEffect(Unit) { parentViewModel.refrescarDia() }
             val pendientes by avisosViewModel.pendientes.collectAsState()
             val notifs by avisosViewModel.notifs.collectAsState()
             WithChildSwitcher(parentViewModel) { screenModifier ->
@@ -904,6 +888,7 @@ fun CodeaNavHost(
                 modifier = screenModifier,
                 summary = parentViewModel.summary,
                 timelineEvents = parentViewModel.timeline,
+                menu = parentViewModel.menu,
                 pendientes = pendientes,
                 notifs = notifs,
                 onAbrirNotif = avisosViewModel::alAbrir,
@@ -937,6 +922,7 @@ fun CodeaNavHost(
 
         composable<ParentPhotosRoute> {
             val context = LocalContext.current
+            LaunchedEffect(Unit) { parentViewModel.refrescarFotos() }
             WithChildSwitcher(parentViewModel) { screenModifier ->
             Box(screenModifier) {
             ParentPhotosScreen(
@@ -987,6 +973,7 @@ fun CodeaNavHost(
                     totalRutinas = rutinas.size,
                     onRutinasClick = { navController.navigate(RutinasAdminRoute) },
                     onHorarioClick = { navController.navigate(AjustesHorarioRoute) },
+                    onMenuClick = { navController.navigate(AjustesMenuRoute) },
                     onPersonasAutorizadasClick = { navController.navigate(AjustesPersonasAutorizadasRoute) },
                     onCuentaClick = { navController.navigate(AccountRoute) },
                 )
@@ -1030,6 +1017,29 @@ fun CodeaNavHost(
                         horarioViewModel.guardar(onSuccess = {
                             coroutineScope.launch { snackbarHostState.showSnackbar("Horario guardado") }
                             navController.popBackStack()
+                        })
+                    },
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable<AjustesMenuRoute> {
+                val menuViewModel: MenuAdminViewModel = viewModel()
+                MenuAdminScreen(
+                    lunes = menuViewModel.lunes,
+                    dias = menuViewModel.dias,
+                    menus = menuViewModel.menus,
+                    cargando = menuViewModel.cargando,
+                    onSemanaAnterior = menuViewModel::semanaAnterior,
+                    onSemanaSiguiente = menuViewModel::semanaSiguiente,
+                    onEstaSemana = menuViewModel::estaSemana,
+                    onGuardar = { fecha, menu ->
+                        menuViewModel.guardar(fecha, menu, onSuccess = {
+                            coroutineScope.launch { snackbarHostState.showSnackbar("Menú guardado") }
+                        })
+                    },
+                    onQuitar = { fecha ->
+                        menuViewModel.quitar(fecha, onSuccess = {
+                            coroutineScope.launch { snackbarHostState.showSnackbar("Menú quitado") }
                         })
                     },
                     onBack = { navController.popBackStack() },

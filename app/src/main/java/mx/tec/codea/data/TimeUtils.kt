@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 // la API manda fechas ISO ("2026-10-14T14:05:00.123+00:00"). aquí se pasan a la hora del teléfono.
 // no se usa java.time porque minSdk es 24.
@@ -22,6 +23,15 @@ fun parseIso(iso: String?): Date? {
 // "8:05"
 fun clockOf(iso: String?): String? =
     parseIso(iso)?.let { SimpleDateFormat("H:mm", Locale.getDefault()).format(it) }
+
+// la hora del teléfono ahora mismo: "8:05"
+fun horaActual(): String = SimpleDateFormat("H:mm", Locale.getDefault()).format(Date())
+
+// un instante en milisegundos como fecha ISO en UTC ("2026-10-14T13:52:00Z"), la que entiende la API.
+fun isoOfMillis(millis: Long): String =
+    SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
+        .apply { timeZone = TimeZone.getTimeZone("UTC") }
+        .format(Date(millis))
 
 // minutos después de medianoche: 8:05 -> 485
 fun minutesOfDay(iso: String?): Int? {

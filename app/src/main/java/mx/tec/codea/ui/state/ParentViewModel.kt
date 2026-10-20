@@ -34,6 +34,8 @@ import mx.tec.codea.ui.screens.parent.calendar.DayAttendanceStatus
 import mx.tec.codea.ui.screens.parent.photos.Categoria
 import mx.tec.codea.ui.screens.parent.photos.Foto
 import mx.tec.codea.ui.screens.parent.photos.Tono
+import mx.tec.codea.data.toMenu
+import mx.tec.codea.domain.MenuDelDia
 import mx.tec.codea.ui.screens.parent.today.DaySummary
 import mx.tec.codea.ui.screens.parent.today.TimelineEvent
 import mx.tec.codea.ui.screens.parent.today.TimelineEventType
@@ -78,6 +80,10 @@ class ParentViewModel : ViewModel() {
         private set
 
     var timeline by mutableStateOf<List<TimelineEvent>>(emptyList())
+        private set
+
+    // lo que se come ese día (HN3); null si todavía no lo capturan.
+    var menu by mutableStateOf<MenuDelDia?>(null)
         private set
 
     var monthData by mutableStateOf(
@@ -145,6 +151,7 @@ class ParentViewModel : ViewModel() {
         childFirstName = hijo.firstName
         selectedDate = null
         timeline = emptyList()
+        menu = null
         weekly = null
         myChild = null
         photos = emptyList()
@@ -168,6 +175,7 @@ class ParentViewModel : ViewModel() {
         val dia = repository.day(id, selectedDate)
         summary = dia.toSummary()
         timeline = dia.timeline.map { it.toEvent() }
+        menu = dia.menu?.toMenu()?.takeUnless { it.vacio }
     }
 
     // el calendario manda aquí el día que tocó la mamá.
@@ -267,12 +275,21 @@ class ParentViewModel : ViewModel() {
 
     // ---------------- fotos ----------------
 
+    // al entrar a Fotos o a Hoy se vuelve a pedir lo del día: la maestra pudo subir algo mientras la app estaba abierta.
+    fun refrescarFotos() {
+        viewModelScope.launch { parte("las fotos") { cargarFotos() } }
+    }
+
+    fun refrescarDia() {
+        viewModelScope.launch { parte("el día") { cargarDia() } }
+    }
+
     private suspend fun cargarFotos() {
         val id = childId ?: return
         photos = repository.photos(id).map { it.toFoto() }
     }
 
-    // la foto se borra de inmediato; si salen niños de otras familias, la API lo rechaza y el snackbar lo dice.
+    // la foto se borra de inmediato, sin aprobación de nadie (también si salen niños de otras familias).
     fun deletePhoto(foto: Foto) {
         launchAction(onSuccess = { DataEvents.notice("Foto borrada") }) {
             repository.deletePhoto(foto.id)
@@ -333,10 +350,14 @@ class ParentViewModel : ViewModel() {
             "MEAL" -> TimelineEventType.MEAL
             "ACTIVITY" -> TimelineEventType.ACTIVITY
             "NAP" -> TimelineEventType.NAP
+            "ARRIVAL" -> TimelineEventType.ARRIVAL
             "DEPARTURE" -> TimelineEventType.DEPARTURE
             else -> TimelineEventType.CHECK_IN
         },
     )
+
+    // "1 día", "3 días".
+    private fun dias(n: Int) = if (n == 1) "1 día" else "$n días"
 
     private fun CalendarDto.toMonthData(): CalendarMonthData {
         val primero = Calendar.getInstance().apply { set(shownYear, shownMonth, 1) }
@@ -349,9 +370,9 @@ class ParentViewModel : ViewModel() {
             childFirstName = childFirstName,
             monthName = nombreMes,
             days = days.map { CalendarDay(it.day, it.status.toDayStatus()) },
-            summaryText = "${summary.fullDays} días asistidos · " +
+            summaryText = "${dias(summary.fullDays)} ${if (summary.fullDays == 1) "asistido" else "asistidos"} · " +
                 (if (ausencias == 1) "1 ausencia" else "$ausencias ausencias") +
-                " · ${summary.withNote} días con nota de la maestra. Toca cualquier día para ver su resumen.",
+                " · ${dias(summary.withNote)} con nota de la maestra. Toca cualquier día para ver su resumen.",
             startOffset = offset,
         )
     }

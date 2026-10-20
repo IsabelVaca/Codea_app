@@ -173,13 +173,22 @@ private fun RollCallRow(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             InitialsAvatar(initials = child.initials, color = avatarColor, size = 48.dp)
-            Text(
-                text = child.name,
-                modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = if (isPresent) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurface,
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = child.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isPresent) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurface,
+                )
+                // la hora a la que se le pasó lista (RF-03).
+                if (isPresent && child.arrivalTime != null) {
+                    Text(
+                        text = stringResource(R.string.roll_call_arrived_at, child.arrivalTime),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    )
+                }
+            }
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Box(
                     modifier = Modifier

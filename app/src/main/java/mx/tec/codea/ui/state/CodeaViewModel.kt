@@ -11,9 +11,11 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import mx.tec.codea.data.DataEvents
+import mx.tec.codea.data.MenuApiRepository
 import mx.tec.codea.data.TeacherApiRepository
 import mx.tec.codea.data.api.ApiConfig
 import mx.tec.codea.data.api.toUserMessage
+import mx.tec.codea.data.horaActual
 import mx.tec.codea.data.hoyIso
 import mx.tec.codea.data.local.Local
 import mx.tec.codea.data.offline.CachedRoom
@@ -28,6 +30,7 @@ import mx.tec.codea.domain.Child
 import mx.tec.codea.domain.DepartureRules
 import mx.tec.codea.domain.ErrorKind
 import mx.tec.codea.domain.MarkResult
+import mx.tec.codea.domain.MenuDelDia
 import mx.tec.codea.domain.Report
 import mx.tec.codea.domain.ReportValidator
 import mx.tec.codea.domain.RoomRules
@@ -41,6 +44,7 @@ import mx.tec.codea.domain.Teacher
 class CodeaViewModel : ViewModel() {
 
     private val repository = TeacherApiRepository()
+    private val menus = MenuApiRepository()
 
     // ids que la API necesita y la app no guarda en sus clases.
     // la sala de la docente: el pase de salida la necesita para pedir los niños de hoy.
@@ -63,6 +67,10 @@ class CodeaViewModel : ViewModel() {
         private set
 
     // null until the teacher checks in. menú, checador and mi día all read it.
+    // lo que se come hoy en el centro (HN3); null si todavía no lo capturan.
+    var menuHoy by mutableStateOf<MenuDelDia?>(null)
+        private set
+
     var checkIn by mutableStateOf<CheckInRecord?>(null)
         private set
 
@@ -124,6 +132,8 @@ class CodeaViewModel : ViewModel() {
                     shiftEndMinutes = timeToMinutes(t.center.exitTime) ?: (16 * 60),
                 )
                 checkIn = repository.checkInToday()
+                // el menú no es imprescindible: si no carga, Mi día se ve igual sin él.
+                menuHoy = runCatching { menus.hoy() }.getOrNull()?.takeUnless { it.vacio }
                 val room = classroomId
                 if (room != null) {
                     cargarRutina(room)
@@ -255,7 +265,15 @@ class CodeaViewModel : ViewModel() {
 
     private fun setAttendanceOf(ids: List<String>, status: AttendanceStatus) {
         if (ids.isEmpty()) return
-        children = children.map { if (it.id in ids) it.copy(attendance = status) else it }
+        // la hora de entrada se ve de inmediato (la del teléfono); la del servidor llega en la siguiente carga.
+        val now = horaActual()
+        children = children.map {
+            if (it.id !in ids) it
+            else it.copy(
+                attendance = status,
+                arrivalTime = if (status == AttendanceStatus.PRESENT) it.arrivalTime ?: now else null,
+            )
+        }
         viewModelScope.launch {
             var queued = false
             var failure: Exception? = null

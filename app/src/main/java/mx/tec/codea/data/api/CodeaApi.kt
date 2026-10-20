@@ -36,15 +36,16 @@ interface CodeaApi {
     @PATCH("center")
     suspend fun updateCenterSchedule(@Body body: CenterScheduleBody): CenterDto
 
-    // ----- solicitudes de borrado de fotos (solo admin) -----
-    @GET("media/deletion-requests")
-    suspend fun deletionRequests(@Query("status") status: String = "PENDING"): List<DeletionReviewDto>
+    // ----- menú del día -----
+    // sin fechas, el de hoy. los días sin menú no aparecen.
+    @GET("menus")
+    suspend fun menus(@Query("start") start: String?, @Query("end") end: String?): List<MenuDto>
 
-    @POST("media/deletion-requests/{id}/approve")
-    suspend fun approveDeletion(@Path("id") id: Int, @Body body: DecisionBody = DecisionBody()): DeletionReviewDto
+    @PUT("menus/{date}")
+    suspend fun saveMenu(@Path("date") date: String, @Body body: MenuBody): MenuDto
 
-    @POST("media/deletion-requests/{id}/reject")
-    suspend fun rejectDeletion(@Path("id") id: Int, @Body body: DecisionBody = DecisionBody()): DeletionReviewDto
+    @DELETE("menus/{date}")
+    suspend fun deleteMenu(@Path("date") date: String)
 
     // ----- plantillas de rutina (solo admin) -----
     @GET("routine-templates")
@@ -219,7 +220,7 @@ interface CodeaApi {
     @GET("media")
     suspend fun photoFeed(@Query("child_id") childId: Int, @Query("limit") limit: Int): FeedPage
 
-    // la familia borra la foto de su hijo de inmediato; 409 MEDIA_SHARED si salen niños de otras familias.
+    // la familia borra la foto de inmediato, sin aprobación de nadie, si sale un hijo suyo.
     @DELETE("media/{id}")
     suspend fun deletePhoto(@Path("id") id: Int)
 

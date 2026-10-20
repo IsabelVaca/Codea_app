@@ -4,7 +4,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlin.coroutines.cancellation.CancellationException
 
 // una marca de asistencia que se hizo sin conexión y todavía no llega al servidor.
-data class PendingAttendance(val id: Long, val childId: Int, val status: String, val date: String)
+// createdAt es el instante (en milisegundos) en que se hizo la marca: sirve de hora de entrada cuando llega tarde.
+data class PendingAttendance(val id: Long, val childId: Int, val status: String, val date: String, val createdAt: Long = 0)
 
 // dónde espera la cola. en la app es Room; en las pruebas, una lista en memoria.
 interface PendingStore {
@@ -17,7 +18,8 @@ interface PendingStore {
 
 // la puerta al servidor. en la app es Retrofit; en las pruebas, un doble.
 interface AttendanceRemote {
-    suspend fun send(childId: Int, status: String, date: String)
+    // markedAt: cuándo se hizo la marca, si fue sin conexión; null para que el servidor use su propia hora.
+    suspend fun send(childId: Int, status: String, date: String, markedAt: Long? = null)
 }
 
 // qué tipo de error fue: uno temporal (sin red, servidor caído) se reintenta; uno permanente (404, 422) no tiene remedio.
@@ -69,7 +71,7 @@ class OfflineAttendance(
         for ((index, group) in groups.withIndex()) {
             val latest = group.maxBy { it.id }
             try {
-                remote.send(latest.childId, latest.status, latest.date)
+                remote.send(latest.childId, latest.status, latest.date, latest.createdAt.takeIf { it > 0 })
                 store.remove(group.map { it.id })
                 sent++
             } catch (e: CancellationException) {

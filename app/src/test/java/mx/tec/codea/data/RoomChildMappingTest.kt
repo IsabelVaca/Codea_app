@@ -40,4 +40,19 @@ class RoomChildMappingTest {
         assertTrue(child.hasSummaryToday)
         assertFalse(dto("PRESENT").toChild().hasNoteToday)
     }
+
+    @Test
+    fun arrivalTime_comesFromTheApiAndIsEmptyWithoutIt() {
+        val withTime = dto("PRESENT").copy(arrivedAt = "2026-10-19T13:52:00+00:00").toChild()
+        // la hora se muestra en la zona del teléfono, así que solo se comprueba que haya una con formato H:mm.
+        assertTrue(Regex("\\d{1,2}:\\d{2}").matches(withTime.arrivalTime.orEmpty()))
+        assertEquals(null, dto("ABSENT").toChild().arrivalTime)
+    }
+
+    @Test
+    fun isoOfMillis_isUtcAndTheApiCanReadItBack() {
+        val iso = isoOfMillis(1_791_000_000_000L)
+        assertTrue(iso.endsWith("Z"))
+        assertEquals(1_791_000_000_000L, parseIso(iso)?.time)
+    }
 }

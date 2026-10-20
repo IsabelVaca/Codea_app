@@ -38,10 +38,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import mx.tec.codea.R
+import mx.tec.codea.domain.MenuDelDia
 import mx.tec.codea.domain.Routine
 import mx.tec.codea.domain.RoutineRules
 import mx.tec.codea.domain.Subprocess
 import mx.tec.codea.domain.SubprocessStatus
+import mx.tec.codea.ui.components.MenuCard
 import mx.tec.codea.ui.components.ScreenHeader
 import mx.tec.codea.ui.theme.CodeaTheme
 import mx.tec.codea.ui.theme.Sun
@@ -68,6 +70,8 @@ fun MyDayScreen(
     departureReady: Boolean = false,
     departurePresent: Int = 0,
     onDepartureClick: () -> Unit = {},
+    // lo que se come hoy; null = todavía no hay menú y no se muestra nada.
+    menu: MenuDelDia? = null,
 ) {
     // al terminar la rutina la pantalla se mueve sola hasta el pase de salida (el último paso) y lo deja a media pantalla:
     // así se nota que es lo que sigue.
@@ -91,6 +95,7 @@ fun MyDayScreen(
                 title = stringResource(R.string.my_day_title),
             )
         }
+        menu?.let { item(key = "menu") { MenuCard(menu = it, titulo = "MENÚ DE HOY") } }
         if (rollCallTotal > 0) {
             item(key = "roll-call") {
                 RollCallCard(present = rollCallPresent, total = rollCallTotal, onClick = onRollCallClick)

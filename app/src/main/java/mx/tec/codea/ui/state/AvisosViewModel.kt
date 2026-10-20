@@ -103,9 +103,9 @@ class AvisosViewModel : ViewModel() {
 }
 
 private fun Aviso.toFundacionUi(nuevo: Boolean) = AvisoFundacionUi(
-    id = id, destino = destino, fecha = fecha, texto = texto, nuevo = nuevo,
+    id = id, destino = destino, fecha = fecha, texto = texto, imagenUrl = imagenUrl, nuevo = nuevo,
 )
 
 private fun Aviso.toNotifUi(nueva: Boolean) = NotifUi(
-    id = id, tipo = TipoNotif.AVISO, fecha = fecha, texto = texto, nueva = nueva,
+    id = id, tipo = TipoNotif.AVISO, fecha = fecha, texto = texto, imagenUrl = imagenUrl, nueva = nueva,
 )

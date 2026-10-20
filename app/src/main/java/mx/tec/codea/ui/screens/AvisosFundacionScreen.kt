@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import mx.tec.codea.ui.components.AvisoChip
+import mx.tec.codea.ui.components.AvisoImagen
 import mx.tec.codea.ui.components.BackHeader
 import mx.tec.codea.ui.components.AvisoColores
 import mx.tec.codea.ui.theme.Poppins
@@ -33,6 +34,7 @@ data class AvisoFundacionUi(
     val destino: String?,     // null = toda la fundación, si no nombre de sala
     val fecha: String,
     val texto: String,
+    val imagenUrl: String? = null,
     val nuevo: Boolean        // true solo durante la visita en la que se vieron por primera vez
 )
 
@@ -146,9 +148,12 @@ private fun AvisoItem(aviso: AvisoFundacionUi) {
                 fontSize = 11.sp, color = AvisoColores.GrisTexto
             )
         }
-        Text(
-            aviso.texto, fontFamily = Poppins, fontWeight = FontWeight.SemiBold,
-            fontSize = 14.sp, lineHeight = 21.sp, color = AvisoColores.Ink
-        )
+        if (aviso.texto.isNotBlank()) {
+            Text(
+                aviso.texto, fontFamily = Poppins, fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp, lineHeight = 21.sp, color = AvisoColores.Ink
+            )
+        }
+        aviso.imagenUrl?.let { AvisoImagen(it) }
     }
 }

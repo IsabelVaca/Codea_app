@@ -21,6 +21,8 @@ data class Child(
     val notes: List<FamilyNote> = emptyList(),
     // true cuando la docente ya guardó el resumen del día de este niño.
     val hasSummaryToday: Boolean = false,
+    // la hora a la que se le pasó lista como presente, como "8:05"; null si está ausente o la marca es vieja.
+    val arrivalTime: String? = null,
 ) {
     val hasNoteToday: Boolean
         get() = notes.isNotEmpty()

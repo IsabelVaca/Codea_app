@@ -47,6 +47,8 @@ data class DayDto(
     val summary: DailyEntryDto? = null,
     val timeline: List<TimelineEventDto> = emptyList(),
     val notes: List<FamilyNoteDto> = emptyList(),
+    // lo que se come ese día (HN3); null si todavía no lo capturan.
+    val menu: MenuDto? = null,
 )
 
 // lo que manda la docente: solo lo que llenó (la API no toca lo demás).

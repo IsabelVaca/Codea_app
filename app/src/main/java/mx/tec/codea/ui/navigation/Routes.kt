@@ -98,10 +98,6 @@ data object AdminCentroRoute
 @Serializable
 data object AdminCrearSalaRoute
 
-// las fotos que las familias piden borrar; el admin decide (se abre desde Centro).
-@Serializable
-data object AdminSolicitudesBorradoRoute
-
 // detalle de una sala: viaja el id, no el objeto.
 @Serializable
 data class AdminSalaDetalleRoute(val salaId: String)
@@ -172,6 +168,10 @@ data object AjustesAdminRoute
 // el horario del centro: entrada, salida, cierre automático y días de trabajo.
 @Serializable
 data object AjustesHorarioRoute
+
+// Ajustes → Menú del día: lo que se come cada día de la semana (HN3).
+@Serializable
+data object AjustesMenuRoute
 
 // las personas autorizadas para recoger a un niño: primero la lista de niños y luego las de uno.
 @Serializable

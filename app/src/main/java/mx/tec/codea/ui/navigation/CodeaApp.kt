@@ -2,6 +2,7 @@ package mx.tec.codea.ui.navigation
 
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -263,9 +264,12 @@ private fun RoleApp(
             snackbarHostState = snackbarHostState,
             sessions = sessions,
             onLogout = onLogout,
+            // imePadding al final: con el teclado abierto todas las pantallas suben y el campo que se escribe no queda
+            // tapado. los insets de las barras ya se consumieron arriba, así que no se cuentan dos veces.
             modifier = Modifier
                 .padding(innerPadding)
-                .consumeWindowInsets(innerPadding),
+                .consumeWindowInsets(innerPadding)
+                .imePadding(),
         )
     }
 }

@@ -20,6 +20,7 @@ import mx.tec.codea.CodeaApplication
 import mx.tec.codea.data.DataEvents
 import mx.tec.codea.data.SessionRepository
 import mx.tec.codea.data.SessionState
+import mx.tec.codea.data.isoOfMillis
 import mx.tec.codea.data.api.ApiClient
 import mx.tec.codea.data.api.AttendanceBody
 import mx.tec.codea.data.api.RoomChildDto
@@ -44,7 +45,7 @@ object Offline {
 
     fun init(context: Context, sessions: SessionRepository) {
         val db = Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, "codea.db")
-            .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3)
+            .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4)
             .build()
         val dao = db.dao()
         attendance = OfflineAttendance(RoomPendingStore(dao, sessions), RetrofitAttendanceRemote(), OfflineErrors::kindOf)
@@ -70,7 +71,7 @@ private class RoomPendingStore(private val dao: OfflineDao, private val sessions
 
     override suspend fun all(): List<PendingAttendance> {
         val owner = userId() ?: return emptyList()
-        return dao.pending(owner).map { PendingAttendance(it.id, it.childId, it.status, it.date) }
+        return dao.pending(owner).map { PendingAttendance(it.id, it.childId, it.status, it.date, it.createdAt) }
     }
 
     override suspend fun remove(ids: List<Long>) = dao.deletePending(ids)
@@ -88,8 +89,10 @@ private class RoomPendingStore(private val dao: OfflineDao, private val sessions
 }
 
 private class RetrofitAttendanceRemote : AttendanceRemote {
-    override suspend fun send(childId: Int, status: String, date: String) {
-        ApiClient.api.setAttendance(childId, AttendanceBody(status = status, date = date))
+    override suspend fun send(childId: Int, status: String, date: String, markedAt: Long?) {
+        // solo las marcas presentes llevan hora de entrada.
+        val arrivedAt = markedAt?.takeIf { status == "PRESENT" }?.let(::isoOfMillis)
+        ApiClient.api.setAttendance(childId, AttendanceBody(status = status, date = date, arrivedAt = arrivedAt))
     }
 }
 
@@ -134,6 +137,7 @@ class RoomCache(private val dao: OfflineDao) {
                     hasNoteToday = it.hasNoteToday,
                     notesJson = ApiClient.json.encodeToString(notesSerializer, it.notes),
                     hasSummaryToday = it.hasSummaryToday,
+                    arrivedAt = it.arrivedAt,
                 )
             },
         )
@@ -160,6 +164,7 @@ class RoomCache(private val dao: OfflineDao) {
                     // si el JSON guardado no se puede leer, se pierde solo el texto de los avisos, no la lista.
                     notes = runCatching { ApiClient.json.decodeFromString(notesSerializer, it.notesJson) }.getOrDefault(emptyList()),
                     hasSummaryToday = it.hasSummaryToday,
+                    arrivedAt = it.arrivedAt,
                 )
             },
         )

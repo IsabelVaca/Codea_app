@@ -146,7 +146,10 @@ data class ParentCreateBody(
 
 @Serializable
 data class AnnouncementBody(
-    val text: String,
+    // puede ir vacío si el aviso trae una imagen.
+    val text: String = "",
+    // la imagen ya subida (MediaUploader); null si el aviso es solo texto.
+    @SerialName("media_id") val mediaId: Int? = null,
     // sin sala (null) el aviso es para todo el centro.
     @SerialName("classroom_id") val classroomId: Int? = null,
 )
@@ -154,7 +157,9 @@ data class AnnouncementBody(
 @Serializable
 data class AnnouncementDto(
     val id: Int,
-    val text: String,
+    val text: String = "",
+    // URL firmada (10 min) de la imagen; null si el aviso no trae.
+    @SerialName("media_url") val mediaUrl: String? = null,
     @SerialName("classroom_id") val classroomId: Int? = null,
     @SerialName("classroom_name") val classroomName: String? = null,
     @SerialName("created_at") val createdAt: String,

@@ -1,6 +1,8 @@
 package mx.tec.codea.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -8,9 +10,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import mx.tec.codea.ui.theme.Poppins
 
 // los colores y la etiquetita que comparten las pantallas de avisos
@@ -37,5 +41,20 @@ fun AvisoChip(texto: String, bg: Color, fg: Color) {
             .background(bg)
             .padding(horizontal = 11.dp, vertical = 5.dp),
         fontFamily = Poppins, fontWeight = FontWeight.ExtraBold, fontSize = 11.sp, color = fg
+    )
+}
+
+// la imagen de un aviso, a todo el ancho de la tarjeta. Se queda como la subió la administración (no se recorta).
+@Composable
+fun AvisoImagen(url: String, descripcion: String = "Imagen del aviso", modifier: Modifier = Modifier) {
+    AsyncImage(
+        model = url,
+        contentDescription = descripcion,
+        contentScale = ContentScale.FillWidth,
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(max = 320.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(AvisoColores.Campo),
     )
 }

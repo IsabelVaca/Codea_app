@@ -267,7 +267,8 @@ private fun CalendarDayCell(
     val textColor = when {
         isSelected -> Color.White
         isHasRecord -> MaterialTheme.colorScheme.onSurface
-        else -> MaterialTheme.colorScheme.outlineVariant
+        // los días sin registro se leen en claro y en oscuro, pero más suaves que los que tienen algo.
+        else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
     }
 
     val dotColor = when {

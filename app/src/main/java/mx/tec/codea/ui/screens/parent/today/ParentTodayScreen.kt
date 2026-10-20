@@ -45,6 +45,8 @@ import mx.tec.codea.ui.theme.CoralWash
 import mx.tec.codea.ui.theme.Lavender
 import mx.tec.codea.ui.theme.Teal
 import mx.tec.codea.ui.theme.TealDeep
+import mx.tec.codea.domain.MenuDelDia
+import mx.tec.codea.ui.components.MenuCard
 import mx.tec.codea.ui.theme.TealWash
 import mx.tec.codea.ui.theme.VioletDeep
 
@@ -53,6 +55,8 @@ fun ParentTodayScreen(
     modifier: Modifier = Modifier,
     summary: DaySummary = ParentTodaySampleData.daySummary,
     timelineEvents: List<TimelineEvent> = ParentTodaySampleData.timelineEvents,
+    // lo que se come ese día; null = todavía no hay menú y no se muestra nada.
+    menu: MenuDelDia? = null,
     onNavigateToCalendar: () -> Unit = {},
     onSendNote: (String) -> Unit = {},
     // la campana: cuántas notificaciones no ha visto y la lista del panel.
@@ -102,6 +106,8 @@ fun ParentTodayScreen(
         item {
             MetricsGrid(summary = summary)
         }
+
+        menu?.let { item { MenuCard(menu = it) } }
 
         item {
             Text(
@@ -352,7 +358,7 @@ private fun TimelineEventCard(event: TimelineEvent) {
                     modifier = Modifier.weight(1f),
                 ) {
                     val dotColor = when (event.type) {
-                        TimelineEventType.CHECK_IN, TimelineEventType.MEAL, TimelineEventType.DEPARTURE -> Teal
+                        TimelineEventType.CHECK_IN, TimelineEventType.ARRIVAL, TimelineEventType.MEAL, TimelineEventType.DEPARTURE -> Teal
                         TimelineEventType.ACTIVITY, TimelineEventType.NAP -> MaterialTheme.colorScheme.primary
                     }
 

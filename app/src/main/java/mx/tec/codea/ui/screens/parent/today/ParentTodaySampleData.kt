@@ -2,6 +2,8 @@ package mx.tec.codea.ui.screens.parent.today
 
 enum class TimelineEventType {
     CHECK_IN,
+    // la entrada del niño: la hora en que la docente le pasó lista.
+    ARRIVAL,
     MEAL,
     ACTIVITY,
     NAP,

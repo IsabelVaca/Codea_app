@@ -87,6 +87,8 @@ data class RoomChildDto(
     val surname: String = "",
     @SerialName("full_name") val fullName: String,
     val attendance: String,
+    // a qué hora se le pasó lista como presente (ISO); null si está ausente.
+    @SerialName("arrived_at") val arrivedAt: String? = null,
     @SerialName("conversation_id") val conversationId: Int? = null,
     @SerialName("has_unread_chat") val hasUnreadChat: Boolean = false,
     @SerialName("unread_count") val unreadCount: Int = 0,
@@ -128,6 +130,8 @@ data class AttendanceBody(
     val status: String,
     // el día de la marca ("aaaa-mm-dd"); sin él la API usa hoy. Importa cuando la marca llega después.
     val date: String? = null,
+    // cuándo llegó el niño, para las marcas que se hicieron sin conexión; sin él la API usa su propia hora.
+    @SerialName("arrived_at") val arrivedAt: String? = null,
 )
 
 // ---------- rutina ----------

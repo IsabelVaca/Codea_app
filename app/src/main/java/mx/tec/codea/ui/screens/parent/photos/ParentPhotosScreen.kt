@@ -43,12 +43,13 @@ import androidx.compose.ui.window.DialogProperties
 import mx.tec.codea.ui.theme.CodeaTheme
 
 // ---------- Colores ----------
-private val Ink = Color(0xFF2B2542)
-private val Muted = Color(0xFFA49CC0)
-private val Body = Color(0xFF4A4363)
-private val Bg = Color(0xFFFFFCF8)
-private val Line = Color(0xFFEBE6F3)
-private val SelectedRow = Color(0xFFF4F0FD)
+// los colores salen del tema para que la pantalla se vea bien en claro y en oscuro.
+private val Ink: Color @Composable get() = MaterialTheme.colorScheme.onBackground
+private val Muted: Color @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
+private val Body: Color @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
+private val Bg: Color @Composable get() = MaterialTheme.colorScheme.background
+private val Line: Color @Composable get() = MaterialTheme.colorScheme.outlineVariant
+private val SelectedRow: Color @Composable get() = MaterialTheme.colorScheme.surfaceContainerHigh
 private val Accent = Color(0xFFF0A202)
 private val Incident = Color(0xFFC9503A)
 private val ViewerBg = Color(0xFF1D1830)
@@ -64,7 +65,7 @@ private val Poppins = FontFamily.Default
 
 // ---------- Modelo ----------
 enum class Categoria(val label: String, val dot: Color) {
-    TODAS("Todas", Ink),
+    TODAS("Todas", Color(0xFF8C7FA8)),
     ACTIVIDADES("Actividades", Color(0xFF8B7BE0)),
     COMIDAS("Comidas", Accent),
     SIESTA("Siesta", Color(0xFF5FBF9A)),
@@ -133,7 +134,7 @@ fun ParentPhotosScreen(
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
             modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 6.dp, bottom = 20.dp),
+            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(5.dp),
             verticalArrangement = Arrangement.spacedBy(5.dp),
         ) {
@@ -157,6 +158,18 @@ fun ParentPhotosScreen(
                         onElegir = { filtro = it; menuAbierto = false },
                     )
                     Spacer(Modifier.height(18.dp))
+                }
+            }
+
+            // sin fotos (todavía no hay, o la categoría elegida no tiene) la pantalla lo dice en vez de quedar vacía.
+            if (filtradas.isEmpty()) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Text(
+                        text = if (fotos.isEmpty()) "Todavía no hay fotos de $nombreNino. Cuando la maestra suba una, la verás aquí."
+                        else "No hay fotos en esta categoría.",
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
+                        style = TextStyle(fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, lineHeight = 21.sp, color = Muted),
+                    )
                 }
             }
 
@@ -222,7 +235,7 @@ private fun MenuCategorias(
         Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
             .border(1.5.dp, Line, RoundedCornerShape(16.dp))
     ) {
         Row(
@@ -388,7 +401,7 @@ private fun VisorFoto(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Box(Modifier.size(36.dp).clip(CircleShape).background(Color(0xFFE6E0FB)), contentAlignment = Alignment.Center) {
-                        Text(foto.maestra.split(" ").last().take(1), fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color(0xFF6A5BB5))
+                        Text(foto.maestra.trim().take(1).uppercase(), fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color(0xFF6A5BB5))
                     }
                     Column {
                         Text(foto.maestra, fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Ink)
@@ -403,14 +416,14 @@ private fun VisorFoto(
                         onClick = onDescargar,
                         modifier = Modifier.weight(1f).height(48.dp),
                         shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Ink, contentColor = Color.White),
+                        colors = ButtonDefaults.buttonColors(containerColor = Ink, contentColor = Bg),
                     ) { Text("Descargar", fontFamily = Poppins, fontWeight = FontWeight.SemiBold) }
                     OutlinedButton(
                         onClick = onBorrar,
                         modifier = Modifier.weight(1f).height(48.dp),
                         shape = RoundedCornerShape(14.dp),
                         border = BorderStroke(1.5.dp, Color(0xFFE4DEF2)),
-                        colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White, contentColor = Ink),
+                        colors = ButtonDefaults.outlinedButtonColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest, contentColor = Ink),
                     ) {
                         Text(
                             "Borrar",
