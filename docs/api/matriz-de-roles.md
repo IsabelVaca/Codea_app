@@ -70,6 +70,7 @@ Quién puede llamar a cada endpoint. **Se genera leyendo las dependencias reales
 | GET | `/parents` | ✅ | — | — | Por rol |
 | POST | `/parents` | ✅ | — | — | Por rol |
 | GET | `/parents/{parent_id}` | ✅ | — | — | Por rol |
+| POST | `/parents/{parent_id}/children` | ✅ | — | — | Por rol |
 | POST | `/parents/{parent_id}/deactivate` | ✅ | — | — | Por rol |
 | POST | `/parents/{parent_id}/reactivate` | ✅ | — | — | Por rol |
 | POST | `/parents/{parent_id}/resend-invitation` | ✅ | — | — | Por rol |
@@ -92,7 +93,7 @@ Quién puede llamar a cada endpoint. **Se genera leyendo las dependencias reales
 | POST | `/teachers/{teacher_id}/reactivate` | ✅ | — | — | Por rol |
 | POST | `/users/{user_id}/access-code` | ✅ | — | — | Por rol |
 
-Total: 83 endpoints (8 públicos, 58 por rol, 17 con alcance por registro).
+Total: 84 endpoints (8 públicos, 59 por rol, 17 con alcance por registro).
 
 ## Cómo se regenera
 

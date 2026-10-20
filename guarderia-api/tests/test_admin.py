@@ -181,6 +181,56 @@ async def test_parents(client, world):
     assert len((await client.get("/parents", headers=world.admin)).json()) == 3
 
 
+async def test_link_more_children_to_a_parent(client, world):
+    # la mamá ya tiene a Sofía; se le liga Diego con el mismo parentesco.
+    linked = await client.post(
+        f"/parents/{world.mom_id}/children", headers=world.admin, json={"child_ids": [world.diego.id, world.sofia.id]}
+    )
+    assert linked.status_code == 200
+    body = linked.json()
+    assert sorted(body["child_ids"]) == sorted([world.sofia.id, world.diego.id])
+    assert {c["relationship"] for c in body["children"]} == {"MOTHER"}
+
+    # repetirlo no duplica nada
+    again = await client.post(f"/parents/{world.mom_id}/children", headers=world.admin, json={"child_ids": [world.diego.id]})
+    assert sorted(again.json()["child_ids"]) == sorted([world.sofia.id, world.diego.id])
+
+    empty = await client.post(f"/parents/{world.mom_id}/children", headers=world.admin, json={"child_ids": []})
+    assert empty.json()["code"] == "CHILDREN_REQUIRED"
+    missing = await client.post(f"/parents/{world.mom_id}/children", headers=world.admin, json={"child_ids": [9999]})
+    assert missing.json()["code"] == "CHILD_NOT_FOUND"
+    assert (await client.post(f"/parents/{world.mom_id}/children", headers=world.mom, json={"child_ids": [world.renata.id]})).status_code == 403
+
+
+async def test_link_children_keeps_the_pending_code(client, world):
+    created = (
+        await client.post(
+            "/parents",
+            headers=world.admin,
+            json={"name": "Jorge", "phone": "5512345678", "email": "jorge@test.dev", "relationship": "FATHER", "child_ids": [world.sofia.id]},
+        )
+    ).json()
+    code = created["access_code"]["code"]
+    await client.post(f"/parents/{created['id']}/children", headers=world.admin, json={"child_ids": [world.renata.id]})
+    # el código que ya le dieron sigue sirviendo después de ligarle otro hijo
+    activated = await client.post(
+        "/auth/activate", json={"email": "jorge@test.dev", "code": code, "password": "otra-clave-larga-9"}
+    )
+    assert activated.status_code == 200
+
+
+async def test_inactive_children_cannot_be_linked(client, world):
+    await client.post(f"/children/{world.diego.id}/deactivate", headers=world.admin)
+    linked = await client.post(f"/parents/{world.mom_id}/children", headers=world.admin, json={"child_ids": [world.diego.id]})
+    assert linked.json()["code"] == "CHILD_INACTIVE"
+    created = await client.post(
+        "/parents",
+        headers=world.admin,
+        json={"name": "Jorge", "phone": "5512345678", "email": "jorge@test.dev", "relationship": "FATHER", "child_ids": [world.diego.id]},
+    )
+    assert created.json()["code"] == "CHILD_INACTIVE"
+
+
 async def test_announcement(client, world):
     empty = await client.post("/announcements", headers=world.admin, json={"text": " "})
     assert empty.json()["code"] == "TEXT_REQUIRED"
