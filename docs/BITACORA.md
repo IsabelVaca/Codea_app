@@ -304,3 +304,15 @@ Sin correos ni SMTP: el admin manda la invitación por WhatsApp y el padre solo 
 - **Sin sobretítulos:** a pedido del usuario se quitó la línea gris de arriba («Estancia La Oruga · Administración», «Familias», «Ajustes · Rutinas»…) en las pantallas de los tres perfiles, también en Hoy y Fotos del padre. Se dejó solo donde lleva un dato (reporte, elegir niños, resumen guiado, Mi día y el chat de la docente). Se borraron 10 textos sin uso de `strings.xml`.
 - **Verificado:** `assembleDebug` y `./gradlew test` en verde; en el emulador se vieron Avisos y Docentes → Salas. No se probó la lista de docentes, jalar para recargar ni abrir una sala (el emulador se estaba usando a la vez).
 - **Imagen de los avisos** (después del recorrido en el emulador): se ve completa y con su relación de aspecto, con tope de 320 dp de alto (una vertical queda centrada); antes llenaba el ancho y se recortaba. La vista previa al publicar usa el mismo `AvisoImagen`. En el emulador las fotos no salían porque la base de desarrollo local seguía en `a96b2c7d5f65` y el API llevaba 26 h sin recargar (`--reload` no vio los cambios): se corrió `alembic upgrade head` (hasta `d74a0f6c4e15`) y se reinició el contenedor. Los avisos publicados antes de eso quedaron sin imagen.
+
+## 2026-10-19 (noche) · Incidente: cuentas que no se activaban y datos borrados en producción
+
+Detalle completo en [`INCIDENTE-2026-10-19.md`](INCIDENTE-2026-10-19.md).
+
+- **«El código no es válido»:** el código no estaba roto. Las cuentas se dieron de alta desde el emulador, que apuntaba al servidor local, y se intentaron activar desde la tablet en el servidor compartido, donde no existen.
+- **La tablet no se conectaba:** un APK de Android Studio apuntaba a `localhost`. Se le instaló uno que apunta a `https://api.codeaapp.site/api/v1/` y `local.properties` quedó con esa dirección.
+- **Datos perdidos:** `seed_demo.py --borrar-todo` se corrió sobre `codea_prod` y borró 16 cuentas, 6 fotos y 3 avisos. No hay respaldo.
+- **Endurecimiento desplegado en producción** (antes de hallar la causa): el código y el correo se limpian de caracteres invisibles y el campo del código pone el guion solo. 338 pruebas de la API y 138 de la app en verde. **Falta el commit.**
+- **Decisión:** todos trabajan contra el servidor compartido; `guarderia-api/.env.dev` es la configuración del backend local, sin secretos reales.
+- **Pendientes:** respaldos de la base y del almacén, candado al seed, límite de volúmenes de SeaweedFS, `API_BASE_URL` por omisión a la API y volver a dar de alta las cuentas reales.
+
