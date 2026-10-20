@@ -2,6 +2,13 @@
 
 > **Documento histórico (16–17 de octubre).** Describe el plan de entonces; el login, la conexión con la API y casi todas las pantallas que aquí figuran como pendientes ya se hicieron. Lo vigente está en [`../FALTANTES.md`](../FALTANTES.md) (qué falta), [`../ESTADO.md`](../ESTADO.md) (dónde estamos), [`../REQUISITOS.md`](../REQUISITOS.md) y [`../api/endpoints.md`](../api/endpoints.md).
 
+> **Cómo quedó (20 de octubre):**
+> - **P0:** las 7 hechas (Arranque, Iniciar sesión, Activar cuenta, Mi cuenta para los tres roles, bandeja de chats, chat del padre y diálogo del código).
+> - **P1:** hechas Cambiar contraseña (en Mi cuenta), Selector de rol (solo con varios roles), Selector de hijo, Día del niño (`ResumenDelDiaScreen`, desde la ficha del niño) y Avisos. **Cambiaron:** Recuperar contraseña no tiene pantalla (el admin genera un código nuevo y se usa «Activar mi cuenta») y las personas autorizadas las administra el admin en Ajustes, no el padre.
+> - **P2:** hechas la configuración del centro (Ajustes → Horario; sin ubicación ni radio, porque el checador ya no los usa), la salida con persona autorizada (pase de salida) y el historial de avisos. **Se quitaron:** Ajustar rutina (se borró la maqueta), Mis documentos de la docente y las solicitudes de borrado de fotos. Siguen sin hacerse: editar mi perfil, editar datos desde el admin, pedir un documento, borrar avisos, acuse de incidentes y notificaciones.
+> - **Tabs:** el admin quedó con Avisos · Docentes · Familias · Ajustes y el padre con Hoy · Calendario · Fotos · Chat · Mi hijo (sin Documentos).
+> - **Limpieza:** las maquetas sin ruta se borraron el 18/oct; siguen los `*SampleData.kt` del padre y los modelos duplicados (`Child`/`Infante`, `Teacher`/`Docente`).
+
 Hoy la app tiene unas 30 pantallas en uso, pero no tiene login: abre en `RoleSelectionScreen` y manda `Bearer dev:<correo>`. Desde la primera versión de este plan se conectó a la API buena parte de las pantallas de admin (salas, docentes, infantes, padres, rutinas, avisos), de la docente (rutina de hoy, avisos) y del padre (avisos). Para que funcione de verdad faltan **7 pantallas indispensables (P0)** y **6 para entregar completo (P1)** (la de Avisos ya está hecha).
 
 Prioridades:

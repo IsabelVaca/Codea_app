@@ -2,29 +2,29 @@
 
 Si llegas nuevo, lee en este orden: este archivo → [`ESTADO.md`](ESTADO.md) → [`MARCO-TECNICO.md`](MARCO-TECNICO.md) → [`REQUISITOS.md`](REQUISITOS.md) → el README de la carpeta donde vas a trabajar.
 
-Ya existían y **son la referencia para el cómo** (no los dupliques): [`estilo.md`](estilo.md) (convenciones), [`plan/`](plan/README.md) (pantallas, conexión de la app, estado de la API, login JWT, tareas) y [`api/endpoints.md`](api/endpoints.md) (los 65 endpoints).
+Ya existían y **son la referencia para el cómo** (no los dupliques): [`estilo.md`](estilo.md) (convenciones), [`plan/`](plan/README.md) (pantallas, conexión de la app, estado de la API, login JWT, tareas) y [`api/endpoints.md`](api/endpoints.md) (las 84 rutas de la API).
 
 ## 1. Reglas que no se negocian
 
 1. **El marco técnico es el de <https://startdroid.pages.dev/>.** Nada fuera de esa lista sin aprobación; se anota en [`DECISIONES-PENDIENTES.md`](DECISIONES-PENDIENTES.md).
-2. **Firebase está excluido** para notificaciones y tiempo real. El login ya es propio (JWT, rama `feature/login-jwt`); no agregues más uso de Firebase.
+2. **Firebase está excluido** para notificaciones y tiempo real. El login ya es propio (JWT, de la rama `feature/login-jwt`, ya en `main`); no agregues más uso de Firebase.
 3. Texto de la interfaz en español; comentarios del código en inglés en lo que ya existe (los más recientes están en español: sigue el estilo del archivo vecino).
 4. Dependencias en un solo sentido: `ui/screens` → `ui/state` → `data` → `domain`. `domain/` no importa Android.
 5. La API repite las reglas de `domain/` (`guarderia-api/app/core/rules.py`): si cambias una regla, cámbiala en los dos lados y en sus pruebas.
 
 ## 2. Levantar todo
 
-**Backend**
+**Backend** (solo si vas a trabajar en `guarderia-api/` o correr `pytest`; la app usa el servidor compartido, ver abajo)
 ```bash
 cd guarderia-api
-cp .env.example .env            # cambia las claves
+cp .env.dev .env                # valores de desarrollo, sin secretos reales
 docker compose up -d --build
 docker compose exec api alembic upgrade head
 docker compose exec api python -m app.seed
 ```
 API en `http://localhost:8000/api/v1`, Swagger en `/docs`.
 
-**Antes de arrancar**, `guarderia-api/.env` necesita `JWT_SECRET` (mínimo 32 caracteres; la API no arranca sin él): `python3 -c "import secrets; print(secrets.token_urlsafe(48))"`.
+`.env.dev` ya trae un `JWT_SECRET` de prueba. Si partes de `.env.example`, llena `JWT_SECRET` (mínimo 32 caracteres; la API no arranca sin él): `python3 -c "import secrets; print(secrets.token_urlsafe(48))"`.
 
 **Entrar:** el seed deja a todos con la contraseña `codea1234` (`SEED_PASSWORD`). Correos: `admin@oruga.test`, `karla.robles@oruga.test` (docente), `laura.iglesias@oruga.test` (madre). En Swagger haz `POST /auth/login`, copia el `access_token` y pégalo en **Authorize** (dura 5 minutos). En la app, esos mismos correo y contraseña en la pantalla de inicio de sesión.
 
@@ -34,12 +34,13 @@ API en `http://localhost:8000/api/v1`, Swagger en `/docs`.
 ```bash
 ./gradlew installDebug
 ```
-- Emulador: ya apunta a `http://10.0.2.2:8000/api/v1/`.
-- Celular físico por USB: compila con `-PapiBaseUrl=http://localhost:8000/api/v1/` (o ponlo en `local.properties`) y corre `adb reverse tcp:8000 tcp:8000 && adb reverse tcp:9000 tcp:9000`; sin eso la app apunta a `10.0.2.2` (emulador). Detalle en [`entrega/manual-instalacion.md`](entrega/manual-instalacion.md).
+- Lo normal: el servidor compartido (siguiente apartado), con `API_BASE_URL` en `local.properties`.
+- Contra tu backend local, en emulador: sin `API_BASE_URL` en `local.properties` la app apunta a `http://10.0.2.2:8000/api/v1/`.
+- Contra tu backend local, en celular físico por USB: compila con `-PapiBaseUrl=http://localhost:8000/api/v1/` (o ponlo en `local.properties`) y corre `adb reverse tcp:8000 tcp:8000 && adb reverse tcp:9000 tcp:9000`; sin eso la app apunta a `10.0.2.2` (emulador). Detalle en [`entrega/manual-instalacion.md`](entrega/manual-instalacion.md).
 
 **Sin levantar el backend: usar el servidor compartido (`codeaapp.site`)**
 
-Desde el 19/oct hay una API pública con HTTPS (túnel de Cloudflare, [decisión #7](DECISIONES-PENDIENTES.md)). Sirve para trabajar solo en la app, en emulador o celular, sin Docker ni `adb reverse`:
+Desde el 19/oct hay una API pública con HTTPS (túnel de Cloudflare, [decisión #7](DECISIONES-PENDIENTES.md)). Es la que usa la app, en emulador o celular, sin Docker ni `adb reverse`. Corre con el proyecto `codea-prod` en una Mac: base en Aiven, fotos en SeaweedFS y respaldo diario de las dos desde el 20/oct.
 
 | Qué | Dirección |
 |---|---|
@@ -61,9 +62,10 @@ Lo que hay que saber:
 
 **Pruebas**
 ```bash
-./gradlew test                                     # 125 pruebas JVM
-cd guarderia-api && .venv/bin/pytest               # 324 pruebas de la API (Postgres real; con POSTGRES_PASSWORD si cambiaste la contraseña)
+./gradlew test                                     # 140 pruebas JVM
+cd guarderia-api && .venv/bin/pytest               # 343 pruebas de la API (Postgres real; con POSTGRES_PASSWORD si cambiaste la contraseña)
 ```
+Las de la API, siempre contra el Postgres local de `docker compose`, nunca contra el servidor compartido. Otras formas de correrlas: [`guarderia-api/tests/README.md`](../guarderia-api/tests/README.md).
 
 ## 3. Mapa del repo
 
@@ -94,23 +96,25 @@ cd guarderia-api && .venv/bin/pytest               # 324 pruebas de la API (Post
 - **`DataEvents.changed`:** al terminar una escritura todos los ViewModels recargan. Si agregas un ViewModel con lista, suscríbete a ese flujo.
 - **Fuera de alcance = 404**, no 403.
 - **Fotos:** nunca pasan por la API; se suben con URL firmada (`MediaUploader`).
-- **`CodeaNavHost.kt`** (849 líneas) es el archivo con más conflictos: haz ramas cortas y mezcla seguido.
-- Hay pantallas y repositorios duplicados de la etapa sin backend; revisa los READMEs de `ui/screens/` y `data/` antes de borrar o reutilizar.
+- **`CodeaNavHost.kt`** (unas 1270 líneas) es el archivo con más conflictos: haz ramas cortas y mezcla seguido.
+- Ya no hay pantallas ni repositorios en memoria de la etapa sin backend (se borraron el 18/oct); solo quedan los `*SampleData.kt` del padre, con los modelos de la interfaz. Revisa los READMEs de `ui/screens/` y `data/` antes de borrar o reutilizar.
+- **Caché en Room:** las listas del admin y las pantallas del padre y de la docente muestran primero lo último guardado (`data/offline/ApiCache.kt`) y luego lo nuevo de la API. La llave lleva el id del usuario y todo se borra al cerrar sesión. Si cambias un DTO y lo guardado ya no se puede leer, la caché regresa `null` y la pantalla espera a la API.
 
 ## 6. Ramas de git
 
 | Rama | Estado |
 |---|---|
-| `main` | La buena. Última actividad: "Pantallas Rutinas-Admin" (2026-10-15). |
-| `backend` | Ya contenida en `main` (mismo commit). |
-| `documents-tab`, `estructura-curso`, `fotos-padres`, `my-room-and-chats-screens`, `pantallas-admin-checador`, `parent-tabs-scaffolding`, `presentation-build` | Ya contenidas en `main`; se pueden borrar. |
+| `main` | La buena. Última actividad: merge del PR #17 (estilo y caché de la docente, 2026-10-20). Los PR #11 a #17 ya están dentro. |
+| `feature/*` (menos `feature/pagos`), `fix-*`, `docs/servidor-tunel`, `documents-tab`, `estructura-curso`, `fotos`, `fotos-padres`, `integracion`, `invitacion-whatsapp`, `mi-sala-pase-de-lista`, `my-room-and-chats-screens`, `pantallas-admin-checador`, `parent-tabs-scaffolding`, `presentation-build` | Ya contenidas en `main`; se pueden borrar. |
+| `backend` | **No** está en `main`: dos commits del 17/oct (un plan de acción, íconos y un PDF de endpoints). Revisar si algo sirve antes de borrarla. |
+| `feature/pagos` | **No** está en `main` y no se integra: los pagos (CRF-01) quedaron fuera de alcance. |
 | `checador-menu` | **No** está en `main`. Su último commit dibuja el mapa del prototipo; ya no hace falta, porque el checador no usa mapa ni ubicación ([decisión #3](DECISIONES-PENDIENTES.md)). |
 
 Verifícalo tú con `git branch -r --merged origin/main` y `git branch -r --no-merged origin/main`.
 
 ## 7. Qué hacer primero (si no sabes por dónde empezar)
 
-1. Lee [`FALTANTES.md`](FALTANTES.md): lista lo que falta de la app, por rol, con el orden sugerido antes del congelamiento.
-2. Aplica las migraciones pendientes en Aiven y recorre los tres roles en un teléfono; anota las fallas en [`RECORRIDO.md`](RECORRIDO.md).
+1. Lee [`FALTANTES.md`](FALTANTES.md): lista lo que falta de la app, por rol, con el orden sugerido para los días antes de la entrega (22/oct, 23:59). Las funciones nuevas se congelaron el 19/oct.
+2. Recorre los tres roles en un teléfono contra el servidor compartido; anota las fallas en [`RECORRIDO.md`](RECORRIDO.md). Las 13 migraciones ya están aplicadas en Aiven (head `d74a0f6c4e15`).
 3. Resuelve [`DECISIONES-PENDIENTES.md`](DECISIONES-PENDIENTES.md): nada de eso se implementa sin aprobación.
 4. Completa los huecos **[completar por el equipo]** de `docs/entrega/` y la [lista de la rúbrica](ENTREGA-3.md).

@@ -18,8 +18,8 @@ La rutina del día se genera a partir de la plantilla la primera vez que se cons
 
 | Hecho | Pendiente |
 |---|---|
-| Plantillas, asignación, avance, un solo activo | **"Finalizar día"** al terminar la rutina (tarea abierta): cerrar el día y consolidar el resumen |
+| Plantillas, asignación, avance, un solo activo | **"Finalizar día"**: la app ya cierra el día con el pase de salida y `POST /staff-attendance/check-out`; falta consolidar el resumen del día en el servidor |
 | | Catálogo de momentos del lado del servidor (la app tiene `CatalogoMomentosScreen`; revisar si se persiste) |
-| | **Menú del día** (HN3): no existe |
+| **Menú del día** (HN3): ya existe en su propio módulo, [`menus`](../menus/README.md) | |
 
 Pruebas: `tests/test_teacher_day.py`, `tests/test_admin_extras.py` (plantillas).

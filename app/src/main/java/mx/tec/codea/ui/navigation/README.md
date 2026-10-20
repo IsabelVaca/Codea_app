@@ -4,7 +4,7 @@
 |---|---|
 | `CodeaApp.kt` | Raíz de la interfaz. Decide por el **estado de la sesión**: arranque, inicio de sesión / activar cuenta o la app del rol (`RoleApp`: `Scaffold`, barra inferior y snackbar). Aquí vive también `SessionScopesViewModel`, que da a cada sesión su almacén de ViewModels |
 | `Routes.kt` | Rutas como objetos `@Serializable`. Solo llevan ids, nunca objetos completos. `AccountRoute` (Mi cuenta) la abren los tres roles |
-| `CodeaNavHost.kt` | El grafo: une cada ruta con su pantalla y su ViewModel (849 líneas, 32 destinos) |
+| `CodeaNavHost.kt` | El grafo: une cada ruta con su pantalla y su ViewModel (unas 1270 líneas, 44 destinos) |
 | `TopLevelDestination.kt` | Las pestañas de la barra inferior y qué roles las ven (`roles`) |
 | `NavControllerExtensions.kt` | Comportamiento al tocar una pestaña (navegar o reseleccionar) |
 
@@ -31,6 +31,6 @@ Las pestañas exactas salen de `TopLevelDestination.kt`: ahí es donde se agrega
 
 - **El login no es una ruta:** cerrar sesión cambia el estado de la sesión y `CodeaApp` dibuja otra cosa; no se navega a ningún lado. `RoleSelectionScreen` solo aparece para quien tiene más de un rol.
 - **Partir `CodeaNavHost.kt`:** es el archivo con más conflictos de merge. Separar un archivo por rol (`TeacherNavGraph`, `AdminNavGraph`, `ParentNavGraph`) reduce choques.
-- **Rutas del padre que faltan:** chat, menú del día, selector de hijo.
-- **Rutas del admin:** el horario del centro se cambia en Ajustes → Horario (`AjustesHorarioRoute`) y las personas autorizadas para recoger, en Ajustes → Personas autorizadas (`AjustesPersonasAutorizadasRoute` y su detalle por niño).
+- **Rutas del padre:** ya están todas. El chat es la pestaña `ParentChatRoute`, el menú del día sale en Hoy y el selector de hijo (`WithChildSwitcher`, al final de `CodeaNavHost.kt`) envuelve Hoy, Calendario, Fotos y Mi hijo.
+- **Rutas del admin:** el horario del centro se cambia en Ajustes → Horario (`AjustesHorarioRoute`), el menú de la semana en Ajustes → Menú del día (`AjustesMenuRoute`) y las personas autorizadas para recoger, en Ajustes → Personas autorizadas (`AjustesPersonasAutorizadasRoute` y su detalle por niño).
 - **Ruta de la docente:** `DeparturePassRoute` (pase de salida) se abre desde la tarjeta de Mi día cuando ya no queda ningún momento por hacer.

@@ -4,6 +4,8 @@
 
 > **Actualización (19 de octubre de 2026):** la disposición de la pantalla se rehízo (cuadrícula de fichas, avisos en un bloque, filtros en una barra, barra fija de «Capturar resúmenes», dos colores). El diagrama de la sección 4 es el de la primera versión; lo vigente está en la [bitácora](../BITACORA.md) del 19 de octubre y en `MyRoomScreen.kt`.
 
+> **Actualización (20 de octubre de 2026):** Mi sala conserva la disposición del 19/oct y sigue con su caché en Room (`cached_room`, `cached_child`); la ficha del niño y el pase de salida ahora también muestran lo último guardado (`ApiCache`). Mi día se simplificó (sin el menú del día ni el cuadro morado; el menú lo ve el padre en Hoy) y la ficha, el pase de lista, el resumen, el pase de salida, el chat y el menú de la docente pasaron al estilo del admin (`ui/components/EstiloTarjetas.kt`).
+
 Propuesta del 18 de octubre de 2026. Este documento se escribió para revisarlo y cambiarlo antes de escribir código.
 
 Sigue las convenciones de [`../estilo.md`](../estilo.md) y complementa a [`01-app-pantallas.md`](01-app-pantallas.md).

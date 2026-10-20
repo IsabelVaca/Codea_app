@@ -1,7 +1,7 @@
 # Decisiones pendientes y excepciones al marco
 
 Todo lo que se salga de [`MARCO-TECNICO.md`](MARCO-TECNICO.md) se registra aquí. **No se implementa hasta que el responsable apruebe.**
-Estado a 2026-10-19: aprobada la #7 (túnel de Cloudflare); lo demás sigue sin aprobar. Lo que ya está en el código sin aprobación: #1 (login JWT), #8 (`reorderable`), #9 (SeaweedFS, en desarrollo y ahora también en `docker-compose.prod.yml`) y #10 (dictado).
+Estado a 2026-10-20: aprobadas la #7 (túnel de Cloudflare) y la #11 (respaldo diario con `launchd`); lo demás sigue sin aprobar. Lo que ya está en el código sin aprobación: #1 (login JWT), #8 (`reorderable`), #9 (SeaweedFS, en desarrollo y en el servidor compartido, donde guarda las fotos reales) y #10 (dictado).
 
 | # | Tema | Por qué importa | Alternativa dentro del marco | Recomendación | Estado |
 |---|---|---|---|---|---|
@@ -13,7 +13,8 @@ Estado a 2026-10-19: aprobada la #7 (túnel de Cloudflare); lo demás sigue sin 
 | 6 | Grafana (monitoreo) | Fuera de la lista. | Endpoints `/health/live` y `/health/ready` ya existentes + logs. | Aprobar solo si se quiere evidencia de disponibilidad (RNF04). | ⏳ Pendiente |
 | 7 | Cloudflare tunnel (HTTPS público) | Fuera de la lista. | Desplegar con Docker en un servidor propio con certificado. | Aprobar si no hay otra forma rápida de tener HTTPS. | ✅ **Aprobada (19/oct, Oscar):** producción en `codeaapp.site` con el contenedor `cloudflared` (`guarderia-api/docker-compose.prod.yml`): `api.codeaapp.site` → API y `archivos.codeaapp.site` → almacén. Sin servidor ni puertos abiertos; la máquina que lo corre debe estar prendida |
 | 8 | Librería `reorderable` | Fuera de la lista. | Botones subir/bajar o arrastre propio. | Reemplazar o aprobar. | ⏳ Pendiente |
-| 9 | SeaweedFS como almacén | El sitio nombra RustFS (compatible con S3). | RustFS. | Confirmar que SeaweedFS cuenta como "compatible con S3". | ⏳ Pendiente |
+| 9 | SeaweedFS como almacén | El sitio nombra RustFS (compatible con S3). | RustFS. | Confirmar que SeaweedFS cuenta como "compatible con S3". | ⏳ Pendiente. Desde el 19/oct guarda las fotos del servidor compartido (`codea-prod`); cambiar a RustFS después implicaría mover el bucket |
+| 11 | Respaldo diario con `launchd` (macOS) | El marco no nombra cómo se programan tareas en el servidor. | Correr `guarderia-api/scripts/respaldo.sh` a mano. | Usar el programador del sistema: no agrega librerías ni servicios, solo un archivo `.plist`. | ✅ **Aprobada (20/oct, Oscar):** pidió los respaldos diarios. `pg_dump` con la imagen `postgres:18` y copia del volumen de fotos, a las 3:00, 14 días en `~/respaldos-codea/` de la Mac servidor (`guarderia-api/README.md`, «Respaldos») |
 | 10 | Dictado con `RecognizerIntent` | API del sistema, pero usa el reconocedor de Google. | Sin dictado. | Confirmar que está permitido. | ⏳ Pendiente |
 
 ## Cómo se registra una decisión

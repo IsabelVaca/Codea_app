@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Respaldo diario del servidor compartido en la Mac que sirve codeaapp.site (launchd, sin instalar nada).
+  RUTA_API se cambia por la ruta de guarderia-api en esa Mac. Instalarlo (README.md, "Respaldos"):
+    sed "s|RUTA_API|$PWD|g" scripts/site.codeaapp.respaldo.plist > ~/Library/LaunchAgents/site.codeaapp.respaldo.plist
+    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/site.codeaapp.respaldo.plist
+  Corre a las 3:00; si la Mac estaba dormida, corre al despertar.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>site.codeaapp.respaldo</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/sh</string>
+    <string>RUTA_API/scripts/respaldo.sh</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+  </dict>
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>3</integer>
+    <key>Minute</key>
+    <integer>0</integer>
+  </dict>
+  <key>StandardOutPath</key>
+  <string>/tmp/codea-respaldo.log</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/codea-respaldo.log</string>
+</dict>
+</plist>

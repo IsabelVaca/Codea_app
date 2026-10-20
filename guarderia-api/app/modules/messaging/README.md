@@ -6,8 +6,8 @@ Tablas: `conversation` (una por niño), `message`, `conversation_read`, `announc
 |---|---|---|
 | `GET /conversations` | cualquiera con cuenta | Conversaciones con conteo de no leídos |
 | `GET /conversations/{id}/messages` | quien participe | Mensajes paginados; con `?after=<id>` trae solo los nuevos |
-| `POST /conversations/{id}/messages` | quien participe | Envía. Si el `client_id` ya se usó, devuelve el existente con 200 (reintentos seguros) |
-| `POST /conversations/{id}/read` | cualquiera con cuenta | Marca como leída |
+| `POST /conversations/{id}/messages` | quien participe | Envía `{text?, media_id?, client_id?}`: texto, foto o ambos. Si el `client_id` ya se usó, devuelve el existente con 200 (reintentos seguros). 422 `TEXT_REQUIRED`, `MEDIA_NOT_VALID` |
+| `POST /conversations/{id}/read` | quien participe | Marca como leída |
 | `POST /children/{id}/notes` | padre | Nota a la asistente para hoy |
 | `GET /announcements` | cualquiera con cuenta | Avisos con alcance por rol |
 | `POST /announcements` | admin | Aviso. Sin `classroom_id` es para todo el centro; con él, solo para esa sala |
@@ -22,6 +22,6 @@ El `client_id` del mensaje hace que enviar sin conexión y reintentar después n
 | **Avisos con imagen** (HN5, 19/oct): `announcement.media_id`; `POST /announcements` acepta `{text?, media_id?, classroom_id?}` (texto, imagen o ambos) y `AnnouncementOut.media_url` es una URL firmada de 10 minutos | **Historial** para el admin con filtros |
 | | **Mensajes en tiempo real** ("Agregar funcionalidad mensajes tiempo real", tarea abierta): hoy se consulta con `?after=`; el marco permite SSE o WebSocket, no Firebase |
 | | **Notificaciones**: sin Firebase; WorkManager + notificaciones locales en la app |
-| | Chat del lado del padre en la app (la API ya lo permite) |
+| Chat del lado del padre en la app (con fotos) | |
 
-Pruebas: `tests/test_messaging.py`, `tests/test_admin.py` (`test_announcement`).
+Pruebas: `tests/test_messaging.py` (4, con fotos en el chat), `tests/test_announcement_images.py` (6), `tests/test_admin.py` (`test_announcement`).

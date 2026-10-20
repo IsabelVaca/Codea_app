@@ -3,7 +3,7 @@
 Qué hay en la base, quién es quién y con qué cuenta entrar para probar cada pantalla. Los datos los pone
 [`guarderia-api/app/seed_demo.py`](../guarderia-api/app/seed_demo.py), que **borra toda la base y todas las fotos
 del bucket** y vuelve a llenar las tablas. **Por ahora va sin fotos** (decisión del 19/oct): `media`, `media_child` y
-`media_deletion_request` quedan vacías, igual que los campos de foto o imagen de reportes, avisos, chat y documentos. Con
+`media_deletion_request` (sin uso desde el 19/oct: la familia borra directo) quedan vacías, igual que los campos de foto o imagen de reportes, avisos, chat y documentos. Con
 `--con-fotos` se llenan también (imágenes de colores generadas, 1200 × 900) y ninguna columna queda vacía. Las fechas se calculan
 el día en que se corre: «hoy» es ese día y la historia son los 10 días hábiles anteriores.
 
@@ -120,7 +120,7 @@ Cada niño tiene dos documentos: el **acta de nacimiento** (subida solo con `--c
 - **Avisos:** dos para todo el centro (Festival de Otoño y junta de padres) y uno por sala (museo para Preescolar 2; pañales para Maternal; colores para Preescolar 1).
 - **Chat:** uno por niño, entre su tutor principal y la docente principal de su sala. Tiene 6 mensajes de los últimos 3 días; los dos últimos son del último día hábil y la familia todavía no los ha leído.
 - **Notas de la familia:** ayer, una de cada niño, ya leída por la docente. Hoy, una sin leer en la mitad de los niños.
-- **Historial de fotos borradas** (solo con `--con-fotos`): una solicitud aprobada, una rechazada y una foto que borró la familia directamente.
+- **Historial de fotos borradas** (solo con `--con-fotos`): una solicitud aprobada, una rechazada y una foto que borró la familia directamente. Las solicitudes son historia: desde el 19/oct la familia borra directo (`DELETE /media/{id}`) y nada lee esa tabla.
 - **Cuentas:** todas activadas. Marisol Hernández tuvo una recuperación de contraseña. La bitácora de auditoría tiene altas, activaciones, logins, intentos fallidos y cambios.
 
 ## Cómo se relacionan las tablas
@@ -183,4 +183,4 @@ docker compose -p codea-prod --env-file .env.prod -f docker-compose.yml -f docke
 # agrega --con-fotos después de --borrar-todo para incluir fotos de prueba
 ```
 
-Ese comando **borra todo lo que hayan creado los demás**: avisa en el grupo antes de correrlo. Fuera de desarrollo, el script se niega a usar `codea1234`.
+Ese comando **borra todo lo que hayan creado los demás**: avisa en el grupo antes de correrlo. Fuera de desarrollo, el script se niega a usar `codea1234`, pero aparte de pedir `--borrar-todo` no tiene ningún seguro contra la base de producción (pendiente).

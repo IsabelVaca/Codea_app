@@ -17,7 +17,8 @@ Al terminar la rutina, la docente registra a qué hora sale cada niño y con qui
 
 | Hecho | Pendiente |
 |---|---|
-| Registrar, corregir y consultar la salida, con alcance por sala | Que la familia vea a qué hora salió su hijo y con quién |
-| Los tutores del niño aparecen siempre como opción, aunque no haya personas autorizadas | Salida sin conexión (hoy necesita red) |
+| Registrar, corregir y consultar la salida, con alcance por sala | Salida sin conexión (hoy necesita red) |
+| Los tutores del niño aparecen siempre como opción, aunque no haya personas autorizadas | |
+| La familia ve a qué hora salió su hijo y con quién: último evento de `GET /children/{id}/day` (`DEPARTURE`) | |
 
 Pruebas: `tests/test_departures_and_health.py`.

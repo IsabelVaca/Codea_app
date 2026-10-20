@@ -13,7 +13,7 @@ App Android para una guardería (docente, administrador y padre de familia) con 
 ## Si vas a trabajar aquí
 
 1. [`docs/GUIA-CONTINUAR.md`](docs/GUIA-CONTINUAR.md): cómo levantar todo, mapa del repo, trampas y por dónde empezar.
-2. [`docs/ESTADO.md`](docs/ESTADO.md): qué está hecho y qué falta (foto del 2026-10-16).
+2. [`docs/ESTADO.md`](docs/ESTADO.md): qué está hecho y qué falta (foto del 2026-10-20).
 3. [`docs/REQUISITOS.md`](docs/REQUISITOS.md): los 32 requisitos y su estado.
 4. [`docs/PLAN.md`](docs/PLAN.md) y [`docs/ENTREGA-3.md`](docs/ENTREGA-3.md): plan y checklist de la entrega final (22 de octubre de 2026, 23:59).
 5. [`docs/DECISIONES-PENDIENTES.md`](docs/DECISIONES-PENDIENTES.md): excepciones al marco que esperan aprobación.
@@ -21,19 +21,19 @@ App Android para una guardería (docente, administrador y padre de familia) con 
 ## Arranque rápido
 
 ```bash
-# backend
-cd guarderia-api && cp .env.example .env && docker compose up -d --build
+# backend (solo si vas a tocar guarderia-api/)
+cd guarderia-api && cp .env.dev .env && docker compose up -d --build
 docker compose exec api alembic upgrade head && docker compose exec api python -m app.seed
 
-# app (emulador)
+# app (apunta a donde diga API_BASE_URL en local.properties; ver abajo)
 ./gradlew installDebug
 ```
 
-Antes de levantar la API, edita `guarderia-api/.env` y llena `JWT_SECRET` (sin él la API no arranca): `python -c "import secrets; print(secrets.token_urlsafe(48))"`. Cada quien usa su propio `.env`; está en `.gitignore` y nunca se sube. Para usar Aiven en vez del Postgres local, llena `DATABASE_URL` en ese archivo (ver `.env.example`).
+`.env.dev` ya trae valores de desarrollo, sin secretos reales (incluido un `JWT_SECRET` de prueba). Si prefieres partir de `.env.example`, llena `JWT_SECRET` (sin él la API no arranca): `python -c "import secrets; print(secrets.token_urlsafe(48))"`. Cada quien usa su propio `.env`; está en `.gitignore` y nunca se sube.
 
 Detalles y pruebas en la guía.
 
-**Sin levantar el backend:** hay un servidor compartido con HTTPS en `https://api.codeaapp.site/api/v1/` (Swagger en `https://api.codeaapp.site/docs`). Pon `API_BASE_URL=https://api.codeaapp.site/api/v1/` en `local.properties` y pide tu código de acceso al responsable del servidor; ahí no sirve `codea1234`. Reglas y avisos: [`docs/GUIA-CONTINUAR.md`](docs/GUIA-CONTINUAR.md), sección 2.
+**La app usa el servidor compartido**, con HTTPS, en `https://api.codeaapp.site/api/v1/` (Swagger en `https://api.codeaapp.site/docs`): pon `API_BASE_URL=https://api.codeaapp.site/api/v1/` en `local.properties` (sin esa línea apunta al emulador, `10.0.2.2`, o sea a tu backend local) y pide la contraseña de las cuentas de prueba en el grupo del equipo; ahí no sirve `codea1234`. El backend local es para trabajar en `guarderia-api/` y correr `pytest`. Reglas y avisos: [`docs/GUIA-CONTINUAR.md`](docs/GUIA-CONTINUAR.md), sección 2.
 
 ## Cómo entrar (cuentas de prueba)
 
@@ -41,7 +41,7 @@ El seed (`python -m app.seed`, solo con `ENV=dev`) crea estas cuentas. Todas usa
 
 | Rol | Correo | Qué ves |
 |---|---|---|
-| Administrador | `admin@oruga.test` | Padres, salas, infantes y personal |
+| Administrador | `admin@oruga.test` | Avisos, docentes y salas, familias (infantes y padres) y ajustes |
 | Docente | `karla.robles@oruga.test` | Preescolar 2: asistencia, rutina y reportes |
 | Madre | `laura.iglesias@oruga.test` | Su hijo Mateo Iglesias |
 

@@ -2,6 +2,13 @@
 
 > **Documento histórico (16–17 de octubre).** Describe el plan de entonces; el login, la conexión con la API y casi todas las pantallas que aquí figuran como pendientes ya se hicieron. Lo vigente está en [`../FALTANTES.md`](../FALTANTES.md) (qué falta), [`../ESTADO.md`](../ESTADO.md) (dónde estamos), [`../REQUISITOS.md`](../REQUISITOS.md) y [`../api/endpoints.md`](../api/endpoints.md).
 
+> **Cómo quedó (20 de octubre):**
+> - **Hecho como se planeó:** Retrofit + OkHttp + kotlinx.serialization, DataStore + Keystore (`data/local/`), `SessionRepository`, `AuthInterceptor`, `TokenAuthenticator` (refresh serializado con un `Mutex`), `SessionViewModel`, Coil 3, subida con URL firmada y compresión previa (`ImageCompressor`), chat que pregunta cada 10 s con `client_id`, y la llave de caché de Coil sin la firma (`ImagenEstable.kt`).
+> - **Cambió:** sin Hilt (DI manual en `di/AppContainer`; los ViewModels todavía crean sus repositorios); la red quedó en `data/api/` y no en `data/remote/`, sin `Mappers.kt` ni `UiState` genérico; los errores los traduce `ApiError.kt` mostrando el `detail` de la API; no hay pantalla de Recuperar contraseña (código nuevo del admin + Activar cuenta).
+> - **Se quitó:** `play-services-location` y `ACCESS_FINE_LOCATION`: el checador ya no usa ubicación (decisión #3).
+> - **Se adelantó:** el modo sin conexión (Room + WorkManager) ya existe para la asistencia, y Room guarda la última respuesta de las pantallas de los tres roles (`data/offline/`).
+> - **Sigue pendiente:** WebSocket para el chat, notificaciones con WorkManager y pruebas de ViewModels en `androidTest/`.
+
 Los repositorios en memoria son el único lugar donde entra la API: las pantallas siguen recibiendo datos y lambdas, y los ViewModels conservan su forma, pero pasan a llamar funciones `suspend` dentro de `viewModelScope`. Hoy la app no tiene cliente HTTP, ni permiso de `INTERNET`, ni sesión.
 
 Todo sigue los patrones de las prácticas del curso, resumidos en [`../estilo.md`](../estilo.md): la red como la práctica 4, la sesión como la 6, Hilt como la 9 y las imágenes como la 10.

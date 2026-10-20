@@ -1,6 +1,6 @@
 # Endpoints de la API (estado actual)
 
-Lista sacada del código el 16 de octubre de 2026 (rama `backend`, commit `12da735`), puesta al día el 17 de octubre y revisada contra `main` el 18 de octubre (la matriz [`matriz-de-roles.md`](matriz-de-roles.md) cuenta 84 rutas y se genera del código) con lo que se agregó después (centro, invitaciones, plantillas de rutina y avisos): rutas y roles de cada `router.py`, cuerpos y respuestas del OpenAPI que genera FastAPI, y códigos de error de cada `service.py`. Reemplaza a `Endpoints_API_Codea.docx.pdf` y a [`endpoints-api-codea.pdf`](endpoints-api-codea.pdf), que tienen el mismo contenido y ya no coinciden en varios detalles (ver [qué cambió](#qué-cambió-respecto-al-pdf)).
+Lista sacada del código el 16 de octubre de 2026 (rama `backend`, commit `12da735`), puesta al día el 17 de octubre y revisada contra `main` el 18 y el 20 de octubre (la matriz [`matriz-de-roles.md`](matriz-de-roles.md) cuenta 84 rutas y se genera del código) con lo que se agregó después (centro, invitaciones, plantillas de rutina y avisos): rutas y roles de cada `router.py`, cuerpos y respuestas del OpenAPI que genera FastAPI, y códigos de error de cada `service.py`. Reemplaza a `Endpoints_API_Codea.docx.pdf` y a [`endpoints-api-codea.pdf`](endpoints-api-codea.pdf), que tienen el mismo contenido y ya no coinciden en varios detalles (ver [qué cambió](#qué-cambió-respecto-al-pdf)).
 
 Son **84 endpoints en 16 módulos** (82 bajo `/api/v1` y 2 públicos fuera de él: `/invitar` y `/.well-known/assetlinks.json`). El contrato exacto, con todos los campos, sigue siendo el OpenAPI: con la API prendida, `http://localhost:8000/docs`.
 
@@ -10,7 +10,7 @@ El login con JWT ya está en `main` (aquí lo reflejan las secciones *Cuenta* y 
 
 | Tema | Cómo es hoy |
 | --- | --- |
-| Base | `http://localhost:8000/api/v1` (emulador: `http://10.0.2.2:8000/api/v1`) |
+| Base | Servidor compartido (lo que usa la app): `https://api.codeaapp.site/api/v1`. API local: `http://localhost:8000/api/v1` (emulador: `http://10.0.2.2:8000/api/v1`) |
 | Autenticación | `Authorization: Bearer <access_token>`: JWT de 5 minutos que devuelve `POST /auth/login`; se renueva con `POST /auth/refresh` (refresh token de 7 días, rotado en cada uso). Detalle en [`app/modules/auth/README.md`](../../guarderia-api/app/modules/auth/README.md) |
 | Roles | `ADMIN`, `TEACHER`, `PARENT`, los mismos del `enum Role` de la app. Una persona puede tener más de uno |
 | Alcance | Además del rol, cada consulta se filtra: el `PARENT` solo ve a sus hijos y el `TEACHER` solo a los niños de su sala. Fuera de alcance responde **404**, no 403 |
@@ -19,14 +19,14 @@ El login con JWT ya está en `main` (aquí lo reflejan las secciones *Cuenta* y 
 | Fechas | `date` = `AAAA-MM-DD`; horas = ISO 8601 con zona. El "hoy" lo calcula la API con la zona del centro (`America/Monterrey`) |
 | Paginación | Por cursor en Fotos y mensajes: `?limit=&cursor=` → `{items, next_cursor}` |
 | Errores | Problem Details (`application/problem+json`) con `code` estable. Ejemplo abajo |
-| Repetir una acción | Checada, pedir borrado de una foto y enviar un mensaje con el mismo `client_id` regresan el registro que ya existía con **200** en vez de duplicarlo |
+| Repetir una acción | Checada (entrada o salida) y enviar un mensaje con el mismo `client_id` regresan el registro que ya existía con **200** en vez de duplicarlo |
 
 ```json
-{"type": "about:blank", "title": "Primero registra tu entrada de hoy", "status": 409, "code": "NOT_CHECKED_IN",
- "detail": "Estás a 1401 m; el radio permitido es de 60 m", "distance_m": 1401, "allowed_radius_m": 60}
+{"type": "about:blank", "title": "Un niño que no está presente hoy no puede estar en un reporte", "status": 409,
+ "code": "CHILD_ABSENT", "child_ids": [12]}
 ```
 
-Errores comunes a todos los endpoints con sesión: `401 UNAUTHENTICATED` (sin token), `401 TOKEN_INVALID`, `403 INVITATION_REQUIRED` (cuenta sin invitación aceptada), `403 USER_INACTIVE` (dado de baja), `403 FORBIDDEN` (su rol no puede) y `422 VALIDATION_ERROR` (el JSON no tiene la forma esperada).
+Errores comunes a todos los endpoints con sesión: `401 UNAUTHENTICATED` (sin token), `401 TOKEN_EXPIRED`, `401 TOKEN_INVALID`, `403 USER_INACTIVE` (dado de baja), `403 FORBIDDEN` (su rol no puede) y `422 VALIDATION_ERROR` (el JSON no tiene la forma esperada).
 
 ## Sistema
 
@@ -41,7 +41,7 @@ Errores comunes a todos los endpoints con sesión: `401 UNAUTHENTICATED` (sin to
 | --- | --- | --- | --- | --- | --- |
 | GET | `/me` | Todos | — | `MeOut`: datos de la persona, `roles` y un bloque por rol: `admin {center}`, `teacher {classroom, is_primary, shift, center}`, `parent {children[]}` | — |
 | POST | `/auth/login` | Sin sesión | `{email, password}` | `TokenOut` | `401 INVALID_CREDENTIALS` (el mismo para correo desconocido y contraseña mal); `403 ACCOUNT_NOT_ACTIVATED`, `USER_INACTIVE`; `429 TOO_MANY_ATTEMPTS` (con `retry_after_s` y `Retry-After`) tras 5 fallos seguidos del mismo correo |
-| POST | `/auth/activate` | Sin sesión | `{email, code, password}`: el código lo da el administrador | `TokenOut` | `403 CODE_INVALID`, `CODE_EXPIRED`, `USER_INACTIVE`; `422 PASSWORD_TOO_SHORT` (mínimo 9), `PASSWORD_TOO_LONG` (máximo 128), `PASSWORD_IS_EMAIL`; `429 TOO_MANY_ATTEMPTS` |
+| POST | `/auth/activate` | Sin sesión | `{email, code, password}`: el código lo da el administrador; se compara solo con letras y números (con o sin guion, en cualquier mayúscula) y al correo se le quitan espacios y caracteres invisibles | `TokenOut` | `403 CODE_INVALID`, `CODE_EXPIRED`, `USER_INACTIVE`; `422 PASSWORD_TOO_SHORT` (mínimo 9), `PASSWORD_TOO_LONG` (máximo 128), `PASSWORD_IS_EMAIL`; `429 TOO_MANY_ATTEMPTS` |
 | POST | `/auth/refresh` | Sin sesión | `{refresh_token}` | `TokenOut` sin `me` (el viejo deja de servir) | `401 REFRESH_INVALID` |
 | POST | `/auth/logout` | Sin sesión | `{refresh_token}` | 204 (también si ya no servía) | — |
 | POST | `/me/password` | Todos | `{current_password, new_password}` | `TokenOut`: cierra todas las sesiones y da tokens nuevos para esta | `403 PASSWORD_INCORRECT`; `422 PASSWORD_TOO_SHORT`, `PASSWORD_TOO_LONG`, `PASSWORD_IS_EMAIL` |
@@ -100,7 +100,7 @@ Errores comunes a todos los endpoints con sesión: `401 UNAUTHENTICATED` (sin to
 | POST | `/parents/{id}/children` | `ADMIN` | `{child_ids[], relationship?}` | `ParentOut`; liga más hijos con el parentesco que ya tiene (los ya ligados se ignoran). **No crea código nuevo**: el pendiente sigue sirviendo | `422 CHILDREN_REQUIRED`, `CHILD_INACTIVE`, `RELATIONSHIP_REQUIRED` (sin hijos previos ni parentesco); `404 PARENT_NOT_FOUND`, `CHILD_NOT_FOUND` |
 | POST | `/parents/{id}/deactivate` | `ADMIN` | — | `ParentOut` | `404 PARENT_NOT_FOUND` |
 | POST | `/parents/{id}/reactivate` | `ADMIN` | — | `ParentOut` | `404 PARENT_NOT_FOUND` |
-| POST | `/parents/{id}/resend-invitation` | `ADMIN` | — | `ParentOut`; hoy solo renueva la vigencia | `409 INVITATION_ALREADY_ACCEPTED` |
+| POST | `/parents/{id}/resend-invitation` | `ADMIN` | — | `ParentOut` con `access_code` nuevo (el anterior deja de servir) | `409 INVITATION_ALREADY_ACCEPTED`; `404 PARENT_NOT_FOUND` |
 
 ## Checador
 
@@ -111,7 +111,7 @@ Errores comunes a todos los endpoints con sesión: `401 UNAUTHENTICATED` (sin to
 | POST | `/staff-attendance/check-out` | `TEACHER` | — (sin cuerpo) | 201 `CheckInOut` con `checked_out_at`. Repetida, o ya cerrada a las 9 pm: 200 con la misma salida | `409 NOT_CHECKED_IN` |
 | POST | `/staff-attendance/notify-coordination` | `TEACHER` | `{reason: LATE, message?}` | 201 `NotifyOut`; hoy solo se guarda y se anota en el log | — |
 
-La API calcula distancia, radio y retardo con su propio reloj; nunca acepta el estado que calculó el teléfono. La checada también arranca la rutina del día.
+La API calcula el retardo con su propio reloj y la hora de entrada del centro (el checador ya no usa ubicación); nunca acepta el estado que calculó el teléfono. La checada también arranca la rutina del día.
 
 ## Asistencia
 
@@ -147,7 +147,7 @@ La API calcula distancia, radio y retardo con su propio reloj; nunca acepta el e
 
 | Método | Ruta | Rol | Envía | Responde | Errores |
 | --- | --- | --- | --- | --- | --- |
-| POST | `/media/uploads` | `TEACHER` (`PHOTO`), `PARENT` (`DOCUMENT`) | `{content_type, size_bytes, kind?: PHOTO \| DOCUMENT}` | 201 `{media_id, url, fields, expires_in, max_bytes}`: un permiso de 5 minutos, máximo 10 MB | `422 CONTENT_TYPE_NOT_ALLOWED`, `FILE_TOO_LARGE`; `403 FORBIDDEN` (otro rol u otro tipo) |
+| POST | `/media/uploads` | `ADMIN` (los dos tipos), `TEACHER` (`PHOTO`), `PARENT` (`DOCUMENT`; también para su foto en el chat) | `{content_type, size_bytes, kind?: PHOTO \| DOCUMENT}` | 201 `{media_id, url, fields, expires_in, max_bytes}`: un permiso de 5 minutos, máximo 10 MB | `422 CONTENT_TYPE_NOT_ALLOWED`, `FILE_TOO_LARGE`; `403 FORBIDDEN` (otro rol u otro tipo) |
 | POST | `/media/{id}/complete` | Quien la pidió | — | `MediaOut` con `status: READY` | `409 UPLOAD_MISSING`; `404 MEDIA_NOT_FOUND` |
 | GET | `/media?child_id=&category=&cursor=&limit=` | Todos (en su alcance) | — | `{items: FeedItem[], next_cursor}`; cada foto con `url` firmada de 10 minutos, `category`, `teacher_name`, `note` | `404 CHILD_NOT_FOUND` |
 | DELETE | `/media/{id}` | `PARENT` | — | 204: la foto se borra del bucket y de todas las galerías en el momento, sin aprobación de nadie. Basta con que salga un hijo suyo (también se borra para los demás niños que salgan) | `404 MEDIA_NOT_FOUND` (no es foto de un hijo suyo), `502 STORAGE_UNAVAILABLE` |
@@ -193,8 +193,8 @@ Hoy no hay endpoint para pedir documentos: la lista de cada niño la crea el see
 | POST | `/announcements` | `ADMIN` | `{text?, media_id?, classroom_id?}` (sin sala = todo el centro). Lleva texto, imagen o ambos; la imagen se sube antes con `POST /media/uploads` (`kind: PHOTO`) y `/complete` | 201 `AnnouncementOut`: `id`, `text`, `classroom_id`, `classroom_name`, `media_url` (URL firmada de 10 min o `null`), `created_at` | `422 TEXT_REQUIRED` (sin texto ni imagen); `422 MEDIA_NOT_VALID` (no está lista o no es imagen); `404 MEDIA_NOT_FOUND` (no es tuya); `404 CLASSROOM_NOT_FOUND` |
 | GET | `/announcements?limit=` | Todos | — | `AnnouncementOut[]`, el más reciente primero (50 por omisión, máximo 200). `ADMIN`: todos los del centro. `TEACHER`: los del centro y los de su sala. `PARENT`: los del centro y los de las salas de sus hijos | — |
 | GET | `/conversations` | `TEACHER`, `PARENT` (al `ADMIN` le regresa lista vacía) | — | `ConversationOut[]`: una por niño, con `child` (con `guardians[]`: nombre, parentesco y si es el principal), `unread_count` y `last_message` | — |
-| GET | `/conversations/{id}/messages?cursor=&after=&limit=` | Participantes | — | `{items: MessageOut[], next_cursor}`; con `after=<id>` solo los nuevos. Cada mensaje trae `author_name`, `is_mine` e `is_read` | `404 CONVERSATION_NOT_FOUND` |
-| POST | `/conversations/{id}/messages` | Participantes | `{text, client_id?}` | 201 `MessageOut`; mismo `client_id`: 200 con el que ya existía | `422 TEXT_REQUIRED`; `404 CONVERSATION_NOT_FOUND` |
+| GET | `/conversations/{id}/messages?cursor=&after=&limit=` | Participantes | — | `{items: MessageOut[], next_cursor}`; con `after=<id>` solo los nuevos. Cada mensaje trae `author_name`, `media_url`, `is_mine` e `is_read` | `404 CONVERSATION_NOT_FOUND` |
+| POST | `/conversations/{id}/messages` | Participantes | `{text?, media_id?, client_id?}`: texto, foto o ambos; la foto se sube antes con `/media/uploads` y `/complete` | 201 `MessageOut` (con `media_url`, firmada de 10 min, si trae foto); mismo `client_id`: 200 con el que ya existía | `422 TEXT_REQUIRED`, `MEDIA_NOT_VALID`; `404 CONVERSATION_NOT_FOUND`, `MEDIA_NOT_FOUND` |
 | POST | `/conversations/{id}/read` | Participantes | — | 204 | `404 CONVERSATION_NOT_FOUND` |
 | POST | `/children/{id}/notes` | `PARENT` | `{text}` | 201 `NoteOut` (nota para hoy) | `422 TEXT_REQUIRED`; `404 CHILD_NOT_FOUND` |
 
@@ -243,10 +243,10 @@ Acciones y qué datos guarda cada una: [`app/modules/audit/README.md`](../../gua
 | `MealAmount` | `ALL`, `MOST`, `HALF`, `LITTLE`, `NONE` |
 | `TimelineType` | `CHECK_IN`, `ARRIVAL`, `MEAL`, `ACTIVITY`, `NAP`, `DEPARTURE` |
 | `MediaKind` | `PHOTO`, `DOCUMENT` |
-| `MediaStatus` | `PENDING`, `READY` |
+| `MediaStatus` | `PENDING`, `READY`, `DELETED` |
 | `PhotoCategory` | `ACTIVITIES`, `MEALS`, `NAP`, `INCIDENTS` |
 | `DocumentStatus` | `CURRENT`, `MISSING` |
-| `DeletionStatus` | `PENDING`, `APPROVED`, `REJECTED` |
+| `DeletionStatus` | `PENDING`, `APPROVED`, `REJECTED` (sin uso desde el 19/oct: ya no hay solicitudes de borrado) |
 
 ## Qué cambió respecto al PDF
 
@@ -266,4 +266,4 @@ Acciones y qué datos guarda cada una: [`app/modules/audit/README.md`](../../gua
 | Día del niño | Solo el padre | Cualquier rol en su alcance: la docente también lo lee (incluye las notas del papá) |
 | Resumen del día | Solo la docente | También el `ADMIN` |
 | Autorizados | Padre y admin | Leer: cualquier rol en su alcance (la docente también) |
-| Reenviar invitación | "Hay que construirlo completo" | Solo renueva la vigencia; no hay código ni correo todavía |
+| Reenviar invitación | "Hay que construirlo completo" | Genera un código nuevo y lo regresa en `access_code`; no manda correo (el admin lo comparte por WhatsApp) |

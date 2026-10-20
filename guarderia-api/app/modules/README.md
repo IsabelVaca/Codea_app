@@ -11,8 +11,9 @@ Se registran en `app/main.py`. Todo cuelga de `/api/v1`.
 
 | Módulo | Para qué | Tablas |
 |---|---|---|
-| [`auth`](auth/README.md) | Perfil (`/me`), invitaciones | `app_user`, `invitation` |
-| [`admins`](admins/README.md) | Datos del centro y del checador | `admin` |
+| [`auth`](auth/README.md) | Login con JWT, perfil (`/me`), códigos de acceso e invitaciones | `app_user`, `invitation`, `refresh_token`, `auth_attempt` |
+| [`audit`](audit/README.md) | Bitácora de quién hizo qué (RF-14) | `audit_log` |
+| [`admins`](admins/README.md) | Datos del centro: ubicación, zona horaria y horario del checador | `admin` |
 | [`classrooms`](classrooms/README.md) | Salas, cupo y asistentes | `daycare_center`, `classroom` |
 | [`teachers`](teachers/README.md) | Docentes y turnos | `teacher`, `shift` |
 | [`children`](children/README.md) | Infantes | `child` |
@@ -21,7 +22,7 @@ Se registran en `app/main.py`. Todo cuelga de `/api/v1`.
 | [`attendance`](attendance/README.md) | Asistencia del niño y calendario | `attendance` |
 | [`routines`](routines/README.md) | Plantillas y rutina diaria por sala | `routine_template`, `routine_template_moment`, `routine_moment` |
 | [`reports`](reports/README.md) | Reportes, resumen del día | `report`, `report_child`, `daily_summary` |
-| [`media`](media/README.md) | Fotos: subida, galería, borrado | `media`, `media_child`, `media_deletion_request` |
+| [`media`](media/README.md) | Fotos: subida, galería, borrado directo de la familia | `media`, `media_child`, `media_deletion_request` (sin uso desde el 19/oct) |
 | [`documents`](documents/README.md) | Documentos del niño y personas autorizadas | `child_document`, `authorized_pickup` |
 | [`departures`](departures/README.md) | Pase de salida: hora de salida de cada niño y con quién se fue | `child_departure` |
 | [`menus`](menus/README.md) | Menú del día: desayuno, comida y colación de cada día | `daily_menu` |
@@ -38,4 +39,4 @@ Se registran en `app/main.py`. Todo cuelga de `/api/v1`.
 
 ## Pendiente transversal
 
-Auditoría (`audit_log`), JWT propio, rate limiting y cabeceras: ver [`../../PENDIENTES.md`](../../PENDIENTES.md).
+JWT propio, auditoría (`audit_log`), límite de intentos y cabeceras ya están. Lo que falta: ver [`../../PENDIENTES.md`](../../PENDIENTES.md).

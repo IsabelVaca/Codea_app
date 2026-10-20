@@ -16,4 +16,4 @@ Tabla: `attendance` (una fila por niño y día; `PRESENT` o `ABSENT`; quién la 
 | | Eventos y citas en el calendario (CRF-03): no existen tablas ni endpoints |
 | | Auditar quién cambió una asistencia (hoy solo `marked_by`) |
 
-Pruebas: `tests/test_teacher_day.py` (`test_my_room_and_attendance`), `tests/test_parent_views.py` (`test_calendar`).
+Pruebas: `tests/test_teacher_day.py` (`test_my_room_and_attendance`), `tests/test_parent_views.py` (`test_calendar`), `tests/test_arrival_time.py` (8, hora de entrada).

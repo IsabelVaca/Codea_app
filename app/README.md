@@ -1,6 +1,6 @@
 # App Android (`app/`)
 
-Módulo único. Paquete `mx.tec.codea`, minSdk 24. Kotlin, Jetpack Compose, Material 3, Navigation Compose, Retrofit/OkHttp con kotlinx.serialization y Coil.
+Módulo único. Paquete `mx.tec.codea`, minSdk 24. Kotlin, Jetpack Compose, Material 3, Navigation Compose, Retrofit/OkHttp con kotlinx.serialization, Coil, DataStore y Room + WorkManager (sin conexión).
 Marco técnico: solo lo de <https://startdroid.pages.dev/> ([`docs/MARCO-TECNICO.md`](../docs/MARCO-TECNICO.md)). La app depende hoy de una cosa fuera de la lista: `reorderable` ([`docs/DECISIONES-PENDIENTES.md`](../docs/DECISIONES-PENDIENTES.md)).
 
 ## Comandos
@@ -8,7 +8,7 @@ Marco técnico: solo lo de <https://startdroid.pages.dev/> ([`docs/MARCO-TECNICO
 ```bash
 ./gradlew assembleDebug
 ./gradlew installDebug
-./gradlew test                                   # 125 pruebas JVM (dominio, sesión, Mi sala, pase de salida, invitación)
+./gradlew test                                   # 140 pruebas JVM (dominio, sesión, Mi sala, pase de salida, invitación, cola sin conexión)
 ./gradlew connectedAndroidTest                   # necesita dispositivo; solo hay un ejemplo vacío
 ```
 
@@ -20,7 +20,7 @@ Marco técnico: solo lo de <https://startdroid.pages.dev/> ([`docs/MARCO-TECNICO
 | Carpeta | Qué hay | README |
 |---|---|---|
 | `domain/` | Modelos y reglas en Kotlin puro | [`domain/README.md`](src/main/java/mx/tec/codea/domain/README.md) |
-| `data/` | Repositorios | [`data/README.md`](src/main/java/mx/tec/codea/data/README.md) |
+| `data/` | Repositorios, sesión guardada (`local/`) y sin conexión (`offline/`: Room, `ApiCache`) | [`data/README.md`](src/main/java/mx/tec/codea/data/README.md) |
 | `data/api/` | Retrofit, DTOs, errores | [`data/api/README.md`](src/main/java/mx/tec/codea/data/api/README.md) |
 | `ui/state/` | ViewModels | [`ui/state/README.md`](src/main/java/mx/tec/codea/ui/state/README.md) |
 | `ui/navigation/` | Rutas, grafo, barra inferior | [`ui/navigation/README.md`](src/main/java/mx/tec/codea/ui/navigation/README.md) |
@@ -44,10 +44,10 @@ Marco técnico: solo lo de <https://startdroid.pages.dev/> ([`docs/MARCO-TECNICO
 
 | Rol | Estado | Falta |
 |---|---|---|
-| Docente | Check-in con GPS, rutina del día, reportes (escrito, dictado, foto), Mi sala con asistencia, chat, avisos, Mi cuenta | Documentos de la docente (se quitó del Menú); chat en tiempo real; sin conexión |
-| Admin | Centro y salas, docentes, infantes, padres, rutinas y catálogo de momentos, avisos, Mi cuenta, **código de acceso** al dar de alta o reenviar | Menú del día |
-| Padre | Hoy, calendario, fotos, documentos y personas autorizadas, nota a la asistente, avisos, Mi cuenta | Chat, varios hijos, menú del día, paginación de fotos |
-| Transversal | Compose, Retrofit, Coil, **login con JWT** (tokens cifrados con Keystore en DataStore, renovación automática), DI manual | Room, WorkManager, huella, release firmado, HTTPS y pruebas de interfaz |
+| Docente | Check-in sin ubicación, pase de lista, rutina del día, reportes (escrito, dictado, foto), Mi sala, ficha y resumen del día del niño, pase de salida, chat con fotos, avisos, Mi cuenta. Asistencia sin conexión y caché de lo último que vio | Documentos de la docente (se quitó del Menú); chat en tiempo real; las demás escrituras sin conexión |
+| Admin | Pestañas Avisos (con imagen), Docentes (con Salas), Familias (infantes y padres; vincular un padre a más niños), Ajustes (rutinas, horario, menú del día, personas autorizadas, Mi cuenta); **código de acceso** al dar de alta o reenviar | Calendario de eventos y citas; bitácoras para imprimir |
+| Padre | Hoy (con menú del día), calendario con resumen semanal, fotos (borrar directo), chat, Mi hijo (datos y salud), nota a la asistente, avisos, selector de hijo, Mi cuenta | Paginación de fotos |
+| Transversal | Compose, Retrofit, Coil, **login con JWT** (tokens cifrados con Keystore en DataStore, renovación automática), DI manual, Room (versión 5: cola de asistencia y caché de respuestas; la caché se borra al cerrar sesión), WorkManager, HTTPS contra `api.codeaapp.site` | Huella, release firmado y pruebas de interfaz |
 
 Detalle completo: [`docs/ESTADO.md`](../docs/ESTADO.md) y [`docs/REQUISITOS.md`](../docs/REQUISITOS.md).
 

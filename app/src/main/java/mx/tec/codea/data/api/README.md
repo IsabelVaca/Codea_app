@@ -4,14 +4,14 @@ Todo lo que sabe de HTTP.
 
 | Archivo | Qué hace |
 |---|---|
-| `CodeaApi.kt` | Interfaz Retrofit: una función `suspend` por endpoint de la API (con sesión) |
+| `CodeaApi.kt` | Interfaz Retrofit: una función `suspend` por cada endpoint que usa la app (65, todos con sesión) |
 | `AuthApi.kt` | Los endpoints de entrada: `login`, `activate`, `refresh` y `logout`. Va con un cliente HTTP **sin** token ni autenticador |
 | `ApiClient.kt` | Arma Retrofit + OkHttp + kotlinx.serialization (`ignoreUnknownKeys`) con `AuthInterceptor` y `TokenAuthenticator`; `createAuthApi()` para entrar |
 | `AuthInterceptor.kt` | Pone `Authorization: Bearer <access token>` (menos en `/auth/`) y cierra la sesión si la API dice `USER_INACTIVE` |
 | `TokenAuthenticator.kt` | Con un 401 renueva el token y repite la petición una sola vez |
 | `ApiConfig.kt` | `BASE_URL` (de `BuildConfig`), `userKey` y las banderas de rol (`isAdmin`, `isTeacher`, `isParent`) |
 | `ApiError.kt` | `Throwable.toUserMessage()`: convierte un error de red o un Problem Details de la API en texto para el snackbar |
-| `Dtos.kt`, `TeacherDtos.kt`, `ParentDtos.kt`, `AuthDtos.kt` | Objetos de transferencia (`@Serializable`), organizados por rol |
+| `Dtos.kt`, `TeacherDtos.kt`, `ParentDtos.kt`, `MenuDtos.kt`, `AuthDtos.kt` | Objetos de transferencia (`@Serializable`), organizados por rol |
 
 ## Cómo funciona la sesión
 
@@ -25,12 +25,12 @@ Todo lo que sabe de HTTP.
 
 ## Dirección de la API
 
-`ApiConfig.BASE_URL = BuildConfig.API_BASE_URL`, que sale del build (ver `app/README.md`). Emulador: `http://10.0.2.2:8000/api/v1/`. Celular físico por USB: `http://localhost:8000/api/v1/` y `adb reverse tcp:8000 tcp:8000 && adb reverse tcp:9000 tcp:9000`.
+`ApiConfig.BASE_URL = BuildConfig.API_BASE_URL`, que sale del build (ver `app/README.md`). El equipo apunta la app al servidor compartido: `API_BASE_URL=https://api.codeaapp.site/api/v1/` en `local.properties`. Sin esa línea, emulador: `http://10.0.2.2:8000/api/v1/`. Celular físico por USB: `http://localhost:8000/api/v1/` y `adb reverse tcp:8000 tcp:8000 && adb reverse tcp:9000 tcp:9000`.
 
 ## Pendiente
 
-- **HTTPS en release:** ya apunta a `https://api.codeaapp.site/api/v1/`; falta levantar el túnel y probar el APK contra él.
-- **Endpoints que faltan en `CodeaApi`** porque la API tampoco los tiene: eventos y citas, resumen semanal.
+- **Release firmado:** el túnel de `https://api.codeaapp.site/api/v1/` está arriba desde el 19/oct y el release ya apunta ahí; falta firmar el APK y probarlo contra él.
+- **Endpoints que faltan en `CodeaApi`** porque la API tampoco los tiene: eventos y citas.
 - **Tiempo real del chat:** hoy se consulta con `?after=`; el marco permite SSE o WebSocket.
 - **Traducir `code`** de los errores a mensajes propios cuando el texto de la API no sirva.
 - **Fijar el certificado (pinning)** del servidor, si se pide en la parte de seguridad.

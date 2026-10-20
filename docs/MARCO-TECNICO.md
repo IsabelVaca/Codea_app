@@ -37,14 +37,14 @@ Resumen tomado del sitio el 2026-10-16. Si hay duda, el sitio manda: vuelve a le
 |---|---|---|
 | Compose, Material 3, Navigation, ViewModel, corrutinas | ✅ | |
 | Retrofit, OkHttp, kotlinx.serialization | ✅ | kotlinx.serialization no aparece en el resumen del sitio, pero es el convertidor natural de Retrofit; confirmar. |
-| Coil | ✅ | Solo se usa en la pantalla de fotos del padre. |
+| Coil | ✅ | Fotos del padre, fotos del chat e imágenes de los avisos; `ImagenEstable.kt` le da una llave de caché fija a las URLs firmadas. |
 | DataStore + Android Keystore | ✅ | Guardan la sesión cifrada (AES-GCM). |
 | PyJWT, `pwdlib[argon2]` | 🟡 | Librerías del backend para JWT y contraseñas; las nombra el anexo de identidad del curso (según `plan/04`). Confirmar que cuentan dentro del marco. |
 | `mockwebserver3` (pruebas) | ✅ | "Servidores falsos" del marco. |
 | FastAPI, PostgreSQL, Docker, pytest, JUnit | ✅ | |
 | Almacén S3 | 🟡 | Se usa SeaweedFS (compatible con S3). El sitio nombra RustFS. Confirmar que cuenta. |
 | Aiven como Postgres hospedado | 🟡 | Es dónde corre, no una tecnología nueva. |
-| ~~Firebase Auth~~ | ✅ | **Quitado** en la rama `feature/login-jwt`: el backend ya no depende de `firebase-admin` y la app nunca lo usó. Las tareas de Teams que mencionan Firebase deben cambiarse. |
+| ~~Firebase Auth~~ | ✅ | **Quitado** con la rama `feature/login-jwt` (ya en `main`): el backend ya no depende de `firebase-admin` y la app nunca lo usó. Las tareas de Teams que mencionan Firebase deben cambiarse. |
 | **Notificaciones con Firebase** (tarea pendiente) | ❌ | Excluido. Alternativa: WorkManager + notificaciones locales. |
 | **Google Maps Compose** (mapa del checador) | ✅ Quitado | Ya no se usa: el checador no pide ubicación ni dibuja mapa (decisión #3 resuelta). |
 | **`reorderable`** (arrastrar momentos de la rutina) | ⚠️ | Librería de terceros fuera de la lista. **Requiere decisión.** |
@@ -57,8 +57,8 @@ Resumen tomado del sitio el 2026-10-16. Si hay duda, el sitio manda: vuelve a le
 
 ## Lo que el marco pide y todavía no existe en el proyecto
 
-Photo Picker/FileProvider, EXIF/compresión previa a la subida, Compose UI Test, WebSocket o SSE para el chat.
-**Ya existen desde el 18/oct:** Room y WorkManager (asistencia sin conexión: cola y caché de Mi sala; ver [`app/src/main/java/mx/tec/codea/data/offline/`](../app/src/main/java/mx/tec/codea/data/offline/)). Desde el 20/oct Room también guarda la última respuesta de la API de las listas del admin, de las pantallas del padre y de las de la docente (`ApiCache`, tabla `cached_response`), que se muestra al instante y se reemplaza con lo nuevo y pruebas con servidor falso (`mockwebserver3`). KSP es el procesador de Room y el marco lo menciona para Hilt.
+Compose UI Test, WebSocket o SSE para el chat (hoy pregunta cada 10 s), Hilt.
+**Ya existen:** Photo Picker (`PickVisualMedia`, en el chat y en la imagen de los avisos), FileProvider (cámara del chat con `TakePicture`), compresión con EXIF antes de subir (`data/ImageCompressor.kt`) y pruebas con servidor falso (`mockwebserver3`). Desde el 18/oct, Room y WorkManager (asistencia sin conexión: cola y caché de Mi sala; ver [`app/src/main/java/mx/tec/codea/data/offline/`](../app/src/main/java/mx/tec/codea/data/offline/)). Desde el 20/oct Room también guarda la última respuesta de la API de las listas del admin, de las pantallas del padre y de las de la docente (`ApiCache`, tabla `cached_response`, base en versión 5), que se muestra al instante y se reemplaza con lo nuevo. KSP es el procesador de Room y el marco lo menciona para Hilt.
 Casi todo lo que falta coincide con requisitos sin cumplir (notificaciones, huella): ver [`REQUISITOS.md`](REQUISITOS.md).
 
 ## Cómo pedir una excepción

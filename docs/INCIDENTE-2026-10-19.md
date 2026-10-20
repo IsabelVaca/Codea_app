@@ -13,7 +13,7 @@ Resumen: **el código de activación no estaba roto**. Se mezclaron dos servidor
 | 3 | «El código no es válido» al activar cuentas nuevas | Las cuentas se dieron de alta en el servidor local y se activaron en el compartido | ✅ Explicado; hay que volver a dar de alta las cuentas |
 | 4 | La tablet no se conectaba | El APK apuntaba a `localhost`, que en la tablet es la propia tablet | ✅ Corregido (APK a la API) |
 | 5 | Desaparecieron cuentas, fotos y avisos de producción | `seed_demo.py --borrar-todo` se corrió sobre la base compartida | ⚠️ Sin respaldo: no se pueden recuperar |
-| 6 | Aviso «only 0 volumes left» del almacén de fotos | SeaweedFS con tope de 8 volúmenes, los 8 ocupados | ⚠️ Pendiente |
+| 6 | Aviso «only 0 volumes left» del almacén de fotos | SeaweedFS con tope de 8 volúmenes, los 8 ocupados | ✅ Corregido el 20/oct (tope de 100) |
 
 ## Los dos servidores
 
@@ -114,8 +114,9 @@ servidor local.
 - SeaweedFS (`weed server`) arranca con un máximo de 8 volúmenes. Los 8 están ocupados: 7 reservados para una colección
   que no se usa y **uno solo** para el bucket `guarderia`. Cada 15 minutos registra «volume grow request failed: only 0
   volumes left». Las fotos se suben, pero si ese volumen se llena o queda de solo lectura, las subidas empiezan a fallar.
-- **Pendiente:** agregar `-volume.max=100 -master.volumeSizeLimitMB=1024` en `guarderia-api/docker/seaweedfs-s3.sh` y
-  reiniciar solo el contenedor `storage` de `codea-prod`.
+- **Corregido el 20/oct:** `-volume.max=100 -master.volumeSizeLimitMB=1024` en `guarderia-api/docker/seaweedfs-s3.sh` y
+  `docker restart codea-prod-storage-1` (solo el almacén; antes se sacó un respaldo). Quedó con 8 de 100 volúmenes, las
+  dos fotos se siguen leyendo, una escritura de prueba funcionó (y se borró) y el aviso ya no sale.
 
 ## Lo que se cambió en el servidor compartido
 
@@ -138,11 +139,12 @@ Todo lo demás fueron consultas de solo lectura (transacción `READ ONLY`).
 ## Pendientes para que no se repita
 
 1. **Commit y push** del endurecimiento de la activación, `.env.dev` y este documento (producción ya corre ese código).
-2. **Respaldos:** un `pg_dump` ahora y uno diario de `codea_prod` (con la imagen `postgres:18`: el `pg_dump` 16 del
-   contenedor `db` no puede respaldar Postgres 18), junto con una copia del volumen `codea-prod_media`.
+2. ~~**Respaldos**~~ **Hecho el 20/oct:** `guarderia-api/scripts/respaldo.sh` (base con `postgres:18` y volumen de
+   fotos) corre cada día a las 3:00 con `launchd` en la Mac servidor y guarda 14 días en `~/respaldos-codea/`. Se
+   probó restaurarlo. Ver `guarderia-api/README.md`, «Respaldos».
 3. **Candado al seed:** que `seed_demo.py --borrar-todo` se niegue fuera de desarrollo salvo que se escriba el nombre de
    la base, y que saque un respaldo antes.
-4. **Almacén:** subir el límite de volúmenes de SeaweedFS (punto 6).
+4. ~~**Almacén:** subir el límite de volúmenes de SeaweedFS (punto 6).~~ Hecho el 20/oct.
 5. **Que todo apunte a la API:** cambiar el valor por omisión de `API_BASE_URL` en `app/build.gradle.kts` (hoy
    `10.0.2.2`), apagar el servidor local y quitar de las guías los pasos de `adb reverse`.
 6. **Cuentas:** decidir si se quedan las cuentas del seed o se empieza limpio; volver a dar de alta las cuentas reales
