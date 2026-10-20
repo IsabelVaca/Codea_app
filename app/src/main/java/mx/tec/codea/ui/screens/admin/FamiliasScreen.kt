@@ -43,7 +43,7 @@ private enum class SeccionFamilias(val etiqueta: String) {
 }
 
 // "Familias" junta lo que antes eran dos pestañas (Infantes y Padres). arriba va el selector;
-// abajo, la lista elegida con su botón de inscribir.
+// abajo, el botón de inscribir y la lista elegida.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FamiliasScreen(
@@ -88,23 +88,24 @@ fun FamiliasScreen(
             }
 
             when (seccion) {
+                // el botón de inscribir va arriba de la lista, igual que en Docentes y Salas.
                 SeccionFamilias.INFANTES -> {
+                    InscribirInfanteButton(onClick = onInscribirInfante, modifier = lateral)
                     Column {
                         infantes.forEach { infante ->
                             InfanteCard(infante = infante, onClick = { onInfanteClick(infante) })
                         }
                     }
-                    InscribirInfanteButton(onClick = onInscribirInfante, modifier = lateral)
                 }
 
                 SeccionFamilias.PADRES -> {
+                    BotonInscribirPadre(onClick = onInscribirPadre, modifier = lateral)
                     Column(modifier = lateral, verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         padres.forEachIndexed { i, p ->
                             val (bg, fg) = avatarColores[i % avatarColores.size]
                             PadreFila(p, bg, fg) { onPadreClick(p) }
                         }
                     }
-                    BotonInscribirPadre(onClick = onInscribirPadre, modifier = lateral)
                 }
             }
         }
