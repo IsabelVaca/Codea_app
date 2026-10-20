@@ -49,6 +49,13 @@ import mx.tec.codea.ui.theme.Poppins
 import mx.tec.codea.ui.components.AvisoImagen
 import mx.tec.codea.ui.components.ScreenHeader
 import mx.tec.codea.ui.components.rememberPickPhoto
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
 
 // la pestaña Avisos del admin: publicar un aviso (a todas las salas o a una) y ver el historial.
 // antes era "Centro" y también tenía la ocupación de salas, que ahora vive en Docentes → Salas.
@@ -90,30 +97,21 @@ fun AvisosAdminScreen(
             modifier = Modifier.verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                DestinoDropdown(
-                    salas = salas,
-                    seleccionId = destino?.id,
-                    onSeleccion = onDestinoChange
-                )
-                CampoAviso(
-                    valor = avisoTexto,
-                    onCambio = onAvisoTextoChange,
-                    placeholder = if (destino == null) "Escribe el aviso para todas las salas…"
-                    else "Escribe el aviso para ${destino.nombre}…"
-                )
-                FotoDelAviso(foto = avisoFoto, onElegir = elegirFoto, onQuitar = { onAvisoFotoChange(null) })
-                Button(
-                    onClick = onPublicarAviso,
-                    enabled = canPublicarAviso,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEFE9FF), contentColor = Color(0xFF5B3FE0)),
-                    shape = RoundedCornerShape(16.dp),
-                    elevation = ButtonDefaults.buttonElevation(0.dp)
-                ) {
-                    Text(if (publicando) "Publicando…" else "Publicar aviso", fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                }
-            }
+            NuevoAvisoCard(
+                salas = salas,
+                destinoId = destino?.id,
+                onDestinoChange = onDestinoChange,
+                texto = avisoTexto,
+                onTextoChange = onAvisoTextoChange,
+                placeholder = if (destino == null) "Escribe el aviso para todas las salas…"
+                else "Escribe el aviso para ${destino.nombre}…",
+                foto = avisoFoto,
+                onElegirFoto = elegirFoto,
+                onQuitarFoto = { onAvisoFotoChange(null) },
+                canPublicar = canPublicarAviso,
+                publicando = publicando,
+                onPublicar = onPublicarAviso,
+            )
 
             SeccionLabel("Historial de avisos")
             if (avisos.isEmpty()) {
@@ -143,31 +141,103 @@ private object AvisosColores {
     val VerdeSuave = Color(0xFFE8FBF6)
 }
 
-// elige a quién va el aviso: a todas las salas o solo a una.
+// el formulario en una sola tarjeta: a quién va arriba, el texto en medio y, abajo,
+// el botón de imagen a la izquierda y «Publicar» a la derecha.
+@Composable
+private fun NuevoAvisoCard(
+    salas: List<Sala>,
+    destinoId: String?,
+    onDestinoChange: (String?) -> Unit,
+    texto: String,
+    onTextoChange: (String) -> Unit,
+    placeholder: String,
+    foto: Uri?,
+    onElegirFoto: () -> Unit,
+    onQuitarFoto: () -> Unit,
+    canPublicar: Boolean,
+    publicando: Boolean,
+    onPublicar: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(6.dp, RoundedCornerShape(22.dp), ambientColor = Color.Black.copy(alpha = 0.12f), spotColor = Color.Black.copy(alpha = 0.12f))
+            .clip(RoundedCornerShape(22.dp))
+            .background(Color.White)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Para", fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = AvisosColores.Gris)
+            DestinoChip(salas = salas, seleccionId = destinoId, onSeleccion = onDestinoChange)
+        }
+        CampoAviso(valor = texto, onCambio = onTextoChange, placeholder = placeholder)
+        if (foto != null) {
+            Box {
+                // la vista previa se ve igual que en el historial: completa y con su relación de aspecto.
+                AvisoImagen(model = foto)
+                IconButton(
+                    onClick = onQuitarFoto,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(6.dp)
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(Color.Black.copy(alpha = 0.45f))
+                ) {
+                    Icon(Icons.Filled.Close, contentDescription = "Quitar imagen", tint = Color.White, modifier = Modifier.size(18.dp))
+                }
+            }
+        }
+        HorizontalDivider(color = AvisosColores.Campo)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            TextButton(onClick = onElegirFoto, enabled = !publicando) {
+                Icon(Icons.Outlined.Image, contentDescription = null, tint = AvisosColores.Violeta, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    if (foto == null) "Imagen" else "Cambiar",
+                    fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AvisosColores.Violeta
+                )
+            }
+            Button(
+                onClick = onPublicar,
+                enabled = canPublicar,
+                colors = ButtonDefaults.buttonColors(containerColor = AvisosColores.Violeta, contentColor = Color.White),
+                shape = RoundedCornerShape(14.dp),
+                elevation = ButtonDefaults.buttonElevation(0.dp)
+            ) {
+                Text(if (publicando) "Publicando…" else "Publicar", fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            }
+        }
+    }
+}
+
+// a quién va el aviso, en una pastilla que abre la lista: todas las salas o solo una.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DestinoDropdown(
+private fun DestinoChip(
     salas: List<Sala>,
     seleccionId: String?,
     onSeleccion: (String?) -> Unit
 ) {
     var abierto by remember { mutableStateOf(false) }
-    val etiqueta = salas.firstOrNull { it.id == seleccionId }?.let { "Solo ${it.nombre}" }
-        ?: "Para todos · todas las salas"
+    val etiqueta = salas.firstOrNull { it.id == seleccionId }?.nombre ?: "Todas las salas"
 
     ExposedDropdownMenuBox(expanded = abierto, onExpandedChange = { abierto = it }) {
         Row(
             modifier = Modifier
                 .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(18.dp))
-                .background(AvisosColores.Campo)
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+                .clip(RoundedCornerShape(50))
+                .background(AvisosColores.VioletaSuave)
+                .padding(start = 12.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(etiqueta, fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = AvisosColores.Ink)
-            Icon(Icons.Filled.KeyboardArrowDown, contentDescription = null, tint = AvisosColores.Violeta)
+            Text(etiqueta, fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AvisosColores.Violeta)
+            Icon(Icons.Filled.KeyboardArrowDown, contentDescription = null, tint = AvisosColores.Violeta, modifier = Modifier.size(20.dp))
         }
         ExposedDropdownMenu(
             expanded = abierto,
@@ -175,7 +245,7 @@ private fun DestinoDropdown(
             modifier = Modifier.background(Color.White)
         ) {
             DropdownMenuItem(
-                text = { Text("Para todos · todas las salas", fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = AvisosColores.Ink) },
+                text = { Text("Todas las salas", fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = AvisosColores.Ink) },
                 onClick = { onSeleccion(null); abierto = false }
             )
             salas.forEach { sala ->
@@ -188,53 +258,24 @@ private fun DestinoDropdown(
     }
 }
 
+// el texto del aviso, sin caja propia: ya va dentro de la tarjeta.
 @Composable
 private fun CampoAviso(valor: String, onCambio: (String) -> Unit, placeholder: String) {
     BasicTextField(
         value = valor,
         onValueChange = onCambio,
-        textStyle = TextStyle(fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = AvisosColores.Ink),
+        textStyle = TextStyle(fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, lineHeight = 22.sp, color = AvisosColores.Ink),
         cursorBrush = SolidColor(AvisosColores.Violeta),
         modifier = Modifier.fillMaxWidth(),
         decorationBox = { interno ->
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 84.dp)
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(AvisosColores.Campo)
-                    .padding(horizontal = 16.dp, vertical = 14.dp)
-            ) {
+            Box(Modifier.fillMaxWidth().heightIn(min = 64.dp)) {
                 if (valor.isEmpty()) {
-                    Text(placeholder, fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = AvisosColores.Gris)
+                    Text(placeholder, fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = AvisosColores.Gris)
                 }
                 interno()
             }
         }
     )
-}
-
-// la imagen que va con el aviso: un botón para elegirla o, ya elegida, su vista previa con «Quitar».
-@Composable
-private fun FotoDelAviso(foto: Uri?, onElegir: () -> Unit, onQuitar: () -> Unit) {
-    if (foto == null) {
-        TextButton(onClick = onElegir, modifier = Modifier.fillMaxWidth()) {
-            Text("Agregar imagen", fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AvisosColores.Violeta)
-        }
-        return
-    }
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        // la vista previa se ve igual que en el historial: completa y con su relación de aspecto.
-        AvisoImagen(model = foto)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            TextButton(onClick = onElegir) {
-                Text("Cambiar imagen", fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AvisosColores.Violeta)
-            }
-            TextButton(onClick = onQuitar) {
-                Text("Quitar", fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AvisosColores.Gris)
-            }
-        }
-    }
 }
 
 // una fila del historial: etiqueta de destino + fecha, el texto del aviso y su imagen.
