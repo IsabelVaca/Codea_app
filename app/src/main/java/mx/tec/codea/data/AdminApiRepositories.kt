@@ -78,6 +78,23 @@ class DocenteApiRepository {
     suspend fun setBaja(docenteId: String, baja: Boolean) {
         if (baja) api.deactivateTeacher(docenteId) else api.reactivateTeacher(docenteId)
     }
+
+    // reenviar la invitación: la API da un código nuevo (el anterior deja de servir) y se muestra en el mismo diálogo
+    // del alta, con su botón de WhatsApp. si la docente ya tenía cuenta, el código es para poner una contraseña nueva.
+    suspend fun nuevoCodigo(docente: Docente) {
+        val codigo = api.accessCode(docente.id)
+        DataEvents.accessCode(
+            AccessCodeNotice(
+                personName = docente.nombre,
+                code = codigo.code,
+                expiresAt = shortDateOf(codigo.expiresAt).orEmpty(),
+                phone = docente.telefono,
+                email = docente.correo,
+                link = codigo.link,
+                passwordReset = codigo.purpose == "PASSWORD_RESET",
+            ),
+        )
+    }
 }
 
 private fun TeacherDto.toDocente() = Docente(
@@ -87,6 +104,9 @@ private fun TeacherDto.toDocente() = Docente(
     sala = classroom?.name ?: "",
     horaChecada = horaDe(checkedInAt),
     baja = !active,
+    telefono = phone,
+    correo = email,
+    tieneCuenta = hasAccount,
 )
 
 //  infantes

@@ -11,7 +11,7 @@ Piezas reutilizables entre pantallas.
 | `InitialsAvatar.kt` | Cuadro redondeado con iniciales: **un solo color**, lila con iniciales moradas, como en el admin (desde el 20/oct; antes ámbar, coral, violeta y turquesa). `background = Color.White` sobre una tarjeta lila |
 | `NoticeCard.kt` | Aviso que dejó la familia: tarjeta blanca, borde ámbar mientras falta verlo, «Responder» lila y «Ya lo vi» violeta |
 | `PersonaDropdown.kt` | Selector de personas (docente, padre, infante) usado por los formularios de admin |
-| `AccessCodeDialog.kt` | El código de acceso de alguien recién dado de alta, con botón de compartir. La API lo da una sola vez, así que es la única oportunidad de copiarlo |
+| `AccessCodeDialog.kt` | El código de acceso de alguien recién dado de alta, o el nuevo que pide el admin con «Reenviar invitación» en el detalle de una docente (`POST /users/{id}/access-code`; el código anterior deja de servir). Con «Enviar por WhatsApp» y «Compartir». Si la persona ya tenía cuenta, el texto y el mensaje son para poner una contraseña nueva (`passwordReset`). La API lo da una sola vez, así que es la única oportunidad de copiarlo |
 | `DeviceLaunchers.kt` | `rememberTakePhoto` (cámara) y `rememberDictation` (voz a texto), con sus permisos |
 
 ## Regla de los encabezados

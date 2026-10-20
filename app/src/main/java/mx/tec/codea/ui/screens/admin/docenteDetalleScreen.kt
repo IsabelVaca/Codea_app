@@ -44,7 +44,8 @@ fun DocenteDetalleScreen(
     salas: List<String>,
     onSalaSeleccionada: (String) -> Unit,
     onDarDeBaja: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onReenviarInvitacion: () -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -125,6 +126,26 @@ fun DocenteDetalleScreen(
             }
 
             SeccionLabel("Acciones")
+            // un código nuevo, en el mismo diálogo del alta (con WhatsApp). no se ofrece a quien está de baja: la API lo rechaza.
+            if (!docente.baja) {
+                AccionButton(
+                    texto = if (docente.tieneCuenta) "Mandar código para nueva contraseña" else "Reenviar invitación",
+                    bg = Color(0xFFEDE9FE),
+                    fg = Color(0xFF6D28D9),
+                    onClick = onReenviarInvitacion
+                )
+                Text(
+                    text = if (docente.tieneCuenta) {
+                        "Ya entró a la app. Si olvidó su contraseña, con este código pone una nueva."
+                    } else {
+                        "Todavía no activa su cuenta. El código anterior deja de servir."
+                    },
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF8A80A5),
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                )
+            }
             AccionButton(
                 texto = if (docente.baja) "Reactivar a la docente" else "Dar de baja a la docente",
                 bg = if (docente.baja) Color(0xFFE8FBF6) else Color(0xFFFFEDE7),
