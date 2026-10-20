@@ -24,6 +24,7 @@ Se registran en `app/main.py`. Todo cuelga de `/api/v1`.
 | [`media`](media/README.md) | Fotos: subida, galería, borrado | `media`, `media_child`, `media_deletion_request` |
 | [`documents`](documents/README.md) | Documentos del niño y personas autorizadas | `child_document`, `authorized_pickup` |
 | [`departures`](departures/README.md) | Pase de salida: hora de salida de cada niño y con quién se fue | `child_departure` |
+| [`menus`](menus/README.md) | Menú del día: desayuno, comida y colación de cada día | `daily_menu` |
 | [`messaging`](messaging/README.md) | Chat, avisos, notas | `conversation`, `message`, `conversation_read`, `announcement`, `parent_note` |
 
 ## Cómo agregar un módulo

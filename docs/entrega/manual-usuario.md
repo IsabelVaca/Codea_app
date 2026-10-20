@@ -92,6 +92,7 @@ Barra inferior: **Mi día · Mi sala · Chats · Menú**.
 
 La pantalla muestra los **subprocesos (momentos) de la rutina** de tu sala con su avance («2 de 9»). Cada uno puede estar terminado, **en curso** o pendiente. La rutina sale de la plantilla que el administrador asignó a tu sala (o la predeterminada).
 
+- Arriba de la rutina aparece el **menú de hoy** (desayuno, comida y colación) si la dirección ya lo capturó.
 - Toca un momento para ver cuántos **reportes** tiene.
 - **«Realizar reporte»** (solo en el momento en curso): ver 2.3.
 - **«Confirmar subproceso»**: cierra el momento en curso y arranca el siguiente.
@@ -208,6 +209,7 @@ El menú de lo que el administrador configura. Cada fila abre su pantalla:
 
 - **Rutinas:** lista de **plantillas de rutina** con su número de momentos. **«+ Nueva rutina»** pide nombre y momentos; cada momento tiene una categoría (llegada, comida, actividad, siesta, higiene, entrega) y hay un **catálogo de momentos** (también se puede agregar uno propio). Se pueden **ordenar** los momentos (la pantalla de arrastre usa una librería pendiente de aprobar; ver `DECISIONES-PENDIENTES.md`, decisión #8) y **asignar una plantilla a una sala**. Cambiar una plantilla **no modifica un día que ya empezó**: la rutina del día se copia cuando la docente checa.
 - **Horario:** el horario de todo el centro. Se elige la **hora de entrada** (después de ella se marca retardo), la **hora de salida**, la **hora de cierre automático** (a esa hora se cierran solas las entradas que sigan abiertas) y los **días de trabajo** (L M X J V S D). Se toca cada hora para cambiarla; la app avisa si la entrada no es antes de la salida, si el cierre es antes de la salida o si no hay ningún día. Un día que no marques no deja registrar entrada. Por omisión: 8:00 a 16:00, cierre a las 21:00, lunes a viernes.
+- **Menú del día:** el menú de la semana, de lunes a viernes (hay botones para ver la semana anterior y la siguiente). Cada día muestra su **desayuno, comida y colación**; **«Agregar»** o **«Editar»** abre un cuadro con las tres comidas (basta con escribir una; hasta 500 caracteres cada una) y **«Quitar menú»** lo borra. Lo ven las familias en Hoy y la maestra en Mi día.
 - **Personas autorizadas:** la lista de niños y, por niño, quién puede recogerlo (nombre, parentesco y teléfono), con agregar y quitar. **Solo la dirección las administra**; la familia ya no las edita. Se registran por niño: con dos hijos, se capturan en cada uno. La docente las ve en la ficha del niño y las usa en el pase de salida.
 - **Mi cuenta:** perfil, cambiar contraseña y cerrar sesión (ver 1.4).
 
@@ -217,11 +219,11 @@ El checador **no usa ubicación ni radio**.
 
 | Función | Estado |
 |---|---|
-| Quitar solo a un niño de una foto de grupo; decidir el borrado de una foto con niños de varias familias; revisar solicitudes de borrado de **documentos** | **Próximamente** (la revisión del administrador existe en la API pero no tiene pantalla) |
+| Quitar solo a un niño de una foto de grupo; borrar **documentos** | **Próximamente** (las fotos sí se borran: Fotos → «Borrar», al momento y sin aprobación; si salen otros niños, se borra también para sus familias) |
 | Ver la **bitácora de auditoría** | No hay pantalla; existe `GET /audit-log` en la API |
 | Editar datos de docentes, infantes y padres; cambiar el nombre del centro | **Próximamente** |
 | Pedir documentos a una familia (la lista de cada niño sale hoy del seed) | **Próximamente** |
-| Menú del día, llegada de padres, eventos y citas, imprimir reportes | **Próximamente** |
+| Llegada de padres, eventos y citas, imprimir reportes | **Próximamente** |
 
 ---
 
@@ -234,6 +236,7 @@ Barra inferior: **Hoy · Calendario · Fotos · Chat · Mi hijo**.
 ### 4.1 Hoy
 
 - **Resumen del día** de tu hijo: ánimo, cuánto comió, cambios de pañal, minutos de siesta y una nota general, y la **línea de tiempo «Su día, paso a paso»**, que termina con la **Salida** («Lo recogió …») cuando la maestra la registra en el pase de salida. Si la docente aún no capturó nada, verás «Todavía no hay notas».
+- **Menú del día:** una tarjeta con el desayuno, la comida y la colación de ese día. Si la dirección todavía no lo captura, no aparece.
 - **«Ver el mes»** lleva al calendario.
 - **Aviso desde casa:** escribe una nota para la asistente («Cuéntale a la asistente cómo amaneció …») y envíala; la docente la ve en el día de hoy.
 - La **campana** abre los **avisos** del centro y de la sala de tu hijo, con contador de nuevos. «Leído» se guarda solo en tu teléfono: al cambiar de teléfono vuelven a salir como nuevos.
@@ -268,7 +271,6 @@ Conversación con las asistentes de la sala de tu hijo. Si tienes varios hijos, 
 
 | Función | Estado |
 |---|---|
-| Ver el menú del día | **Próximamente** |
 | Imprimir o enviar el resumen semanal (hoy solo se ve en la app) | **Próximamente** |
 | Eventos y citas en el calendario | **Próximamente** |
 | Agregar o quitar personas autorizadas | **Lo hace la dirección** |
@@ -296,4 +298,4 @@ Conversación con las asistentes de la sala de tu hijo. Si tienes varios hijos, 
 | Personas autorizadas para recoger | ✅ (las ve) | ✅ (las administra) | — |
 | Invitación por WhatsApp | — | ✅ | ✅ (activa con el enlace) |
 | Altas, bajas y salas | — | ✅ | — |
-| Varios hijos, menú del día, eventos, huella, notificaciones (push), y todo lo demás sin conexión | ❌ | ❌ | ❌ |
+| Varios hijos, menú del día (hay que verlo con conexión), eventos, huella, notificaciones (push), y todo lo demás sin conexión | ❌ | ❌ | ❌ |

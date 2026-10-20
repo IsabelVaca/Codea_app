@@ -12,7 +12,7 @@ Pestañas: **Centro, Docentes, Familias, Ajustes**. Cada una tiene su ViewModel 
 
 ## Pendiente
 
-- **Avisos con imágenes** (HN5). Publicar (a todo el centro o a una sala) y el historial ya existen en Centro, solo con texto.
+- ~~Avisos con imágenes (HN5)~~ Hecho el 19/oct, sin verlo en un teléfono: Centro → «Agregar imagen» (selector de fotos del sistema, se comprime con `ImageCompressor` y se sube como `PHOTO`); el historial y los avisos de docente y familia muestran la imagen.
 - **Turnos por docente:** el checador usa el horario único del centro; los turnos (Matutino, Vespertino) siguen en el alta de la docente pero ya no cambian el retardo. Falta decidir si se quitan del alta.
 - **Calendario de eventos y citas** (CRF-03).
 - **Menú del día** (HN3) y **llegada de los padres** (HN2).

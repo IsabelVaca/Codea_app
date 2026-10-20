@@ -4,7 +4,7 @@ Foto a 2026-10-18 por la noche, sobre `main`. Las pruebas sí se corrieron para 
 
 ## Qué hay
 
-- 15 módulos en `app/modules/` (ver [`app/modules/README.md`](app/modules/README.md)), 11 migraciones Alembic, 33 tablas, 84 endpoints (matriz en [`../docs/api/matriz-de-roles.md`](../docs/api/matriz-de-roles.md), comprobada por `tests/test_access_matrix.py`) y seed con datos de ejemplo.
+- 16 módulos en `app/modules/` (ver [`app/modules/README.md`](app/modules/README.md)), 14 migraciones Alembic, 34 tablas, 83 endpoints (matriz en [`../docs/api/matriz-de-roles.md`](../docs/api/matriz-de-roles.md), comprobada por `tests/test_access_matrix.py`) y seed con datos de ejemplo.
 - Errores uniformes (Problem Details con `code` estable), paginación por cursor, reloj reemplazable en pruebas, subida de archivos con URL firmada.
 - Permisos por rol (`require_role`) y por registro (404 fuera de alcance).
 - Login propio con JWT, límite de intentos, auditoría (`audit_log`), cabeceras de seguridad y CORS cerrado.
@@ -19,8 +19,11 @@ Foto a 2026-10-18 por la noche, sobre `main`. Las pruebas sí se corrieron para 
 | Auth propia con JWT; límite de intentos; invitación por enlace de WhatsApp (el correo real ya no aplica) | RF-01, RNF01, RNF03 |
 | Bitácora de auditoría (`modules/audit`) | RF-14 (falta registrar lectura de fotos y documentos, y `PATCH /center`) |
 | Resumen semanal (`GET /children/{id}/weekly-summary`) | RF-12 |
-| Revisión de solicitudes de borrado de fotos (`media/deletion-requests`) | RF-10 (ver abajo: el equipo pidió cambiarla) |
-| Hora de **salida** del niño y con quién (pase de salida); la familia la ve como último evento de `GET /children/{id}/day` (`DEPARTURE`) | RF-03, solo la salida |
+| ~~Revisión de solicitudes de borrado de fotos~~ **Reemplazada el 19/oct** por el borrado directo del padre: `DELETE /media/{id}` borra la foto (del almacén y de las galerías) sin aprobación de nadie, aunque salgan niños de otras familias; queda en la bitácora. Se quitaron los endpoints `media/deletion-requests`; la tabla `media_deletion_request` queda sin uso | RF-10 |
+| Hora de **salida** del niño y con quién (pase de salida); la familia la ve como último evento de `GET /children/{id}/day` (`DEPARTURE`) | RF-03 |
+| **Avisos con imagen** (`announcement.media_id`, migración `c63f9e5b3d04`, aplicada en Aiven el 19/oct): `POST /announcements` acepta texto, imagen o ambos; `AnnouncementOut.media_url`. La imagen no sale en la galería de ningún niño | HN5 |
+| **Menú del día** (módulo `menus`, tabla `daily_menu`, migración `d74a0f6c4e15`, aplicada en Aiven el 19/oct): `GET /menus?start&end` (cualquier rol), `PUT` y `DELETE /menus/{fecha}` (admin); el día del niño trae `menu` | HN3 |
+| Hora de **entrada** del niño (`attendance.arrived_at`, migración `b18e4d7a2c93`, aplicada en Aiven el 19/oct): la docente la ve en el pase de lista y la familia como primer evento de Hoy (`ARRIVAL`). La app manda la hora de la marca hecha sin conexión | RF-03 |
 | Borrado directo de fotos por la familia (`DELETE /media/{id}`) | RF-10 (cambio del 18/oct) |
 | Migraciones `a96b2c7d5f65` y `a07c3d8e6f76` aplicadas en Aiven (18/oct) | — |
 | Endurecimiento: límite de intentos, cabeceras, CORS cerrado, pruebas de IDOR, inyección y matriz de roles | Rúbrica, partes 2 y 3 |
@@ -31,9 +34,7 @@ Foto a 2026-10-18 por la noche, sobre `main`. Las pruebas sí se corrieron para 
 
 | Qué | Requisito | Cómo, dentro del marco |
 |---|---|---|
-| **Foto con niños de varias familias** | RF-10 | `DELETE /media/{id}` ya existe (el padre borra directo si solo salen hijos suyos); con niños de otras familias responde `409 MEDIA_SHARED` y **nadie puede resolverlo desde la app**, porque la revisión del admin no tiene pantalla. Decidir con el equipo qué hacer (devolver la pantalla del admin, o que cada familia la oculte) y si se quitan los endpoints `…/deletion-requests`. |
-| **Hora de entrada del niño** | RF-03 | `attendance` guarda solo `PRESENT`/`ABSENT`; agregar hora de entrada. La salida ya está |
-| **Avisos con imágenes** | HN5 | `media_id` en `announcement` (hoy solo lo tiene `message`); marcar como leído en el servidor (`POST /announcements/{id}/read`); hoy el "leído" vive en el teléfono |
+| **Marcar avisos como leídos en el servidor** | HN5 | `POST /announcements/{id}/read`; hoy el "leído" vive en el teléfono. (La imagen del aviso ya está: ver «Hecho») |
 | **Despliegue con HTTPS y URL pública** | RNF04 y enlace de invitación | `PUBLIC_BASE_URL=https://api.codeaapp.site` ya va en `.env.prod.example`; falta `ANDROID_CERT_SHA256` (necesita el keystore de release) para que el enlace abra la app sin pasar por el navegador |
 
 ### Media
@@ -41,7 +42,6 @@ Foto a 2026-10-18 por la noche, sobre `main`. Las pruebas sí se corrieron para 
 | Qué | Requisito |
 |---|---|
 | Eventos y citas (calendario) | CRF-03 |
-| Menú del día | HN3 |
 | Llegada de los padres | HN2 |
 | Exportar reportes (PDF/CSV) | HN1 |
 | Varios hijos por padre: `GET /me` devuelve la lista y la app ya tiene el selector (falta verlo en un teléfono) | HN4 |

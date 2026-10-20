@@ -49,6 +49,19 @@ curl https://api.codeaapp.site/api/v1/health/ready   # {"status":"ok","database"
 
 **Compartirla con el equipo.** Los developers apuntan su app a `https://api.codeaapp.site/api/v1/` (cómo y con qué reglas: [`docs/GUIA-CONTINUAR.md`](../docs/GUIA-CONTINUAR.md), sección 2). Las cuentas salen del seed o de un admin; fuera de `ENV=dev` el seed imprime un código de acceso por persona: pásale a cada quien su correo y su código por privado. Nunca compartas `.env.prod` ni el token del túnel; si el token se filtra, ve al panel del túnel → *Rotate token* y cámbialo en `.env.prod`.
 
+### La base de producción: Aiven (decisión del 19/oct)
+
+Producción usa **Aiven**, no el Postgres del contenedor `db`. Cloudflare no interviene: el túnel solo lleva tráfico web a `api` y `storage`, y la API habla con la base por `DATABASE_URL`. Para pasar de la base local a Aiven:
+
+1. En Aiven crea una **base nueva** dentro del servicio (por ejemplo `codea_prod`). **No** uses la de pruebas manuales (`codea1234`) ni la de las pruebas automáticas.
+2. En `.env.prod` descomenta `DATABASE_URL=postgresql+asyncpg://USUARIO:PASSWORD@HOST:PUERTO/codea_prod?ssl=require` (con `?ssl=require`). Con ese valor la API ignora el servicio `db` del compose.
+3. `prod up -d --build` y `prod exec api alembic upgrade head`: arma la base vacía completa desde cero (13 migraciones, hasta `d74a0f6c4e15`; se comprobó en una base temporal). No hay nada que migrar: la base local de producción estaba vacía.
+4. El almacén de fotos sigue siendo el SeaweedFS del compose (`prod exec api python -c "from app.core.storage import get_storage; get_storage().ensure_bucket()"` una vez).
+5. `prod exec api python -m app.seed` crea el primer administrador con `SEED_ADMIN_EMAIL`, pero **también mete los datos de ejemplo**; hoy no hay un comando que cree solo al admin.
+6. Cada actualización del código que traiga migraciones: `git pull`, `prod up -d --build` y `prod exec api alembic upgrade head`.
+
+Revisa en Aiven cómo se respaldan las bases de tu plan (los respaldos siguen sin estar documentados en el proyecto) y cuántas conexiones permite.
+
 ## Entrar
 
 Login propio con correo y contraseña (JWT). La regla: **el token dice quién eres y Postgres dice qué puedes hacer**: el JWT solo lleva el id de la persona; el rol, el alcance y si está de baja se leen de la base en cada petición. Diseño completo en [`docs/plan/04-api-login-jwt.md`](../docs/plan/04-api-login-jwt.md).

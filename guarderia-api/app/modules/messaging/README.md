@@ -19,7 +19,7 @@ El `client_id` del mensaje hace que enviar sin conexión y reintentar después n
 | Hecho | Pendiente |
 |---|---|
 | Chat docente-familia con no leídos, **fotos en el mensaje** (`media_id` → URL firmada `media_url`), notas y publicación de avisos | Marcar avisos como leídos en el servidor (hoy el "leído" vive en el teléfono) |
-| | **Avisos con imágenes** (HN5, `media_id` en `announcement`) y **historial** para el admin |
+| **Avisos con imagen** (HN5, 19/oct): `announcement.media_id`; `POST /announcements` acepta `{text?, media_id?, classroom_id?}` (texto, imagen o ambos) y `AnnouncementOut.media_url` es una URL firmada de 10 minutos | **Historial** para el admin con filtros |
 | | **Mensajes en tiempo real** ("Agregar funcionalidad mensajes tiempo real", tarea abierta): hoy se consulta con `?after=`; el marco permite SSE o WebSocket, no Firebase |
 | | **Notificaciones**: sin Firebase; WorkManager + notificaciones locales en la app |
 | | Chat del lado del padre en la app (la API ya lo permite) |

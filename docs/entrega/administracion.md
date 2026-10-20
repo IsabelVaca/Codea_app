@@ -73,8 +73,8 @@ Se llama desviación a lo que el plan, el marco técnico o los requisitos pedía
 | D2 | **Sin conexión (parcial)** | RF-11 y RNF07: las funciones principales sin internet; sincronización posterior | Solo la **asistencia de Mi sala** funciona sin conexión (Room, cola de marcas y WorkManager, commit `99fac75`; probada en el teléfono con la API apagada). Reportes, fotos, chat, checador, documentos y avisos siguen necesitando red; el padre y el administrador no tienen nada sin conexión. No hay pruebas de Room en JVM. El Bloque 3 de `PLAN-ACCION.md` decía «solo si el bloque 2 termina el lunes» | Falta de tiempo **[confirmar por el equipo]** | RF-11 y RNF07 en 🟡 (antes ❌); las dos filas de la rúbrica (operación sin conexión y sincronización) en 🟡. Trae tres dependencias nuevas dentro del marco: Room 2.8.4, WorkManager 2.11.2 y KSP 2.3.12 |
 | D3 | **Consulta con IA** | CRF-04: dictado y consulta con IA | Solo el **dictado** (con el reconocedor de voz del sistema). La consulta con IA no existe | **[completar por el equipo]** | CRF-04 en 🟡 |
 | D4 | **Calendario de eventos y citas** | CRF-03 | El calendario del padre muestra solo asistencia | **[completar por el equipo]** | CRF-03 en 🟡 |
-| D5 | **Entrada y salida del niño** | RF-03 | Hay presente o falta por día (el pase de lista está en Mi día; **sin registro cuenta como ausente**) y, desde el 18/oct, la **hora de salida del niño y con quién se fue** (pase de salida). No hay hora de **entrada** del niño. (La entrada y la **salida de la docente** sí existen desde el commit `f814763`, con los textos de la app corregidos) | **[completar por el equipo]** | RF-03 en 🟡 |
-| D6 | **Huella, historias de usuario** | RF-13, HN1 a HN5 | Sin hacer, o parciales (HN4 y HN5). El resumen semanal (RF-12) ya se hizo, en la API y en la app | **[completar por el equipo]** | Ver 2.4 |
+| D5 | **Entrada y salida del niño** | RF-03 | Hay presente o falta por día (el pase de lista está en Mi día; **sin registro cuenta como ausente**) y, desde el 18/oct, la **hora de salida del niño y con quién se fue** (pase de salida). Desde el 19/oct también se guarda la **hora de entrada** del niño (la de su pase de lista). (La entrada y la **salida de la docente** sí existen desde el commit `f814763`, con los textos de la app corregidos) | **[completar por el equipo]** | RF-03 en 🟡 solo por falta de prueba en teléfono |
+| D6 | **Huella, historias de usuario** | RF-13, HN1 a HN5 | Sin hacer, o parciales (HN3 con menú desde el 19/oct, HN4 y HN5; HN5 ya tiene imagen en el aviso desde el 19/oct, falta probarla en un teléfono). El resumen semanal (RF-12) ya se hizo, en la API y en la app | **[completar por el equipo]** | Ver 2.4 |
 | D7 | **Notificaciones** | Tarea abierta del tablero | Ninguna notificación del teléfono (ni push ni local). El chat se actualiza consultando cada 10 s; nada de WebSocket ni SSE | Firebase está excluido por el marco; la alternativa (WorkManager) no se hizo | Las familias no se enteran de mensajes ni avisos si no abren la app |
 | D8 | **Resumen del día sin captura en la app (resuelto)** | P1 #12 de `docs/plan/01-app-pantallas.md` (Día del niño) | Era una brecha: la docente no tenía dónde capturar el resumen. Se resolvió en el commit `20e7de1` con **Mi sala → «Resumen del día»**, con 5 pruebas JVM y prueba de punta a punta en el teléfono (la mamá lo vio en Hoy) | Hallazgo de la revisión de los documentos de la entrega | RF-04 vuelve a ✅ |
 
@@ -118,22 +118,22 @@ La fuente de verdad es [`docs/REQUISITOS.md`](../REQUISITOS.md); la matriz de tr
 
 | Estado | Requisitos |
 |---|---|
-| ❌ No cumplido | CRF-01 (por decisión del equipo), RF-13, RNF04, HN1, HN2, HN3 |
-| 🟡 Parcial | CRF-03, CRF-04, RF-03 (hora de entrada y salida **del niño**), RF-05 (la API está probada con dos niños; la pantalla de selección no se recorrió en el teléfono), RF-09 (captura con cámara sin probar), RF-11 y RNF07 (solo la asistencia de Mi sala), RNF05 (sin medir), HN4, HN5 |
+| ❌ No cumplido | CRF-01 (por decisión del equipo), RF-13, RNF04, HN1, HN2 |
+| 🟡 Parcial | CRF-03, CRF-04, HN3 (menú del día, falta verlo en un teléfono), RF-03 (hora de entrada y salida **del niño**), RF-05 (la API está probada con dos niños; la pantalla de selección no se recorrió en el teléfono), RF-09 (captura con cámara sin probar), RF-11 y RNF07 (solo la asistencia de Mi sala), RNF05 (sin medir), HN4, HN5 |
 
 Queda sin hacer, aparte de los requisitos: cifrar la base local del teléfono, salida automática de la docente, mapa sin clave de Google, despliegue con HTTPS, APK firmado, política de retención y un comando para crear solo al primer administrador.
 
 Los parciales cuentan medio en ese porcentaje. Desde la revisión del 18 de octubre un ✅ solo se escribe si la fila cita evidencia (prueba automática o prueba en el teléfono); el caso del checador (D10) muestra por qué.
 
 ---|---|
-| ❌ No cumplido | CRF-01 (por decisión del equipo), RF-13, RNF04, HN1, HN2, HN3 |
-| 🟡 Parcial | CRF-03, CRF-04, RF-03, RF-04 (falta la pantalla del resumen del día), RF-05 (sin prueba con dos o más niños), RF-09 (captura con cámara sin probar), RF-11 y RNF07 (solo la asistencia de Mi sala), RNF05 (sin medir), HN4, HN5 |
+| ❌ No cumplido | CRF-01 (por decisión del equipo), RF-13, RNF04, HN1, HN2 |
+| 🟡 Parcial | CRF-03, CRF-04, HN3, RF-03, RF-04 (falta la pantalla del resumen del día), RF-05 (sin prueba con dos o más niños), RF-09 (captura con cámara sin probar), RF-11 y RNF07 (solo la asistencia de Mi sala), RNF05 (sin medir), HN4, HN5 |
 
 Los parciales cuentan medio en ese porcentaje. Desde la revisión del 18 de octubre un ✅ solo se escribe si la fila cita evidencia (prueba automática o prueba en el teléfono); el caso del checador (D10) muestra por qué.
 
 ---|---|
-| ❌ No cumplido | CRF-01 (por decisión del equipo), RF-11, RF-13, RNF04, RNF07, HN1, HN2, HN3 |
-| 🟡 Parcial | CRF-03, CRF-04, RF-03, RNF05 (sin medir), HN4, HN5 |
+| ❌ No cumplido | CRF-01 (por decisión del equipo), RF-11, RF-13, RNF04, RNF07, HN1, HN2 |
+| 🟡 Parcial | CRF-03, CRF-04, RF-03, RNF05 (sin medir), HN3, HN4, HN5 |
 
 Los parciales cuentan medio en ese porcentaje. Lo declarado como cumplido se revisó leyendo el código, no ejecutando la app, salvo lo que dice `RECORRIDO.md` sobre el teléfono físico; el caso del checador (D10) muestra que un ✅ puede sobreestimar.
 

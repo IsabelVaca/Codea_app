@@ -43,7 +43,7 @@ La persona que instale un APK de un enlace debe permitir la instalación de orí
 |---|---|
 | Contenedor Docker en un servidor propio con certificado | Alternativa dentro del marco técnico (decisión #7). No se eligió |
 | Túnel de Cloudflare (HTTPS) | ✅ **Elegido** (decisión #7, aprobada el 19/oct): `codeaapp.site`, contenedor `cloudflared` en `docker-compose.prod.yml`. Pasos en `guarderia-api/README.md`, «Producción en codeaapp.site» |
-| Postgres alojado (Aiven) | En uso para pruebas; para producción **[decidir]** |
+| Postgres alojado (Aiven) | En uso para pruebas. **Para producción: Aiven (decisión del usuario, 19/oct)**, en una **base aparte** (por ejemplo `codea_prod`) distinta de la de pruebas manuales y de la de las pruebas automáticas |
 | Almacén compatible con S3 | **[decidir]** (decisión #9: SeaweedFS no es el que nombra el marco; sí lo es RustFS) |
 
 ---

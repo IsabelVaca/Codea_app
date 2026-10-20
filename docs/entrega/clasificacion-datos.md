@@ -271,18 +271,9 @@ Además, al crear el aviso el servidor escribe en su registro (`log.warning`) el
 |---|---|---|---|---|
 | `media_id`, `child_id` | **Alto** | Decide qué familias ven la foto: **una foto con varios niños la ven las familias de todos ellos** | Sin borrado | Como la foto |
 
-#### `media_deletion_request`: «Pedir que se borre»
+#### `media_deletion_request`: solicitudes de borrado (sin uso desde el 19/oct)
 
-| Campo | Nivel | Protección propia | Se conserva hoy | Retención propuesta |
-|---|---|---|---|---|
-| `media_id`, `requested_by` | **Alto** | Una solicitud por foto y persona; repetirla devuelve la misma | Sin borrado | Mientras se atienda + la constancia `[decidir]` |
-| `reason` | Medio | Texto libre opcional | Sin borrado | Igual |
-| `status` | Bajo | `PENDING`, `APPROVED`, `REJECTED`. Solo el administrador las resuelve (`GET /media/deletion-requests`, `…/approve`, `…/reject`); resolver una pasa el estado de la foto a `DELETED` si se aprueba | Sin borrado de la solicitud (queda como constancia) | — |
-| `decided_by` | Medio | FK al administrador que decidió | Sin borrado | Igual |
-| `decided_at` | Bajo | — | Sin borrado | Igual |
-| `decision_note` | Medio | Texto libre opcional de hasta 500 caracteres | Sin borrado | Igual
-
-### 3.9 Documentos y personas autorizadas (`documents`)
+La familia ya no pide el borrado: lo hace directamente (`DELETE /media/{id}`) y queda en `audit_log` como `MEDIA_DELETED_BY_FAMILY`. La tabla se conserva con las solicitudes que se hicieron antes, sin que nada la lea ni la escriba; hay que decidir si se elimina o cuánto tiempo se conserva **[decidir]**. Sus campos (`media_id`, `requested_by`, `reason`, `status`, `decided_by`, `decided_at`, `decision_note`) eran de nivel Medio a Alto.
 
 #### `child_document`: documentos que el centro pide a la familia
 
@@ -427,7 +418,7 @@ El servidor escribe en su salida estándar (Docker) el aviso a coordinación con
 | Hallazgo | Dónde |
 |---|---|
 | No hay política de retención escrita ni borrado automático, salvo `auth_attempt` y el borrado de personas autorizadas. | Secciones 3 y 4 |
-| Las solicitudes de borrado de fotos ya las resuelve el administrador y, al aprobar, se borra el archivo del bucket. Pero no hay plazo de atención definido, no aplica a documentos y no existe forma de quitar solo la etiqueta de un niño en una foto de grupo (aprobar la borra para todas las familias). | 3.8 y 4.1 |
+| La familia borra las fotos directamente (desde el 19/oct) y el archivo sale del bucket al momento. No aplica a documentos y no existe forma de quitar solo la etiqueta de un niño en una foto de grupo: borrarla la quita para todas las familias, sin avisarles. | 3.8 y 4.1 |
 | Los dos textos falsos que había en la app (ubicación «no se guarda» y salida «automática») ya se corrigieron; la fecha de nacimiento ya se captura real, pero los niños inscritos antes conservan una fecha inventada. | 3.4 y 3.5 |
 | Cifrado en reposo, respaldos y almacén de producción: sin definir. | 2 y 4.1 |
 | La base local `codea.db` del modo sin conexión **no está cifrada** y guarda nombres de niños; la caché se borra al terminar la sesión (verificado a mano, sin prueba automática) y la cola de marcas, ligada a su dueña, no. Riesgo MEDIO con sesión, BAJO sin ella. | 4.2.1 |

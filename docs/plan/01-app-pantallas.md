@@ -46,7 +46,7 @@ La 7 solo es P0 si se elige que el admin comparta el código (ver [decisiones pe
 | Mis documentos | `TEACHER` | Opción del Menú que hoy dice "Muy pronto" |
 | Editar mi perfil (nombre, teléfono, foto) | Todos | `PATCH /me` |
 | Editar datos de docente, infante o padre | `ADMIN` | Hoy los detalles solo cambian sala y baja |
-| Solicitudes de borrado de fotos | `ADMIN` | El padre ya puede pedirlo; nadie lo resuelve |
+| ~~Solicitudes de borrado de fotos~~ | `ADMIN` | Ya no aplica: el padre borra directo (19/oct) |
 | Pedir un documento a la familia | `ADMIN` | Para el mínimo, la API crea una lista de documentos por defecto al inscribir |
 | Configuración del centro (ubicación, radio, turnos) | `ADMIN` | Para el mínimo vive en el seed |
 | Historial de avisos | `ADMIN` | **Ver ya está hecho** (Centro, debajo de "Publicar aviso", con menú para elegir a quién va). Falta borrarlos |

@@ -2,7 +2,7 @@
 
 Lista sacada del código el 16 de octubre de 2026 (rama `backend`, commit `12da735`), puesta al día el 17 de octubre y revisada contra `main` el 18 de octubre (la matriz [`matriz-de-roles.md`](matriz-de-roles.md) cuenta 84 rutas y se genera del código) con lo que se agregó después (centro, invitaciones, plantillas de rutina y avisos): rutas y roles de cada `router.py`, cuerpos y respuestas del OpenAPI que genera FastAPI, y códigos de error de cada `service.py`. Reemplaza a `Endpoints_API_Codea.docx.pdf` y a [`endpoints-api-codea.pdf`](endpoints-api-codea.pdf), que tienen el mismo contenido y ya no coinciden en varios detalles (ver [qué cambió](#qué-cambió-respecto-al-pdf)).
 
-Son **84 endpoints en 15 módulos** (82 bajo `/api/v1` y 2 públicos fuera de él: `/invitar` y `/.well-known/assetlinks.json`). El contrato exacto, con todos los campos, sigue siendo el OpenAPI: con la API prendida, `http://localhost:8000/docs`.
+Son **83 endpoints en 16 módulos** (81 bajo `/api/v1` y 2 públicos fuera de él: `/invitar` y `/.well-known/assetlinks.json`). El contrato exacto, con todos los campos, sigue siendo el OpenAPI: con la API prendida, `http://localhost:8000/docs`.
 
 El login con JWT ya está en `main` (aquí lo reflejan las secciones *Cuenta* y la convención de autenticación). Lo que falta de la API vive en [`../../guarderia-api/PENDIENTES.md`](../../guarderia-api/PENDIENTES.md).
 
@@ -62,7 +62,7 @@ Errores comunes a todos los endpoints con sesión: `401 UNAUTHENTICATED` (sin to
 | PATCH | `/classrooms/{id}` | `ADMIN` | `{name?, capacity?, school_grade?}` | `ClassroomDetail` | `422 NAME_REQUIRED`, `CAPACITY_INVALID` |
 | PUT | `/classrooms/{id}/staff` | `ADMIN` | `{teacher_ids[], primary_teacher_id?}` | `ClassroomDetail` | `404 TEACHER_NOT_FOUND`; `422 PRIMARY_NOT_IN_STAFF` |
 | DELETE | `/classrooms/{id}` | `ADMIN` | — | 204; sus asistentes quedan sin sala | `409 CLASSROOM_NOT_EMPTY` |
-| GET | `/classrooms/{id}/children?date=` | `ADMIN`, `TEACHER` (su sala) | — | `RoomChild[]`: `attendance` (`PRESENT` solo si hoy se le pasó lista; **sin registro es `ABSENT`**), `conversation_id`, `has_unread_chat`, `unread_count`, `notes_today`, `has_note_today`, `notes[]` (`id`, `text`, `created_at`: los avisos del papá de hoy, del más viejo al más nuevo) y `has_summary_today` (la docente ya guardó el resumen del día) | `404 CLASSROOM_NOT_FOUND` |
+| GET | `/classrooms/{id}/children?date=` | `ADMIN`, `TEACHER` (su sala) | — | `RoomChild[]`: `attendance` (`PRESENT` solo si hoy se le pasó lista; **sin registro es `ABSENT`**), `arrived_at` (la hora de su pase de lista; `null` si está ausente), `conversation_id`, `has_unread_chat`, `unread_count`, `notes_today`, `has_note_today`, `notes[]` (`id`, `text`, `created_at`: los avisos del papá de hoy, del más viejo al más nuevo) y `has_summary_today` (la docente ya guardó el resumen del día) | `404 CLASSROOM_NOT_FOUND` |
 
 ## Docentes
 
@@ -116,7 +116,7 @@ La API calcula distancia, radio y retardo con su propio reloj; nunca acepta el e
 
 | Método | Ruta | Rol | Envía | Responde | Errores |
 | --- | --- | --- | --- | --- | --- |
-| PUT | `/attendance/{child_id}` | `ADMIN`, `TEACHER` (su sala) | `{status: PRESENT \| ABSENT, date?}`: el pase de lista de *Mi día* marca `PRESENT`; corregir una marca manda el otro estado | `AttendanceOut` | `404 CHILD_NOT_FOUND` |
+| PUT | `/attendance/{child_id}` | `ADMIN`, `TEACHER` (su sala) | `{status: PRESENT \| ABSENT, date?, arrived_at?}`: el pase de lista de *Mi día* marca `PRESENT`; corregir una marca manda el otro estado. `arrived_at` (con zona horaria) lo manda la app cuando la marca se hizo sin conexión; sin él, o si viene en el futuro, es la hora del servidor. Volver a marcar `PRESENT` conserva la primera hora; `ABSENT` la borra | `AttendanceOut` (con `arrived_at`, la hora de entrada o `null`) | `404 CHILD_NOT_FOUND` |
 | GET | `/children/{id}/attendance?month=AAAA-MM` | Todos (en su alcance) | — | `CalendarOut`: `days[]` con `status` (`FULL_DAY`, `WITH_NOTE`, `ABSENT`, `NO_RECORD`) y `summary`. Un día con rutina y sin pase de lista `PRESENT` cuenta como `ABSENT` | `422 MONTH_INVALID`; `404 CHILD_NOT_FOUND` |
 
 ## Rutina
@@ -140,7 +140,7 @@ La API calcula distancia, radio y retardo con su propio reloj; nunca acepta el e
 | GET | `/reports?moment_id=` | `ADMIN`, `TEACHER` | — | `ReportOut[]` | `404 MOMENT_NOT_FOUND` |
 | POST | `/children/{id}/daily-entries` | `ADMIN`, `TEACHER` | `{date?, mood?, meals?, diaper_changes?, nap_minutes?, general_note?}`; solo cambia lo que se manda | `DailyEntryOut` | `404 CHILD_NOT_FOUND` |
 | GET | `/children/{id}/weekly-summary?week_start=` | Todos (en su alcance) | — | `WeeklySummaryOut`: lunes a viernes de esa semana (sin fecha, la de hoy): `days_attended`, `days_absent`, `moods`, `meals`, `nap_minutes_average`, `diaper_changes_total`, `reports_by_type`, `achievements`, `family_notes` y `days[]` | `404 CHILD_NOT_FOUND`; `422` si la fecha no es válida |
-| GET | `/children/{id}/day?date=` | Todos (en su alcance) | — | `DayOut`: `attendance`, `summary`, `timeline[]` (el último puede ser la salida del niño, `DEPARTURE`: hora y quién lo recogió) y `notes[]` (las notas del papá) | `404 CHILD_NOT_FOUND` |
+| GET | `/children/{id}/day?date=` | Todos (en su alcance) | — | `DayOut`: `attendance`, `summary`, `menu` (el menú del día o `null`), `timeline[]` (el primero puede ser la entrada del niño, `ARRIVAL`, con la hora de su pase de lista; el último puede ser la salida del niño, `DEPARTURE`: hora y quién lo recogió) y `notes[]` (las notas del papá) | `404 CHILD_NOT_FOUND` |
 
 ## Fotos
 
@@ -149,11 +149,7 @@ La API calcula distancia, radio y retardo con su propio reloj; nunca acepta el e
 | POST | `/media/uploads` | `TEACHER` (`PHOTO`), `PARENT` (`DOCUMENT`) | `{content_type, size_bytes, kind?: PHOTO \| DOCUMENT}` | 201 `{media_id, url, fields, expires_in, max_bytes}`: un permiso de 5 minutos, máximo 10 MB | `422 CONTENT_TYPE_NOT_ALLOWED`, `FILE_TOO_LARGE`; `403 FORBIDDEN` (otro rol u otro tipo) |
 | POST | `/media/{id}/complete` | Quien la pidió | — | `MediaOut` con `status: READY` | `409 UPLOAD_MISSING`; `404 MEDIA_NOT_FOUND` |
 | GET | `/media?child_id=&category=&cursor=&limit=` | Todos (en su alcance) | — | `{items: FeedItem[], next_cursor}`; cada foto con `url` firmada de 10 minutos, `category`, `teacher_name`, `note` | `404 CHILD_NOT_FOUND` |
-| DELETE | `/media/{id}` | `PARENT` | — | 204: la foto se borra del bucket y de todas las galerías en el momento; la solicitud que hubiera queda resuelta | `404 MEDIA_NOT_FOUND` (no es foto de un hijo suyo), `409 MEDIA_SHARED` (salen niños de otras familias), `502 STORAGE_UNAVAILABLE` |
-| POST | `/media/{id}/deletion-request` | `PARENT` | `{reason?}` | 201 `DeletionRequestOut`; repetida: 200 con la misma | `404 MEDIA_NOT_FOUND` |
-| GET | `/media/deletion-requests?status=` | `ADMIN` | — | `DeletionReviewOut[]` (por omisión `PENDING`): `reason`, `requested_by_name`, `child_names`, `photo_url` (firmada, 10 min; vacía si ya se borró), `decided_at`, `decision_note` | — |
-| POST | `/media/deletion-requests/{id}/approve` | `ADMIN` | `{note?}` | `DeletionReviewOut`: borra la foto del bucket y de todas las galerías | `404 DELETION_REQUEST_NOT_FOUND`, `409 REQUEST_ALREADY_DECIDED`, `502 STORAGE_UNAVAILABLE` |
-| POST | `/media/deletion-requests/{id}/reject` | `ADMIN` | `{note?}` | `DeletionReviewOut`: la foto se queda | `404`, `409 REQUEST_ALREADY_DECIDED` |
+| DELETE | `/media/{id}` | `PARENT` | — | 204: la foto se borra del bucket y de todas las galerías en el momento, sin aprobación de nadie. Basta con que salga un hijo suyo (también se borra para los demás niños que salgan) | `404 MEDIA_NOT_FOUND` (no es foto de un hijo suyo), `502 STORAGE_UNAVAILABLE` |
 
 Subida: después de `/media/uploads`, la app manda un POST multipart a `url` con todos los `fields` y el archivo en el campo `file`, y luego llama `/complete`.
 
@@ -181,11 +177,19 @@ Después de que `all_done` es `true`, la docente finaliza el día con `POST /sta
 
 Hoy no hay endpoint para pedir documentos: la lista de cada niño la crea el seed.
 
+## Menú del día
+
+| Método | Ruta | Rol | Cuerpo | Respuesta | Errores |
+|---|---|---|---|---|---|
+| GET | `/menus?start=&end=` | Todos | — | `MenuOut[]` (`date`, `breakfast`, `lunch`, `snack`, `updated_at`), del día más viejo al más nuevo; sin fechas, el de hoy; los días sin menú no aparecen | `422 RANGE_INVALID` (final anterior al inicio o más de 31 días) |
+| PUT | `/menus/{fecha}` | `ADMIN` | `{breakfast?, lunch?, snack?}` (hasta 500 caracteres cada una; las vacías se guardan como nulas) | `MenuOut`: crea o reemplaza el menú de ese día | `422 MENU_EMPTY` (ninguna comida con texto) |
+| DELETE | `/menus/{fecha}` | `ADMIN` | — | 204 | `404 MENU_NOT_FOUND` |
+
 ## Comunicación
 
 | Método | Ruta | Rol | Envía | Responde | Errores |
 | --- | --- | --- | --- | --- | --- |
-| POST | `/announcements` | `ADMIN` | `{text, classroom_id?}` (sin sala = todo el centro) | 201 `AnnouncementOut`: `id`, `text`, `classroom_id`, `classroom_name`, `created_at` | `422 TEXT_REQUIRED`; `404 CLASSROOM_NOT_FOUND` |
+| POST | `/announcements` | `ADMIN` | `{text?, media_id?, classroom_id?}` (sin sala = todo el centro). Lleva texto, imagen o ambos; la imagen se sube antes con `POST /media/uploads` (`kind: PHOTO`) y `/complete` | 201 `AnnouncementOut`: `id`, `text`, `classroom_id`, `classroom_name`, `media_url` (URL firmada de 10 min o `null`), `created_at` | `422 TEXT_REQUIRED` (sin texto ni imagen); `422 MEDIA_NOT_VALID` (no está lista o no es imagen); `404 MEDIA_NOT_FOUND` (no es tuya); `404 CLASSROOM_NOT_FOUND` |
 | GET | `/announcements?limit=` | Todos | — | `AnnouncementOut[]`, el más reciente primero (50 por omisión, máximo 200). `ADMIN`: todos los del centro. `TEACHER`: los del centro y los de su sala. `PARENT`: los del centro y los de las salas de sus hijos | — |
 | GET | `/conversations` | `TEACHER`, `PARENT` (al `ADMIN` le regresa lista vacía) | — | `ConversationOut[]`: una por niño, con `child` (con `guardians[]`: nombre, parentesco y si es el principal), `unread_count` y `last_message` | — |
 | GET | `/conversations/{id}/messages?cursor=&after=&limit=` | Participantes | — | `{items: MessageOut[], next_cursor}`; con `after=<id>` solo los nuevos. Cada mensaje trae `author_name`, `is_mine` e `is_read` | `404 CONVERSATION_NOT_FOUND` |
@@ -236,7 +240,7 @@ Acciones y qué datos guarda cada una: [`app/modules/audit/README.md`](../../gua
 | `ReportMethod` | `WRITTEN`, `DICTATION`, `PHOTO` |
 | `Mood` | `HAPPY`, `CALM`, `TIRED`, `SAD`, `UPSET` |
 | `MealAmount` | `ALL`, `MOST`, `HALF`, `LITTLE`, `NONE` |
-| `TimelineType` | `CHECK_IN`, `MEAL`, `ACTIVITY`, `NAP`, `DEPARTURE` |
+| `TimelineType` | `CHECK_IN`, `ARRIVAL`, `MEAL`, `ACTIVITY`, `NAP`, `DEPARTURE` |
 | `MediaKind` | `PHOTO`, `DOCUMENT` |
 | `MediaStatus` | `PENDING`, `READY` |
 | `PhotoCategory` | `ACTIVITIES`, `MEALS`, `NAP`, `INCIDENTS` |

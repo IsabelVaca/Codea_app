@@ -49,3 +49,41 @@ El recorrido de arriba es de la mañana del 18/oct. Desde entonces se agregó es
 | Los tres | `adb shell am start -a android.intent.action.VIEW -d "codea://invitar?email=…&code=…" mx.tec.codea` con la sesión cerrada (debe abrir «Activar mi cuenta» con correo y código puestos) y con la sesión abierta (debe ignorarlo) |
 
 Antes de recorrer: aplicar en Aiven `a96b2c7d5f65` y `a07c3d8e6f76` (sin ellas el login da 500) y compilar con `-PapiBaseUrl=http://localhost:8000/api/v1/` más `adb reverse` 8000 y 9000.
+
+## Recorrido del 19/oct por la noche (teléfono Pixel 8 Pro, modo oscuro, API local con Aiven)
+
+Compilado con `-PapiBaseUrl=http://localhost:8000/api/v1/ --no-configuration-cache` (sin esa bandera Gradle reutiliza la configuración anterior y la app queda con `10.0.2.2`, que fue la causa de «No se pudo conectar con el servidor» al empezar) y `adb reverse` 8000 y 9000.
+
+### Lo que se probó y funcionó
+
+| Rol | Flujo | Resultado |
+|---|---|---|
+| Docente (Karla) | Mi día con «Menú de hoy»; pase de lista (marcar ausente y presente a Diego) | Muestra «Entró a las 18:59» bajo el nombre; el menú aparece arriba de Mi día |
+| Docente | Rutina terminada (momentos confirmados), «Siguiente paso: Pase de salida», registrar salida de Diego (con Marisol) y de Renata (con Carlos), «Corregir», «Finalizar día» y «Día finalizado» | Todo bien; «Han salido 2 de 2», «Salió a las 19:10 con Marisol Hernández», salida registrada a las 19:11 |
+| Docente | Menú → Avisos de la fundación | El aviso con imagen se ve con su imagen |
+| Padre (Marisol) | Hoy: «Entrada · 18:59» en la línea de tiempo y tarjeta «Menú del día»; campana con el aviso con imagen | Bien |
+| Padre | Mi hijo: guardar alergias | «Datos de tu hijo guardados» |
+| Padre | Fotos: foto de prueba en un reporte → abrir → «Borrar» → confirmar | «Foto borrada»; la API devuelve 0 fotos y el almacén responde 403 |
+| Admin | Centro → «Agregar imagen» (selector del sistema), publicar solo con imagen | Aparece en el historial con su imagen |
+| Admin | Ajustes → Menú del día: agregar el lunes (desayuno, comida y colación), guardar | «Menú guardado» y la semana se recarga con el menú |
+
+### Fallas encontradas y corregidas
+
+| # | Dónde | Falla | Estado |
+|---|---|---|---|
+| 11 | Padre → Fotos | Ignoraba el modo oscuro (fondo claro fijo con la barra oscura) y, sin fotos, quedaba vacía | Corregido: usa los colores del tema y dice «Todavía no hay fotos de Diego…» |
+| 12 | Padre → Calendario | Con modo oscuro, los números de los días sin registro casi no se leían; decía «1 días» | Corregido: color legible y plural («1 día con nota») |
+| 13 | Admin → Menú del día | El texto «Semana del 19 al 23 de octubre» casi no se veía en modo oscuro | Corregido: usa el color del tema |
+| 14 | Padre → Mi hijo | Al escribir en un campo, el teclado lo tapaba y la pantalla no subía | Corregido: `imePadding()` en el contenedor de navegación (`CodeaApp.kt`), para todas las pantallas |
+| 15 | Padre → Fotos y Hoy | No se refrescaban al entrar: una foto subida con la app abierta no salía hasta reabrirla | Corregido: se vuelve a pedir al entrar |
+| 16 | Padre → visor de fotos | La inicial de la maestra salía «R» (de «Robles») | Corregido: usa la inicial del nombre («K») |
+| 17 | Admin → Centro | Al publicar un aviso con imagen el botón solo se apagaba durante varios segundos | Corregido: dice «Publicando…» |
+
+### Notas del entorno (no son fallas de la app)
+
+- En el chat, la foto del 18/oct sale como un cuadro gris: el archivo no está en el almacén de esta máquina (la base de Aiven es compartida y cada quien tiene su propio SeaweedFS local); la URL firmada responde 404.
+- La prueba dejó datos en Aiven: un aviso con imagen, el menú del lunes 19, dos fotos de prueba (las dos borradas), la salida de Diego y Renata y el cierre de turno de Karla del 19/oct.
+
+### Falta recorrer
+
+Chat con foto (cámara y galería), el enlace de invitación y «Enviar por WhatsApp», Ajustes → Horario y → Personas autorizadas, ver lo que guarda la familia en la ficha del niño de la docente, el checador sin conexión y las marcas sin conexión.

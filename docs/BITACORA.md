@@ -242,3 +242,56 @@ Sin correos ni SMTP: el admin manda la invitación por WhatsApp y el padre solo 
 - **Salida visible (RF-03, API y app):** `GET /children/{id}/day` agrega al final de la línea de tiempo un evento `DEPARTURE` («Salida», «Lo recogió …») si la docente registró la salida; desaparece si la corrige. 1 prueba nueva.
 - **Borrado directo de fotos (RF-10, API y app):** `DELETE /media/{id}` (solo padre; 204). Borra del bucket y de las galerías, deja los reportes sin foto, resuelve la solicitud pendiente y queda en la bitácora (`MEDIA_DELETED_BY_FAMILY`). **Regla que apliqué, por confirmar con el equipo:** solo si todos los niños de la foto son hijos de quien borra; si no, `409 MEDIA_SHARED` y nadie lo puede resolver desde la app. En la app el botón «Pedir que se borre» pasó a «Borrar» con confirmación. 3 pruebas nuevas.
 - **Verificado:** `pytest` 324 en verde; `./gradlew :app:testDebugUnitTest` 125 pruebas, 0 fallas. La matriz de roles se regeneró (84 rutas). **Sin probar en un teléfono** (no había uno conectado).
+
+## 2026-10-19 · Hora de entrada del niño (RF-03) y pendiente de borrado de fotos
+
+- **Hora de entrada (API):** columna `attendance.arrived_at` (migración `b18e4d7a2c93`, **aplicada en Aiven** con permiso del usuario; Aiven queda en esa revisión). `PUT /attendance/{id}` la guarda al marcar presente: la del servidor, o la que manda la app (`arrived_at` con zona horaria) si la marca se hizo sin conexión; una hora en el futuro se ignora. Repetir `PRESENT` conserva la primera hora y `ABSENT` la borra. Sale en `AttendanceOut`, en `GET /classrooms/{id}/children` (`arrived_at`) y como primer evento `ARRIVAL` («Entrada») de `GET /children/{id}/day`. Las marcas anteriores quedan sin hora.
+- **Hora de entrada (app):** el pase de lista muestra «Entró a las 8:05» bajo el nombre; la cola sin conexión manda la hora en que se hizo cada marca (`PendingAttendance.createdAt`); la caché de Mi sala sube a la versión 4 de Room (`MIGRATION_3_4`, esquema `4.json`); en Hoy del padre el evento «Entrada» sale con el mismo punto verde que la llegada y la salida.
+- **Verificado:** `pytest` 332 en verde (8 pruebas nuevas en `test_arrival_time.py` y dos aserciones ajustadas); `./gradlew :app:testDebugUnitTest` 129 pruebas, 0 fallas; `assembleDebug` compila. Se comprobó con la API real contra Aiven que Mi sala devuelve `arrived_at`. **Sin probar en un teléfono.**
+- **Pendiente anotado a petición del usuario:** que el padre borre las fotos de sus hijos de una vez, sin aprobación de la docente ni del admin (ver `guarderia-api/PENDIENTES.md` y `FALTANTES.md`). Ya funciona para fotos solo de sus hijos; falta el caso de fotos con niños de otras familias.
+- **Sin commit:** los cambios están en el árbol de trabajo.
+
+## 2026-10-19 · Avisos con imagen (HN5)
+
+- **API:** columna `announcement.media_id` (migración `c63f9e5b3d04`, **aplicada en Aiven**; queda en esa revisión). `POST /announcements` acepta `{text?, media_id?, classroom_id?}`: texto, imagen o ambos (sin ninguno, `422 TEXT_REQUIRED`). La imagen debe ser del admin, estar lista y ser `image/*` (`422 MEDIA_NOT_VALID`; `404` si es de otra persona). `AnnouncementOut.media_url` es una URL firmada de 10 minutos y es `null` si el aviso no trae imagen o ya se borró. La imagen no tiene niños etiquetados, así que no aparece en la galería de ninguna familia.
+- **App:** Centro → «Agregar imagen» (selector de fotos del sistema) con vista previa, «Cambiar imagen» y «Quitar»; se comprime con `ImageCompressor` y se sube como `PHOTO`. El historial del admin, la lista de avisos de la docente y la campana de la familia muestran la imagen (`AvisoImagen`, con Coil). Un aviso solo de imagen no deja un texto vacío.
+- **Verificado:** `pytest` 338 en verde (6 pruebas nuevas en `test_announcement_images.py`); `./gradlew :app:testDebugUnitTest :app:assembleDebug` sin fallas. **Sin probar en un teléfono.**
+- **Sin commit:** los cambios siguen en el árbol de trabajo.
+
+## 2026-10-19 · El padre borra las fotos de una vez (RF-10) y se quita la revisión del admin
+
+- **Decisión (usuario):** el padre borra las fotos de sus hijos «de una», sin aprobación de la docente ni del admin, y basta con que salga un hijo suyo; si salen niños de otras familias, **se borra también para ellas** (propuesta mía, aprobada por el usuario).
+- **API:** `DELETE /media/{id}` ya no responde `409 MEDIA_SHARED`. Se quitaron `POST /media/{id}/deletion-request`, `GET /media/deletion-requests` y `…/approve` / `…/reject` (de 84 a **80 endpoints**; matriz de roles regenerada). La bitácora `MEDIA_DELETED_BY_FAMILY` guarda los niños que salían cuando la foto era compartida. La tabla `media_deletion_request` **se conserva sin uso** (no se hizo una migración que borre datos); decidir si se elimina.
+- **App:** se borraron `SolicitudesBorradoScreen`, `SolicitudesBorradoViewModel`, `SolicitudBorrado`, `AdminSolicitudesBorradoRoute`, el repositorio, los DTOs y los endpoints de Retrofit de la revisión. El botón «Borrar» del padre no cambió.
+- **Pruebas:** `test_media_deletion.py` se reescribió (5 pruebas: borra directo, foto con niños de otras familias, solo el padre del niño, bucket caído, las rutas de solicitud ya no existen); se ajustaron `test_media_documents.py` y `test_access_matrix.py`.
+- **Documentos:** `REQUISITOS` (RF-10 sigue 🟡 hasta verlo en un teléfono), `FALTANTES`, `ESTADO`, `PLAN-ACCION`, `PENDIENTES`, `endpoints.md`, README de `media`, `etica-legal` (Dilema 1 actualizado: ETL-27 baja a 🟡, ETL-28 se reescribe), `aviso-privacidad`, `clasificacion-datos`, `manual-usuario` y la matriz de trazabilidad.
+- **Sin commit:** los cambios siguen en el árbol de trabajo.
+- **Verificado:** `pytest` 323 en verde (bajó de 338 porque se quitaron las 9 pruebas de la revisión del admin y se reescribieron las de borrado); `./gradlew :app:testDebugUnitTest :app:assembleDebug` sin fallas. Aiven no necesita migración (no cambió el esquema). **Sin probar en un teléfono.**
+
+## 2026-10-19 · Menú del día (HN3)
+
+- **API:** módulo nuevo `menus` (tabla `daily_menu`, migración `d74a0f6c4e15`, **aplicada en Aiven**; queda en esa revisión). `GET /menus?start&end` (cualquier rol; sin fechas, el de hoy), `PUT /menus/{fecha}` y `DELETE /menus/{fecha}` (solo admin). Desayuno, comida y colación en texto libre (500 caracteres cada una, al menos una con texto). `GET /children/{id}/day` trae `menu`. Cambios y bajas en la bitácora (`MENU_SAVED`, `MENU_DELETED`). De 80 a **83 endpoints**; matriz de roles regenerada.
+- **App:** Ajustes → «Menú del día» (semana de lunes a viernes con botones de semana anterior y siguiente; cada día se agrega, edita o quita en un cuadro); tarjeta «Menú del día» en Hoy de la familia (`MenuCard`, con los colores del tema para claro y oscuro) y «Menú de hoy» al inicio de Mi día de la docente. Si no hay menú, no aparece nada. Las cuentas de fechas viven en `MenuRules` (sin `java.time`, por el minSdk 24).
+- **Decisiones que tomé** (avisadas al usuario antes de empezar, sin objeción): un menú por centro (no por sala), texto libre y no un catálogo de platillos, de lunes a viernes.
+- **Verificado:** `pytest` **336** en verde (8 pruebas nuevas en `test_daily_menu.py`); `./gradlew :app:testDebugUnitTest` **135** pruebas, 0 fallas (6 nuevas en `MenuRulesTest`); `assembleDebug` compila. Se comprobó con la API real contra Aiven que `GET /menus` responde 200. **Sin probar en un teléfono.**
+- **Requisitos:** HN3 pasa de ❌ a 🟡 (pasa a ✅ al verlo en un teléfono): ahora son 15 ✅ + 12 🟡 + 5 ❌, ~66 %. Con esto quedan hechos los cuatro puntos de «funciones que aún podemos meter antes del congelamiento»: hora de entrada, avisos con imagen, borrado directo de fotos y menú del día.
+- **Sin commit:** los cambios siguen en el árbol de trabajo.
+
+## 2026-10-19 · Túnel con dominio (dado por hecho)
+
+- El usuario avisó que **otro compañero ya está haciendo el túnel de Cloudflare con el dominio comprado** y pidió darlo por hecho. La decisión #7 queda aprobada. No se configuró nada en este repositorio ni se verificó: falta poner el dominio real en `PUBLIC_BASE_URL`, `S3_PUBLIC_ENDPOINT_URL` y `ANDROID_CERT_SHA256` (API) y en `API_BASE_URL_RELEASE` e `INVITE_HOST` (app). Documentos tocados: `DECISIONES-PENDIENTES`, `PENDIENTES`, `FALTANTES`, `ESTADO`, `plan-implantacion` y `administracion`.
+
+## 2026-10-19 (noche) · La base de producción será Aiven
+
+- **Decisión del usuario:** producción usa Aiven en lugar del Postgres local del servidor de Oscar. Cloudflare no cambia nada (el túnel solo enruta `api` y `storage`; la base se elige con `DATABASE_URL` en `.env.prod`).
+- **Verificado:** las 13 migraciones levantan una base vacía completa hasta `d74a0f6c4e15` (se probó en una base temporal del Postgres local y se borró). La base de producción actual de Oscar estaba vacía, así que no hay datos que mover.
+- **Documentado** en `guarderia-api/README.md` («La base de producción: Aiven») y en `plan-implantacion.md`. La base debe ser **aparte** de la de pruebas manuales y de la de pruebas automáticas.
+- **Pendiente de Oscar:** crear la base en Aiven, poner `DATABASE_URL` en su `.env.prod` y correr `alembic upgrade head`. No se tocó su servidor ni su `.env.prod`.
+
+## 2026-10-19 (noche) · Recorrido en el teléfono y correcciones
+
+- **Recorrido** (detalle en [`RECORRIDO.md`](RECORRIDO.md)): docente, padre y admin en un Pixel 8 Pro con modo oscuro. Se probaron la hora de entrada, el pase de salida completo con «Finalizar día», el menú del día, los avisos con imagen, «Mi hijo» y el borrado directo de fotos. **RF-03, RF-10, HN3 y HN5 pasan a ✅**: ahora son 19 ✅ + 8 🟡 + 5 ❌, ~72 %.
+- **Correcciones salidas del recorrido (fallas 11 a 17):** Fotos con colores del tema y mensaje sin fotos; números del calendario legibles en oscuro y «1 día»; etiqueta de la semana del menú legible; `imePadding()` global para que el teclado no tape los campos; Fotos y Hoy se refrescan al entrar; inicial de la maestra en el visor; «Publicando…» al subir un aviso.
+- **Causa de «No se pudo conectar»:** Gradle reutilizó la configuración sin `-PapiBaseUrl` y el APK quedó con `10.0.2.2`. Se compila con `--no-configuration-cache`. El `adb reverse` también se pierde al reinstalar.
+- **Ética:** ETL-27 pasa a ✅ (el borrado directo se vio en el teléfono); ETL-28 sigue en 🟡 por el aviso a las otras familias.
+- **Verificado:** `./gradlew :app:testDebugUnitTest` sin fallas y la app instalada en el teléfono. **Sin commit.**

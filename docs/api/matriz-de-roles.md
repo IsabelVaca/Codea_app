@@ -61,13 +61,12 @@ Quién puede llamar a cada endpoint. **Se genera leyendo las dependencias reales
 | POST | `/me/password` | ✅ | ✅ | ✅ | Sesión |
 | DELETE | `/me/sessions` | ✅ | ✅ | ✅ | Sesión |
 | GET | `/media` | ✅ | ✅ | ✅ | Sesión |
-| GET | `/media/deletion-requests` | ✅ | — | — | Por rol |
-| POST | `/media/deletion-requests/{request_id}/approve` | ✅ | — | — | Por rol |
-| POST | `/media/deletion-requests/{request_id}/reject` | ✅ | — | — | Por rol |
 | POST | `/media/uploads` | ✅ | ✅ | ✅ | Sesión |
 | DELETE | `/media/{media_id}` | — | — | ✅ | Por rol |
 | POST | `/media/{media_id}/complete` | ✅ | ✅ | ✅ | Sesión |
-| POST | `/media/{media_id}/deletion-request` | — | — | ✅ | Por rol |
+| GET | `/menus` | ✅ | ✅ | ✅ | Sesión |
+| DELETE | `/menus/{menu_date}` | ✅ | — | — | Por rol |
+| PUT | `/menus/{menu_date}` | ✅ | — | — | Por rol |
 | GET | `/parents` | ✅ | — | — | Por rol |
 | POST | `/parents` | ✅ | — | — | Por rol |
 | GET | `/parents/{parent_id}` | ✅ | — | — | Por rol |
@@ -93,7 +92,7 @@ Quién puede llamar a cada endpoint. **Se genera leyendo las dependencias reales
 | POST | `/teachers/{teacher_id}/reactivate` | ✅ | — | — | Por rol |
 | POST | `/users/{user_id}/access-code` | ✅ | — | — | Por rol |
 
-Total: 84 endpoints (8 públicos, 60 por rol, 16 con alcance por registro).
+Total: 83 endpoints (8 públicos, 58 por rol, 17 con alcance por registro).
 
 ## Cómo se regenera
 

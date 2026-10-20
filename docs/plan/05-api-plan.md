@@ -66,7 +66,7 @@ Ordenado por lo que más se nota en la app:
 | Worker | `app/workers/` con ARQ + Redis: quitar EXIF, miniaturas, correos, salida automática del checador | — |
 | Correo | Invitaciones y recuperación por correo (SMTP o un proveedor) | Activar cuenta, Recuperar contraseña |
 | Editar perfil | `PATCH /me` | Mi cuenta, Menú → Mi perfil |
-| Borrado de fotos | `GET /media/deletion-requests`, resolverlas, `DELETE /media/{id}` | Admin (pantalla nueva) |
+| Borrado de fotos | ~~`GET /media/deletion-requests`, resolverlas~~ (quitado el 19/oct), `DELETE /media/{id}` | Padre (borra directo) |
 | Pedir documentos | `POST /children/{id}/document-requests` | Admin (pantalla nueva) |
 | Ajustar rutina | `POST /classrooms/{id}/routine/moments`, `PATCH /routine-moments/{id}`, plantillas | `AjustarRutinaScreen` |
 | Salida del niño | `POST /attendance/check-in`, `/check-out` con persona autorizada | Momento "Entrega a familias" |

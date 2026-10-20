@@ -66,8 +66,8 @@ Cada requisito dice **cómo se comprueba** (una prueba, un comando, una inspecci
 
 | ID | Requisito | Cómo se verifica | Estado | Evidencia o hueco |
 |---|---|---|---|---|
-| ETL-27 | Una familia puede pedir que se borre una foto de su hijo desde la app. | Demostración: pantalla Fotos → «Pedir que se borre»; verificar la fila en `media_deletion_request`. Prueba del API: `POST /media/{id}/deletion-request` (idempotente). | ✅ | Existe el botón y el endpoint. |
-| ETL-28 | La solicitud de borrado se atiende en un plazo definido: el administrador la revisa y, si procede, el archivo se elimina del almacén. | Demostración de punta a punta: pedir el borrado como padre, abrir «Centro → Fotos que piden borrar» como administrador, borrar y comprobar que la URL ya no entrega la imagen. Pruebas de la API: `tests/test_media_deletion.py`. | 🟡 | Existe en la API (`GET /media/deletion-requests`, `…/approve`, `…/reject`; `Storage.delete` borra el objeto; bitácora `MEDIA_DELETION_APPROVED/REJECTED`) y en la app (`SolicitudesBorradoScreen`). **Falta** definir el plazo de atención, probarlo en un teléfono con una foto real (falla 10 de `RECORRIDO.md`) y resolver la foto de grupo. |
+| ETL-27 | Una familia puede borrar una foto de su hijo desde la app, sin pedirle permiso a nadie. | Demostración: pantalla Fotos → «Borrar» → confirmar; la foto desaparece de la galería y la URL ya no entrega la imagen. Pruebas de la API: `tests/test_media_deletion.py` (`DELETE /media/{id}`). | 🟡 | Existe el botón y el endpoint, con 5 pruebas automáticas; **falta verlo en un teléfono** con una foto real (cambio del 19/oct). |
+| ETL-28 | El borrado es inmediato: el archivo se elimina del almacén en el momento y queda constancia en la bitácora. | Pruebas de la API: `tests/test_media_deletion.py` (borra del bucket, sale de todas las galerías, queda `MEDIA_DELETED_BY_FAMILY`, si el bucket falla no se marca nada). | 🟡 | Cumple en la API. **Falta** probarlo en un teléfono con una foto real, y decidir cómo se avisa a las otras familias que salían en una foto de grupo (hoy no se les avisa). |
 | ETL-29 | Una persona puede corregir sus datos. | Demostración: editar nombre, teléfono o alergias desde la app. | ❌ | No hay edición de datos de cuenta ni de infante (P2 en `docs/plan/01-app-pantallas.md`). |
 | ETL-30 | Una persona puede obtener una copia de sus datos. | Demostración: exportación a PDF o JSON. | ❌ | No existe. |
 | ETL-31 | Hay una política de retención escrita y los datos se borran al vencer su plazo. | Inspección: documento aprobado + tarea de limpieza en el servidor (por ejemplo, un comando que borre `refresh_token` e `invitation` vencidos). | ❌ | La propuesta está en [`clasificacion-datos.md`](clasificacion-datos.md) y no está aprobada ni implementada. |
@@ -127,7 +127,7 @@ Cada dilema dice qué está en juego, las opciones, la **postura propuesta** y c
 - El plazo máximo de respuesta lo fija el centro **[completar por el equipo]**, y toda solicitud, aprobación o rechazo queda en la bitácora.
 - Un rechazo debe explicarse a la familia por escrito.
 
-**Actualización del 18/oct:** el equipo pidió que la familia borre directamente (`DELETE /media/{id}`): si en la foto salen solo sus hijos, se borra al momento; si salen niños de otras familias responde `409` y nadie puede decidirlo desde la app. Hay que reescribir este dilema con esa regla. Lo que sigue describe el sistema antes del cambio.
+**Actualización del 19/oct (decisión del equipo, que reemplaza la postura de arriba):** la familia borra **directamente** (`DELETE /media/{id}`), sin aprobación de la docente ni del administrador, y basta con que salga un hijo suyo. **Si en la foto salen niños de otras familias, también se borra para ellas** y no se les avisa. Se eligió la opción «la familia que aparece decide» sobre la «foto de grupo se atiende con el administrador»: es más sencilla y respeta de inmediato a quien pide retirar la imagen de su hijo, a costa de que otra familia pueda perder una foto que quería conservar. Se quitaron la solicitud, la revisión del administrador y el plazo de respuesta (ya no hay nada que esperar). Lo que sigue describe el sistema anterior al cambio.
 
 **Qué hace el sistema hoy (commit `8af6958`).** La familia pide el borrado desde la pantalla Fotos. El administrador ve la solicitud en **Centro → «Fotos que piden borrar»** (foto, niños etiquetados, quién la pidió, fecha y motivo) y elige **«Borrar la foto»** o **«Conservar»**. Al borrar, la app advierte: «Se borra del servidor y desaparece de las galerías de todas las familias. No se puede deshacer». En la API, aprobar elimina el objeto del almacén, marca la foto `DELETED`, deja los reportes con su texto pero sin la referencia a la imagen, resuelve las demás solicitudes de la misma foto y escribe `MEDIA_DELETION_APPROVED` en la bitácora; rechazar deja la foto y guarda una nota opcional (no se verificó que la pantalla permita escribirla ni que la familia la vea).
 
@@ -194,7 +194,7 @@ Eso cumple la postura para una foto de **un solo niño**. **Sigue sin resolver:*
 
 - Los reportes por incidente deben redactarse sin nombrar a otros niños («otro niño de la sala»), salvo que sea imprescindible y el centro lo autorice.
 - Las fotos de grupo solo se etiquetan con los niños que aparecen, y el centro debe informar a las familias de que sus hijos pueden aparecer en fotos que verán otras familias, al inscribirse **[consentimiento: ver ETL-02]**.
-- El administrador debería poder revisar las fotos de grupo que reciben solicitud de borrado (Dilema 1).
+- ~~El administrador debería poder revisar las fotos de grupo que reciben solicitud de borrado~~ (Dilema 1): desde el 19/oct la familia borra directo y no hay revisión.
 
 **Qué hace el sistema hoy.** No hay ninguna ayuda para esto: la descripción del reporte es un campo libre único (`report.description`) y la pantalla «¿A quién le pasó?» solo dice «Familias de X · coordinación de la estancia. El grupo no lo ve», sin advertir que cada familia leerá el mismo texto. Debe agregarse un aviso en la pantalla de reporte y una guía de redacción para las docentes.
 
@@ -207,7 +207,7 @@ Eso cumple la postura para una foto de **un solo niño**. **Sigue sin resolver:*
 | Responsable legal, domicilio y canal de privacidad | Aviso de privacidad |
 | Plazos de retención | Clasificación de datos, aviso |
 | Formato de consentimiento para datos de salud y de imagen, y dónde se guarda | ETL-02 |
-| Plazo y procedimiento para atender solicitudes de borrado | Dilema 1 |
+| ~~Plazo y procedimiento para atender solicitudes de borrado~~ (ya no aplica: el borrado es directo, 19/oct). Falta decidir si se avisa a las otras familias de una foto de grupo borrada | Dilema 1 |
 | Si se dejan de guardar las coordenadas de la checada | Dilema 2 |
 | Procedimiento de acceso excepcional a conversaciones | Dilema 3 |
 | Procedimiento ante una filtración de datos | ETL-33 |

@@ -4,7 +4,7 @@
 
 Versión del aviso: 0.1 · Fecha: 18 de octubre de 2026.
 
-> **Nota de estado (18-oct):** la revisión de solicitudes de borrado de fotos ya existe en la API y en la pantalla del administrador (commits `79deb06` y `8af6958`). No se ha probado en un teléfono con una foto real (`docs/RECORRIDO.md`, falla 10), y no define todavía un plazo de respuesta.
+> **Nota de estado (19-oct):** la familia borra directamente las fotos de su hijo desde la app, sin aprobación de nadie (`DELETE /media/{id}`); si en la foto salen niños de otras familias, se borra también para ellas. Se probó con pruebas automáticas, pero **no en un teléfono con una foto real**. Ya no hay solicitud ni plazo de respuesta.
 
 Documentos relacionados: [`clasificacion-datos.md`](clasificacion-datos.md) (campo por campo) y [`etica-legal.md`](etica-legal.md) (requisitos verificables y dilemas).
 
@@ -153,7 +153,7 @@ Propuesta de plazos para que el equipo la apruebe o corrija (no está implementa
 | Checadas del personal | Mientras dure la relación laboral y el plazo que la ley laboral exija **[verificar con asesoría legal]** |
 | Bitácora de auditoría | Entre 1 y 2 años **[completar por el equipo]** |
 | Tokens y códigos vencidos | 30 días después de vencer |
-| Archivos de solicitudes de borrado atendidas | De inmediato, en el bucket |
+| Fotos que la familia borra | De inmediato, en el bucket |
 
 ## 6. Cómo se protegen
 
@@ -167,7 +167,7 @@ Medidas que existen en el código:
 - Fotos y documentos no pasan por la API: se suben y se leen con direcciones firmadas de 5 y 10 minutos.
 - En el teléfono, los tokens se guardan cifrados con una llave del Android Keystore. La copia local de Mi sala se borra al terminar la sesión.
 - Cabeceras de seguridad y `Cache-Control: no-store` en la API; HSTS cuando el servidor no está en modo desarrollo.
-- Bitácora de auditoría de inicios de sesión y de altas, bajas, cambios del administrador, cambios a la ubicación del centro y decisiones sobre solicitudes de borrado de fotos.
+- Bitácora de auditoría de inicios de sesión y de altas, bajas, cambios del administrador, cambios a la ubicación del centro y borrados de fotos hechos por la familia.
 
 Medidas que **no** existen todavía (se dicen para no prometer de más):
 
