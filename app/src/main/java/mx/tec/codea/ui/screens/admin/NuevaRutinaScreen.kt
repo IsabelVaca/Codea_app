@@ -38,7 +38,7 @@ fun NuevaRutinaScreen(
             modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            BackHeader(overline = "Ajustes · Rutinas", title = "Nueva rutina", onBackClick = onBack)
+            BackHeader(title = "Nueva rutina", onBackClick = onBack)
             SeccionLabel("PASO 1 DE 3")
             SeccionLabel("NOMBRE")
             CampoTexto(nombre, onNombreChange, "Ej. Tarde tranquila")

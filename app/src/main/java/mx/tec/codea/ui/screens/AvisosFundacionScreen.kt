@@ -56,7 +56,6 @@ fun AvisosFundacionScreen(
             .padding(horizontal = 22.dp, vertical = 16.dp)
     ) {
     BackHeader(
-        overline = "Menú",
         title = "Avisos de la fundación",
         onBackClick = onBackClick,
     )

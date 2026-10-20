@@ -53,7 +53,6 @@ fun DocenteDetalleScreen(
             .padding(horizontal = 22.dp)
     ) {
         BackHeader(
-            overline = "Docentes",
             title = docente.nombre,
             onBackClick = onBack,
             modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
@@ -90,7 +89,7 @@ fun DocenteDetalleScreen(
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(docente.nombre, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
-                    Text("${docente.sala} · Checó ${docente.horaChecada}", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF5B4B8A))
+                    Text("${docente.sala} · ${docente.horaChecada?.let { "Checó $it" } ?: "Sin checar hoy"}", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF5B4B8A))
                 }
                 Box(
                     modifier = Modifier

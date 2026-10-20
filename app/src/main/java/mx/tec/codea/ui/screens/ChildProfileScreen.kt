@@ -92,7 +92,6 @@ fun ChildProfileScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         BackHeader(
-            overline = stringResource(R.string.profile_overline),
             title = child.name,
             onBackClick = onBackClick,
         )

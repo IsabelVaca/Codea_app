@@ -69,7 +69,6 @@ fun AccountScreen(
     ) {
         if (onBackClick != null) {
             BackHeader(
-                overline = stringResource(R.string.account_overline),
                 title = stringResource(R.string.account_title),
                 onBackClick = onBackClick,
             )

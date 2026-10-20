@@ -54,11 +54,8 @@ fun ResumenDelDiaScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         BackHeader(
-            overline = if (guidedPosition != null) {
-                stringResource(R.string.summary_guided_overline, guidedPosition, guidedTotal)
-            } else {
-                "Mi sala"
-            },
+            // en el recorrido guiado dice en cuál va ("Resumen 2 de 5"); fuera de él no lleva subtítulo.
+            overline = guidedPosition?.let { stringResource(R.string.summary_guided_overline, it, guidedTotal) },
             title = if (viewModel.nombre.isBlank()) "Resumen del día" else "Resumen de ${viewModel.nombre}",
             onBackClick = onBackClick,
         )

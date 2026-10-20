@@ -19,8 +19,8 @@ import mx.tec.codea.data.api.ApiConfig
 import mx.tec.codea.data.api.toUserMessage
 import mx.tec.codea.domain.Aviso
 
-// vive solo en la pantalla Centro.
-class CentroViewModel(application: Application) : AndroidViewModel(application) {
+// vive solo en la pestaña Avisos del admin.
+class AvisosAdminViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = AvisoApiRepository()
 

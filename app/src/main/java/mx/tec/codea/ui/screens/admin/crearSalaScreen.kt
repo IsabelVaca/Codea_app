@@ -65,7 +65,6 @@ fun CrearSalaScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         BackHeader(
-            overline = "Centro",
             title = "Crear sala",
             onBackClick = onBack,
         )

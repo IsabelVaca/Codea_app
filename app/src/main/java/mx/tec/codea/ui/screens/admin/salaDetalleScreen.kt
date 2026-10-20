@@ -76,7 +76,6 @@ fun SalaAdminDetalleScreen(
             .padding(horizontal = 22.dp)
     ) {
         BackHeader(
-            overline = "Centro",
             title = sala.nombre,
             onBackClick = onBack,
             modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),

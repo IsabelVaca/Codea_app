@@ -59,7 +59,6 @@ fun CheckInDoneScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         ScreenHeader(
-            overline = stringResource(R.string.checker_done_overline),
             title = stringResource(
                 if (record.isLate) R.string.checker_done_title_late else R.string.checker_done_title,
             ),

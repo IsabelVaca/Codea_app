@@ -3,7 +3,6 @@ package mx.tec.codea.ui.screens.admin
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,9 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import mx.tec.codea.ui.theme.Poppins
-import mx.tec.codea.ui.theme.CodeaTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.draw.clip
@@ -32,103 +29,163 @@ import androidx.compose.foundation.clickable
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import mx.tec.codea.domain.Docente
 import mx.tec.codea.domain.Infante
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import mx.tec.codea.domain.Sala
 import androidx.compose.ui.draw.shadow
-import mx.tec.codea.R
 import mx.tec.codea.ui.components.ScreenHeader
-import androidx.compose.ui.res.stringResource
 
+private enum class SeccionDocentes(val etiqueta: String) {
+    DOCENTES("Docentes"),
+    SALAS("Salas"),
+}
+
+// "Docentes" junta a las docentes y las salas (la ocupación que antes estaba en Centro).
+// arriba va el resumen de la lista elegida y el selector; se jala hacia abajo para recargar.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DocenteScreen(
     docentes: List<Docente>,
     infantes: List<Infante>,
-    totalSalas: Int,
+    salas: List<Sala>,
     onDocenteClick: (Docente) -> Unit = {},
-    onDarDeAltaAsistente: () -> Unit = {}
+    onDarDeAltaAsistente: () -> Unit = {},
+    onSalaClick: (Sala) -> Unit = {},
+    onCrearSala: () -> Unit = {},
+    cargando: Boolean = false,
+    onRecargar: () -> Unit = {},
 ){
+    // al volver de un detalle (o de crear una sala) se queda en la lista donde estaba.
+    var seleccion by rememberSaveable { mutableIntStateOf(SeccionDocentes.DOCENTES.ordinal) }
+    val seccion = SeccionDocentes.entries[seleccion]
+
     Scaffold(
         topBar = {
             ScreenHeader(
-                overline = stringResource(R.string.admin_overline),
                 title = "Docentes",
                 modifier = Modifier.padding(horizontal = 22.dp, vertical = 16.dp),
             )
         },
         content = { paddingValues ->
-            Column(
+            PullToRefreshBox(
+                isRefreshing = cargando,
+                onRefresh = onRecargar,
                 modifier = Modifier
                     .padding(paddingValues)
                     .fillMaxSize()
             ) {
-                Surface(
-                    modifier = Modifier.fillMaxWidth(1f).padding(vertical = 3.dp, horizontal = 15.dp),
-                    color = Color(red = 254, green = 245, blue = 217),
-                    shape = RoundedCornerShape(18.dp)
-                ){
-                    Column {
-                        Text(
-                            text = "${docentes.size}",
-                            modifier = Modifier.padding(
-                                horizontal = 14.dp,
-                                vertical = 5.dp
-                            ).padding(top = 12.dp),
-                            color = Color(red = 171, green = 129, blue = 44),
-                            fontSize = 24.sp,
-                            fontFamily = Poppins,
-                            fontWeight = FontWeight.Bold
-                        )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                // DocenteCard trae 15 dp de margen lateral propio: lo demás usa los mismos 15 dp.
+                val lateral = Modifier.padding(horizontal = 15.dp)
 
-                        Text(
-                            text = "Docentes activos en $totalSalas salas",
-                            modifier = Modifier.padding(
-                                horizontal = 14.dp,
-                                vertical = 2.dp
-
-                            ).padding(bottom = 12.dp),
-                            color = Color(red = 143, green = 125, blue = 82),
-                            fontSize = 14.sp,
-                            fontFamily = Poppins,
-                            fontWeight = FontWeight.Bold
+                when (seccion) {
+                    SeccionDocentes.DOCENTES -> {
+                        val activas = docentes.count { !it.baja }
+                        val checaron = docentes.count { !it.baja && it.horaChecada != null }
+                        ResumenDocentes(
+                            numero = "$activas",
+                            linea = "Docentes activos en ${salas.size} salas",
+                            detalle = "$checaron de $activas checaron hoy",
+                            modifier = lateral,
                         )
                     }
-
-
-
+                    SeccionDocentes.SALAS -> {
+                        val nombres = salas.map { it.nombre }.toSet()
+                        val inscritos = infantes.count { it.sala in nombres }
+                        ResumenDocentes(
+                            numero = "${salas.size}",
+                            linea = "Salas en el centro",
+                            detalle = "$inscritos de ${salas.sumOf { it.cupoMaximo }} lugares ocupados",
+                            modifier = lateral,
+                        )
+                    }
                 }
 
-                Text(text = "DOCENTES ACTIVOS",
-                    modifier = Modifier.padding(
-                        horizontal = 19.dp,
-                        vertical = 2.dp
-
-                    ).padding(top = 7.dp, bottom = 7.dp), color = Color(red = 138, green = 128, blue = 165),
-                    fontSize = 14.sp,
-                    fontFamily = Poppins,
-                    fontWeight = FontWeight.Bold)
-
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(docentes) { docente ->
-                        val ninosDelDocente = infantes.count { it.sala == docente.sala }
-                        DocenteCard(docente = docente, ninosEnSala = ninosDelDocente, onClick = { onDocenteClick(docente) })
+                SingleChoiceSegmentedButtonRow(modifier = lateral.fillMaxWidth()) {
+                    SeccionDocentes.entries.forEachIndexed { i, s ->
+                        SegmentedButton(
+                            selected = seccion == s,
+                            onClick = { seleccion = i },
+                            shape = SegmentedButtonDefaults.itemShape(index = i, count = SeccionDocentes.entries.size),
+                        ) { Text(s.etiqueta, fontFamily = Poppins, fontWeight = FontWeight.Bold) }
                     }
+                }
 
-                    item {
+                when (seccion) {
+                    SeccionDocentes.DOCENTES -> {
+                        Box(modifier = lateral) { SeccionLabel("DOCENTES ACTIVOS") }
+                        Column {
+                            docentes.forEach { docente ->
+                                val ninosDelDocente = infantes.count { it.sala == docente.sala }
+                                DocenteCard(docente = docente, ninosEnSala = ninosDelDocente, onClick = { onDocenteClick(docente) })
+                            }
+                        }
                         DarDeAltaAsistenteButton(
                             onClick = onDarDeAltaAsistente,
-                            modifier = Modifier.padding(horizontal = 15.dp, vertical = 8.dp)
+                            modifier = lateral.padding(vertical = 8.dp)
                         )
                     }
-
+                    SeccionDocentes.SALAS -> SalasSeccion(
+                        salas = salas,
+                        infantes = infantes,
+                        onSalaClick = onSalaClick,
+                        onCrearSala = onCrearSala,
+                        modifier = lateral.padding(bottom = 16.dp),
+                    )
                 }
+            }
             }
         }
     )
+}
+
+// la tarjeta amarilla de arriba: un número grande, qué cuenta y un detalle del día.
+@Composable
+private fun ResumenDocentes(numero: String, linea: String, detalle: String, modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier.fillMaxWidth().padding(vertical = 3.dp),
+        color = Color(red = 254, green = 245, blue = 217),
+        shape = RoundedCornerShape(18.dp)
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
+            Text(
+                text = numero,
+                color = Color(red = 171, green = 129, blue = 44),
+                fontSize = 24.sp,
+                fontFamily = Poppins,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = linea,
+                color = Color(red = 143, green = 125, blue = 82),
+                fontSize = 14.sp,
+                fontFamily = Poppins,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = detalle,
+                color = Color(red = 143, green = 125, blue = 82),
+                fontSize = 12.sp,
+                fontFamily = Poppins,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+    }
 }
 
 @Composable
@@ -205,15 +262,17 @@ fun DocenteCard(docente: Docente, ninosEnSala: Int, onClick: () -> Unit = {}) {
 
             }
 
+            // sin checada todavía: la pastilla va en gris.
+            val checo = docente.horaChecada != null
             Surface(
                 modifier = Modifier.padding(end = 9.dp),
-                color = Color(0xFFEDE9FE),
+                color = if (checo) Color(0xFFEDE9FE) else Color(0xFFF4F1FB),
                 shape = RoundedCornerShape(percent = 50)
             ) {
                 Text(
-                    text = "Checó ${docente.horaChecada}",
+                    text = docente.horaChecada?.let { "Checó $it" } ?: "Sin checar",
                     modifier = Modifier.padding(horizontal = 9.dp, vertical = 3.dp),
-                    color = Color(0xFF6D28D9),
+                    color = if (checo) Color(0xFF6D28D9) else Color(0xFFA79BBF),
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 12.sp
                 )

@@ -295,3 +295,11 @@ Sin correos ni SMTP: el admin manda la invitación por WhatsApp y el padre solo 
 - **Causa de «No se pudo conectar»:** Gradle reutilizó la configuración sin `-PapiBaseUrl` y el APK quedó con `10.0.2.2`. Se compila con `--no-configuration-cache`. El `adb reverse` también se pierde al reinstalar.
 - **Ética:** ETL-27 pasa a ✅ (el borrado directo se vio en el teléfono); ETL-28 sigue en 🟡 por el aviso a las otras familias.
 - **Verificado:** `./gradlew :app:testDebugUnitTest` sin fallas y la app instalada en el teléfono. **Sin commit.**
+
+## 2026-10-19 (noche) · Admin: Centro pasa a Avisos y las salas a Docentes; sin sobretítulos
+
+- **Pestaña Avisos** (antes «Centro»): solo publicar el aviso y el historial. Ícono de megáfono. Ruta `AdminAvisosGraph`, pantalla `avisosAdminScreen.kt`, ViewModel `AvisosAdminViewModel`. Sigue siendo la primera pestaña del admin.
+- **Docentes con selector Docentes | Salas** (como Familias). Salas trae la ocupación que estaba en Centro y «+ Crear sala»; el detalle de sala y crear sala ahora cuelgan de `AdminDocentesGraph`, así que la barra se queda en «Docentes».
+- **Por la checada de Paola que no aparecía:** la lista de docentes solo se recargaba con cambios hechos desde el mismo teléfono; la checada llega desde el teléfono de la docente. Ahora se vuelve a pedir al abrir la pestaña y se puede jalar hacia abajo para recargar. Quien no ha checado dice «Sin checar» (antes «Checó --:--»). El resumen dice cuántas checaron hoy; el de Salas, los lugares ocupados.
+- **Sin sobretítulos:** a pedido del usuario se quitó la línea gris de arriba («Estancia La Oruga · Administración», «Familias», «Ajustes · Rutinas»…) en las pantallas de los tres perfiles, también en Hoy y Fotos del padre. Se dejó solo donde lleva un dato (reporte, elegir niños, resumen guiado, Mi día y el chat de la docente). Se borraron 10 textos sin uso de `strings.xml`.
+- **Verificado:** `assembleDebug` y `./gradlew test` en verde; en el emulador se vieron Avisos y Docentes → Salas. No se probó la lista de docentes, jalar para recargar ni abrir una sala (el emulador se estaba usando a la vez).

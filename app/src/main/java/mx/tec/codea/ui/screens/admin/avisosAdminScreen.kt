@@ -1,15 +1,12 @@
 package mx.tec.codea.ui.screens.admin
 
 import android.net.Uri
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,25 +16,18 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MenuAnchorType
-import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,34 +42,27 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import mx.tec.codea.domain.Aviso
-import mx.tec.codea.domain.Infante
 import mx.tec.codea.domain.Sala
-import mx.tec.codea.ui.theme.CodeaTheme
 import mx.tec.codea.ui.theme.Poppins
-import mx.tec.codea.ui.theme.salaColor
-import mx.tec.codea.R
 import mx.tec.codea.ui.components.AvisoImagen
 import mx.tec.codea.ui.components.ScreenHeader
 import mx.tec.codea.ui.components.rememberPickPhoto
-import androidx.compose.ui.res.stringResource
 
+// la pestaña Avisos del admin: publicar un aviso (a todas las salas o a una) y ver el historial.
+// antes era "Centro" y también tenía la ocupación de salas, que ahora vive en Docentes → Salas.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CentroScreen(
-    salas: List<Sala>,
-    infantes: List<Infante>,
-    onSalaClick: (Sala) -> Unit = {},
+fun AvisosAdminScreen(
+    salas: List<Sala>,                       // para elegir el destino del aviso
     avisoTexto: String,
     onAvisoTextoChange: (String) -> Unit,
     avisoFoto: Uri? = null,                  // la imagen elegida para el aviso
     onAvisoFotoChange: (Uri?) -> Unit = {},
     onPublicarAviso: () -> Unit,
-    onCrearSala: () -> Unit,
     canPublicarAviso: Boolean,
     publicando: Boolean = false,             // el aviso se está subiendo (con imagen puede tardar unos segundos)
     destinoSalaId: String? = null,           // null = todas las salas
@@ -92,8 +75,7 @@ fun CentroScreen(
     Scaffold(
         topBar = {
             ScreenHeader(
-                overline = stringResource(R.string.admin_overline),
-                title = "Centro",
+                title = "Avisos",
                 modifier = Modifier.padding(horizontal = 22.dp, vertical = 16.dp),
             )
         },
@@ -110,58 +92,6 @@ fun CentroScreen(
             modifier = Modifier.verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            SeccionLabel("Ocupación de salas")
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                salas.forEach { sala ->
-                    val ninosActuales = infantes.count { it.sala == sala.nombre }
-                    val ocupacion = if (sala.cupoMaximo > 0) ninosActuales / sala.cupoMaximo.toFloat() else 0f
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .shadow(
-                                elevation = 6.dp,
-                                shape = RoundedCornerShape(22.dp),
-                                ambientColor = Color.Black.copy(alpha = 0.12f),
-                                spotColor = Color.Black.copy(alpha = 0.12f)
-                            )
-                            .clip(RoundedCornerShape(22.dp))
-                            .background(Color.White)
-                            .clickable { onSalaClick(sala) }
-                            .padding(14.dp),
-                        verticalArrangement = Arrangement.spacedBy(9.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(sala.nombre, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
-                            Text("$ninosActuales/${sala.cupoMaximo} niños", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF5B3FE0))
-                        }
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(9.dp)
-                                .clip(RoundedCornerShape(999.dp))
-                                .background(Color(0xFFF4F1FB))
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth(ocupacion)
-                                    .fillMaxHeight()
-                                    .clip(RoundedCornerShape(999.dp))
-                                    .background(salaColor(sala.id))
-                            )
-                        }
-                        Text(sala.asistente, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFFA79BBF))
-                    }
-                }
-            }
-
-            CrearSalaButton(
-                onClick = onCrearSala,
-                modifier = Modifier.padding(top = 2.dp)
-            )
-
             SeccionLabel("Publicar aviso del centro")
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 DestinoDropdown(
@@ -192,7 +122,7 @@ fun CentroScreen(
             if (avisos.isEmpty()) {
                 Text(
                     "Todavía no se ha publicado ningún aviso.",
-                    fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = CentroColores.Gris
+                    fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = AvisosColores.Gris
                 )
             }
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -206,7 +136,7 @@ fun CentroScreen(
     )
 }
 
-private object CentroColores {
+private object AvisosColores {
     val Ink = Color(0xFF2A2140)
     val Violeta = Color(0xFF5B3FE0)
     val VioletaSuave = Color(0xFFEFE9FF)
@@ -234,13 +164,13 @@ private fun DestinoDropdown(
                 .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(18.dp))
-                .background(CentroColores.Campo)
+                .background(AvisosColores.Campo)
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(etiqueta, fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = CentroColores.Ink)
-            Icon(Icons.Filled.KeyboardArrowDown, contentDescription = null, tint = CentroColores.Violeta)
+            Text(etiqueta, fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = AvisosColores.Ink)
+            Icon(Icons.Filled.KeyboardArrowDown, contentDescription = null, tint = AvisosColores.Violeta)
         }
         ExposedDropdownMenu(
             expanded = abierto,
@@ -248,12 +178,12 @@ private fun DestinoDropdown(
             modifier = Modifier.background(Color.White)
         ) {
             DropdownMenuItem(
-                text = { Text("Para todos · todas las salas", fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = CentroColores.Ink) },
+                text = { Text("Para todos · todas las salas", fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = AvisosColores.Ink) },
                 onClick = { onSeleccion(null); abierto = false }
             )
             salas.forEach { sala ->
                 DropdownMenuItem(
-                    text = { Text("Solo ${sala.nombre}", fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = CentroColores.Ink) },
+                    text = { Text("Solo ${sala.nombre}", fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = AvisosColores.Ink) },
                     onClick = { onSeleccion(sala.id); abierto = false }
                 )
             }
@@ -266,8 +196,8 @@ private fun CampoAviso(valor: String, onCambio: (String) -> Unit, placeholder: S
     BasicTextField(
         value = valor,
         onValueChange = onCambio,
-        textStyle = TextStyle(fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = CentroColores.Ink),
-        cursorBrush = SolidColor(CentroColores.Violeta),
+        textStyle = TextStyle(fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = AvisosColores.Ink),
+        cursorBrush = SolidColor(AvisosColores.Violeta),
         modifier = Modifier.fillMaxWidth(),
         decorationBox = { interno ->
             Box(
@@ -275,11 +205,11 @@ private fun CampoAviso(valor: String, onCambio: (String) -> Unit, placeholder: S
                     .fillMaxWidth()
                     .heightIn(min = 84.dp)
                     .clip(RoundedCornerShape(18.dp))
-                    .background(CentroColores.Campo)
+                    .background(AvisosColores.Campo)
                     .padding(horizontal = 16.dp, vertical = 14.dp)
             ) {
                 if (valor.isEmpty()) {
-                    Text(placeholder, fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = CentroColores.Gris)
+                    Text(placeholder, fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = AvisosColores.Gris)
                 }
                 interno()
             }
@@ -292,7 +222,7 @@ private fun CampoAviso(valor: String, onCambio: (String) -> Unit, placeholder: S
 private fun FotoDelAviso(foto: Uri?, onElegir: () -> Unit, onQuitar: () -> Unit) {
     if (foto == null) {
         TextButton(onClick = onElegir, modifier = Modifier.fillMaxWidth()) {
-            Text("Agregar imagen", fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = CentroColores.Violeta)
+            Text("Agregar imagen", fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AvisosColores.Violeta)
         }
         return
     }
@@ -305,14 +235,14 @@ private fun FotoDelAviso(foto: Uri?, onElegir: () -> Unit, onQuitar: () -> Unit)
                 .fillMaxWidth()
                 .height(160.dp)
                 .clip(RoundedCornerShape(18.dp))
-                .background(CentroColores.Campo)
+                .background(AvisosColores.Campo)
         )
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             TextButton(onClick = onElegir) {
-                Text("Cambiar imagen", fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = CentroColores.Violeta)
+                Text("Cambiar imagen", fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AvisosColores.Violeta)
             }
             TextButton(onClick = onQuitar) {
-                Text("Quitar", fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = CentroColores.Gris)
+                Text("Quitar", fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AvisosColores.Gris)
             }
         }
     }
@@ -340,47 +270,19 @@ private fun AvisoCard(aviso: Aviso) {
                 aviso.destino ?: "Todas las salas",
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
-                    .background(if (paraTodos) CentroColores.VioletaSuave else CentroColores.VerdeSuave)
+                    .background(if (paraTodos) AvisosColores.VioletaSuave else AvisosColores.VerdeSuave)
                     .padding(horizontal = 11.dp, vertical = 5.dp),
                 fontFamily = Poppins, fontWeight = FontWeight.ExtraBold, fontSize = 11.sp,
-                color = if (paraTodos) CentroColores.Violeta else CentroColores.Verde
+                color = if (paraTodos) AvisosColores.Violeta else AvisosColores.Verde
             )
-            Text(aviso.fecha, fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 11.sp, color = CentroColores.Gris)
+            Text(aviso.fecha, fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 11.sp, color = AvisosColores.Gris)
         }
         if (aviso.texto.isNotBlank()) {
             Text(
                 aviso.texto, fontFamily = Poppins, fontWeight = FontWeight.SemiBold,
-                fontSize = 14.sp, lineHeight = 21.sp, color = CentroColores.Ink
+                fontSize = 14.sp, lineHeight = 21.sp, color = AvisosColores.Ink
             )
         }
         aviso.imagenUrl?.let { AvisoImagen(it) }
     }
 }
-
-@Composable
-fun CrearSalaButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Button(
-        onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(52.dp),
-        shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(2.dp, Color(0xFFEDE9FE)),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFFEDE9FE),
-            contentColor = Color(0xFF6D28D9)
-        ),
-        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
-    ) {
-        Text(
-            text = "+ Crear sala",
-            fontSize = 15.sp,
-            fontFamily = Poppins,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
-

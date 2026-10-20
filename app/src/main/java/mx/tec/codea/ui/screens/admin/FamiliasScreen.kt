@@ -35,9 +35,7 @@ import androidx.compose.ui.unit.sp
 import mx.tec.codea.domain.Infante
 import mx.tec.codea.domain.Padre
 import mx.tec.codea.ui.theme.Poppins
-import mx.tec.codea.R
 import mx.tec.codea.ui.components.ScreenHeader
-import androidx.compose.ui.res.stringResource
 
 // las dos mitades de la pantalla: los niños y las personas que los recogen.
 private enum class SeccionFamilias(val etiqueta: String) {
@@ -65,7 +63,6 @@ fun FamiliasScreen(
 
     Scaffold(
         topBar = { ScreenHeader(
-                overline = stringResource(R.string.admin_overline),
                 title = "Familias",
                 modifier = Modifier.padding(horizontal = 22.dp, vertical = 16.dp),
             ) },
