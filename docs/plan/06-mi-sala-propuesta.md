@@ -2,6 +2,8 @@
 
 > **Estado (18 de octubre de 2026): implementado**, pendiente de revisar en el teléfono. Ver [Decisiones tomadas](#decisiones-tomadas) y la entrada de la [bitácora](../BITACORA.md). El resto del documento es la propuesta tal como se revisó.
 
+> **Actualización (19 de octubre de 2026):** la disposición de la pantalla se rehízo (cuadrícula de fichas, avisos en un bloque, filtros en una barra, barra fija de «Capturar resúmenes», dos colores). El diagrama de la sección 4 es el de la primera versión; lo vigente está en la [bitácora](../BITACORA.md) del 19 de octubre y en `MyRoomScreen.kt`.
+
 Propuesta del 18 de octubre de 2026. Este documento se escribió para revisarlo y cambiarlo antes de escribir código.
 
 Sigue las convenciones de [`../estilo.md`](../estilo.md) y complementa a [`01-app-pantallas.md`](01-app-pantallas.md).

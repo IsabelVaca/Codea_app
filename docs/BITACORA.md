@@ -295,3 +295,18 @@ Sin correos ni SMTP: el admin manda la invitación por WhatsApp y el padre solo 
 - **Causa de «No se pudo conectar»:** Gradle reutilizó la configuración sin `-PapiBaseUrl` y el APK quedó con `10.0.2.2`. Se compila con `--no-configuration-cache`. El `adb reverse` también se pierde al reinstalar.
 - **Ética:** ETL-27 pasa a ✅ (el borrado directo se vio en el teléfono); ETL-28 sigue en 🟡 por el aviso a las otras familias.
 - **Verificado:** `./gradlew :app:testDebugUnitTest` sin fallas y la app instalada en el teléfono. **Sin commit.**
+
+## 2026-10-19 (noche) · Mi sala de la docente, rediseño de la disposición
+
+- **Qué pidió el usuario:** rehacer Mi sala por completo (disposición y forma de mostrar la información, no solo el estilo), con los mismos datos de hoy y sin componentes de más; libertad para no copiar a las otras pantallas; menos colores; fuera los patrones «de IA» (línea chica sobre el título, títulos en mayúsculas con espaciado, `·` entre palabras, etiquetas tipo píldora, punto flotante sobre el chat). Una primera versión solo cambió colores y tipografía y la estructura quedó igual: el usuario lo rechazó («me refería también a la disposición de elementos»). La versión que quedó cambia la estructura.
+- **Disposición nueva** (`MyRoomScreen.kt`, una cuadrícula con `LazyVerticalGrid`):
+  - Encabezado en una franja: sala y fecha a la izquierda, «4 de 4 / niños hoy» a la derecha.
+  - «De casa hoy»: los avisos juntos en un solo bloque ámbar, separados por una línea; «Ver todos (n)» al pie del bloque. «Responder» y «Ya lo vi» son botones de texto de 48 dp.
+  - «Los niños»: una barra de filtros de una pieza (número arriba, nombre abajo; el elegido con borde, no solo con color) y una ficha por niño en cuadrícula, con avatar, atajo al chat, primer nombre grande y apellidos debajo, y los estados con icono y texto. La ficha que espera algo (aviso sin ver o chat sin leer) lleva borde ámbar; la del ausente se ve apagada.
+  - «Capturar resúmenes (n)» pasó a una **barra fija abajo**, siempre a la vista (antes era un botón dentro de la lista).
+  - «Ausentes hoy» sigue plegado al final, con las mismas fichas apagadas.
+- **Colores:** de seis a dos con significado. Violeta = lo que se toca (botones, filtro elegido, avatares, palomitas); ámbar = lo que espera a la docente (avisos, chat sin leer, cambios sin enviar). Todo lo demás es neutro. Se quitaron el verde, el coral y los cuatro colores de avatar. El texto secundario es la tinta con 68 % de opacidad (contraste ≥ 5:1 en claro y ≥ 8:1 en oscuro).
+- **Pantallas anchas:** el contenido se centra en una columna de 640 dp como máximo y la cuadrícula pasa de 2 a 3 columnas. El dispositivo de pruebas resultó ser de 1200×2000 a 240 dpi (800 dp de ancho), así que esto se vio en el dispositivo real.
+- **Textos (`strings.xml`):** sin `·` ni guiones entre palabras («Sala Maternal», conteos aparte del nombre del filtro); «Resumen pendiente» pasó a «Sin resumen» (igual que el filtro y cabe en la ficha); el aviso de cambios sin enviar son dos oraciones. `my_room_today_line` se reemplazó por `my_room_present_count` y `my_room_present_label`.
+- **No se tocaron** `NoticeCard`, `InitialsAvatar` ni `ScreenHeader`: los usan «Avisos de casa», el Menú y otras pantallas, que se rehacen aparte. Mi sala tiene sus propios componentes privados.
+- **Verificado:** compila e instalado en el dispositivo; con datos de ejemplo (sin tocar el servidor) se dibujaron los estados claro, oscuro, tableta, «nadie ha pasado lista» y ausentes abiertos; `./gradlew :app:testDebugUnitTest` 135 pruebas, 0 fallas. La prueba instrumentada de capturas era temporal y se borró. **Sin commit.**
