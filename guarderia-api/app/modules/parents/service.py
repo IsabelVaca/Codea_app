@@ -10,10 +10,10 @@ from app.core.security import revoke_all_sessions
 from app.modules.audit import service as audit
 from app.modules.auth import service as auth
 from app.modules.auth.models import AppUser, Invitation, Role, UserStatus
-from app.modules.children.models import Child
+from app.modules.children.models import Child, ChildStatus
 
 from .models import Parent, ParentChildRel, Relationship
-from .schemas import ParentChild, ParentCreate, ParentOut
+from .schemas import ParentChild, ParentCreate, ParentLinkChildren, ParentOut
 
 
 async def link_guardian(
@@ -99,6 +99,19 @@ async def _rows(db: AsyncSession, parent_id: uuid.UUID | None = None) -> list[Pa
     return result
 
 
+async def _active_children(db: AsyncSession, child_ids: list[int]) -> list[Child]:
+    """Los niños por id: todos tienen que existir y estar inscritos (no dados de baja)."""
+    ids = set(child_ids)
+    if not ids:
+        raise ApiError(422, "CHILDREN_REQUIRED", "Elige al menos un hijo")
+    children = (await db.scalars(select(Child).where(Child.id.in_(ids)))).all()
+    if len(children) != len(ids):
+        raise ApiError(404, "CHILD_NOT_FOUND", "No existe ese niño")
+    if any(child.status != ChildStatus.ACTIVE for child in children):
+        raise ApiError(422, "CHILD_INACTIVE", "Ese niño está dado de baja")
+    return list(children)
+
+
 async def list_parents(db: AsyncSession) -> list[ParentOut]:
     return await _rows(db)
 
@@ -115,11 +128,7 @@ async def create_parent(db: AsyncSession, data: ParentCreate, actor_id: uuid.UUI
     name = rules.require_name(data.name)
     phone = rules.check_phone(data.phone)
     email = rules.check_email(data.email)
-    if not data.child_ids:
-        raise ApiError(422, "CHILDREN_REQUIRED", "Elige al menos un hijo")
-    children = (await db.scalars(select(Child).where(Child.id.in_(set(data.child_ids))))).all()
-    if len(children) != len(set(data.child_ids)):
-        raise ApiError(404, "CHILD_NOT_FOUND", "No existe ese niño")
+    children = await _active_children(db, data.child_ids)
     existing = await db.scalar(select(AppUser).where(AppUser.email == email))
     if existing is not None and await db.get(Parent, existing.id) is not None:
         raise ApiError(409, "EMAIL_TAKEN", "Ya hay un padre o tutor con ese correo")
@@ -145,6 +154,31 @@ async def create_parent(db: AsyncSession, data: ParentCreate, actor_id: uuid.UUI
     out = await get_parent(db, user.id)
     out.access_code = access_code
     return out
+
+
+async def link_children(
+    db: AsyncSession, parent_id: uuid.UUID, data: ParentLinkChildren, actor_id: uuid.UUID | None = None
+) -> ParentOut:
+    """Liga más hijos a un padre que ya existe. Los que ya estaban ligados se ignoran.
+    No crea invitación nueva: si todavía no activa su cuenta, el código que ya tiene sigue sirviendo
+    (por eso no usa link_guardian, que la crearía y dejaría sin vigencia la anterior)."""
+    await _get_user(db, parent_id)
+    children = await _active_children(db, data.child_ids)
+    links = (await db.scalars(select(ParentChildRel).where(ParentChildRel.parent_id == parent_id))).all()
+    relationship = data.relationship or (links[0].relationship if links else None)
+    if relationship is None:
+        raise ApiError(422, "RELATIONSHIP_REQUIRED", "Elige el parentesco")
+    linked = {link.child_id for link in links}
+    added = [child.id for child in children if child.id not in linked]
+    for child_id in added:
+        db.add(ParentChildRel(parent_id=parent_id, child_id=child_id, relationship=relationship, is_primary=False))
+    if added:
+        audit.record(
+            db, audit.USER_UPDATED, actor_id=actor_id, entity_type="USER", entity_id=parent_id,
+            detail={"role": "PARENT", "linked_children": sorted(added)},
+        )
+    await db.commit()
+    return await get_parent(db, parent_id)
 
 
 async def _get_user(db: AsyncSession, parent_id: uuid.UUID) -> AppUser:

@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,6 +23,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,11 +38,15 @@ import mx.tec.codea.ui.theme.AvatarBg
 import mx.tec.codea.ui.theme.AvatarFg
 import mx.tec.codea.ui.theme.Poppins
 import mx.tec.codea.ui.components.BackHeader
+import mx.tec.codea.ui.components.PersonasMultiDropdown
 
 @Composable
 fun PadreDetalleScreen(
     padre: Padre,
     hijosNombres: List<String>,
+    // niños inscritos (activos) que todavía no están ligados a este padre: (id, nombre).
+    hijosParaVincular: List<Pair<String, String>> = emptyList(),
+    onVincularHijos: (List<String>) -> Unit = {},
     onToggleAcceso: () -> Unit,
     onReenviarInvitacion: () -> Unit,
     onBack: () -> Unit,
@@ -101,6 +109,30 @@ fun PadreDetalleScreen(
                 InfoTarjeta("HIJOS INSCRITOS", hijosNombres.joinToString(", "))
             }
 
+            if (hijosParaVincular.isNotEmpty()) {
+                SeccionLabel("VINCULAR A OTRO NIÑO")
+                // lo elegido vive solo en esta pantalla; se limpia al vincular.
+                val elegidos = remember { mutableStateListOf<String>() }
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    PersonasMultiDropdown(
+                        opciones = hijosParaVincular,
+                        seleccionados = elegidos,
+                        onToggle = { id -> if (id in elegidos) elegidos.remove(id) else elegidos.add(id) },
+                        placeholder = "Elige uno o más niños",
+                    )
+                    BotonAccionPadre(
+                        texto = if (elegidos.size > 1) "Vincular a ${elegidos.size} niños" else "Vincular",
+                        bg = Color(0xFFEDE9FE),
+                        fg = Color(0xFF6D28D9),
+                        onClick = {
+                            onVincularHijos(elegidos.toList())
+                            elegidos.clear()
+                        },
+                        enabled = elegidos.isNotEmpty(),
+                    )
+                }
+            }
+
             SeccionLabel("ACCIONES")
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (padre.conAcceso) {
@@ -110,6 +142,9 @@ fun PadreDetalleScreen(
                 }
                 BotonAccionPadre("Reenviar invitación", Color(0xFFF4F1FB), Color(0xFF4A4066), onReenviarInvitacion)
             }
+
+            // el mismo espacio final que los demás detalles, para que el último botón no quede pegado a la barra.
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
@@ -131,9 +166,10 @@ private fun InfoTarjeta(etiqueta: String, valor: String) {
 }
 
 @Composable
-private fun BotonAccionPadre(texto: String, bg: Color, fg: Color, onClick: () -> Unit) {
+private fun BotonAccionPadre(texto: String, bg: Color, fg: Color, onClick: () -> Unit, enabled: Boolean = true) {
     Button(
         onClick = onClick,
+        enabled = enabled,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
         colors = ButtonDefaults.buttonColors(containerColor = bg, contentColor = fg),

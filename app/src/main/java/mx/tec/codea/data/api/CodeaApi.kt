@@ -99,6 +99,10 @@ interface CodeaApi {
     @POST("parents")
     suspend fun createParent(@Body body: ParentCreateBody): ParentDto
 
+    // liga más hijos a un padre que ya existe; no le crea un código nuevo.
+    @POST("parents/{id}/children")
+    suspend fun linkParentChildren(@Path("id") id: String, @Body body: ParentChildrenBody): ParentDto
+
     @POST("parents/{id}/deactivate")
     suspend fun deactivateParent(@Path("id") id: String): ParentDto
 

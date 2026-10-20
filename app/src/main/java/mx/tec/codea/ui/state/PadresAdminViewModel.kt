@@ -58,6 +58,12 @@ class PadresAdminViewModel : ViewModel() {
         launchAction(onSuccess) { repository.inscribir(nombre, apellido, telefono, correo, parentesco, hijoIds) }
     }
 
+    // liga más niños a un padre que ya existe; al terminar, DataEvents recarga la lista.
+    fun vincularHijos(padreId: String, hijoIds: List<String>, onSuccess: () -> Unit = {}) {
+        if (hijoIds.isEmpty()) return
+        launchAction(onSuccess) { repository.vincularHijos(padreId, hijoIds) }
+    }
+
     fun reenviarInvitacion(padreId: String, onSuccess: () -> Unit = {}) {
         launchAction(onSuccess) { repository.reenviarInvitacion(padreId) }
     }

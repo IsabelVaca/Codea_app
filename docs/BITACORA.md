@@ -328,3 +328,9 @@ Cambios de diseño pedidos por el usuario y revisados en el emulador contra la A
 - **Borrar personas:** la API no tiene endpoint para borrar a nadie; solo dar de baja y reactivar (`/teachers`, `/parents`, `/children` con `deactivate` y `reactivate`). La baja cierra las sesiones y conserva el historial. Si hace falta borrar de verdad (solicitud de cancelación de datos), la propuesta es un endpoint que anonimice.
 - **Verificado:** `assembleDebug` compila; cada pantalla revisada en el emulador. Sin pruebas nuevas (solo diseño).
 
+## 2026-10-20 · Padres: vincular a más niños y solo niños activos al inscribir
+
+- **API:** `POST /parents/{id}/children` liga más hijos a un padre que ya existe, con el parentesco que ya tiene (los ya ligados se ignoran). No usa `link_guardian` a propósito: esa función crea una invitación nueva y dejaría sin vigencia el código que el padre todavía no usa. `POST /parents` y el endpoint nuevo rechazan niños dados de baja (`422 CHILD_INACTIVE`). Tres pruebas nuevas en `test_admin.py` (vincular e idempotencia, el código pendiente sigue sirviendo, niños dados de baja); `pytest` 343 en verde. De 83 a 84 endpoints.
+- **App:** en el detalle del padre, sección «Vincular a otro niño» (solo niños inscritos que todavía no son suyos) con botón «Vincular». Al inscribir un padre nuevo, la lista de hijos ya no ofrece niños dados de baja.
+- **Falta desplegar la API** en el servidor compartido para que «Vincular» funcione desde la app.
+
