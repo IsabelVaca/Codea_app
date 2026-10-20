@@ -100,11 +100,8 @@ fun FamiliasScreen(
 
                 SeccionFamilias.PADRES -> {
                     BotonInscribirPadre(onClick = onInscribirPadre, modifier = lateral)
-                    Column(modifier = lateral, verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        padres.forEachIndexed { i, p ->
-                            val (bg, fg) = avatarColores[i % avatarColores.size]
-                            PadreFila(p, bg, fg) { onPadreClick(p) }
-                        }
+                    Column {
+                        padres.forEach { p -> PadreFila(p) { onPadreClick(p) } }
                     }
                 }
             }
