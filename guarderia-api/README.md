@@ -14,6 +14,41 @@ docker compose exec api python -m app.seed   # datos de ejemplo, los mismos de l
 - API: http://localhost:8000/api/v1 · Swagger: http://localhost:8000/docs
 - Almacén S3: http://localhost:9000. En desarrollo la API crea el bucket sola al arrancar.
 
+## Producción en codeaapp.site
+
+Corre en cualquier máquina con Docker y salida a internet, sin abrir puertos: un túnel de Cloudflare ([decisión #7](../docs/DECISIONES-PENDIENTES.md), aprobada el 19/oct) lleva el HTTPS hasta los contenedores. La máquina tiene que estar prendida para que la app funcione.
+
+| Nombre público | Va a | Para qué |
+|---|---|---|
+| `https://api.codeaapp.site` | `http://api:8000` | La API (`/api/v1`), `/invitar` y `/.well-known/assetlinks.json` |
+| `https://archivos.codeaapp.site` | `http://storage:9000` | El almacén: el teléfono sube y baja las fotos directo de aquí con URLs firmadas |
+
+**Una vez, en el panel de Cloudflare** (el dominio ya está en la cuenta):
+
+1. Zero Trust → Networks → Tunnels → *Create a tunnel* → tipo *Cloudflared* → nombre `codea-prod`. Copia el token (lo que sigue de `--token` en el comando que muestra); no hace falta instalar nada, el conector es el contenedor `tunnel`.
+2. En *Public hostnames* del túnel agrega los dos nombres de la tabla (subdominio `api` y `archivos`, dominio `codeaapp.site`, tipo `HTTP`, URL `api:8000` y `storage:9000`). Cloudflare crea los registros DNS solo.
+
+**En la máquina:**
+
+```bash
+cp .env.prod.example .env.prod    # llena todo: secretos nuevos, llaves S3 y CLOUDFLARE_TUNNEL_TOKEN
+alias prod='docker compose -p codea-prod --env-file .env.prod -f docker-compose.yml -f docker-compose.prod.yml'
+prod up -d --build
+prod exec api alembic upgrade head
+prod exec api python -c "from app.core.storage import get_storage; get_storage().ensure_bucket()"   # el bucket, una vez
+curl https://api.codeaapp.site/api/v1/health/ready   # {"status":"ok","database":"ok"}
+```
+
+- `-p codea-prod` le da volúmenes propios: la base y las fotos de desarrollo (con contraseñas conocidas) no salen a internet.
+- `docker-compose.override.yml` no se usa aquí: con `-f` explícitos Compose no lo carga.
+- La IP de cada cliente llega en `X-Forwarded-For` y uvicorn la toma con `--proxy-headers`, confiando solo en la red interna (`172.30.0.0/24`); así funciona el límite de intentos por IP.
+- **Primer administrador:** `prod exec api python -m app.seed` lo crea con `SEED_ADMIN_EMAIL` e imprime su código de acceso, pero **también mete los datos de ejemplo** («La Oruga»). No hay todavía un comando que cree solo al admin ([plan de implantación](../docs/entrega/plan-implantacion.md), 5.3).
+- Actualizar: `git pull`, `prod up -d --build` y `prod exec api alembic upgrade head`. Ver los registros: `prod logs -f api tunnel`.
+- Si el túnel no conecta (`Failed to dial a quic connection`), la red bloquea UDP: por eso el compose fija `--protocol http2`.
+- Un dominio recién agregado a Cloudflare tarda unos minutos en tener certificado; mientras, HTTPS falla con `handshake failure`.
+
+**Compartirla con el equipo.** Los developers apuntan su app a `https://api.codeaapp.site/api/v1/` (cómo y con qué reglas: [`docs/GUIA-CONTINUAR.md`](../docs/GUIA-CONTINUAR.md), sección 2). Las cuentas salen del seed o de un admin; fuera de `ENV=dev` el seed imprime un código de acceso por persona: pásale a cada quien su correo y su código por privado. Nunca compartas `.env.prod` ni el token del túnel; si el token se filtra, ve al panel del túnel → *Rotate token* y cámbialo en `.env.prod`.
+
 ## Entrar
 
 Login propio con correo y contraseña (JWT). La regla: **el token dice quién eres y Postgres dice qué puedes hacer**: el JWT solo lleva el id de la persona; el rol, el alcance y si está de baja se leen de la base en cada petición. Diseño completo en [`docs/plan/04-api-login-jwt.md`](../docs/plan/04-api-login-jwt.md).

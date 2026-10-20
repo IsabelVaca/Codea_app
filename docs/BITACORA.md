@@ -2,6 +2,19 @@
 
 Registro cronológico de lo que se hizo, por qué y cómo se verificó. Lo nuevo va arriba. El plan está en [`PLAN-ACCION.md`](PLAN-ACCION.md) y las fallas encontradas en [`RECORRIDO.md`](RECORRIDO.md).
 
+## 2026-10-19 (lunes)
+
+### Producción en codeaapp.site con túnel de Cloudflare
+- **Decisión #7 aprobada** (Oscar): HTTPS público con un túnel de Cloudflare. Dominio comprado: `codeaapp.site`.
+- `guarderia-api/docker-compose.prod.yml`: servicio `cloudflared` (sin puertos abiertos), `restart: unless-stopped`, `.env.prod` propio y uvicorn con `--proxy-headers` confiando solo en la red interna `172.30.0.0/24` (la IP real llega en `X-Forwarded-For`; uvicorn la lee de derecha a izquierda, así que un valor inventado por el cliente no cuela). Se levanta con `-p codea-prod` para no reutilizar los volúmenes de desarrollo.
+- Nombres: `api.codeaapp.site` → `api:8000` y `archivos.codeaapp.site` → `storage:9000` (las URLs firmadas de fotos se firman con ese host).
+- `guarderia-api/.env.prod.example` (ignorado como `.env.prod` en git y en la imagen) y la sección «Producción en codeaapp.site» del README de la API.
+- App: release apunta a `https://api.codeaapp.site/api/v1/` y los enlaces de invitación a `api.codeaapp.site` por omisión.
+- **Levantado y verificado (19/oct, en la Mac de Oscar):** túnel `codea-prod` *Healthy* con las rutas `api` y `archivos`; migraciones en `a07c3d8e6f76`; bucket creado. `GET https://api.codeaapp.site/api/v1/health/ready` → `{"status":"ok","database":"ok"}`; cabeceras `Strict-Transport-Security`, `X-Content-Type-Options`, `X-Frame-Options` y `Cache-Control: no-store`; certificado de Let's Encrypt emitido por Cloudflare (tardó ~8 min); `archivos.codeaapp.site` responde 403 sin firma (S3 vivo); `assetlinks.json` 200; un login fallido queda con la IP real del cliente en el registro de uvicorn.
+- El túnel no conectaba por QUIC (UDP bloqueado en la red): se fijó `--protocol http2`.
+- Base de producción vacía: todavía no hay ningún usuario.
+- Sigue abierta la #9: el almacén de producción es el mismo SeaweedFS del compose.
+
 ## 2026-10-18 (domingo)
 
 ### Integración de ramas

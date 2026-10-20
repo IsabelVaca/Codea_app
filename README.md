@@ -33,6 +33,8 @@ Antes de levantar la API, edita `guarderia-api/.env` y llena `JWT_SECRET` (sin �
 
 Detalles y pruebas en la guía.
 
+**Sin levantar el backend:** hay un servidor compartido con HTTPS en `https://api.codeaapp.site/api/v1/` (Swagger en `https://api.codeaapp.site/docs`). Pon `API_BASE_URL=https://api.codeaapp.site/api/v1/` en `local.properties` y pide tu código de acceso al responsable del servidor; ahí no sirve `codea1234`. Reglas y avisos: [`docs/GUIA-CONTINUAR.md`](docs/GUIA-CONTINUAR.md), sección 2.
+
 ## Cómo entrar (cuentas de prueba)
 
 El seed (`python -m app.seed`, solo con `ENV=dev`) crea estas cuentas. Todas usan la contraseña `codea1234` (la de `SEED_PASSWORD` en el `.env`).

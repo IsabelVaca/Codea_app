@@ -12,16 +12,16 @@ Documentos relacionados: [`manual-instalacion.md`](manual-instalacion.md) (cómo
 
 | Pieza | Estado | Evidencia |
 |---|---|---|
-| API en una URL pública con HTTPS | ❌ No existe | `docs/ENTREGA-3.md`, parte 1: «Desplegarlo en una URL pública» |
+| API en una URL pública con HTTPS | 🟡 Configurada, sin levantar | `https://api.codeaapp.site` por túnel de Cloudflare (`guarderia-api/docker-compose.prod.yml`) |
 | APK de release firmado | ❌ No existe | Sin `signingConfig`, sin keystore, minificación desactivada (`app/build.gradle.kts`) |
-| Dirección de la API en release | ⚠️ Inválida a propósito | `https://api.codea.invalid/api/v1/` |
+| Dirección de la API en release | ✅ | `https://api.codeaapp.site/api/v1/` (`app/build.gradle.kts`; `API_BASE_URL_RELEASE` la cambia) |
 | Imagen de Docker de la API | ✅ | `Dockerfile` (Python 3.12, sin usuario no administrador ni `HEALTHCHECK`) |
 | Base de datos de pruebas manuales | ✅ En Aiven | `docs/BITACORA.md`; **con datos de ejemplo**, no de producción |
 | Almacén de archivos de producción | ❓ Sin decidir | SeaweedFS solo para desarrollo (`docker/seaweedfs-s3.sh`); decisión #9 abierta |
 | Respaldos | ❌ | `guarderia-api/PENDIENTES.md`: «Respaldos de la base — tarea abierta» |
 | Monitoreo | 🟡 | Solo `/health/live` y `/health/ready`; Grafana está en la decisión #6, sin aprobar |
 | Etiqueta (tag) de versión en git | ❌ | `git tag` no devuelve nada |
-| Decisiones que bloquean el despliegue | ⏳ | #6 (monitoreo), #7 (túnel o servidor propio con HTTPS), #9 (almacén compatible con S3) |
+| Decisiones que bloquean el despliegue | ⏳ | #6 (monitoreo) y #9 (almacén compatible con S3). La #7 (túnel) se aprobó el 19/oct |
 
 ---
 
@@ -41,8 +41,8 @@ La persona que instale un APK de un enlace debe permitir la instalación de orí
 
 | Canal | Estado |
 |---|---|
-| Contenedor Docker en un servidor propio con certificado | Alternativa dentro del marco técnico (decisión #7). **Sin servidor elegido** |
-| Túnel de Cloudflare (HTTPS rápido) | **Fuera del marco hasta que se apruebe** (decisión #7). No usar mientras tanto |
+| Contenedor Docker en un servidor propio con certificado | Alternativa dentro del marco técnico (decisión #7). No se eligió |
+| Túnel de Cloudflare (HTTPS) | ✅ **Elegido** (decisión #7, aprobada el 19/oct): `codeaapp.site`, contenedor `cloudflared` en `docker-compose.prod.yml`. Pasos en `guarderia-api/README.md`, «Producción en codeaapp.site» |
 | Postgres alojado (Aiven) | En uso para pruebas; para producción **[decidir]** |
 | Almacén compatible con S3 | **[decidir]** (decisión #9: SeaweedFS no es el que nombra el marco; sí lo es RustFS) |
 
@@ -98,7 +98,7 @@ Hay tres puntos que **el repositorio no resuelve** y que hay que decidir antes d
 
 | Ajuste | Debug | Release |
 |---|---|---|
-| Dirección de la API | `-PapiBaseUrl`, `API_BASE_URL` o `http://10.0.2.2:8000/api/v1/` | `API_BASE_URL_RELEASE` de `local.properties` (HTTPS) |
+| Dirección de la API | `-PapiBaseUrl`, `API_BASE_URL` o `http://10.0.2.2:8000/api/v1/` | `https://api.codeaapp.site/api/v1/`, o `API_BASE_URL_RELEASE` de `local.properties` |
 | Tráfico HTTP | Permitido solo a `10.0.2.2` y `localhost` | **Prohibido** (`network_security_config.xml`) |
 | Firma | Llave de depuración de Android | **Pendiente:** keystore propio y `signingConfig` |
 | Minificación | — | **Pendiente:** hoy `optimization.enable = false`; activar y probar que no rompe la serialización ni la navegación |
@@ -170,7 +170,7 @@ El repositorio **no tiene un comando para crear solo al administrador**. La úni
 
 ### 5.5 Despliegue de la app
 
-1. Poner `API_BASE_URL_RELEASE=https://<dominio>/api/v1/` en `local.properties` (no se versiona).
+1. La dirección de release ya es `https://api.codeaapp.site/api/v1/`; `API_BASE_URL_RELEASE` en `local.properties` solo hace falta para apuntar a otra.
 2. Subir `versionCode` / `versionName` y hacer commit.
 3. Crear el tag `vX.Y.Z`.
 4. Generar el keystore (la primera vez) y configurar `signingConfig`; activar la minificación y **probar el APK minificado** en un teléfono.
@@ -274,12 +274,12 @@ La app crea en cada teléfono una base Room (`codea.db`, **versión 2**) con tre
 
 | # | Pendiente | Responsable |
 |---|---|---|
-| 1 | Decidir #6, #7 y #9, y elegir servidor, dominio y almacén | **[completar por el equipo]** |
-| 2 | Proxy con HTTPS y manejo de la IP real | **[completar por el equipo]** |
+| 1 | Decidir #6 y #9 y el almacén de producción (#7 aprobada: túnel en `codeaapp.site`) | **[completar por el equipo]** |
+| 2 | Proxy con HTTPS y manejo de la IP real | ✅ Configurado: túnel de Cloudflare y `--proxy-headers` (`docker-compose.prod.yml`); falta verificarlo levantado |
 | 3 | Respaldos y una restauración probada | **[completar por el equipo]** |
 | 4 | Script para crear solo al primer administrador | **[completar por el equipo]** |
 | 5 | Keystore, `signingConfig` y minificación probada | **[completar por el equipo]**: el keystore lo crea una persona del equipo |
-| 6 | `API_BASE_URL_RELEASE` real | Depende de 1 |
+| 6 | `API_BASE_URL_RELEASE` real | ✅ `https://api.codeaapp.site/api/v1/` por omisión en release |
 | 7 | Pruebas de `downgrade` de cada migración | **[completar por el equipo]** |
 | 8 | Tag de versión y notas de la entrega | **[completar por el equipo]** |
 | 9 | Revisar **todos** los textos de la app contra lo que hace el sistema (los dos conocidos ya se corrigieron) | Ver [`etica-legal.md`](etica-legal.md), ETL-03 |

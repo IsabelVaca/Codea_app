@@ -29,7 +29,7 @@ Todo lo que sabe de HTTP.
 
 ## Pendiente
 
-- **HTTPS en release:** definir `API_BASE_URL_RELEASE` cuando haya dominio.
+- **HTTPS en release:** ya apunta a `https://api.codeaapp.site/api/v1/`; falta levantar el túnel y probar el APK contra él.
 - **Endpoints que faltan en `CodeaApi`** porque la API tampoco los tiene: eventos y citas, resumen semanal.
 - **Tiempo real del chat:** hoy se consulta con `?after=`; el marco permite SSE o WebSocket.
 - **Traducir `code`** de los errores a mensajes propios cuando el texto de la API no sirva.

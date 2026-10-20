@@ -105,7 +105,7 @@ El marco técnico del curso (<https://startdroid.pages.dev/>) manda; lo que se s
 | 4 | Huella (`androidx.biometric`) | ❌ No | No implementado (RF-13) |
 | 5 | Redis | ❌ No | No se usa; el límite de intentos usa Postgres |
 | 6 | Grafana | ❌ No | No implementado; hay `/health/live` y `/health/ready` |
-| 7 | Túnel de Cloudflare | ❌ No | No implementado; sin HTTPS público |
+| 7 | Túnel de Cloudflare | ✅ Sí | **Aprobado (19/oct).** `docker-compose.prod.yml` con `cloudflared` para `codeaapp.site`; falta levantarlo y verificarlo |
 | 8 | Librería `reorderable` | ✅ Sí | **En el código sin aprobación** (arrastrar momentos de la rutina) |
 | 9 | SeaweedFS como almacén | ✅ Sí | **En uso en desarrollo sin aprobación**; sin almacén de producción elegido |
 | 10 | Dictado con `RecognizerIntent` | ✅ Sí | **En el código sin aprobación**; usa el reconocedor del sistema |

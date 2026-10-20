@@ -1,7 +1,7 @@
 # Decisiones pendientes y excepciones al marco
 
 Todo lo que se salga de [`MARCO-TECNICO.md`](MARCO-TECNICO.md) se registra aquí. **No se implementa hasta que el responsable apruebe.**
-Estado a 2026-10-18 (revisado): nada está aprobado todavía por el responsable. Lo que ya está en el código sin aprobación: #1 (login JWT), #8 (`reorderable`), #9 (SeaweedFS en desarrollo) y #10 (dictado).
+Estado a 2026-10-19: aprobada la #7 (túnel de Cloudflare); lo demás sigue sin aprobar. Lo que ya está en el código sin aprobación: #1 (login JWT), #8 (`reorderable`), #9 (SeaweedFS, en desarrollo y ahora también en `docker-compose.prod.yml`) y #10 (dictado).
 
 | # | Tema | Por qué importa | Alternativa dentro del marco | Recomendación | Estado |
 |---|---|---|---|---|---|
@@ -11,7 +11,7 @@ Estado a 2026-10-18 (revisado): nada está aprobado todavía por el responsable.
 | 4 | Huella (`androidx.biometric`, RF-13) | Librería fuera de la lista. | Ninguna equivalente. | Aprobar excepción o mover RF-13 a "fuera de alcance". | ⏳ Pendiente |
 | 5 | Redis | Fuera de la lista. | Postgres para lo que se necesite. | No usar. | ⏳ Pendiente |
 | 6 | Grafana (monitoreo) | Fuera de la lista. | Endpoints `/health/live` y `/health/ready` ya existentes + logs. | Aprobar solo si se quiere evidencia de disponibilidad (RNF04). | ⏳ Pendiente |
-| 7 | Cloudflare tunnel (HTTPS público) | Fuera de la lista. | Desplegar con Docker en un servidor propio con certificado. | Aprobar si no hay otra forma rápida de tener HTTPS. | ⏳ Pendiente |
+| 7 | Cloudflare tunnel (HTTPS público) | Fuera de la lista. | Desplegar con Docker en un servidor propio con certificado. | Aprobar si no hay otra forma rápida de tener HTTPS. | ✅ **Aprobada (19/oct, Oscar):** producción en `codeaapp.site` con el contenedor `cloudflared` (`guarderia-api/docker-compose.prod.yml`): `api.codeaapp.site` → API y `archivos.codeaapp.site` → almacén. Sin servidor ni puertos abiertos; la máquina que lo corre debe estar prendida |
 | 8 | Librería `reorderable` | Fuera de la lista. | Botones subir/bajar o arrastre propio. | Reemplazar o aprobar. | ⏳ Pendiente |
 | 9 | SeaweedFS como almacén | El sitio nombra RustFS (compatible con S3). | RustFS. | Confirmar que SeaweedFS cuenta como "compatible con S3". | ⏳ Pendiente |
 | 10 | Dictado con `RecognizerIntent` | API del sistema, pero usa el reconocedor de Google. | Sin dictado. | Confirmar que está permitido. | ⏳ Pendiente |
