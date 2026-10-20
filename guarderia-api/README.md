@@ -69,11 +69,43 @@ Producción usa **Aiven**, no el Postgres del contenedor `db`. Cloudflare no int
 1. En Aiven crea una **base nueva** dentro del servicio (por ejemplo `codea_prod`). **No** uses la de pruebas manuales (`codea1234`) ni la de las pruebas automáticas.
 2. En `.env.prod` descomenta `DATABASE_URL=postgresql+asyncpg://USUARIO:PASSWORD@HOST:PUERTO/codea_prod?ssl=require` (con `?ssl=require`). Con ese valor la API ignora el servicio `db` del compose.
 3. `prod up -d --build` y `prod exec api alembic upgrade head`: arma la base vacía completa desde cero (13 migraciones, hasta `d74a0f6c4e15`; se comprobó en una base temporal). No hay nada que migrar: la base local de producción estaba vacía.
-4. El almacén de fotos sigue siendo el SeaweedFS del compose (`prod exec api python -c "from app.core.storage import get_storage; get_storage().ensure_bucket()"` una vez).
+4. El almacén de fotos sigue siendo el SeaweedFS del compose (`prod exec api python -c "from app.core.storage import get_storage; get_storage().ensure_bucket()"` una vez). Arranca con `docker/seaweedfs-s3.sh`, que desde el 20/oct le da hasta 100 volúmenes de 1 GB (`-volume.max=100 -master.volumeSizeLimitMB=1024`); con los 8 de omisión se quedaba sin lugar («only 0 volumes left»). El script se monta desde el repo: un cambio se aplica con `docker restart codea-prod-storage-1`.
 5. `prod exec api python -m app.seed` crea el primer administrador con `SEED_ADMIN_EMAIL`, pero **también mete los datos de ejemplo**; hoy no hay un comando que cree solo al admin.
 6. Cada actualización del código que traiga migraciones: `git pull`, `prod up -d --build` y `prod exec api alembic upgrade head`.
 
-Revisa en Aiven cómo se respaldan las bases de tu plan (los respaldos siguen sin estar documentados en el proyecto) y cuántas conexiones permite.
+Revisa en Aiven cuántas conexiones permite tu plan. Los respaldos propios están en la sección que sigue.
+
+### Respaldos (desde el 20/oct)
+
+`scripts/respaldo.sh` respalda el servidor compartido en `~/respaldos-codea/` (carpeta solo del usuario, `700`):
+
+| Archivo | Qué es |
+|---|---|
+| `codea_prod-diario-AAAAMMDD-HHMM.dump` | La base de Aiven: `pg_dump -Fc` con la imagen `postgres:18` (la misma versión mayor que Aiven; el `pg_dump` 16 del contenedor `db` no puede). Antes de guardarlo comprueba que `pg_restore --list` lo lea y traiga tablas |
+| `fotos-diario-AAAAMMDD-HHMM.tar.gz` | El volumen `codea-prod_media` (SeaweedFS). Pausa el almacén unos segundos para copiarlo sin escrituras a medias |
+| `respaldo.log` | Una línea por paso, con tamaños |
+
+- Borra los diarios de más de 14 días (`RESPALDOS_DIAS`); los respaldos hechos a mano (sin `-diario-`) no los toca. La llave de la base sale de `.env.prod` y no se escribe en ningún lado.
+- **Corre solo cada día a las 3:00** con `launchd` (`scripts/site.codeaapp.respaldo.plist`); si la Mac estaba dormida, corre al despertar. Instalarlo en la Mac servidor (ya está instalado en la del 20/oct):
+
+```bash
+sed "s|RUTA_API|$PWD|g" scripts/site.codeaapp.respaldo.plist > ~/Library/LaunchAgents/site.codeaapp.respaldo.plist
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/site.codeaapp.respaldo.plist
+launchctl kickstart gui/$(id -u)/site.codeaapp.respaldo    # correrlo ya, para probar
+cat /tmp/codea-respaldo.log ~/respaldos-codea/respaldo.log  # qué pasó
+```
+
+- **Restaurar la base** (primero en una base de prueba; sobre `codea_prod` solo con permiso del equipo):
+
+```bash
+docker run -d --rm --name restaurar -e POSTGRES_PASSWORD=prueba postgres:18
+docker exec restaurar createdb -U postgres codea_prod
+docker exec -i restaurar pg_restore -U postgres -d codea_prod --no-owner --no-privileges < ~/respaldos-codea/codea_prod-diario-….dump
+```
+
+  Contra Aiven es el mismo `pg_restore` con `-d "postgresql://…/codea_prod?sslmode=require"` (la `DATABASE_URL` sin `+asyncpg` y con `sslmode` en vez de `ssl`).
+- **Restaurar las fotos:** con el almacén apagado (`prod stop storage`), vaciar el volumen y desempacar el `.tar.gz` en él (`docker run --rm -v codea-prod_media:/data -v ~/respaldos-codea:/r postgres:18 tar xzf /r/fotos-diario-….tar.gz -C /data`), y `prod start storage`.
+- Probado el 20/oct: el respaldo se restauró en un Postgres 18 temporal (24 usuarios, 12 infantes, 7 avisos, 2 fotos, migración `d74a0f6c4e15`).
 
 ## Entrar
 
