@@ -1,6 +1,9 @@
 package mx.tec.codea.data
 
+import kotlinx.serialization.builtins.ListSerializer
 import mx.tec.codea.data.api.ApiClient
+import mx.tec.codea.data.offline.cachedResponse
+import mx.tec.codea.data.offline.fetchAndCache
 import mx.tec.codea.data.api.TemplateAssignBody
 import mx.tec.codea.data.api.TemplateBody
 import mx.tec.codea.data.api.TemplateDto
@@ -14,9 +17,19 @@ class RutinaApiRepository {
     private val api get() = ApiClient.api
 
     // las rutinas y, por separado, los momentos de cada una (por id de rutina).
-    suspend fun getAll(): Pair<List<RutinaItem>, Map<String, List<MomentoRutina>>> {
-        val plantillas = api.routineTemplates()
-        return plantillas.map { it.toItem() } to plantillas.associate { it.id.toString() to it.toMomentos() }
+    suspend fun getAll(): Pair<List<RutinaItem>, Map<String, List<MomentoRutina>>> =
+        mapear(fetchAndCache(CACHE, SERIALIZER) { api.routineTemplates() })
+
+    // lo último que se guardó, o null (ver ApiCache).
+    suspend fun cached(): Pair<List<RutinaItem>, Map<String, List<MomentoRutina>>>? =
+        cachedResponse(CACHE, SERIALIZER)?.let { mapear(it) }
+
+    private fun mapear(plantillas: List<TemplateDto>) =
+        plantillas.map { it.toItem() } to plantillas.associate { it.id.toString() to it.toMomentos() }
+
+    private companion object {
+        const val CACHE = "routine-templates"
+        val SERIALIZER = ListSerializer(TemplateDto.serializer())
     }
 
     suspend fun crear(nombre: String, momentos: List<MomentoRutina>) {

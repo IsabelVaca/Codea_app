@@ -54,6 +54,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
 import mx.tec.codea.ui.components.ScreenHeader
+import mx.tec.codea.ui.components.imagenEstable
 import mx.tec.codea.ui.screens.parent.PadreColores
 import mx.tec.codea.ui.theme.CodeaTheme
 import mx.tec.codea.ui.theme.Poppins
@@ -224,7 +225,7 @@ private fun Miniatura(foto: Foto, onClick: () -> Unit) {
     ) {
         if (foto.url != null) {
             AsyncImage(
-                model = foto.url,
+                model = imagenEstable(foto.url),
                 contentDescription = foto.etiqueta,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.matchParentSize(),
@@ -288,7 +289,7 @@ private fun VisorFoto(
             ) {
                 if (foto.url != null) {
                     AsyncImage(
-                        model = foto.url,
+                        model = imagenEstable(foto.url),
                         contentDescription = foto.etiqueta,
                         contentScale = ContentScale.Fit,
                         modifier = Modifier.matchParentSize(),

@@ -1,6 +1,9 @@
 package mx.tec.codea.data
 
+import kotlinx.serialization.builtins.ListSerializer
 import mx.tec.codea.data.api.ApiClient
+import mx.tec.codea.data.offline.cachedResponse
+import mx.tec.codea.data.offline.fetchAndCache
 import mx.tec.codea.data.api.ClassroomCapacityBody
 import mx.tec.codea.data.api.ClassroomCreateBody
 import mx.tec.codea.data.api.ClassroomDto
@@ -13,10 +16,19 @@ class SalaApiRepository {
 
     private val api get() = ApiClient.api
 
-    suspend fun getAll(): List<Sala> {
-        val lista = api.classrooms()
+    // de la API; la respuesta se guarda para mostrarla al instante la próxima vez (ver ApiCache).
+    suspend fun getAll(): List<Sala> = mapear(fetchAndCache(CACHE, SERIALIZER) { api.classrooms() })
+
+    suspend fun cached(): List<Sala>? = cachedResponse(CACHE, SERIALIZER)?.let { mapear(it) }
+
+    private fun mapear(lista: List<ClassroomDto>): List<Sala> {
         AdminDirectory.rememberClassrooms(lista)
         return lista.map { it.toSala() }
+    }
+
+    private companion object {
+        const val CACHE = "classrooms"
+        val SERIALIZER = ListSerializer(ClassroomDto.serializer())
     }
 
     suspend fun crear(nombre: String, cupoMaximo: Int, asistente: String?) {

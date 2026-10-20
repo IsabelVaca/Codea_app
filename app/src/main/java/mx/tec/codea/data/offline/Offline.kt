@@ -42,14 +42,20 @@ object Offline {
         private set
     lateinit var scheduler: SyncScheduler
         private set
+    private lateinit var responses: ApiCache
+
+    // la caché de respuestas de la API; null antes de init (por ejemplo, en pruebas de JVM): sin caché, todo va directo a la API.
+    val apiCache: ApiCache?
+        get() = if (::responses.isInitialized) responses else null
 
     fun init(context: Context, sessions: SessionRepository) {
         val db = Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, "codea.db")
-            .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4)
+            .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4, AppDatabase.MIGRATION_4_5)
             .build()
         val dao = db.dao()
         attendance = OfflineAttendance(RoomPendingStore(dao, sessions), RetrofitAttendanceRemote(), OfflineErrors::kindOf)
         cache = RoomCache(dao)
+        responses = ApiCache(dao, sessions)
         scheduler = SyncScheduler(context.applicationContext)
     }
 }

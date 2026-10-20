@@ -35,6 +35,8 @@ class SalasAdminViewModel : ViewModel() {
     fun cargar() {
         if (!ApiConfig.isAdmin) return
         viewModelScope.launch {
+            // lo guardado (ApiCache) sale al instante; lo de la API lo reemplaza al llegar.
+            if (_salas.value.isEmpty()) repository.cached()?.let { _salas.value = it }
             _cargando.value = true
             _error.value = null
             try {

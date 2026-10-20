@@ -34,10 +34,14 @@ class AppContainer(context: Context) {
         ApiClient.init(sessionRepository)
         // lee la sesión guardada; mientras tanto el estado es Loading y la app muestra el arranque.
         appScope.launch { sessionRepository.load() }
-        // sin sesión (se cerró o terminó) no debe quedar en el teléfono la lista de niños de la última sala.
+        // sin sesión (se cerró o terminó) no debe quedar en el teléfono nada de la última persona:
+        // ni la lista de niños de la sala ni las respuestas guardadas del admin o del padre.
         appScope.launch {
             sessionRepository.state.collect { state ->
-                if (state is SessionState.Anonymous) runCatching { Offline.cache.clear() }
+                if (state is SessionState.Anonymous) {
+                    runCatching { Offline.cache.clear() }
+                    runCatching { Offline.apiCache?.clear() }
+                }
             }
         }
     }

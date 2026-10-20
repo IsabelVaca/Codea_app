@@ -14,6 +14,10 @@ import mx.tec.codea.data.api.ParentDto
 import mx.tec.codea.data.api.TeacherClassroomBody
 import mx.tec.codea.data.api.TeacherCreateBody
 import mx.tec.codea.data.api.TeacherDto
+import mx.tec.codea.data.api.AnnouncementDto
+import mx.tec.codea.data.offline.cachedResponse
+import mx.tec.codea.data.offline.fetchAndCache
+import kotlinx.serialization.builtins.ListSerializer
 import mx.tec.codea.domain.Aviso
 import mx.tec.codea.domain.Docente
 import mx.tec.codea.domain.HorarioCentro
@@ -32,10 +36,20 @@ class DocenteApiRepository {
 
     private val api get() = ApiClient.api
 
-    suspend fun getAll(): List<Docente> {
-        val lista = api.teachers()
+    // de la API; la respuesta se guarda para mostrarla al instante la próxima vez (ver ApiCache).
+    suspend fun getAll(): List<Docente> = mapear(fetchAndCache(CACHE, SERIALIZER) { api.teachers() })
+
+    // lo último que se guardó, o null.
+    suspend fun cached(): List<Docente>? = cachedResponse(CACHE, SERIALIZER)?.let { mapear(it) }
+
+    private fun mapear(lista: List<TeacherDto>): List<Docente> {
         AdminDirectory.rememberTeachers(lista)
         return lista.map { it.toDocente() }.sortedBy { it.nombre }
+    }
+
+    private companion object {
+        const val CACHE = "teachers"
+        val SERIALIZER = ListSerializer(TeacherDto.serializer())
     }
 
     suspend fun alta(nombre: String, apellido: String, telefono: String, correo: String, sala: String) {
@@ -81,8 +95,16 @@ class InfanteApiRepository {
 
     private val api get() = ApiClient.api
 
-    suspend fun getAll(): List<Infante> =
-        api.children().map { it.toInfante() }.sortedBy { it.nombre }
+    suspend fun getAll(): List<Infante> = mapear(fetchAndCache(CACHE, SERIALIZER) { api.children() })
+
+    suspend fun cached(): List<Infante>? = cachedResponse(CACHE, SERIALIZER)?.let { mapear(it) }
+
+    private fun mapear(lista: List<ChildDto>) = lista.map { it.toInfante() }.sortedBy { it.nombre }
+
+    private companion object {
+        const val CACHE = "children"
+        val SERIALIZER = ListSerializer(ChildDto.serializer())
+    }
 
     suspend fun inscribir(nombre: String, apellido: String, nacimiento: String, sala: String, alergias: String) {
         api.createChild(
@@ -147,8 +169,16 @@ class PadreApiRepository {
 
     private val api get() = ApiClient.api
 
-    suspend fun getAll(): List<Padre> =
-        api.parents().map { it.toPadre() }.sortedBy { it.nombre }
+    suspend fun getAll(): List<Padre> = mapear(fetchAndCache(CACHE, SERIALIZER) { api.parents() })
+
+    suspend fun cached(): List<Padre>? = cachedResponse(CACHE, SERIALIZER)?.let { mapear(it) }
+
+    private fun mapear(lista: List<ParentDto>) = lista.map { it.toPadre() }.sortedBy { it.nombre }
+
+    private companion object {
+        const val CACHE = "parents"
+        val SERIALIZER = ListSerializer(ParentDto.serializer())
+    }
 
     suspend fun inscribir(nombre: String, apellido: String, telefono: String, correo: String, parentesco: String, hijoIds: List<String>) {
         val creado = api.createParent(
@@ -237,14 +267,23 @@ class AvisoApiRepository {
 
     // los avisos que le tocan a quien pregunta, el más reciente primero:
     // el admin ve todos; la asistente y los papás, los del centro entero y los de su sala.
-    suspend fun getAll(): List<Aviso> = ApiClient.api.announcements().map {
-        Aviso(
-            id = it.id.toString(),
-            destino = it.classroomName ?: it.classroomId?.let { "Sala eliminada" },
-            fecha = formatearFecha(it.createdAt),
-            texto = it.text,
-            imagenUrl = it.mediaUrl,
-        )
+    suspend fun getAll(): List<Aviso> = fetchAndCache(CACHE, SERIALIZER) { ApiClient.api.announcements() }.map { it.toAviso() }
+
+    // lo último que se guardó. La imagen trae una URL firmada que vence en 10 minutos: si ya venció, no se ve
+    // hasta que llega la lista nueva (unos segundos después).
+    suspend fun cached(): List<Aviso>? = cachedResponse(CACHE, SERIALIZER)?.map { it.toAviso() }
+
+    private fun AnnouncementDto.toAviso() = Aviso(
+        id = id.toString(),
+        destino = classroomName ?: classroomId?.let { "Sala eliminada" },
+        fecha = formatearFecha(createdAt),
+        texto = text,
+        imagenUrl = mediaUrl,
+    )
+
+    private companion object {
+        const val CACHE = "announcements"
+        val SERIALIZER = ListSerializer(AnnouncementDto.serializer())
     }
 }
 

@@ -70,6 +70,8 @@ class AvisosViewModel : ViewModel() {
                 ultimaClave = clave
             }
             leidos.value = LeidosStore.get(clave)
+            // lo guardado (ApiCache) sale al instante; lo de la API lo reemplaza al llegar.
+            if (todos.value.isEmpty()) repository.cached()?.let { todos.value = it }
             try {
                 todos.value = repository.getAll()
             } catch (e: CancellationException) {

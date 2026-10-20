@@ -2,6 +2,8 @@
 
 ViewModels. Las pantallas solo dibujan y llaman funciones de aquí; el estado sale como `mutableStateOf` con `private set` o como `StateFlow`.
 
+**Caché (admin y padre, desde el 20/oct):** `DocentesAdminViewModel`, `SalasAdminViewModel`, `InfantesAdminViewModel`, `PadresAdminViewModel`, `AvisosAdminViewModel`, `RutinasAdminViewModel`, `AvisosViewModel` y `ParentViewModel` muestran primero lo que guardó el repositorio (`cached()` / `…Guardado()`) y luego lo reemplazan con la API, así no se quedan vacíos al abrir la app ni al cambiar de pestaña. En Docentes, el indicador de carga solo sale al jalar hacia abajo (`cargar(conIndicador = true)`); las recargas al abrir la pestaña son silenciosas. `ParentViewModel` muestra lo guardado una vez por hijo (`guardadoMostradoDe`), para no tapar lo que ya llegó de la API.
+
 ## Los ViewModels
 
 | Archivo | Rol | Qué maneja | Estilo de estado |

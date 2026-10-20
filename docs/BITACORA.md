@@ -379,3 +379,13 @@ Cambios de diseño pedidos por el usuario y revisados en el emulador contra la A
 - **Lo que no tiene dato ya no sale:** las métricas de Hoy (ánimo, comidas, pañal, siesta) si la maestra no llenó el resumen; «Ánimo», «Comidas» y «Siesta promedio» del resumen semanal si no hay registro; «Todavía no hay notas de este día» va en gris (el ViewModel ya no lo inventa como si fuera una nota).
 - **Estilo:** `ParentStyle.kt` con las piezas del admin. Hoy, Calendario, Fotos y Mi hijo con tarjetas blancas, lila con morado y sin etiquetas de sección («SU DÍA, PASO A PASO», «… en una línea»). Calendario: el mes en una tarjeta con su nombre y la leyenda dentro; colores por estado morado, verde y rojo. Fotos: chips como el filtro del admin en lugar del menú desplegable. Mi hijo: cada dato en su tarjeta (sin «Nombre completo», que ya es el título) y campos de salud lila. `MenuCard` (también en Mi día de la docente) y el selector de hijo con los mismos colores.
 - **Verificado** en el emulador contra la API compartida con una cuenta de padre: Hoy, Calendario y Mi hijo. Fotos solo en el estado vacío (los niños de esa cuenta no tienen fotos). Chat no se tocó (es la misma pantalla de la docente). `./gradlew test` 138 en verde.
+
+## 2026-10-20 · Caché de datos para el admin y el padre (Room)
+
+- **Qué pidió el usuario:** que las pantallas del admin y del padre no estén cargando cada vez que se cambia de pantalla, con lo que permite el marco técnico.
+- **Cómo (Room, dentro del marco):** tabla nueva `cached_response` (migración 4 → 5, esquema exportado en `app/schemas/.../5.json`) y `data/offline/ApiCache.kt`. Los repositorios guardan la última respuesta de cada lectura como JSON del DTO (`fetchAndCache`) y la ofrecen con `cached()` / `…Guardado()`. Los ViewModels muestran primero lo guardado y luego lo de la API (lo nuevo siempre gana). La llave lleva el id del usuario y todo se borra al cerrar la sesión; la del día del padre lleva la fecha.
+- **Indicador:** en Docentes, «jalar para recargar» enciende el indicador; abrir la pestaña recarga en silencio.
+- **Imágenes:** `ImagenEstable.kt` da a Coil la URL sin firma como llave, para no volver a bajar una foto o la imagen de un aviso que ya se vio.
+- **Verificado:** compila; `./gradlew test` 138 en verde. En el emulador, la migración de una base en versión 4 corrió sin errores y la tabla quedó con las respuestas del padre (perfil, día, calendario, semana, Mi hijo, fotos) y los avisos.
+- **Privacidad:** la caché guarda datos personales (nombres, salud) en el almacenamiento privado de la app, sin cifrar, igual que la caché de Mi sala; `android:allowBackup="false"` y se borra al cerrar la sesión.
+

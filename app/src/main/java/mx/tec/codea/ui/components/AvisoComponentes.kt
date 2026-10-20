@@ -52,7 +52,7 @@ fun AvisoChip(texto: String, bg: Color, fg: Color) {
 fun AvisoImagen(model: Any, descripcion: String = "Imagen del aviso", modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         AsyncImage(
-            model = model,
+            model = imagenEstable(model),
             contentDescription = descripcion,
             contentScale = ContentScale.Fit,
             modifier = Modifier
