@@ -1,5 +1,8 @@
 package mx.tec.codea.ui.state
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
@@ -20,20 +23,30 @@ class DocentesAdminViewModel : ViewModel() {
     private val _docentes = MutableStateFlow<List<Docente>>(emptyList())
     val docentes: StateFlow<List<Docente>> = _docentes.asStateFlow()
 
+    // true mientras se piden las docentes: la pestaña Docentes muestra el indicador de "jalar para recargar".
+    // va antes del init: el init llama a cargar(), que lo usa.
+    var cargando by mutableStateOf(false)
+        private set
+
     init {
         viewModelScope.launch { DataEvents.changed.collect { cargar() } }
         cargar()
     }
 
+    // se llama también al abrir la pestaña Docentes: la checada de una docente se hace desde su teléfono
+    // y aquí no llega ningún DataEvents, así que sin esto la hora no aparecía hasta reiniciar la app.
     fun cargar() {
         if (!ApiConfig.isAdmin) return
         viewModelScope.launch {
+            cargando = true
             try {
                 _docentes.value = repository.getAll()
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 DataEvents.notice("No se pudieron cargar las docentes: ${e.toUserMessage()}")
+            } finally {
+                cargando = false
             }
         }
     }

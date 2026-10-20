@@ -12,7 +12,7 @@ ViewModels. Las pantallas solo dibujan y llaman funciones de aquí; el estado sa
 | `CheckerViewModel.kt` | Docente | Pantalla del checador (hora, a tiempo o tarde, motivo de retardo) | — |
 | `ReportFormViewModel.kt` | Docente | Formulario de reporte (método, texto, foto, niños elegidos) | — |
 | `ParentViewModel.kt` | Padre | Hoy, calendario, documentos, fotos y personas autorizadas del hijo | `mutableStateOf` |
-| `CentroViewModel.kt` | Admin | Centro, avisos y radio del checador | — |
+| `AvisosAdminViewModel.kt` | Admin | Pestaña Avisos: el aviso que se escribe y el historial | — |
 | `SalasAdminViewModel.kt`, `CrearSalaViewModel.kt` | Admin | Salas | `StateFlow` |
 | `DocentesAdminViewModel.kt`, `AltaAsistenteViewModel.kt` | Admin | Docentes | `StateFlow` |
 | `InfantesAdminViewModel.kt`, `InscribirInfanteViewModel.kt` | Admin | Infantes | `StateFlow` |

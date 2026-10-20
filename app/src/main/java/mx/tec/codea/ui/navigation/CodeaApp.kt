@@ -222,7 +222,7 @@ private fun RoleApp(
     val startDestination: Any = remember(role) {
         when (role) {
             Role.TEACHER -> MyDayGraph
-            Role.ADMIN -> AdminCentroGraph
+            Role.ADMIN -> AdminAvisosGraph
             Role.PARENT -> ParentTodayRoute
         }
     }

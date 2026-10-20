@@ -76,8 +76,9 @@ def invite_link(email: str, code: str) -> str | None:
 
 
 def normalize_code(code: str) -> str:
-    """Se compara sin guion, sin espacios y sin importar mayúsculas."""
-    return "".join(code.split()).replace("-", "").upper()
+    """Se compara solo con letras y números, sin importar mayúsculas: el guion, los espacios y los caracteres
+    invisibles que trae un texto copiado de WhatsApp no cuentan."""
+    return "".join(ch for ch in code.upper() if ch.isascii() and ch.isalnum())
 
 
 def hash_code(code: str) -> str:

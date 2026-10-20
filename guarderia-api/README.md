@@ -5,7 +5,7 @@ FastAPI + PostgreSQL + un almacén compatible con S3 para fotos y documentos. Lo
 ## Levantarla
 
 ```bash
-cp .env.example .env              # y cambia las claves
+cp .env.dev .env                  # listo para desarrollo, sin secretos reales (o .env.example para llenarlo a mano)
 docker compose up -d --build      # api, db (Postgres) y storage (SeaweedFS, compatible con S3)
 docker compose exec api alembic upgrade head
 docker compose exec api python -m app.seed   # datos de ejemplo, los mismos de la app
@@ -13,6 +13,8 @@ docker compose exec api python -m app.seed   # datos de ejemplo, los mismos de l
 
 - API: http://localhost:8000/api/v1 · Swagger: http://localhost:8000/docs
 - Almacén S3: http://localhost:9000. En desarrollo la API crea el bucket sola al arrancar.
+- Esta API local es para trabajar en el backend y correr `pytest`. La app apunta siempre al servidor compartido
+  (`API_BASE_URL=https://api.codeaapp.site/api/v1/` en `local.properties`).
 
 ## Producción en codeaapp.site
 

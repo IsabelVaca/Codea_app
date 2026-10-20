@@ -1,3 +1,4 @@
+import unicodedata
 from datetime import date
 
 from .errors import ApiError
@@ -19,10 +20,17 @@ def check_phone(phone: str) -> str:
     return phone.strip()
 
 
+def clean_email(email: str | None) -> str:
+    """El correo sin espacios ni caracteres invisibles (de formato, como U+200B o U+2068) y en minúsculas.
+    Un correo copiado de WhatsApp puede traerlos, y con ellos ya no coincide con el de la invitación."""
+    return "".join(ch for ch in (email or "") if not ch.isspace() and unicodedata.category(ch) != "Cf").lower()
+
+
 def check_email(email: str) -> str:
-    if email is None or "@" not in email or "." not in email:
+    email = clean_email(email)
+    if "@" not in email or "." not in email:
         raise ApiError(422, "EMAIL_INVALID", "El correo no es válido")
-    return email.strip().lower()
+    return email
 
 
 def check_capacity(capacity: int) -> int:

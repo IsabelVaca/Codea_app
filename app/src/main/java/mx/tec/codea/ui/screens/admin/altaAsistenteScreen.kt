@@ -65,7 +65,6 @@ fun AltaAsistenteScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         BackHeader(
-            overline = "Docentes",
             title = "Dar de alta asistente",
             onBackClick = onBack,
         )

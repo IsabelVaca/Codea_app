@@ -106,7 +106,6 @@ fun MyRoomScreen(
         item {
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 ScreenHeader(
-                    overline = stringResource(R.string.my_room_overline),
                     title = if (roomName.isBlank()) {
                         stringResource(R.string.my_room_title_generic)
                     } else {

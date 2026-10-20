@@ -13,26 +13,29 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import mx.tec.codea.ui.theme.CodeaTheme
 
-// every tab of the prototype starts the same way: a small grey line on top
-// (the place or the person) and a big title below it. we write it once here.
+// every screen starts the same way: a big title. the small grey line on top
+// (overline) was dropped from almost every screen; only a few keep it because
+// it carries data ("Resumen 2 de 5", "Subproceso 3 · Comida"). null = no line.
 @Composable
 fun ScreenHeader(
-    overline: String,
     title: String,
     modifier: Modifier = Modifier,
+    overline: String? = null,
 ) {
     Column(
         modifier = modifier.padding(bottom = 4.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        Text(
-            // the prototype writes this line in capital letters.
-            text = overline.uppercase(),
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.3.sp,
-            color = MaterialTheme.colorScheme.outline,
-        )
+        if (overline != null) {
+            Text(
+                // the prototype writes this line in capital letters.
+                text = overline.uppercase(),
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.3.sp,
+                color = MaterialTheme.colorScheme.outline,
+            )
+        }
         Text(
             text = title,
             style = MaterialTheme.typography.headlineSmall,
@@ -46,6 +49,6 @@ fun ScreenHeader(
 @Composable
 private fun ScreenHeaderPreview() {
     CodeaTheme {
-        ScreenHeader(overline = "Estancia La Oruga", title = "Mi sala · Preescolar 2")
+        ScreenHeader(title = "Mi sala · Preescolar 2")
     }
 }

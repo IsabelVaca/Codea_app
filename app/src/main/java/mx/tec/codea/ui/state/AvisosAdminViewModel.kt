@@ -19,8 +19,8 @@ import mx.tec.codea.data.api.ApiConfig
 import mx.tec.codea.data.api.toUserMessage
 import mx.tec.codea.domain.Aviso
 
-// vive solo en la pantalla Centro.
-class CentroViewModel(application: Application) : AndroidViewModel(application) {
+// vive solo en la pestaña Avisos del admin.
+class AvisosAdminViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = AvisoApiRepository()
 
@@ -38,6 +38,19 @@ class CentroViewModel(application: Application) : AndroidViewModel(application) 
     // el historial, el más reciente primero.
     private val _avisos = MutableStateFlow<List<Aviso>>(emptyList())
     val avisos: StateFlow<List<Aviso>> = _avisos.asStateFlow()
+
+    // el formulario se abre con «+ Nuevo aviso» y se cierra al publicar o con «Cancelar»
+    // (al cancelar, lo escrito se queda para la próxima vez).
+    var formularioAbierto by mutableStateOf(false)
+        private set
+
+    fun abrirFormulario() {
+        formularioAbierto = true
+    }
+
+    fun cerrarFormulario() {
+        formularioAbierto = false
+    }
 
     // mientras se manda, el botón se apaga para no publicar dos veces y dice «Publicando…».
     var publicando by mutableStateOf(false)
@@ -92,6 +105,7 @@ class CentroViewModel(application: Application) : AndroidViewModel(application) 
             publicando = false
             avisoTexto = ""
             avisoFoto = null
+            formularioAbierto = false
             onSuccess()
         }) {
             try {

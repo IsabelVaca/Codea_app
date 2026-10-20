@@ -44,7 +44,6 @@ fun DayFinishedScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         ScreenHeader(
-            overline = stringResource(R.string.nav_my_day),
             title = stringResource(R.string.day_finished_title),
         )
         Column(

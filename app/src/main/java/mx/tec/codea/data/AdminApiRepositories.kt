@@ -276,20 +276,21 @@ private fun parentescoFromApi(valor: String?): String = when (valor) {
     else -> "Otro"
 }
 
-// "2026-10-14T14:05:00.123+00:00" -> "8:05" en la hora del teléfono. sin checada: "--:--".
-private fun horaDe(iso: String?): String {
-    if (iso.isNullOrBlank()) return "--:--"
+// "2026-10-14T14:05:00.123+00:00" -> "8:05" en la hora del teléfono.
+// null cuando la docente no ha checado hoy (o la hora no se puede leer).
+private fun horaDe(iso: String?): String? {
+    if (iso.isNullOrBlank()) return null
     return try {
         val limpio = iso.replace(Regex("\\.\\d+"), "").let {
             if (it.endsWith("Z")) it.dropLast(1) + "+00:00" else it
         }
         val fecha = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US).parse(limpio)
-        if (fecha == null) "--:--" else SimpleDateFormat("H:mm", Locale.getDefault()).format(fecha)
+        if (fecha == null) null else SimpleDateFormat("H:mm", Locale.getDefault()).format(fecha)
     } catch (e: Exception) {
         try {
             iso.substring(11, 16)
         } catch (e2: Exception) {
-            "--:--"
+            null
         }
     }
 }

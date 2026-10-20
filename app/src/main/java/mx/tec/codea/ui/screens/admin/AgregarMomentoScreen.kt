@@ -57,7 +57,7 @@ fun AgregarMomentoScreen(
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        BackHeader(overline = "Ajustes · Rutinas", title = "Agregar momento", onBackClick = onBack)
+        BackHeader(title = "Agregar momento", onBackClick = onBack)
         SeccionLabel("DEL CATÁLOGO")
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             catalogo.forEach { m ->

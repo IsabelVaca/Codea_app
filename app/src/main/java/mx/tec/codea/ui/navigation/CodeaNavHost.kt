@@ -33,7 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
@@ -78,7 +77,7 @@ import mx.tec.codea.ui.screens.SelectReportMethodScreen
 import mx.tec.codea.ui.screens.SelectStudentsScreen
 import mx.tec.codea.ui.screens.admin.AltaAsistenteScreen
 import mx.tec.codea.ui.screens.ResumenDelDiaScreen
-import mx.tec.codea.ui.screens.admin.CentroScreen
+import mx.tec.codea.ui.screens.admin.AvisosAdminScreen
 import mx.tec.codea.ui.screens.admin.CrearSalaScreen
 import mx.tec.codea.ui.screens.admin.DocenteDetalleScreen
 import mx.tec.codea.ui.screens.admin.DocenteOpcion
@@ -110,7 +109,7 @@ import mx.tec.codea.ui.state.AgregarMomentoViewModel
 import mx.tec.codea.ui.state.AltaAsistenteViewModel
 import mx.tec.codea.ui.state.AvisosViewModel
 import mx.tec.codea.ui.state.ChatViewModel
-import mx.tec.codea.ui.state.CentroViewModel
+import mx.tec.codea.ui.state.AvisosAdminViewModel
 import mx.tec.codea.ui.state.CheckerConfig
 import mx.tec.codea.ui.state.CheckerViewModel
 import mx.tec.codea.ui.state.ChildProfileViewModel
@@ -143,7 +142,7 @@ fun CodeaNavHost(
     navController: NavHostController,
     viewModel: CodeaViewModel,
     // which tree of screens opens first. CodeaApp decides it from the role:
-    // MyDayGraph for a teacher, AdminCentroGraph for an admin, ParentTodayRoute for a parent.
+    // MyDayGraph for a teacher, AdminAvisosGraph for an admin, ParentTodayRoute for a parent.
     startDestination: Any,
     snackbarHostState: SnackbarHostState,
     // la sesión: Mi cuenta cambia la contraseña con ella, y onLogout la cierra (CodeaApp cambia de pantalla solo).
@@ -530,38 +529,62 @@ fun CodeaNavHost(
             }
         }
 
-        // the "centro" tab. it is a graph, like MyDayGraph: "centro" is the
-        // first screen and "crear sala" opens on top of it, both keeping the
-        // bottom bar on the "centro" tab.
-        navigation<AdminCentroGraph>(startDestination = AdminCentroRoute) {
-            composable<AdminCentroRoute> {
-                val centroViewModel: CentroViewModel = viewModel()
+        // la pestaña "Avisos" (antes "Centro"): publicar un aviso y ver el historial.
+        navigation<AdminAvisosGraph>(startDestination = AdminAvisosRoute) {
+            composable<AdminAvisosRoute> {
+                val avisosAdminViewModel: AvisosAdminViewModel = viewModel()
                 val salas by salasViewModel.salas.collectAsState()
-                val infantesCentro by infantesViewModel.infantes.collectAsState()
-                val avisos by centroViewModel.avisos.collectAsState()
-                CentroScreen(
+                val avisos by avisosAdminViewModel.avisos.collectAsState()
+                AvisosAdminScreen(
                     salas = salas,
-                    infantes = infantesCentro,
-                    destinoSalaId = centroViewModel.destinoSalaId,
-                    onDestinoChange = centroViewModel::onDestinoChange,
+                    destinoSalaId = avisosAdminViewModel.destinoSalaId,
+                    onDestinoChange = avisosAdminViewModel::onDestinoChange,
                     avisos = avisos,
-                    onSalaClick = { sala ->
-                        navController.navigate(AdminSalaDetalleRoute(sala.id))
-                    },
-                    avisoTexto = centroViewModel.avisoTexto,
-                    onAvisoTextoChange = centroViewModel::onAvisoTextoChange,
-                    avisoFoto = centroViewModel.avisoFoto,
-                    onAvisoFotoChange = centroViewModel::onFotoChange,
-                    canPublicarAviso = centroViewModel.canPublicar,
-                    publicando = centroViewModel.publicando,
+                    avisoTexto = avisosAdminViewModel.avisoTexto,
+                    onAvisoTextoChange = avisosAdminViewModel::onAvisoTextoChange,
+                    avisoFoto = avisosAdminViewModel.avisoFoto,
+                    onAvisoFotoChange = avisosAdminViewModel::onFotoChange,
+                    canPublicarAviso = avisosAdminViewModel.canPublicar,
+                    publicando = avisosAdminViewModel.publicando,
+                    formularioAbierto = avisosAdminViewModel.formularioAbierto,
+                    onNuevoAviso = avisosAdminViewModel::abrirFormulario,
+                    onCancelar = avisosAdminViewModel::cerrarFormulario,
                     onPublicarAviso = {
-                        centroViewModel.publicarAviso(onSuccess = {
+                        avisosAdminViewModel.publicarAviso(onSuccess = {
                             coroutineScope.launch {
                                 snackbarHostState.showSnackbar("Aviso publicado")
                             }
                         })
                     },
-                    onCrearSala = { navController.navigate(AdminCrearSalaRoute) }
+                )
+            }
+        }
+        navigation<AdminDocentesGraph>(startDestination= AdminDocentesRoute) {
+            composable<AdminDocentesRoute>{
+                // la checada de una docente se hace desde su teléfono y aquí no avisa nada:
+                // al abrir la pestaña se vuelve a pedir la lista para ver las horas de hoy.
+                LaunchedEffect(Unit) { docentesViewModel.cargar() }
+                val docentes by docentesViewModel.docentes.collectAsState()
+                val infantes by infantesViewModel.infantes.collectAsState()
+                val salas by salasViewModel.salas.collectAsState()
+                DocenteScreen(
+                    docentes = docentes,
+                    infantes = infantes,
+                    salas = salas,
+                    onDocenteClick = { docente ->
+                        navController.navigate(AdminDocenteDetalleRoute(docente.id))
+                    },
+                    onDarDeAltaAsistente = {navController.navigate(AdminAltaAsistenteRoute)},
+                    onSalaClick = { sala ->
+                        navController.navigate(AdminSalaDetalleRoute(sala.id))
+                    },
+                    onCrearSala = { navController.navigate(AdminCrearSalaRoute) },
+                    cargando = docentesViewModel.cargando,
+                    onRecargar = {
+                        docentesViewModel.cargar()
+                        salasViewModel.cargar()
+                        infantesViewModel.cargar()
+                    },
                 )
             }
 
@@ -639,22 +662,6 @@ fun CodeaNavHost(
                     onBack = { navController.popBackStack() },
                 )
             }
-        }
-        navigation<AdminDocentesGraph>(startDestination= AdminDocentesRoute) {
-            composable<AdminDocentesRoute>{
-                val docentes by docentesViewModel.docentes.collectAsState()
-                val infantes by infantesViewModel.infantes.collectAsState()
-                val salas by salasViewModel.salas.collectAsState()
-                DocenteScreen(
-                    docentes = docentes,
-                    infantes = infantes,
-                    totalSalas = salas.size,
-                    onDocenteClick = { docente ->
-                        navController.navigate(AdminDocenteDetalleRoute(docente.id))
-                    },
-                    onDarDeAltaAsistente = {navController.navigate(AdminAltaAsistenteRoute)}
-                )
-            }
             composable<AdminDocenteDetalleRoute> { backStackEntry ->
                 val route = backStackEntry.toRoute<AdminDocenteDetalleRoute>()
                 val docentes by docentesViewModel.docentes.collectAsState()
@@ -717,11 +724,9 @@ fun CodeaNavHost(
             composable<AdminFamiliasRoute> {
                 val infantes by infantesViewModel.infantes.collectAsState()
                 val padres by padresViewModel.padres.collectAsState()
-                val salas by salasViewModel.salas.collectAsState()
                 FamiliasScreen(
                     infantes = infantes,
                     padres = padres,
-                    totalSalas = salas.size,
                     onInfanteClick = { infante -> navController.navigate(AdminInfanteDetalleRoute(infante.id)) },
                     onInscribirInfante = { navController.navigate(AdminInscribirInfanteRoute) },
                     onPadreClick = { padre -> navController.navigate(PadresAdminDetalleRoute(padre.id)) },
@@ -1053,7 +1058,6 @@ fun CodeaNavHost(
                 Scaffold(
                     topBar = {
                         BackHeader(
-                            overline = "Ajustes",
                             title = "Rutinas",
                             onBackClick = { navController.popBackStack() },
                             modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),

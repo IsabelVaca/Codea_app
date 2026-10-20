@@ -20,10 +20,10 @@ import mx.tec.codea.ui.theme.CodeaTheme
 // a back button next to the header. we write that row once here.
 @Composable
 fun BackHeader(
-    overline: String,
     title: String,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
+    overline: String? = null,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -48,6 +48,6 @@ fun BackHeader(
 @Composable
 private fun BackHeaderPreview() {
     CodeaTheme {
-        BackHeader(overline = "Menú · Checador", title = "Registrar entrada", onBackClick = {})
+        BackHeader(title = "Registrar entrada", onBackClick = {})
     }
 }

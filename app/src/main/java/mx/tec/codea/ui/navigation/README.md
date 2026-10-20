@@ -13,7 +13,7 @@
 | Rol | Grafo inicial | Pestañas |
 |---|---|---|
 | Docente | `MyDayGraph` | Mi día, Mi sala, Chats, Menú |
-| Admin | `AdminCentroGraph` | Centro, Docentes, Familias, Ajustes |
+| Admin | `AdminAvisosGraph` | Avisos, Docentes, Familias, Ajustes |
 | Padre | `ParentTodayRoute` | Hoy, Calendario, Fotos, Chat, Mi hijo |
 
 Las pestañas exactas salen de `TopLevelDestination.kt`: ahí es donde se agregan o se quitan.

@@ -24,9 +24,9 @@ fun NavHostController.reselectTopLevel(destination: TopLevelDestination) {
         TopLevelDestination.MY_DAY -> popBackStack<MyDayRoute>(inclusive = false)
         TopLevelDestination.MY_ROOM -> popBackStack<MyRoomRoute>(inclusive = false)
         TopLevelDestination.MENU -> popBackStack<MenuRoute>(inclusive = false)
-        // "centro" -> "crear sala" y "familias" -> "inscribir infante" funcionan igual:
+        // "docentes" -> "crear sala" y "familias" -> "inscribir infante" funcionan igual:
         // un segundo toque cierra la pantalla de adentro.
-        TopLevelDestination.CENTRO -> popBackStack<AdminCentroRoute>(inclusive = false)
+        TopLevelDestination.AVISOS -> popBackStack<AdminAvisosRoute>(inclusive = false)
         TopLevelDestination.DOCENTES -> popBackStack<AdminDocentesRoute>(inclusive = false)
         TopLevelDestination.FAMILIAS -> popBackStack<AdminFamiliasRoute>(inclusive = false)
         TopLevelDestination.AJUSTES -> popBackStack<AjustesAdminRoute>(inclusive = false)

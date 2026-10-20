@@ -66,7 +66,6 @@ fun InscribirPadreScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         BackHeader(
-            overline = "Familias",
             title = "Inscribir a un padre",
             onBackClick = onBack,
         )

@@ -3,7 +3,6 @@ package mx.tec.codea.ui.screens.admin
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -35,9 +35,7 @@ import androidx.compose.ui.unit.sp
 import mx.tec.codea.domain.Infante
 import mx.tec.codea.domain.Padre
 import mx.tec.codea.ui.theme.Poppins
-import mx.tec.codea.R
 import mx.tec.codea.ui.components.ScreenHeader
-import androidx.compose.ui.res.stringResource
 
 // las dos mitades de la pantalla: los niños y las personas que los recogen.
 private enum class SeccionFamilias(val etiqueta: String) {
@@ -45,14 +43,13 @@ private enum class SeccionFamilias(val etiqueta: String) {
     PADRES("Padres y tutores"),
 }
 
-// "Familias" junta lo que antes eran dos pestañas (Infantes y Padres). arriba va el resumen de
-// las dos listas y un selector; abajo, la lista elegida con su botón de inscribir.
+// "Familias" junta lo que antes eran dos pestañas (Infantes y Padres). arriba va el selector;
+// abajo, el botón de inscribir y la lista elegida.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FamiliasScreen(
     infantes: List<Infante>,
     padres: List<Padre>,
-    totalSalas: Int,
     onInfanteClick: (Infante) -> Unit,
     onInscribirInfante: () -> Unit,
     onPadreClick: (Padre) -> Unit,
@@ -61,11 +58,13 @@ fun FamiliasScreen(
 ) {
     // al volver de un detalle se queda en la lista donde estaba.
     var seleccion by rememberSaveable { mutableIntStateOf(SeccionFamilias.INFANTES.ordinal) }
+    // por omisión solo los activos; «Todos» muestra también a los dados de baja.
+    var soloInfantesActivos by rememberSaveable { mutableStateOf(true) }
+    var soloPadresActivos by rememberSaveable { mutableStateOf(true) }
     val seccion = SeccionFamilias.entries[seleccion]
 
     Scaffold(
         topBar = { ScreenHeader(
-                overline = stringResource(R.string.admin_overline),
                 title = "Familias",
                 modifier = Modifier.padding(horizontal = 22.dp, vertical = 16.dp),
             ) },
@@ -82,13 +81,6 @@ fun FamiliasScreen(
             // para que todo quede alineado.
             val lateral = Modifier.padding(horizontal = 15.dp)
 
-            ResumenFamilias(
-                infantes = infantes.size,
-                totalSalas = totalSalas,
-                padres = padres.size,
-                modifier = lateral,
-            )
-
             SingleChoiceSegmentedButtonRow(modifier = lateral.fillMaxWidth()) {
                 SeccionFamilias.entries.forEachIndexed { i, s ->
                     SegmentedButton(
@@ -100,49 +92,38 @@ fun FamiliasScreen(
             }
 
             when (seccion) {
+                // el botón de inscribir va arriba de la lista, igual que en Docentes y Salas.
                 SeccionFamilias.INFANTES -> {
-                    Box(modifier = lateral) { SeccionLabel("INFANTES INSCRITOS") }
+                    InscribirInfanteButton(onClick = onInscribirInfante, modifier = lateral)
+                    FiltroActivos(
+                        soloActivos = soloInfantesActivos,
+                        activos = infantes.count { !it.baja },
+                        total = infantes.size,
+                        onCambio = { soloInfantesActivos = it },
+                        modifier = lateral,
+                    )
                     Column {
-                        infantes.forEach { infante ->
+                        infantes.filter { !soloInfantesActivos || !it.baja }.forEach { infante ->
                             InfanteCard(infante = infante, onClick = { onInfanteClick(infante) })
                         }
                     }
-                    InscribirInfanteButton(onClick = onInscribirInfante, modifier = lateral)
                 }
 
                 SeccionFamilias.PADRES -> {
-                    Box(modifier = lateral) { SeccionLabel("PADRES Y TUTORES") }
-                    Column(modifier = lateral, verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        padres.forEachIndexed { i, p ->
-                            val (bg, fg) = avatarColores[i % avatarColores.size]
-                            PadreFila(p, bg, fg) { onPadreClick(p) }
-                        }
-                    }
                     BotonInscribirPadre(onClick = onInscribirPadre, modifier = lateral)
+                    FiltroActivos(
+                        soloActivos = soloPadresActivos,
+                        activos = padres.count { it.conAcceso },
+                        total = padres.size,
+                        onCambio = { soloPadresActivos = it },
+                        modifier = lateral,
+                    )
+                    Column {
+                        padres.filter { !soloPadresActivos || it.conAcceso }.forEach { p -> PadreFila(p) { onPadreClick(p) } }
+                    }
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun ResumenFamilias(infantes: Int, totalSalas: Int, padres: Int, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
-            .background(Color(0xFFEFE9FF))
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-    ) {
-        Text(
-            "$infantes infantes · $padres padres y tutores",
-            fontFamily = Poppins, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF5B3FE0),
-        )
-        Text(
-            "Niños inscritos en $totalSalas salas y personas con acceso a la app",
-            fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF5B4B8A),
-        )
     }
 }
 

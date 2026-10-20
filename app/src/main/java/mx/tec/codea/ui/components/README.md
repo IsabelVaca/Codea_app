@@ -16,8 +16,9 @@ Piezas reutilizables entre pantallas.
 
 Toda pantalla empieza igual, en los tres perfiles:
 
-- **Pestañas** (la barra inferior): `ScreenHeader(overline, title)`. El sobretítulo dice dónde estás; en el admin es `admin_overline` («Estancia La Oruga · Administración»), en la docente y el padre el nombre del lugar o de la persona.
-- **Pantallas que abren encima de una pestaña:** `BackHeader(overline, title, onBackClick)`, con el botón redondo de regreso. El sobretítulo es la sección de donde vienes (`Centro`, `Docentes`, `Familias`, `Ajustes · Rutinas`).
+- **Pestañas** (la barra inferior): `ScreenHeader(title)`.
+- **Pantallas que abren encima de una pestaña:** `BackHeader(title, onBackClick)`, con el botón redondo de regreso.
+- **Sin sobretítulo** (la línea gris de arriba, «Estancia La Oruga · Administración»): se quitó de todas las pantallas el 19/oct. `overline` es opcional y solo lo usan las que llevan un dato: el reporte («Subproceso 3 · Comida»), elegir niños («Reporte · …»), el resumen guiado («Resumen 2 de 5»), Mi día (el nombre de la rutina) y el chat de la docente (los papás).
 - No se escriben encabezados a mano ni con `TopAppBar`. Desde el 18/oct las pantallas del admin (y la bandeja de Chats) siguen esta regla.
 
 ## Notas sobre `DeviceLaunchers.kt`

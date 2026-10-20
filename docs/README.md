@@ -11,6 +11,7 @@
 | [`DECISIONES-PENDIENTES.md`](DECISIONES-PENDIENTES.md) | Excepciones al marco que esperan aprobación |
 | [`ENTREGA-3.md`](ENTREGA-3.md) | Checklist de la rúbrica final |
 | [`PLAN.md`](PLAN.md) | Plan del 16 al 22 de octubre |
+| [`INCIDENTE-2026-10-19.md`](INCIDENTE-2026-10-19.md) | Cuentas que no se activaban, servidores mezclados y datos borrados en producción: qué pasó y cómo se corrigió |
 
 > La sección de prototipos de abajo es de la primera etapa. La tabla "Estado" de las pantallas está desactualizada: por ejemplo, Chats ya envía mensajes por la API y el Menú ya no es solo de muestra. Para el estado real ve [`ESTADO.md`](ESTADO.md).
 

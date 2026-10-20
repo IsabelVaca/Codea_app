@@ -60,7 +60,7 @@ fun RutinaDetalleScreen(
     ) {
         item(key = "header") {
             Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            BackHeader(overline = "Ajustes · Rutinas", title = nombreRutina, onBackClick = onBack)
+            BackHeader(title = nombreRutina, onBackClick = onBack)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()

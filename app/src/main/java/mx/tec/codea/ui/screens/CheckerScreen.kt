@@ -75,7 +75,6 @@ fun CheckerScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         BackHeader(
-            overline = stringResource(R.string.checker_overline),
             // con la entrada ya registrada la pantalla es la de la salida.
             title = stringResource(if (registeredCheckIn != null) R.string.checker_title_registered else R.string.checker_title),
             onBackClick = onBackClick,

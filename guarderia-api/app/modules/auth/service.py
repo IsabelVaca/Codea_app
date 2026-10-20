@@ -153,7 +153,7 @@ async def _issue_tokens(
 
 
 async def login(db: AsyncSession, data: LoginIn, user_agent: str | None, ip: str | None = None) -> TokenOut:
-    email = data.email.strip().lower()
+    email = rules.clean_email(data.email)
     # primero el límite de intentos: con el correo bloqueado ni siquiera se revisa la contraseña.
     await throttle.check(db, throttle.LOGIN, email, ip)
     user = await db.scalar(select(AppUser).where(AppUser.email == email))
@@ -181,7 +181,7 @@ async def login(db: AsyncSession, data: LoginIn, user_agent: str | None, ip: str
 
 async def activate(db: AsyncSession, data: ActivateIn, user_agent: str | None, ip: str | None = None) -> TokenOut:
     """Primer acceso (o contraseña nueva): el código del administrador abre la cuenta y fija la contraseña."""
-    email = data.email.strip().lower()
+    email = rules.clean_email(data.email)
     rules.check_password(data.password, email)
     # el código es corto, así que también se limitan los intentos para que no se pueda adivinar.
     await throttle.check(db, throttle.ACTIVATE, email, ip)

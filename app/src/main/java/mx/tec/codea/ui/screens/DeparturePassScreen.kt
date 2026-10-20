@@ -75,7 +75,6 @@ fun DeparturePassScreen(
         ) {
             item {
                 BackHeader(
-                    overline = stringResource(R.string.nav_my_day),
                     title = stringResource(R.string.departure_title),
                     onBackClick = onBackClick,
                 )

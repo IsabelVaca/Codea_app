@@ -70,7 +70,6 @@ fun RollCallScreen(
         ) {
             item {
                 BackHeader(
-                    overline = stringResource(R.string.nav_my_day),
                     title = stringResource(R.string.roll_call_title),
                     onBackClick = onBackClick,
                 )

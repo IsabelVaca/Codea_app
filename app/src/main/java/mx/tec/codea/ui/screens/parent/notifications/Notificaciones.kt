@@ -85,7 +85,6 @@ data class NotifUi(
 // encabezado de la pantalla Hoy: título a la izquierda, campana a la derecha.
 @Composable
 fun HoyHeader(
-    contexto: String,         // "Estancia La Oruga · Familia"
     titulo: String,           // "El día de Mateo"
     pendientes: Int,
     onAbrirNotif: () -> Unit,
@@ -102,10 +101,6 @@ fun HoyHeader(
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(
-                contexto.uppercase(), fontFamily = Poppins, fontWeight = FontWeight.Bold,
-                fontSize = 11.sp, letterSpacing = 1.3.sp, color = AvisoColores.Gris, maxLines = 1
-            )
             Text(
                 titulo, fontFamily = Poppins, fontWeight = FontWeight.Bold,
                 fontSize = 22.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground, maxLines = 1
