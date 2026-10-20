@@ -49,6 +49,17 @@ curl https://api.codeaapp.site/api/v1/health/ready   # {"status":"ok","database"
 - Si el túnel no conecta (`Failed to dial a quic connection`), la red bloquea UDP: por eso el compose fija `--protocol http2`.
 - Un dominio recién agregado a Cloudflare tarda unos minutos en tener certificado; mientras, HTTPS falla con `handshake failure`.
 
+**Si la máquina se duerme (o se cierra la tapa).** El túnel pierde su conexión con Cloudflare y a veces no se recupera solo: el contenedor sigue «Up», la API responde dentro de la máquina, pero desde afuera Cloudflare devuelve **530** y en `prod logs tunnel` aparece `lookup region1.v2.argotunnel.com ... no such host`. Al despertar la máquina:
+
+```bash
+docker restart codea-prod-tunnel-1   # solo el túnel; la API, la base y las fotos no se tocan
+docker logs --since 30s codea-prod-tunnel-1 | grep "Registered tunnel connection"   # deben salir 4
+```
+
+Para que no pase, la máquina servidor no se debe dormir: Configuración → Batería/Energía → evitar la suspensión automática, o `caffeinate -s` en una terminal mientras sirva (con la tapa cerrada se duerme igual, salvo conectada a corriente y a una pantalla externa).
+
+**Por qué tarda.** Medido el 20/oct: la API sola responde en ~1 ms, pero cada consulta a Aiven tarda ~50 ms de ida y vuelta (abrir una conexión nueva, ~370 ms), y una pantalla hace varias (`/teachers`: 4 consultas más las de la sesión, ~160–400 ms en el servidor). Desde el teléfono, la misma petición tarda ~1.6 s: el resto es el camino teléfono → Cloudflare → túnel (HTTP/2, porque la red bloquea QUIC) → la máquina. Lo que más ayudaría es tener la base en la misma máquina que la API (el Postgres del servicio `db`), a cambio de perder lo que da Aiven.
+
 **Compartirla con el equipo.** Los developers apuntan su app a `https://api.codeaapp.site/api/v1/` (cómo y con qué reglas: [`docs/GUIA-CONTINUAR.md`](../docs/GUIA-CONTINUAR.md), sección 2). Las cuentas salen del seed o de un admin; fuera de `ENV=dev` el seed imprime un código de acceso por persona: pásale a cada quien su correo y su código por privado. Nunca compartas `.env.prod` ni el token del túnel; si el token se filtra, ve al panel del túnel → *Rotate token* y cámbialo en `.env.prod`.
 
 ### La base de producción: Aiven (decisión del 19/oct)
