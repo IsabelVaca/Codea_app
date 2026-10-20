@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -57,6 +58,9 @@ fun AuthFrame(
             .fillMaxSize()
             // sin fondo propio se veía el de la ventana (claro) con texto del tema oscuro.
             .background(MaterialTheme.colorScheme.background)
+            // el login está fuera del Scaffold de la app, así que pone sus propios márgenes: barras del sistema y
+            // teclado. con el teclado abierto el área se achica, todo sube y el campo que se escribe queda a la vista.
+            .safeDrawingPadding()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 28.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.Center,
