@@ -10,7 +10,9 @@ Registro cronológico de lo que se hizo, por qué y cómo se verificó. Lo nuevo
 - Nombres: `api.codeaapp.site` → `api:8000` y `archivos.codeaapp.site` → `storage:9000` (las URLs firmadas de fotos se firman con ese host).
 - `guarderia-api/.env.prod.example` (ignorado como `.env.prod` en git y en la imagen) y la sección «Producción en codeaapp.site» del README de la API.
 - App: release apunta a `https://api.codeaapp.site/api/v1/` y los enlaces de invitación a `api.codeaapp.site` por omisión.
-- Verificación: `docker compose ... config` con un `.env.prod` de prueba (sin puertos publicados, red y comando correctos). **Sin levantar todavía:** falta crear el túnel en el panel de Cloudflare.
+- **Levantado y verificado (19/oct, en la Mac de Oscar):** túnel `codea-prod` *Healthy* con las rutas `api` y `archivos`; migraciones en `a07c3d8e6f76`; bucket creado. `GET https://api.codeaapp.site/api/v1/health/ready` → `{"status":"ok","database":"ok"}`; cabeceras `Strict-Transport-Security`, `X-Content-Type-Options`, `X-Frame-Options` y `Cache-Control: no-store`; certificado de Let's Encrypt emitido por Cloudflare (tardó ~8 min); `archivos.codeaapp.site` responde 403 sin firma (S3 vivo); `assetlinks.json` 200; un login fallido queda con la IP real del cliente en el registro de uvicorn.
+- El túnel no conectaba por QUIC (UDP bloqueado en la red): se fijó `--protocol http2`.
+- Base de producción vacía: todavía no hay ningún usuario.
 - Sigue abierta la #9: el almacén de producción es el mismo SeaweedFS del compose.
 
 ## 2026-10-18 (domingo)

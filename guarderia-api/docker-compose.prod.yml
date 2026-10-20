@@ -35,7 +35,8 @@ services:
 
   tunnel:
     image: cloudflare/cloudflared:2026.10.1
-    command: ["tunnel", "--no-autoupdate", "run"]
+    # http2 (TCP 443) en vez de QUIC (UDP 7844): muchas redes bloquean el UDP y el túnel no conecta.
+    command: ["tunnel", "--no-autoupdate", "--protocol", "http2", "run"]
     environment:
       TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?falta CLOUDFLARE_TUNNEL_TOKEN en .env.prod}
     depends_on:
