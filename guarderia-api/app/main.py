@@ -23,6 +23,7 @@ from .modules.classrooms.router import router as classrooms
 from .modules.departures.router import router as departures
 from .modules.documents.router import router as documents
 from .modules.media.router import router as media
+from .modules.menus.router import router as menus
 from .modules.messaging.router import router as messaging
 from .modules.parents.router import router as parents
 from .modules.reports.router import router as reports
@@ -130,6 +131,7 @@ for router in (
     media,
     documents,
     departures,
+    menus,
     messaging,
 ):
     api.include_router(router)

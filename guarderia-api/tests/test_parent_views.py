@@ -41,10 +41,11 @@ async def test_today_screen(client, world):
     assert day["attendance"] == "PRESENT"
     assert day["summary"]["nap_minutes"] == 50
     assert [(event["type"], event["title"]) for event in day["timeline"]] == [
+        ("ARRIVAL", "Entrada"),
         ("CHECK_IN", "Recepción"),
         ("MEAL", "Desayuno"),
     ]
-    assert day["timeline"][1]["description"] == "Comió todo: fruta, avena y leche."
+    assert day["timeline"][2]["description"] == "Comió todo: fruta, avena y leche."
     assert [n["text"] for n in day["notes"]] == ["Hoy la recoge su abuela"]
 
     assert (await client.get(f"/children/{world.renata.id}/day", headers=world.mom)).status_code == 404

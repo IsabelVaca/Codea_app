@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 from app.core.schemas import ClassroomRef
 from app.modules.attendance.models import AttendanceStatus
+from app.modules.menus.schemas import MenuOut
 from app.modules.messaging.schemas import NoteOut
 
 from .models import MealAmount, Mood, ReportMethod, ReportType
@@ -62,6 +63,8 @@ class TimelineType(StrEnum):
     """TimelineEventType de la pantalla Hoy."""
 
     CHECK_IN = "CHECK_IN"
+    # la entrada del niño: la hora en que la docente le pasó lista como presente.
+    ARRIVAL = "ARRIVAL"
     MEAL = "MEAL"
     ACTIVITY = "ACTIVITY"
     NAP = "NAP"
@@ -96,6 +99,8 @@ class DayOut(BaseModel):
     summary: DailyEntryOut | None
     timeline: list[TimelineEvent]
     notes: list[NoteOut]
+    # lo que se come ese día en el centro (HN3); None si todavía no lo capturan.
+    menu: MenuOut | None = None
 
 
 class WeekDayStatus(StrEnum):

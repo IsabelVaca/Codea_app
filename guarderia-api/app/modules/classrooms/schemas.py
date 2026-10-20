@@ -95,6 +95,8 @@ class RoomChild(BaseModel):
     surname: str
     full_name: str
     attendance: AttendanceStatus
+    # a qué hora se le pasó lista como presente; None si está ausente o la marca es anterior a la hora de entrada.
+    arrived_at: datetime | None = None
     conversation_id: int | None
     has_unread_chat: bool
     unread_count: int

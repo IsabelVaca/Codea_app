@@ -49,8 +49,11 @@ class Announcement(IdMixin, Base):
 
     daycare_center_id: Mapped[int] = mapped_column(ForeignKey("daycare_center.id"))
     classroom_id: Mapped[int | None] = mapped_column(ForeignKey("classroom.id"))
+    # vacío si el aviso es solo una imagen.
     text: Mapped[str] = mapped_column(Text)
     author_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("app_user.id"))
+    # la imagen del aviso (opcional); vive en el bucket igual que las demás y no es una foto de la galería de ningún niño.
+    media_id: Mapped[int | None] = mapped_column(ForeignKey("media.id"))
 
 
 class ParentNote(IdMixin, Base):

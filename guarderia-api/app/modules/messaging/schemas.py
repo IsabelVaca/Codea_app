@@ -8,7 +8,10 @@ from app.modules.parents.models import Relationship
 
 
 class AnnouncementIn(BaseModel):
-    text: str
+    # puede ir vacío si el aviso trae una imagen.
+    text: str = ""
+    # la imagen ya subida al bucket (POST /media/uploads y /media/{id}/complete).
+    media_id: int | None = None
     # sin sala, el aviso es para todo el centro.
     classroom_id: int | None = None
 
@@ -19,6 +22,8 @@ class AnnouncementOut(Schema):
     classroom_id: int | None
     # el nombre de la sala (null = aviso para todo el centro).
     classroom_name: str | None = None
+    # URL firmada de 10 minutos de la imagen; null si el aviso no trae imagen o ya se borró.
+    media_url: str | None = None
     created_at: datetime
 
 

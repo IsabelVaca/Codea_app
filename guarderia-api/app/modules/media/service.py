@@ -1,7 +1,6 @@
 import uuid
 
 from sqlalchemy import case, select, update
-from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core import clock
@@ -11,17 +10,12 @@ from app.core.security import CurrentUser, get_child_in_scope
 from app.core.storage import UPLOAD_SECONDS, Storage
 from app.modules.audit import service as audit
 from app.modules.auth.models import AppUser
-from app.modules.children.models import Child
 from app.modules.parents.models import ParentChildRel
 from app.modules.reports.models import Report, ReportType
 from app.modules.routines.models import MomentCategory, RoutineMoment
 
-from .models import DeletionStatus, Media, MediaChild, MediaDeletionRequest, MediaKind, MediaStatus
+from .models import Media, MediaChild, MediaKind, MediaStatus
 from .schemas import (
-    DeletionDecisionIn,
-    DeletionRequestIn,
-    DeletionRequestOut,
-    DeletionReviewOut,
     FeedItem,
     MediaOut,
     PhotoCategory,
@@ -154,39 +148,11 @@ async def feed(
     )
 
 
-async def request_deletion(
-    db: AsyncSession, current: CurrentUser, media_id: int, data: DeletionRequestIn
-) -> tuple[DeletionRequestOut, bool]:
-    """El botón "Pedir que se borre": solo sobre fotos donde aparece un hijo del padre."""
-    visible = await db.scalar(
-        select(MediaChild.media_id)
-        .join(ParentChildRel, ParentChildRel.child_id == MediaChild.child_id)
-        .where(MediaChild.media_id == media_id, ParentChildRel.parent_id == current.id)
-        .limit(1)
-    )
-    if visible is None:
-        raise ApiError(404, "MEDIA_NOT_FOUND", "No existe esa foto")
-    result = await db.execute(
-        insert(MediaDeletionRequest)
-        .values(media_id=media_id, requested_by=current.id, reason=(data.reason or "").strip() or None)
-        .on_conflict_do_nothing()
-        .returning(MediaDeletionRequest.id)
-    )
-    created = result.scalar() is not None
-    await db.commit()
-    request = await db.scalar(
-        select(MediaDeletionRequest).where(
-            MediaDeletionRequest.media_id == media_id, MediaDeletionRequest.requested_by == current.id
-        )
-    )
-    return DeletionRequestOut.model_validate(request), created
-
-
 async def delete_own_photo(db: AsyncSession, current: CurrentUser, storage: Storage, media_id: int) -> None:
-    """El botón "Borrar" de la familia: borra la foto del bucket y de todas las pantallas, sin pasar por el admin.
+    """El botón "Borrar" de la familia: borra la foto del bucket y de todas las pantallas, sin pedirle permiso a nadie.
 
-    Solo si todos los niños etiquetados son hijos de quien la borra. Si sale algún niño de otra familia, la foto
-    no es solo suya: responde 409 y la decisión queda con la dirección.
+    Basta con que salga un hijo de quien la borra. Si en la foto salen también niños de otras familias, se borra
+    igual: la decisión es de la familia que aparece en ella (cambio pedido el 19/oct).
     """
     media = await db.scalar(
         select(Media)
@@ -205,10 +171,6 @@ async def delete_own_photo(db: AsyncSession, current: CurrentUser, storage: Stor
     )
     if media is None or not mine:
         raise ApiError(404, "MEDIA_NOT_FOUND", "No existe esa foto")
-    if tagged - mine:
-        raise ApiError(
-            409, "MEDIA_SHARED", "En esta foto salen niños de otras familias; pide a la dirección que decida si se borra"
-        )
     # primero el bucket: si falla, no se marca nada como borrado.
     try:
         await storage.delete(media.storage_key)
@@ -217,124 +179,12 @@ async def delete_own_photo(db: AsyncSession, current: CurrentUser, storage: Stor
     media.status = MediaStatus.DELETED
     # los reportes conservan su texto, pero ya no apuntan a una foto que no existe.
     await db.execute(update(Report).where(Report.media_id == media.id).values(media_id=None))
-    # una solicitud de borrado anterior queda resuelta con ella.
-    await db.execute(
-        update(MediaDeletionRequest)
-        .where(MediaDeletionRequest.media_id == media.id, MediaDeletionRequest.status == DeletionStatus.PENDING)
-        .values(
-            status=DeletionStatus.APPROVED,
-            decided_by=current.id,
-            decided_at=clock.now(),
-            decision_note="La familia la borró",
-        )
-    )
-    audit.record(
-        db, audit.MEDIA_DELETED_BY_FAMILY, actor_id=current.id, entity_type="MEDIA", entity_id=media.id, detail=None
-    )
-    await db.commit()
-
-
-# ---------------------------------------------------------------- revisión del admin
-
-
-async def list_deletion_requests(
-    db: AsyncSession, storage: Storage, status: DeletionStatus
-) -> list[DeletionReviewOut]:
-    """Las solicitudes de borrado con ese estado, de la más vieja a la más nueva (la que lleva más esperando, primero)."""
-    return await _reviews(db, storage, MediaDeletionRequest.status == status)
-
-
-async def _reviews(db: AsyncSession, storage: Storage, *conditions) -> list[DeletionReviewOut]:
-    rows = (
-        await db.execute(
-            select(MediaDeletionRequest, Media, AppUser)
-            .join(Media, Media.id == MediaDeletionRequest.media_id)
-            .join(AppUser, AppUser.id == MediaDeletionRequest.requested_by)
-            .where(*conditions)
-            .order_by(MediaDeletionRequest.id)
-        )
-    ).all()
-    names: dict[int, list[str]] = {}
-    media_ids = [media.id for _, media, _ in rows]
-    if media_ids:
-        for media_id, child in (
-            await db.execute(
-                select(MediaChild.media_id, Child)
-                .join(Child, Child.id == MediaChild.child_id)
-                .where(MediaChild.media_id.in_(media_ids))
-                .order_by(Child.name)
-            )
-        ).all():
-            names.setdefault(media_id, []).append(child.full_name)
-    return [
-        DeletionReviewOut(
-            id=request.id,
-            media_id=media.id,
-            status=request.status,
-            reason=request.reason,
-            requested_by_id=requester.id,
-            requested_by_name=requester.full_name,
-            child_names=names.get(media.id, []),
-            photo_url=None if media.status == MediaStatus.DELETED else storage.presign_get(media.storage_key),
-            created_at=request.created_at,
-            decided_at=request.decided_at,
-            decision_note=request.decision_note,
-        )
-        for request, media, requester in rows
-    ]
-
-
-async def decide_deletion(
-    db: AsyncSession,
-    current: CurrentUser,
-    storage: Storage,
-    request_id: int,
-    approve: bool,
-    data: DeletionDecisionIn,
-) -> DeletionReviewOut:
-    """Aprobar borra la foto del bucket y de todas las pantallas; rechazar la deja como estaba.
-    Una solicitud ya resuelta no se vuelve a resolver (409)."""
-    request = await db.scalar(
-        select(MediaDeletionRequest).where(MediaDeletionRequest.id == request_id).with_for_update()
-    )
-    if request is None:
-        raise ApiError(404, "DELETION_REQUEST_NOT_FOUND", "No existe esa solicitud")
-    if request.status != DeletionStatus.PENDING:
-        raise ApiError(409, "REQUEST_ALREADY_DECIDED", "Esa solicitud ya se resolvió")
-
-    now = clock.now()
-    note = (data.note or "").strip() or None
-    new_status = DeletionStatus.APPROVED if approve else DeletionStatus.REJECTED
-    media = await db.get(Media, request.media_id)
-    if approve:
-        # primero el bucket: si falla, no se marca nada como borrado.
-        try:
-            await storage.delete(media.storage_key)
-        except Exception as error:
-            raise ApiError(502, "STORAGE_UNAVAILABLE", "No se pudo borrar el archivo; intenta de nuevo") from error
-        media.status = MediaStatus.DELETED
-        # los reportes conservan su texto, pero ya no apuntan a una foto que no existe.
-        await db.execute(update(Report).where(Report.media_id == media.id).values(media_id=None))
-        # si otras familias pidieron borrar la misma foto, su solicitud queda resuelta con ella.
-        await db.execute(
-            update(MediaDeletionRequest)
-            .where(
-                MediaDeletionRequest.media_id == media.id,
-                MediaDeletionRequest.status == DeletionStatus.PENDING,
-            )
-            .values(status=new_status, decided_by=current.id, decided_at=now, decision_note=note)
-        )
-    request.status = new_status
-    request.decided_by = current.id
-    request.decided_at = now
-    request.decision_note = note
     audit.record(
         db,
-        audit.MEDIA_DELETION_APPROVED if approve else audit.MEDIA_DELETION_REJECTED,
+        audit.MEDIA_DELETED_BY_FAMILY,
         actor_id=current.id,
         entity_type="MEDIA",
         entity_id=media.id,
-        detail={"request_id": request.id},
+        detail={"children": sorted(tagged)} if tagged - mine else None,
     )
     await db.commit()
-    return (await _reviews(db, storage, MediaDeletionRequest.id == request.id))[0]

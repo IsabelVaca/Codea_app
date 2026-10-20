@@ -1,8 +1,8 @@
 import uuid
-from datetime import date
+from datetime import date, datetime
 from enum import StrEnum
 
-from sqlalchemy import ForeignKey, UniqueConstraint
+from sqlalchemy import DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import Base, IdMixin, str_enum
@@ -23,3 +23,6 @@ class Attendance(IdMixin, Base):
     date: Mapped[date]
     status: Mapped[AttendanceStatus] = mapped_column(str_enum(AttendanceStatus))
     marked_by: Mapped[uuid.UUID] = mapped_column(ForeignKey("app_user.id"))
+    # la hora de entrada del niño (RF-03): cuándo se le pasó lista como presente. Vacía si está ausente, o en
+    # las marcas anteriores a que existiera la columna.
+    arrived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

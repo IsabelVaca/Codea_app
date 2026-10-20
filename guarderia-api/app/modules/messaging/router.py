@@ -12,16 +12,20 @@ router = APIRouter(tags=["comunicación"])
 
 
 @router.post("/announcements", response_model=AnnouncementOut, status_code=status.HTTP_201_CREATED)
-async def create_announcement(db: Db, current: AdminUser, data: AnnouncementIn) -> AnnouncementOut:
-    """Publica un aviso. Sin classroom_id es para todo el centro; con él, solo para esa sala."""
-    return await service.create_announcement(db, current, data)
+async def create_announcement(
+    db: Db, current: AdminUser, storage: StorageDep, data: AnnouncementIn
+) -> AnnouncementOut:
+    """Publica un aviso con texto, imagen o ambos. Sin classroom_id es para todo el centro; con él, solo para esa sala."""
+    return await service.create_announcement(db, current, storage, data)
 
 
 @router.get("/announcements", response_model=list[AnnouncementOut])
-async def list_announcements(db: Db, current: AnyUser, limit: int = Query(50, ge=1, le=200)) -> list[AnnouncementOut]:
+async def list_announcements(
+    db: Db, current: AnyUser, storage: StorageDep, limit: int = Query(50, ge=1, le=200)
+) -> list[AnnouncementOut]:
     """Los avisos, el más reciente primero. Admin: todos los del centro. Docente y papá: los del
     centro entero y los de su sala (o la de sus hijos)."""
-    return await service.list_announcements(db, current, limit)
+    return await service.list_announcements(db, current, storage, limit)
 
 
 @router.get("/conversations", response_model=list[ConversationOut])

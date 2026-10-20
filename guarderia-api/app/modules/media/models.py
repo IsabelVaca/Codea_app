@@ -50,7 +50,10 @@ class DeletionStatus(StrEnum):
 
 
 class MediaDeletionRequest(IdMixin, Base):
-    """El botón "Pedir que se borre" de la pantalla Fotos."""
+    """Las solicitudes de borrado de antes del 19/oct. **Sin uso**: la familia borra directo (DELETE /media/{id}).
+
+    La tabla se conserva con su historial para no hacer una migración que borre datos; ya nada la lee ni la escribe.
+    """
 
     __tablename__ = "media_deletion_request"
     __table_args__ = (UniqueConstraint("media_id", "requested_by"),)

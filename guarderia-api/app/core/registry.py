@@ -15,3 +15,4 @@ from app.modules.documents import models as _documents  # noqa: F401
 from app.modules.messaging import models as _messaging  # noqa: F401
 from app.modules.audit import models as _audit  # noqa: F401
 from app.modules.departures import models as _departures  # noqa: F401
+from app.modules.menus import models as _menus  # noqa: F401

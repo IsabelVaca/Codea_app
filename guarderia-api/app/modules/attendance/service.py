@@ -1,10 +1,11 @@
 import calendar
 from datetime import date
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core import clock
 from app.core.errors import ApiError
 from app.core.security import CurrentUser, get_child_in_scope
 from app.modules.classrooms.centers import center_today
@@ -16,18 +17,36 @@ from .schemas import AttendanceIn, AttendanceOut, CalendarDay, CalendarOut, Cale
 
 
 async def set_attendance(db: AsyncSession, current: CurrentUser, child_id: int, data: AttendanceIn) -> AttendanceOut:
-    """Marca a un niño como presente o ausente. Sin registro, cuenta como ausente."""
+    """Marca a un niño como presente o ausente. Sin registro, cuenta como ausente.
+
+    Al marcarlo presente se guarda la hora de entrada (la de la app si la marca se hizo sin conexión, si no la del
+    servidor). Volver a marcarlo presente no la cambia; marcarlo ausente la borra.
+    """
     child = await get_child_in_scope(db, current, child_id)
     day = data.date or await center_today(db)
-    statement = insert(Attendance).values(child_id=child.id, date=day, status=data.status, marked_by=current.id)
+    now = clock.now()
+    present = data.status == AttendanceStatus.PRESENT
+    arrived_at = (min(data.arrived_at, now) if data.arrived_at else now) if present else None
+    statement = insert(Attendance).values(
+        child_id=child.id, date=day, status=data.status, marked_by=current.id, arrived_at=arrived_at
+    )
+    # en el DO UPDATE, `Attendance.arrived_at` es la hora que ya estaba guardada.
+    kept = func.coalesce(Attendance.arrived_at, statement.excluded.arrived_at) if present else None
     await db.execute(
         statement.on_conflict_do_update(
             index_elements=["child_id", "date"],
-            set_={"status": statement.excluded.status, "marked_by": statement.excluded.marked_by},
+            set_={
+                "status": statement.excluded.status,
+                "marked_by": statement.excluded.marked_by,
+                "arrived_at": kept,
+            },
         )
     )
     await db.commit()
-    return AttendanceOut(child_id=child.id, date=day, status=data.status)
+    stored = await db.scalar(
+        select(Attendance.arrived_at).where(Attendance.child_id == child.id, Attendance.date == day)
+    )
+    return AttendanceOut(child_id=child.id, date=day, status=data.status, arrived_at=stored)
 
 
 def _parse_month(month: str) -> tuple[date, date]:

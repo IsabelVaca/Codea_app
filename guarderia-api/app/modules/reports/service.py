@@ -14,6 +14,7 @@ from app.modules.classrooms.centers import center_of_classroom, center_today
 from app.modules.classrooms.models import Classroom
 from app.modules.departures.models import ChildDeparture
 from app.modules.media.models import Media, MediaChild, MediaKind, MediaStatus
+from app.modules.menus.service import menu_of
 from app.modules.messaging.models import ParentNote
 from app.modules.messaging.schemas import NoteOut
 from app.modules.routines import service as routines
@@ -180,8 +181,13 @@ async def child_day(db: AsyncSession, current: CurrentUser, child_id: int, day: 
     classroom = await db.get(Classroom, child.classroom_id) if child.classroom_id else None
     center = await center_of_classroom(db, child.classroom_id)
 
-    marked = await db.scalar(select(Attendance.status).where(Attendance.child_id == child.id, Attendance.date == day))
-    attendance = marked or AttendanceStatus.ABSENT
+    marked = (
+        await db.execute(
+            select(Attendance.status, Attendance.arrived_at).where(Attendance.child_id == child.id, Attendance.date == day)
+        )
+    ).first()
+    attendance = marked.status if marked else AttendanceStatus.ABSENT
+    arrived_at = marked.arrived_at if marked and attendance == AttendanceStatus.PRESENT else None
     summary = await db.scalar(select(DailySummary).where(DailySummary.child_id == child.id, DailySummary.date == day))
     notes = (
         await db.scalars(
@@ -190,6 +196,18 @@ async def child_day(db: AsyncSession, current: CurrentUser, child_id: int, day: 
     ).all()
 
     timeline: list[TimelineEvent] = []
+    # la familia ve a qué hora entró su hijo (la hora del pase de lista de la docente).
+    if arrived_at is not None:
+        timeline.append(
+            TimelineEvent(
+                id=f"arrival-{child.id}",
+                type=TimelineType.ARRIVAL,
+                title="Entrada",
+                time=arrived_at,
+                description="Llegó al centro.",
+                report_types=[],
+            )
+        )
     if attendance != AttendanceStatus.ABSENT and classroom is not None:
         moments = (
             await db.scalars(
@@ -256,6 +274,7 @@ async def child_day(db: AsyncSession, current: CurrentUser, child_id: int, day: 
         summary=_summary_out(summary) if summary else None,
         timeline=timeline,
         notes=[NoteOut.model_validate(note) for note in notes],
+        menu=await menu_of(db, center.id, day),
     )
 
 

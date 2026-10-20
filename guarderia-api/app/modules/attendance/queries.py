@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from datetime import date
+from datetime import date, datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,3 +26,19 @@ async def present_child_ids(db: AsyncSession, child_ids: Iterable[int], day: dat
             )
         ).all()
     )
+
+
+async def arrival_times(db: AsyncSession, child_ids: Iterable[int], day: date) -> dict[int, datetime]:
+    """La hora de entrada de los niños presentes ese día. Falta quien está ausente o no tiene hora guardada."""
+    ids = list(child_ids)
+    if not ids:
+        return {}
+    rows = await db.execute(
+        select(Attendance.child_id, Attendance.arrived_at).where(
+            Attendance.child_id.in_(ids),
+            Attendance.date == day,
+            Attendance.status == AttendanceStatus.PRESENT,
+            Attendance.arrived_at.is_not(None),
+        )
+    )
+    return {child_id: arrived_at for child_id, arrived_at in rows.all()}

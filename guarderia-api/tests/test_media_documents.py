@@ -70,12 +70,6 @@ async def test_photo_report_reaches_the_family(client, world, storage, db):
     # Diego no sale en la foto, y Carlos no es papá de Sofía.
     assert (await client.get("/media", params={"child_id": world.diego.id}, headers=world.teacher_a)).json()["items"] == []
     assert (await client.get("/media", params={"child_id": world.sofia.id}, headers=world.dad)).status_code == 404
-    assert (await client.post(f"/media/{media_id}/deletion-request", headers=world.dad)).status_code == 404
-
-    first = await client.post(f"/media/{media_id}/deletion-request", headers=world.mom, json={"reason": "No me gusta"})
-    assert first.status_code == 201 and first.json()["status"] == "PENDING"
-    again = await client.post(f"/media/{media_id}/deletion-request", headers=world.mom)
-    assert again.status_code == 200 and again.json()["id"] == first.json()["id"]
 
     stored = await db.scalar(select(Media).where(Media.id == media_id))
     assert stored.size_bytes == 1234

@@ -8,7 +8,7 @@ from app.core import clock, rules
 from app.core.errors import ApiError
 from app.core.security import CurrentUser, ensure_classroom_access
 from app.modules.attendance.models import AttendanceStatus
-from app.modules.attendance.queries import present_child_ids
+from app.modules.attendance.queries import arrival_times, present_child_ids
 from app.modules.auth.models import AppUser
 from app.modules.children.models import Child, ChildStatus
 from app.modules.messaging import service as messaging
@@ -222,6 +222,7 @@ async def room_children(
     ).all()
     ids = [child.id for child in children]
     present = await present_child_ids(db, ids, day)
+    arrivals = await arrival_times(db, ids, day)
     chats = await messaging.unread_by_child(db, current.id, ids)
     notes: dict[int, list[RoomNote]] = {}
     for note in (
@@ -243,6 +244,7 @@ async def room_children(
                 surname=child.surname,
                 full_name=child.full_name,
                 attendance=AttendanceStatus.PRESENT if child.id in present else AttendanceStatus.ABSENT,
+                arrived_at=arrivals.get(child.id),
                 conversation_id=conversation_id,
                 has_unread_chat=unread > 0,
                 unread_count=unread,

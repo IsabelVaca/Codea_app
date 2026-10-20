@@ -69,6 +69,7 @@ def _fill(path: str) -> str:
         .replace("person_id", "999")
         .replace("moment_id", "999")
         .replace("template_id", "999")
+        .replace("menu_date", "2026-10-14")
     )
 
 
@@ -201,7 +202,7 @@ async def test_conversations_are_private_to_the_family_and_the_room(client, worl
     assert {c["id"] for c in (await client.get("/conversations", headers=world.dad)).json()}.isdisjoint({chat})
 
 
-async def test_media_cannot_be_completed_or_requested_for_deletion_by_others(client, world, storage):
+async def test_media_cannot_be_completed_or_deleted_by_others(client, world, storage):
     permit = await client.post(
         "/media/uploads", headers=world.teacher_a, json={"content_type": "image/jpeg", "size_bytes": 10}
     )
@@ -210,8 +211,8 @@ async def test_media_cannot_be_completed_or_requested_for_deletion_by_others(cli
     # solo quien la pidió puede completarla.
     assert (await client.post(f"/media/{media_id}/complete", headers=world.teacher_b)).status_code == 404
     assert (await client.post(f"/media/{media_id}/complete", headers=world.mom)).status_code in (403, 404)
-    # un padre ajeno no pide borrar fotos que no son de su hijo.
-    deletion = await client.post(f"/media/{media_id}/deletion-request", headers=world.dad, json={})
+    # un padre ajeno no borra fotos que no son de su hijo.
+    deletion = await client.delete(f"/media/{media_id}", headers=world.dad)
     assert deletion.status_code == 404
 
 

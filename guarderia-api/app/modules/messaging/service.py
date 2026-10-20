@@ -133,6 +133,14 @@ async def _read_marks(db: AsyncSession, conversation_id: int, user_id: uuid.UUID
     return mine, others
 
 
+async def _media_urls_by_id(db: AsyncSession, storage: Storage, media_ids: set[int]) -> dict[int, str]:
+    """La URL firmada de cada archivo listo (media_id -> URL). Los borrados o pendientes no salen."""
+    if not media_ids:
+        return {}
+    rows = await db.execute(select(Media).where(Media.id.in_(media_ids), Media.status == MediaStatus.READY))
+    return {media.id: storage.presign_get(media.storage_key) for media in rows.scalars()}
+
+
 async def _media_urls(db: AsyncSession, storage: Storage, messages: list[Message]) -> dict[int, str]:
     """{message.id: URL firmada de su foto}. Una foto borrada o sin subir no sale."""
     by_media = {message.media_id: message.id for message in messages if message.media_id is not None}
@@ -319,8 +327,18 @@ async def mark_read(db: AsyncSession, current: CurrentUser, conversation_id: int
 # --- avisos y notas ---
 
 
-async def create_announcement(db: AsyncSession, current: CurrentUser, data: AnnouncementIn) -> AnnouncementOut:
-    text = _require_text(data.text)
+async def create_announcement(
+    db: AsyncSession, current: CurrentUser, storage: Storage, data: AnnouncementIn
+) -> AnnouncementOut:
+    """El aviso lleva texto, una imagen o ambos."""
+    text = data.text.strip()
+    if data.media_id is None:
+        text = _require_text(text)
+    else:
+        # la imagen debe ser mía, estar ya en el bucket y ser una imagen.
+        media = await get_own_media(db, current, data.media_id)
+        if media.status != MediaStatus.READY or not media.content_type.startswith("image/"):
+            raise ApiError(422, "MEDIA_NOT_VALID", "La imagen no está lista para publicarse")
     if data.classroom_id is not None:
         await get_active_classroom(db, data.classroom_id)
     announcement = Announcement(
@@ -328,15 +346,17 @@ async def create_announcement(db: AsyncSession, current: CurrentUser, data: Anno
         classroom_id=data.classroom_id,
         text=text,
         author_id=current.id,
+        media_id=data.media_id,
     )
     db.add(announcement)
     await db.commit()
     await db.refresh(announcement)
-    return (await _announcements_out(db, [announcement]))[0]
+    return (await _announcements_out(db, storage, [announcement]))[0]
 
 
-async def _announcements_out(db: AsyncSession, rows: list[Announcement]) -> list[AnnouncementOut]:
-    """Los avisos con el nombre de su sala."""
+async def _announcements_out(db: AsyncSession, storage: Storage, rows: list[Announcement]) -> list[AnnouncementOut]:
+    """Los avisos con el nombre de su sala y la URL firmada de su imagen."""
+    urls = await _media_urls_by_id(db, storage, {row.media_id for row in rows if row.media_id is not None})
     room_ids = {row.classroom_id for row in rows if row.classroom_id is not None}
     names = dict((await db.execute(select(Classroom.id, Classroom.name).where(Classroom.id.in_(room_ids)))).all()) if room_ids else {}
     return [
@@ -345,13 +365,16 @@ async def _announcements_out(db: AsyncSession, rows: list[Announcement]) -> list
             text=row.text,
             classroom_id=row.classroom_id,
             classroom_name=names.get(row.classroom_id),
+            media_url=urls.get(row.media_id),
             created_at=row.created_at,
         )
         for row in rows
     ]
 
 
-async def list_announcements(db: AsyncSession, current: CurrentUser, limit: int) -> list[AnnouncementOut]:
+async def list_announcements(
+    db: AsyncSession, current: CurrentUser, storage: Storage, limit: int
+) -> list[AnnouncementOut]:
     query = select(Announcement).order_by(Announcement.created_at.desc(), Announcement.id.desc()).limit(limit)
     if current.admin is not None:
         query = query.where(Announcement.daycare_center_id == current.admin.daycare_center_id)
@@ -379,7 +402,7 @@ async def list_announcements(db: AsyncSession, current: CurrentUser, limit: int)
                 Announcement.classroom_id.in_(room_ids),
             )
         )
-    return await _announcements_out(db, list((await db.scalars(query)).all()))
+    return await _announcements_out(db, storage, list((await db.scalars(query)).all()))
 
 
 async def create_note(db: AsyncSession, current: CurrentUser, child_id: int, data: NoteIn) -> NoteOut:

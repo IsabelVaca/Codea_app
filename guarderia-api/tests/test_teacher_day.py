@@ -91,7 +91,9 @@ async def test_my_room_and_attendance(client, world):
     assert all(kid["attendance"] == "ABSENT" for kid in kids)
 
     marked = await client.put(f"/attendance/{world.diego.id}", headers=world.teacher_a, json={"status": "PRESENT"})
-    assert marked.json() == {"child_id": world.diego.id, "date": TODAY.isoformat(), "status": "PRESENT"}
+    body = marked.json()
+    assert (body["child_id"], body["date"], body["status"]) == (world.diego.id, TODAY.isoformat(), "PRESENT")
+    assert body["arrived_at"].startswith("2026-10-14T13:52")
     kids = {kid["id"]: kid for kid in (await client.get(room, headers=world.teacher_a)).json()}
     assert kids[world.diego.id]["attendance"] == "PRESENT"
     assert kids[world.sofia.id]["attendance"] == "ABSENT"

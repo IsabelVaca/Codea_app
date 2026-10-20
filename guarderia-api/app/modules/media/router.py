@@ -1,17 +1,12 @@
-from fastapi import APIRouter, Query, Response, status
+from fastapi import APIRouter, Query, status
 
 from app.core.db import Db
 from app.core.pagination import Page, parse_cursor
-from app.core.security import AdminUser, AnyUser, ParentUser
+from app.core.security import AnyUser, ParentUser
 from app.core.storage import StorageDep
 
 from . import service
-from .models import DeletionStatus
 from .schemas import (
-    DeletionDecisionIn,
-    DeletionRequestIn,
-    DeletionRequestOut,
-    DeletionReviewOut,
     FeedItem,
     MediaOut,
     PhotoCategory,
@@ -48,43 +43,7 @@ async def feed(
     return await service.feed(db, current, storage, child_id, category, parse_cursor(cursor), limit)
 
 
-@router.post("/{media_id}/deletion-request", response_model=DeletionRequestOut, status_code=status.HTTP_201_CREATED)
-async def request_deletion(
-    db: Db, current: ParentUser, media_id: int, response: Response, data: DeletionRequestIn | None = None
-) -> DeletionRequestOut:
-    """Botón "Pedir que se borre". Si ya lo pidió, regresa la misma solicitud con 200."""
-    request, created = await service.request_deletion(db, current, media_id, data or DeletionRequestIn())
-    if not created:
-        response.status_code = status.HTTP_200_OK
-    return request
-
-
 @router.delete("/{media_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_photo(db: Db, current: ParentUser, storage: StorageDep, media_id: int) -> None:
-    """Botón "Borrar" del padre: borra la foto de inmediato si solo salen hijos suyos; 409 `MEDIA_SHARED` si no."""
+    """Botón "Borrar" del padre: borra la foto de inmediato si sale un hijo suyo, sin aprobación de nadie."""
     await service.delete_own_photo(db, current, storage, media_id)
-
-
-@router.get("/deletion-requests", response_model=list[DeletionReviewOut])
-async def list_deletion_requests(
-    db: Db, _: AdminUser, storage: StorageDep, status: DeletionStatus = DeletionStatus.PENDING
-) -> list[DeletionReviewOut]:
-    """Las solicitudes de borrado de fotos que pidieron las familias; por omisión, las pendientes."""
-    return await service.list_deletion_requests(db, storage, status)
-
-
-@router.post("/deletion-requests/{request_id}/approve", response_model=DeletionReviewOut)
-async def approve_deletion(
-    db: Db, current: AdminUser, storage: StorageDep, request_id: int, data: DeletionDecisionIn | None = None
-) -> DeletionReviewOut:
-    """Borra la foto del bucket y de todas las pantallas. 404 DELETION_REQUEST_NOT_FOUND, 409 REQUEST_ALREADY_DECIDED."""
-    return await service.decide_deletion(db, current, storage, request_id, True, data or DeletionDecisionIn())
-
-
-@router.post("/deletion-requests/{request_id}/reject", response_model=DeletionReviewOut)
-async def reject_deletion(
-    db: Db, current: AdminUser, storage: StorageDep, request_id: int, data: DeletionDecisionIn | None = None
-) -> DeletionReviewOut:
-    """La foto se queda; la solicitud queda resuelta (con una explicación opcional). 409 REQUEST_ALREADY_DECIDED."""
-    return await service.decide_deletion(db, current, storage, request_id, False, data or DeletionDecisionIn())
-
