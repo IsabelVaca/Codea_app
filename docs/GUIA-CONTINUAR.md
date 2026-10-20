@@ -37,6 +37,28 @@ API en `http://localhost:8000/api/v1`, Swagger en `/docs`.
 - Emulador: ya apunta a `http://10.0.2.2:8000/api/v1/`.
 - Celular físico por USB: compila con `-PapiBaseUrl=http://localhost:8000/api/v1/` (o ponlo en `local.properties`) y corre `adb reverse tcp:8000 tcp:8000 && adb reverse tcp:9000 tcp:9000`; sin eso la app apunta a `10.0.2.2` (emulador). Detalle en [`entrega/manual-instalacion.md`](entrega/manual-instalacion.md).
 
+**Sin levantar el backend: usar el servidor compartido (`codeaapp.site`)**
+
+Desde el 19/oct hay una API pública con HTTPS (túnel de Cloudflare, [decisión #7](DECISIONES-PENDIENTES.md)). Sirve para trabajar solo en la app, en emulador o celular, sin Docker ni `adb reverse`:
+
+| Qué | Dirección |
+|---|---|
+| API | `https://api.codeaapp.site/api/v1/` |
+| Swagger | `https://api.codeaapp.site/docs` |
+| Fotos (la usa la app sola, con URLs firmadas) | `https://archivos.codeaapp.site` |
+
+1. En `local.properties` (no se versiona) pon `API_BASE_URL=https://api.codeaapp.site/api/v1/` y corre `./gradlew installDebug`. Para volver a tu backend local, borra la línea. Un APK de release ya apunta ahí sin configurar nada.
+2. **Cuenta:** aquí no existe la contraseña `codea1234`. Pide al responsable del servidor tu correo y tu código de acceso, y entra con «Es mi primera vez: activar mi cuenta».
+3. Comprueba que está vivo: `https://api.codeaapp.site/api/v1/health/ready` debe responder `{"status":"ok","database":"ok"}`.
+
+Lo que hay que saber:
+
+- **La base es compartida.** Lo que crees o borres lo ven todos. Usa datos de prueba, nunca de familias reales. Antes del piloto con el centro, este servidor pasa a ser de pruebas y producción arranca con una base limpia ([plan de implantación](entrega/plan-implantacion.md)).
+- **Corre en una computadora del equipo.** Si está apagada o sin red, la API no responde. Avisa en el grupo antes de contar con ella para una demostración.
+- **El backend del servidor no cambia con tu rama.** Un cambio en `guarderia-api/` llega al servidor solo cuando el responsable hace merge, `git pull` y lo vuelve a levantar. Si tu cambio de la app necesita un endpoint nuevo, pruébalo primero con tu backend local.
+- **Nunca pidas ni compartas** `.env.prod` ni el token del túnel: dan acceso a la base y a la cuenta de Cloudflare.
+- Cómo se levanta y se actualiza el servidor: [`guarderia-api/README.md`](../guarderia-api/README.md#producción-en-codeaappsite).
+
 **Pruebas**
 ```bash
 ./gradlew test                                     # 125 pruebas JVM

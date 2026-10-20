@@ -44,6 +44,10 @@ curl https://api.codeaapp.site/api/v1/health/ready   # {"status":"ok","database"
 - La IP de cada cliente llega en `X-Forwarded-For` y uvicorn la toma con `--proxy-headers`, confiando solo en la red interna (`172.30.0.0/24`); así funciona el límite de intentos por IP.
 - **Primer administrador:** `prod exec api python -m app.seed` lo crea con `SEED_ADMIN_EMAIL` e imprime su código de acceso, pero **también mete los datos de ejemplo** («La Oruga»). No hay todavía un comando que cree solo al admin ([plan de implantación](../docs/entrega/plan-implantacion.md), 5.3).
 - Actualizar: `git pull`, `prod up -d --build` y `prod exec api alembic upgrade head`. Ver los registros: `prod logs -f api tunnel`.
+- Si el túnel no conecta (`Failed to dial a quic connection`), la red bloquea UDP: por eso el compose fija `--protocol http2`.
+- Un dominio recién agregado a Cloudflare tarda unos minutos en tener certificado; mientras, HTTPS falla con `handshake failure`.
+
+**Compartirla con el equipo.** Los developers apuntan su app a `https://api.codeaapp.site/api/v1/` (cómo y con qué reglas: [`docs/GUIA-CONTINUAR.md`](../docs/GUIA-CONTINUAR.md), sección 2). Las cuentas salen del seed o de un admin; fuera de `ENV=dev` el seed imprime un código de acceso por persona: pásale a cada quien su correo y su código por privado. Nunca compartas `.env.prod` ni el token del túnel; si el token se filtra, ve al panel del túnel → *Rotate token* y cámbialo en `.env.prod`.
 
 ## Entrar
 
