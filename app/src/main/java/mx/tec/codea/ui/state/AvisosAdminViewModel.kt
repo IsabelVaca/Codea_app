@@ -39,6 +39,19 @@ class AvisosAdminViewModel(application: Application) : AndroidViewModel(applicat
     private val _avisos = MutableStateFlow<List<Aviso>>(emptyList())
     val avisos: StateFlow<List<Aviso>> = _avisos.asStateFlow()
 
+    // el formulario se abre con «+ Nuevo aviso» y se cierra al publicar o con «Cancelar»
+    // (al cancelar, lo escrito se queda para la próxima vez).
+    var formularioAbierto by mutableStateOf(false)
+        private set
+
+    fun abrirFormulario() {
+        formularioAbierto = true
+    }
+
+    fun cerrarFormulario() {
+        formularioAbierto = false
+    }
+
     // mientras se manda, el botón se apaga para no publicar dos veces y dice «Publicando…».
     var publicando by mutableStateOf(false)
         private set
@@ -92,6 +105,7 @@ class AvisosAdminViewModel(application: Application) : AndroidViewModel(applicat
             publicando = false
             avisoTexto = ""
             avisoFoto = null
+            formularioAbierto = false
             onSuccess()
         }) {
             try {

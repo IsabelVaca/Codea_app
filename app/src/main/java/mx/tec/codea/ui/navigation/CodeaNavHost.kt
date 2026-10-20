@@ -546,6 +546,9 @@ fun CodeaNavHost(
                     onAvisoFotoChange = avisosAdminViewModel::onFotoChange,
                     canPublicarAviso = avisosAdminViewModel.canPublicar,
                     publicando = avisosAdminViewModel.publicando,
+                    formularioAbierto = avisosAdminViewModel.formularioAbierto,
+                    onNuevoAviso = avisosAdminViewModel::abrirFormulario,
+                    onCancelar = avisosAdminViewModel::cerrarFormulario,
                     onPublicarAviso = {
                         avisosAdminViewModel.publicarAviso(onSuccess = {
                             coroutineScope.launch {

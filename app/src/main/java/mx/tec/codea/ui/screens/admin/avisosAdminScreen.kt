@@ -73,6 +73,9 @@ fun AvisosAdminScreen(
     destinoSalaId: String? = null,           // null = todas las salas
     onDestinoChange: (String?) -> Unit = {},
     avisos: List<Aviso> = emptyList(),       // el historial, el más reciente primero
+    formularioAbierto: Boolean = false,      // false = solo el botón «+ Nuevo aviso»
+    onNuevoAviso: () -> Unit = {},
+    onCancelar: () -> Unit = {},
 ) {
     // si la sala elegida deja de existir, el aviso vuelve a ser para todas.
     val destino = salas.firstOrNull { it.id == destinoSalaId }
@@ -97,7 +100,9 @@ fun AvisosAdminScreen(
             modifier = Modifier.verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            NuevoAvisoCard(
+            if (!formularioAbierto) {
+                NuevoAvisoButton(onClick = onNuevoAviso)
+            } else NuevoAvisoCard(
                 salas = salas,
                 destinoId = destino?.id,
                 onDestinoChange = onDestinoChange,
@@ -111,6 +116,7 @@ fun AvisosAdminScreen(
                 canPublicar = canPublicarAviso,
                 publicando = publicando,
                 onPublicar = onPublicarAviso,
+                onCancelar = onCancelar,
             )
 
             SeccionLabel("Historial de avisos")
@@ -141,6 +147,22 @@ private object AvisosColores {
     val VerdeSuave = Color(0xFFE8FBF6)
 }
 
+// el botón grande de arriba; al tocarlo aparece el formulario. mismo estilo que «+ Crear sala».
+@Composable
+private fun NuevoAvisoButton(onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(52.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEDE9FE), contentColor = Color(0xFF6D28D9)),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+    ) {
+        Text("+ Nuevo aviso", fontSize = 15.sp, fontFamily = Poppins, fontWeight = FontWeight.Bold)
+    }
+}
+
 // el formulario en una sola tarjeta: a quién va arriba, el texto en medio y, abajo,
 // el botón de imagen a la izquierda y «Publicar» a la derecha.
 @Composable
@@ -157,6 +179,7 @@ private fun NuevoAvisoCard(
     canPublicar: Boolean,
     publicando: Boolean,
     onPublicar: () -> Unit,
+    onCancelar: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -203,14 +226,19 @@ private fun NuevoAvisoCard(
                     fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AvisosColores.Violeta
                 )
             }
-            Button(
-                onClick = onPublicar,
-                enabled = canPublicar,
-                colors = ButtonDefaults.buttonColors(containerColor = AvisosColores.Violeta, contentColor = Color.White),
-                shape = RoundedCornerShape(14.dp),
-                elevation = ButtonDefaults.buttonElevation(0.dp)
-            ) {
-                Text(if (publicando) "Publicando…" else "Publicar", fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                TextButton(onClick = onCancelar, enabled = !publicando) {
+                    Text("Cancelar", fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AvisosColores.Gris)
+                }
+                Button(
+                    onClick = onPublicar,
+                    enabled = canPublicar,
+                    colors = ButtonDefaults.buttonColors(containerColor = AvisosColores.Violeta, contentColor = Color.White),
+                    shape = RoundedCornerShape(14.dp),
+                    elevation = ButtonDefaults.buttonElevation(0.dp)
+                ) {
+                    Text(if (publicando) "Publicando…" else "Publicar", fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                }
             }
         }
     }
