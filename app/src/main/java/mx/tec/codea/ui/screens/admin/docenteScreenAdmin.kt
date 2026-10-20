@@ -51,7 +51,7 @@ private enum class SeccionDocentes(val etiqueta: String) {
 }
 
 // "Docentes" junta a las docentes y las salas (la ocupación que antes estaba en Centro).
-// arriba va el resumen de la lista elegida y el selector; se jala hacia abajo para recargar.
+// arriba va el selector; se jala hacia abajo para recargar.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DocenteScreen(
@@ -93,29 +93,6 @@ fun DocenteScreen(
                 // DocenteCard trae 15 dp de margen lateral propio: lo demás usa los mismos 15 dp.
                 val lateral = Modifier.padding(horizontal = 15.dp)
 
-                when (seccion) {
-                    SeccionDocentes.DOCENTES -> {
-                        val activas = docentes.count { !it.baja }
-                        val checaron = docentes.count { !it.baja && it.horaChecada != null }
-                        ResumenDocentes(
-                            numero = "$activas",
-                            linea = "Docentes activos en ${salas.size} salas",
-                            detalle = "$checaron de $activas checaron hoy",
-                            modifier = lateral,
-                        )
-                    }
-                    SeccionDocentes.SALAS -> {
-                        val nombres = salas.map { it.nombre }.toSet()
-                        val inscritos = infantes.count { it.sala in nombres }
-                        ResumenDocentes(
-                            numero = "${salas.size}",
-                            linea = "Salas en el centro",
-                            detalle = "$inscritos de ${salas.sumOf { it.cupoMaximo }} lugares ocupados",
-                            modifier = lateral,
-                        )
-                    }
-                }
-
                 SingleChoiceSegmentedButtonRow(modifier = lateral.fillMaxWidth()) {
                     SeccionDocentes.entries.forEachIndexed { i, s ->
                         SegmentedButton(
@@ -152,40 +129,6 @@ fun DocenteScreen(
             }
         }
     )
-}
-
-// la tarjeta amarilla de arriba: un número grande, qué cuenta y un detalle del día.
-@Composable
-private fun ResumenDocentes(numero: String, linea: String, detalle: String, modifier: Modifier = Modifier) {
-    Surface(
-        modifier = modifier.fillMaxWidth().padding(vertical = 3.dp),
-        color = Color(red = 254, green = 245, blue = 217),
-        shape = RoundedCornerShape(18.dp)
-    ) {
-        Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
-            Text(
-                text = numero,
-                color = Color(red = 171, green = 129, blue = 44),
-                fontSize = 24.sp,
-                fontFamily = Poppins,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = linea,
-                color = Color(red = 143, green = 125, blue = 82),
-                fontSize = 14.sp,
-                fontFamily = Poppins,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = detalle,
-                color = Color(red = 143, green = 125, blue = 82),
-                fontSize = 12.sp,
-                fontFamily = Poppins,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-    }
 }
 
 @Composable
