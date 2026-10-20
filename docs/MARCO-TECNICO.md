@@ -48,7 +48,8 @@ Resumen tomado del sitio el 2026-10-16. Si hay duda, el sitio manda: vuelve a le
 | **Notificaciones con Firebase** (tarea pendiente) | ❌ | Excluido. Alternativa: WorkManager + notificaciones locales. |
 | **Google Maps Compose** (mapa del checador) | ✅ Quitado | Ya no se usa: el checador no pide ubicación ni dibuja mapa (decisión #3 resuelta). |
 | **`reorderable`** (arrastrar momentos de la rutina) | ⚠️ | Librería de terceros fuera de la lista. **Requiere decisión.** |
-| **Redis, Grafana, Cloudflare tunnel** (tareas pendientes) | ⚠️ | No están en la lista. **Requieren decisión.** |
+| **Redis, Grafana** (tareas pendientes) | ⚠️ | No están en la lista. **Requieren decisión.** |
+| Cloudflare tunnel | ✅ Aprobado | Excepción aprobada el 19/oct (decisión #7): HTTPS público en `codeaapp.site`. |
 | **`androidx.biometric`** (huella, RF-13) | ⚠️ | No está en la lista. **Requiere decisión.** |
 | Dictado por voz con `RecognizerIntent` | 🟡 | Es una API del sistema Android, sin dependencia nueva, pero usa el reconocedor de Google. Confirmar. |
 | `mutableStateOf` en `CodeaViewModel` y `ParentViewModel` | 🟡 | El marco pide StateFlow/Flow. Migrar. |

@@ -2,6 +2,17 @@
 
 Registro cronológico de lo que se hizo, por qué y cómo se verificó. Lo nuevo va arriba. El plan está en [`PLAN-ACCION.md`](PLAN-ACCION.md) y las fallas encontradas en [`RECORRIDO.md`](RECORRIDO.md).
 
+## 2026-10-19 (lunes)
+
+### Producción en codeaapp.site con túnel de Cloudflare
+- **Decisión #7 aprobada** (Oscar): HTTPS público con un túnel de Cloudflare. Dominio comprado: `codeaapp.site`.
+- `guarderia-api/docker-compose.prod.yml`: servicio `cloudflared` (sin puertos abiertos), `restart: unless-stopped`, `.env.prod` propio y uvicorn con `--proxy-headers` confiando solo en la red interna `172.30.0.0/24` (la IP real llega en `X-Forwarded-For`; uvicorn la lee de derecha a izquierda, así que un valor inventado por el cliente no cuela). Se levanta con `-p codea-prod` para no reutilizar los volúmenes de desarrollo.
+- Nombres: `api.codeaapp.site` → `api:8000` y `archivos.codeaapp.site` → `storage:9000` (las URLs firmadas de fotos se firman con ese host).
+- `guarderia-api/.env.prod.example` (ignorado como `.env.prod` en git y en la imagen) y la sección «Producción en codeaapp.site» del README de la API.
+- App: release apunta a `https://api.codeaapp.site/api/v1/` y los enlaces de invitación a `api.codeaapp.site` por omisión.
+- Verificación: `docker compose ... config` con un `.env.prod` de prueba (sin puertos publicados, red y comando correctos). **Sin levantar todavía:** falta crear el túnel en el panel de Cloudflare.
+- Sigue abierta la #9: el almacén de producción es el mismo SeaweedFS del compose.
+
 ## 2026-10-18 (domingo)
 
 ### Integración de ramas

@@ -29,7 +29,7 @@ Documentos hermanos: [`FALTANTES.md`](FALTANTES.md) (qué falta) · [`REQUISITOS
 
 | Tema | Detalle |
 |---|---|
-| HTTP sin cifrar | Solo en debug y solo a `10.0.2.2`/`localhost` (`network_security_config`); falta definir `API_BASE_URL_RELEASE` con HTTPS. |
+| HTTP sin cifrar | Solo en debug y solo a `10.0.2.2`/`localhost` (`network_security_config`); release va a `https://api.codeaapp.site/api/v1/` (túnel de Cloudflare configurado, sin levantar todavía). |
 | Release sin firmar | `app/build.gradle.kts` tiene `optimization.enable = false` y no hay `signingConfig`. |
 | Código sin salida | `SolicitudesBorradoScreen`, su ViewModel, su ruta y el repositorio de solicitudes de borrado no se pueden abrir (Centro ya no los muestra). Del backend, `POST /staff-attendance/notify-coordination` y la tabla `coordination_notice` no los usa la app. |
 | `CodeaNavHost.kt` | 1,218 líneas; todos los frentes lo tocan y genera conflictos de merge. |

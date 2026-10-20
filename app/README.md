@@ -55,6 +55,6 @@ Detalle completo: [`docs/ESTADO.md`](../docs/ESTADO.md) y [`docs/REQUISITOS.md`]
 
 `app/build.gradle.kts`: `release` con `optimization.enable = false` y sin `signingConfig`: para la entrega hay que firmar y minificar.
 
-La dirección de la API sale de `BuildConfig.API_BASE_URL`: `-PapiBaseUrl=...` en la línea de comandos, o `API_BASE_URL` en `local.properties`, o el emulador (`http://10.0.2.2:8000/api/v1/`) por omisión. En release se lee `API_BASE_URL_RELEASE` (HTTPS) y, mientras no exista, queda una dirección inválida a propósito (`api.codea.invalid`) para que nadie entregue un APK apuntando a la Mac de alguien. El tráfico sin cifrar solo se permite en debug y solo a `10.0.2.2` y `localhost` (`src/debug/res/xml/network_security_config.xml`). `allowBackup="false"`.
+La dirección de la API sale de `BuildConfig.API_BASE_URL`: `-PapiBaseUrl=...` en la línea de comandos, o `API_BASE_URL` en `local.properties`, o el emulador (`http://10.0.2.2:8000/api/v1/`) por omisión. En release va a producción, `https://api.codeaapp.site/api/v1/` (túnel de Cloudflare, ver `guarderia-api/README.md`), salvo que `API_BASE_URL_RELEASE` diga otra. Los enlaces de invitación que abren la app son los de `api.codeaapp.site` (`INVITE_HOST` lo cambia). El tráfico sin cifrar solo se permite en debug y solo a `10.0.2.2` y `localhost` (`src/debug/res/xml/network_security_config.xml`). `allowBackup="false"`.
 
 El manifiesto declara `CAMERA`, `RECORD_AUDIO` e `INTERNET`.

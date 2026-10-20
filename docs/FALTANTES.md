@@ -88,7 +88,7 @@ Son cambios nuevos a lo que ya existe. Varios mueven requisitos que hoy figuran 
 ### Registro de usuarios nuevos
 
 - **Alta por enlace de invitación.** ~~En vez de que el admin comparta un código…~~ **Hecho y ya en `main`; falta la URL pública y probarlo en el teléfono.** El admin toca «Enviar por WhatsApp» y la persona recibe un enlace que abre la app con su correo y su código puestos; solo crea su contraseña. Sin correos: la prueba de identidad es que solo ella recibió el enlace.
-  - Falta para que el enlace https abra la app: una **URL pública con HTTPS** que llegue a la API (`PUBLIC_BASE_URL`, decisión #7; para la demostración basta un túnel) y, para que Android la abra sin pasar por el navegador, la huella del certificado (`ANDROID_CERT_SHA256`) y el mismo dominio en la app (`INVITE_HOST`). Sin eso el mensaje lleva el código escrito y funciona igual a mano.
+  - Falta para que el enlace https abra la app: la URL pública ya está configurada (`PUBLIC_BASE_URL=https://api.codeaapp.site`, túnel aprobado en la decisión #7; falta levantarlo) y, para que Android la abra sin pasar por el navegador, la huella del certificado (`ANDROID_CERT_SHA256`) y el mismo dominio en la app (`INVITE_HOST`). Sin eso el mensaje lleva el código escrito y funciona igual a mano.
 
 ### Admin
 
@@ -110,7 +110,7 @@ Son cambios nuevos a lo que ya existe. Varios mueven requisitos que hoy figuran 
 
 - ~~**Aiven:** aplicar las migraciones pendientes~~ **Hecho el 18/oct por la noche** (con permiso): Aiven está en `a07c3d8e6f76`, la última.
 - Despliegue público con HTTPS ([decisión #7](DECISIONES-PENDIENTES.md)) y respaldos de la base.
-- `API_BASE_URL_RELEASE` con HTTPS y un APK de release firmado (necesita un keystore y sus contraseñas).
+- Un APK de release firmado (necesita un keystore y sus contraseñas). La dirección HTTPS ya está: `https://api.codeaapp.site/api/v1/`; falta levantar el túnel (`guarderia-api/README.md`).
 - ~~Correo real con el código de invitación~~: ya no aplica; se manda por WhatsApp (ver «Alta por enlace de invitación»).
 - Recorrer en el teléfono los tres roles con los cambios del 18/oct: el checador nuevo, Familias, Ajustes, Horario, Personas autorizadas, Mi hijo, el pase de lista, Mi sala, el pase de salida, el chat con fotos y la invitación. La lista concreta está al final de [`RECORRIDO.md`](RECORRIDO.md).
 - **Documento de arquitectura (diagrama de capas y relaciones): no existe** y la rúbrica ([`ENTREGA-3.md`](ENTREGA-3.md), parte 4) lo pide. Hay texto en los READMEs y en [`MARCO-TECNICO.md`](MARCO-TECNICO.md), pero no hay un entregable.

@@ -34,7 +34,7 @@ Foto a 2026-10-18 por la noche, sobre `main`. Las pruebas sí se corrieron para 
 | **Foto con niños de varias familias** | RF-10 | `DELETE /media/{id}` ya existe (el padre borra directo si solo salen hijos suyos); con niños de otras familias responde `409 MEDIA_SHARED` y **nadie puede resolverlo desde la app**, porque la revisión del admin no tiene pantalla. Decidir con el equipo qué hacer (devolver la pantalla del admin, o que cada familia la oculte) y si se quitan los endpoints `…/deletion-requests`. |
 | **Hora de entrada del niño** | RF-03 | `attendance` guarda solo `PRESENT`/`ABSENT`; agregar hora de entrada. La salida ya está |
 | **Avisos con imágenes** | HN5 | `media_id` en `announcement` (hoy solo lo tiene `message`); marcar como leído en el servidor (`POST /announcements/{id}/read`); hoy el "leído" vive en el teléfono |
-| **Despliegue con HTTPS y URL pública** | RNF04 y enlace de invitación | Configurar `PUBLIC_BASE_URL` y `ANDROID_CERT_SHA256` (en `.env`) para que el enlace abra la app |
+| **Despliegue con HTTPS y URL pública** | RNF04 y enlace de invitación | `PUBLIC_BASE_URL=https://api.codeaapp.site` ya va en `.env.prod.example`; falta `ANDROID_CERT_SHA256` (necesita el keystore de release) para que el enlace abra la app sin pasar por el navegador |
 
 ### Media
 
@@ -53,7 +53,7 @@ Foto a 2026-10-18 por la noche, sobre `main`. Las pruebas sí se corrieron para 
 
 | Qué | Nota |
 |---|---|
-| Despliegue público con HTTPS | Cloudflare tunnel está en duda ([decisión #7](../docs/DECISIONES-PENDIENTES.md)) |
+| Despliegue público con HTTPS | Configurado para `codeaapp.site` con túnel de Cloudflare ([decisión #7](../docs/DECISIONES-PENDIENTES.md), aprobada 19/oct; pasos en el [README](README.md#producción-en-codeaappsite)). Falta crear el túnel en el panel, levantarlo y verificarlo |
 | Respaldos de la base | Tarea abierta |
 | Monitoreo | `/health/live` y `/health/ready` ya existen; Grafana en duda ([decisión #6](../docs/DECISIONES-PENDIENTES.md)) |
 | Redis | Fuera del marco ([decisión #5](../docs/DECISIONES-PENDIENTES.md)) |

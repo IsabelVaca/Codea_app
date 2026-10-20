@@ -36,6 +36,7 @@ CLAUDE.md
 
 .env
 guarderia-api/.env
+guarderia-api/.env.prod
 __pycache__/
 guarderia-api/.venv/
 .pytest_cache/

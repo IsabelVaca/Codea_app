@@ -42,7 +42,7 @@ Cada campo de cada tabla sale de los `models.py` de `guarderia-api/app/modules/*
 | Contraseñas | Argon2id; entre 9 y 128 caracteres; no puede ser el correo. | `app/core/passwords.py`, `app/core/rules.py` | — |
 | Base local del modo sin conexión | Almacenamiento privado de la app, `allowBackup="false"`; la caché con nombres se borra al terminar la sesión | `di/AppContainer.kt`, `data/offline/` | **No está cifrada**; el borrado se verificó a mano y no tiene prueba automática (ver 4.2.1) |
 | Tokens en el teléfono | Access y refresh cifrados con AES-GCM; la llave vive en el Android Keystore. | `app/.../data/local/TokenCipher.kt` | El nombre, el id y los roles se guardan sin cifrar. |
-| Tráfico de la app | Release: solo HTTPS. Debug: texto plano únicamente hacia `10.0.2.2` y `localhost`. | `network_security_config.xml` (main y debug) | La dirección de release es hoy una dirección inválida a propósito (`api.codea.invalid`). |
+| Tráfico de la app | Release: solo HTTPS. Debug: texto plano únicamente hacia `10.0.2.2` y `localhost`. | `network_security_config.xml` (main y debug) | La dirección de release es `https://api.codeaapp.site/api/v1/` (túnel de Cloudflare, con certificado de Cloudflare). |
 | Cifrado en reposo (Postgres y bucket) | **No lo configura el proyecto.** Depende del proveedor. | — | **Por confirmar** con la cuenta de Aiven y con el almacén que se elija para producción. |
 | Respaldos | **No hay** estrategia de respaldo (`guarderia-api/PENDIENTES.md`: «Respaldos de la base — tarea abierta»). | — | Sin respaldo no hay forma de recuperar datos; con respaldo hay que decidir cuánto tiempo se guardan (afecta el derecho de cancelación). |
 

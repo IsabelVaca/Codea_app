@@ -1,0 +1,51 @@
+# Producción en codeaapp.site con un túnel de Cloudflare (decisión #7, aprobada el 19/oct).
+# Se usa EN LUGAR de docker-compose.override.yml, con su propio proyecto y su propio .env:
+#
+#   docker compose -p codea-prod --env-file .env.prod -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#
+# No se publica ningún puerto: el contenedor `tunnel` abre una conexión de salida a Cloudflare y Cloudflare
+# reenvía por ella (con HTTPS) los dos nombres que se configuran en el panel del túnel:
+#   api.codeaapp.site      -> http://api:8000
+#   archivos.codeaapp.site -> http://storage:9000   (el teléfono sube y baja las fotos directo del almacén)
+# Pasos completos: README.md, sección "Producción en codeaapp.site".
+services:
+  api:
+    env_file: !override
+      - .env.prod
+    # --proxy-headers: la IP del cliente sale de X-Forwarded-For (la pone Cloudflare), no del socket, para que el
+    # límite de intentos por IP no cuente a todos como uno. Solo se confía en la red interna (donde está `tunnel`):
+    # uvicorn toma la primera IP de afuera leyendo de derecha a izquierda, así que un X-Forwarded-For inventado
+    # por el cliente no sirve.
+    command:
+      - uvicorn
+      - app.main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+      - --proxy-headers
+      - --forwarded-allow-ips=172.30.0.0/24
+    restart: unless-stopped
+
+  db:
+    restart: unless-stopped
+
+  storage:
+    restart: unless-stopped
+
+  tunnel:
+    image: cloudflare/cloudflared:2026.10.1
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?falta CLOUDFLARE_TUNNEL_TOKEN en .env.prod}
+    depends_on:
+      - api
+      - storage
+    restart: unless-stopped
+
+# red con subred fija para poder confiar solo en ella en --forwarded-allow-ips.
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24

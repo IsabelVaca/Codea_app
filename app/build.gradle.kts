@@ -38,14 +38,13 @@ android {
         buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
 
         // el dominio https de los enlaces de invitación (el de PUBLIC_BASE_URL de la API), para que Android abra la app
-        // directo al tocarlos. orden: -PinviteHost=..., INVITE_HOST en local.properties, o un dominio que no existe
-        // (así el filtro no atrapa ningún enlace real y solo funciona el esquema codea://).
+        // directo al tocarlos. orden: -PinviteHost=..., INVITE_HOST en local.properties, o el de producción.
         val inviteHost = providers.gradleProperty("inviteHost").orNull
             ?: localProperties.lineSequence()
                 .map { it.trim() }
                 .firstOrNull { it.startsWith("INVITE_HOST=") }
                 ?.substringAfter("=")
-            ?: "invitaciones.codea.invalid"
+            ?: "api.codeaapp.site"
         manifestPlaceholders["inviteHost"] = inviteHost
     }
 
@@ -54,15 +53,15 @@ android {
             optimization {
                 enable = false
             }
-            // en release la API va por HTTPS. mientras no haya dominio, esta dirección es un recordatorio:
-            // pon la real en local.properties como API_BASE_URL_RELEASE antes de generar el APK de entrega.
+            // en release la API va por HTTPS: la de producción (codeaapp.site, por el túnel de Cloudflare),
+            // salvo que local.properties traiga otra en API_BASE_URL_RELEASE.
             val localProperties = providers.fileContents(rootProject.layout.projectDirectory.file("local.properties"))
                 .asText.orNull.orEmpty()
             val releaseUrl = localProperties.lineSequence()
                 .map { it.trim() }
                 .firstOrNull { it.startsWith("API_BASE_URL_RELEASE=") }
                 ?.substringAfter("=")
-                ?: "https://api.codea.invalid/api/v1/"
+                ?: "https://api.codeaapp.site/api/v1/"
             buildConfigField("String", "API_BASE_URL", "\"$releaseUrl\"")
         }
     }

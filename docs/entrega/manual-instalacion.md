@@ -166,7 +166,7 @@ La dirección sale de `BuildConfig.API_BASE_URL`, que `app/build.gradle.kts` res
 2. `API_BASE_URL=...` en `local.properties`.
 3. Si no hay ninguna: `http://10.0.2.2:8000/api/v1/` (el emulador de Android ve tu máquina en `10.0.2.2`).
 
-En **release** se lee `API_BASE_URL_RELEASE` de `local.properties`; si no existe queda `https://api.codea.invalid/api/v1/` **a propósito**, para que nadie entregue un APK que apunte a la computadora de alguien.
+En **release** va a producción, `https://api.codeaapp.site/api/v1/`; `API_BASE_URL_RELEASE` en `local.properties` la cambia. Cómo se levanta producción: `guarderia-api/README.md`, «Producción en codeaapp.site».
 
 El tráfico sin cifrar (HTTP) solo se permite en compilaciones debug y únicamente hacia `10.0.2.2` y `localhost` (`app/src/debug/res/xml/network_security_config.xml`). Un release exige HTTPS.
 
@@ -238,7 +238,7 @@ La base local (`codea.db`) y la cola se guardan en el teléfono; **no** hay prue
 
 - No existe `signingConfig`: el APK sale **sin firmar** y no se puede instalar en un teléfono tal cual.
 - La minificación está desactivada (`optimization.enable = false`).
-- La dirección de la API es la inválida de la sección 3.1 mientras no pongas `API_BASE_URL_RELEASE` en `local.properties`.
+- La dirección de la API es la de producción (sección 3.1): si el túnel no está levantado, la app no conecta.
 - El keystore y sus contraseñas **no existen en el repositorio** (ni deben existir). Quien lo cree debe guardarlo fuera de git. Qué comandos usará el equipo para crearlo y firmar **no está confirmado**; el tema está en [`plan-implantacion.md`](plan-implantacion.md).
 
 ---
