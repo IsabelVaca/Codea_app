@@ -1,12 +1,14 @@
 package mx.tec.codea.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -44,17 +46,20 @@ fun AvisoChip(texto: String, bg: Color, fg: Color) {
     )
 }
 
-// la imagen de un aviso, a todo el ancho de la tarjeta. Se queda como la subió la administración (no se recorta).
+// la imagen de un aviso con su relación de aspecto y un tope de alto: completa, sin recortar.
+// una horizontal llena el ancho; una vertical llega al tope y queda centrada.
 @Composable
-fun AvisoImagen(url: String, descripcion: String = "Imagen del aviso", modifier: Modifier = Modifier) {
-    AsyncImage(
-        model = url,
-        contentDescription = descripcion,
-        contentScale = ContentScale.FillWidth,
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(max = 320.dp)
-            .clip(RoundedCornerShape(14.dp))
-            .background(AvisoColores.Campo),
-    )
+fun AvisoImagen(model: Any, descripcion: String = "Imagen del aviso", modifier: Modifier = Modifier) {
+    Box(modifier = modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        AsyncImage(
+            model = model,
+            contentDescription = descripcion,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .heightIn(max = AvisoImagenAltoMax)
+                .clip(RoundedCornerShape(14.dp)),
+        )
+    }
 }
+
+val AvisoImagenAltoMax = 320.dp

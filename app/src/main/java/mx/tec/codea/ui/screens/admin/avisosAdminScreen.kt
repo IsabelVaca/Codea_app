@@ -39,12 +39,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
 import mx.tec.codea.domain.Aviso
 import mx.tec.codea.domain.Sala
 import mx.tec.codea.ui.theme.Poppins
@@ -227,16 +225,8 @@ private fun FotoDelAviso(foto: Uri?, onElegir: () -> Unit, onQuitar: () -> Unit)
         return
     }
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        AsyncImage(
-            model = foto,
-            contentDescription = "Imagen del aviso",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(160.dp)
-                .clip(RoundedCornerShape(18.dp))
-                .background(AvisosColores.Campo)
-        )
+        // la vista previa se ve igual que en el historial: completa y con su relación de aspecto.
+        AvisoImagen(model = foto)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             TextButton(onClick = onElegir) {
                 Text("Cambiar imagen", fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AvisosColores.Violeta)
