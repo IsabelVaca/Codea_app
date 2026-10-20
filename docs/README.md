@@ -15,6 +15,7 @@
 | [`MARCO-TECNICO.md`](MARCO-TECNICO.md) | Qué tecnologías se permiten (startdroid) y cómo está el proyecto frente a eso |
 | [`DECISIONES-PENDIENTES.md`](DECISIONES-PENDIENTES.md) | Excepciones al marco que esperan aprobación |
 | [`ENTREGA-3.md`](ENTREGA-3.md) | Checklist de la rúbrica final; los entregables están en [`entrega/`](entrega/) |
+| [`presentacion/index.html`](presentacion/index.html) | Presentación final (15 min) en HTML, con capturas reales de la app; se abre en el navegador (← → avanzar, N notas, F pantalla completa) |
 | [`PLAN.md`](PLAN.md) | Plan del 16 al 22 de octubre |
 | [`INCIDENTE-2026-10-19.md`](INCIDENTE-2026-10-19.md) | Cuentas que no se activaban, servidores mezclados y datos borrados en producción: qué pasó y cómo se corrigió |
 
