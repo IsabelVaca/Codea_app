@@ -43,14 +43,13 @@ private enum class SeccionFamilias(val etiqueta: String) {
     PADRES("Padres y tutores"),
 }
 
-// "Familias" junta lo que antes eran dos pestañas (Infantes y Padres). arriba va el resumen de
-// las dos listas y un selector; abajo, la lista elegida con su botón de inscribir.
+// "Familias" junta lo que antes eran dos pestañas (Infantes y Padres). arriba va el selector;
+// abajo, la lista elegida con su botón de inscribir.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FamiliasScreen(
     infantes: List<Infante>,
     padres: List<Padre>,
-    totalSalas: Int,
     onInfanteClick: (Infante) -> Unit,
     onInscribirInfante: () -> Unit,
     onPadreClick: (Padre) -> Unit,
@@ -78,13 +77,6 @@ fun FamiliasScreen(
             // InfanteCard trae 15 dp de margen lateral propio: el resto del contenido usa los mismos 15 dp
             // para que todo quede alineado.
             val lateral = Modifier.padding(horizontal = 15.dp)
-
-            ResumenFamilias(
-                infantes = infantes.size,
-                totalSalas = totalSalas,
-                padres = padres.size,
-                modifier = lateral,
-            )
 
             SingleChoiceSegmentedButtonRow(modifier = lateral.fillMaxWidth()) {
                 SeccionFamilias.entries.forEachIndexed { i, s ->
@@ -119,27 +111,6 @@ fun FamiliasScreen(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun ResumenFamilias(infantes: Int, totalSalas: Int, padres: Int, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
-            .background(Color(0xFFEFE9FF))
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-    ) {
-        Text(
-            "$infantes infantes · $padres padres y tutores",
-            fontFamily = Poppins, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF5B3FE0),
-        )
-        Text(
-            "Niños inscritos en $totalSalas salas y personas con acceso a la app",
-            fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF5B4B8A),
-        )
     }
 }
 

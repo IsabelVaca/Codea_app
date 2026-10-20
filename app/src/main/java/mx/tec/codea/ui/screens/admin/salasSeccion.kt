@@ -28,7 +28,7 @@ import mx.tec.codea.domain.Sala
 import mx.tec.codea.ui.theme.Poppins
 import mx.tec.codea.ui.theme.salaColor
 
-// la pestaña "Salas" de Docentes: la ocupación de cada sala (la que antes estaba en Centro) y "+ Crear sala".
+// la pestaña "Salas" de Docentes: "+ Crear sala" arriba y la ocupación de cada sala (la que antes estaba en Centro).
 @Composable
 fun SalasSeccion(
     salas: List<Sala>,
@@ -38,6 +38,8 @@ fun SalasSeccion(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        // el botón de agregar va arriba de la lista, igual que en Docentes.
+        CrearSalaButton(onClick = onCrearSala)
         SeccionLabel("OCUPACIÓN DE SALAS")
         if (salas.isEmpty()) {
             Text(
@@ -52,7 +54,6 @@ fun SalasSeccion(
                 onClick = { onSalaClick(sala) }
             )
         }
-        CrearSalaButton(onClick = onCrearSala, modifier = Modifier.padding(top = 2.dp))
     }
 }
 

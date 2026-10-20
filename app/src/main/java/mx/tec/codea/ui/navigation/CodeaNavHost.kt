@@ -721,11 +721,9 @@ fun CodeaNavHost(
             composable<AdminFamiliasRoute> {
                 val infantes by infantesViewModel.infantes.collectAsState()
                 val padres by padresViewModel.padres.collectAsState()
-                val salas by salasViewModel.salas.collectAsState()
                 FamiliasScreen(
                     infantes = infantes,
                     padres = padres,
-                    totalSalas = salas.size,
                     onInfanteClick = { infante -> navController.navigate(AdminInfanteDetalleRoute(infante.id)) },
                     onInscribirInfante = { navController.navigate(AdminInscribirInfanteRoute) },
                     onPadreClick = { padre -> navController.navigate(PadresAdminDetalleRoute(padre.id)) },

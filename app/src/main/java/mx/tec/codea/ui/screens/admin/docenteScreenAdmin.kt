@@ -105,17 +105,15 @@ fun DocenteScreen(
 
                 when (seccion) {
                     SeccionDocentes.DOCENTES -> {
+                        // el botón de agregar va arriba de la lista, igual que en Salas.
+                        DarDeAltaAsistenteButton(onClick = onDarDeAltaAsistente, modifier = lateral)
                         Box(modifier = lateral) { SeccionLabel("DOCENTES ACTIVOS") }
-                        Column {
+                        Column(modifier = Modifier.padding(bottom = 16.dp)) {
                             docentes.forEach { docente ->
                                 val ninosDelDocente = infantes.count { it.sala == docente.sala }
                                 DocenteCard(docente = docente, ninosEnSala = ninosDelDocente, onClick = { onDocenteClick(docente) })
                             }
                         }
-                        DarDeAltaAsistenteButton(
-                            onClick = onDarDeAltaAsistente,
-                            modifier = lateral.padding(vertical = 8.dp)
-                        )
                     }
                     SeccionDocentes.SALAS -> SalasSeccion(
                         salas = salas,
