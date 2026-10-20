@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codea · Presentación final</title>
+<style>
+@font-face { font-family: Poppins; src: url(fonts/poppins_regular.ttf); font-weight: 400; }
+@font-face { font-family: Poppins; src: url(fonts/poppins_medium.ttf); font-weight: 500; }
+@font-face { font-family: Poppins; src: url(fonts/poppins_semibold.ttf); font-weight: 600; }
+@font-face { font-family: Poppins; src: url(fonts/poppins_bold.ttf); font-weight: 700; }
+@font-face { font-family: Poppins; src: url(fonts/poppins_extrabold.ttf); font-weight: 800; }
+
+:root {
+  --ink: #2A2140; --cream: #FFFDFA; --violet: #6C4BF6; --violet-deep: #5B3FE0;
+  --lavender: #EFE9FF; --mist: #A79BBF; --dusk: #8C7FA8; --lilac: #E6E0F2; --haze: #F8F6FC;
+  --teal: #12A594; --teal-wash: #E3F6F2; --sun: #FFC53D; --coral: #E4573C; --coral-wash: #FFEDE7;
+  --night: #1A1528; --night-raised: #2A2140;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: #0f0c18; overflow: hidden; font-family: Poppins, system-ui, sans-serif; color: var(--ink); }
+
+/* Lienzo fijo de 1600 × 900 que se escala a la ventana */
+#stage { position: absolute; left: 50%; top: 50%; width: 1600px; height: 900px; transform-origin: center center; }
+.slide { position: absolute; inset: 0; background: var(--cream); padding: 64px 80px 56px; display: none; overflow: hidden; }
+.slide.active { display: flex; flex-direction: column; animation: in .35s ease; }
+@keyframes in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+/* Barra superior: sección y tiempo del guion */
+.top { position: absolute; top: 26px; left: 80px; right: 80px; display: flex; justify-content: space-between; font-size: 17px; font-weight: 600; color: var(--dusk); letter-spacing: .02em; }
+.top .sec { display: flex; align-items: center; gap: 10px; }
+.top .sec i { width: 10px; height: 10px; border-radius: 50%; background: var(--violet); display: inline-block; }
+.top .time { background: var(--lavender); color: var(--violet-deep); padding: 4px 14px; border-radius: 999px; font-size: 15px; }
+
+h1 { font-size: 64px; line-height: 1.08; font-weight: 800; letter-spacing: -.01em; }
+h2 { font-size: 46px; line-height: 1.12; font-weight: 800; margin-top: 18px; letter-spacing: -.01em; }
+.lead { font-size: 25px; line-height: 1.45; color: #4a4061; margin-top: 16px; max-width: 760px; }
+.small { font-size: 18px; color: var(--dusk); }
+b, strong { font-weight: 700; }
+.violet { color: var(--violet); }
+
+/* Distribución: texto a la izquierda, teléfonos a la derecha */
+.row { display: flex; gap: 48px; flex: 1; min-height: 0; margin-top: 8px; }
+.col { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.phones { display: flex; gap: 28px; align-items: flex-start; justify-content: center; flex-shrink: 0; }
+.phone { width: 300px; border-radius: 38px; background: #14101f; padding: 10px; box-shadow: 0 24px 50px -18px rgba(42,33,64,.45); position: relative; }
+.phone img { display: block; width: 100%; border-radius: 29px; }
+.phone.sm { width: 250px; border-radius: 32px; padding: 8px; }
+.phone.sm img { border-radius: 25px; }
+.phone.xs { width: 222px; border-radius: 26px; padding: 7px; }
+.phone.xs img { border-radius: 20px; }
+.phone figcaption { position: absolute; bottom: -34px; left: 0; right: 0; text-align: center; font-size: 15px; font-weight: 600; color: var(--dusk); }
+
+/* Caja técnica: «Bajo el capó» */
+.capo { margin-top: auto; background: var(--night); color: #ECE7F7; border-radius: 24px; padding: 24px 28px 22px; position: relative; }
+.capo::before { content: "⚙ Bajo el capó"; display: inline-block; font-size: 14px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--sun); margin-bottom: 10px; }
+.capo ul { list-style: none; display: grid; gap: 9px; }
+.capo li { font-size: 18.5px; line-height: 1.45; padding-left: 22px; position: relative; color: #D9D2EA; }
+.capo li::before { content: ""; position: absolute; left: 2px; top: 11px; width: 8px; height: 8px; border-radius: 2px; background: var(--violet); }
+.capo b { color: #fff; }
+code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .86em; background: var(--lavender); color: var(--violet-deep); padding: 1px 7px; border-radius: 6px; white-space: nowrap; }
+.capo code { background: rgba(108,75,246,.22); color: #CFC2FF; }
+
+/* Tarjetas */
+.cards { display: grid; gap: 22px; margin-top: 30px; }
+.c2 { grid-template-columns: repeat(2, 1fr); } .c3 { grid-template-columns: repeat(3, 1fr); } .c4 { grid-template-columns: repeat(4, 1fr); }
+.card { background: #fff; border: 1.5px solid var(--lilac); border-radius: 22px; padding: 24px 26px; }
+.card h3 { font-size: 23px; font-weight: 700; margin-bottom: 8px; }
+.card p, .card li { font-size: 18px; line-height: 1.5; color: #4a4061; }
+.card ul { padding-left: 20px; }
+.card .ico { font-size: 34px; margin-bottom: 8px; }
+.card.violet-bg { background: var(--lavender); border-color: transparent; }
+.card.teal-bg { background: var(--teal-wash); border-color: transparent; }
+.card.coral-bg { background: var(--coral-wash); border-color: transparent; }
+.tag { display: inline-block; font-size: 13.5px; font-weight: 700; padding: 3px 12px; border-radius: 999px; letter-spacing: .03em; }
+.tag.ok { background: var(--teal-wash); color: #0F7A6C; } .tag.mid { background: #FFF4D6; color: #8a6200; } .tag.no { background: var(--coral-wash); color: #9A4A32; }
+
+/* Diapositivas oscuras (portada, separadores, cierre) */
+.slide.dark { background: radial-gradient(1200px 700px at 85% 10%, #3a2a7a 0%, var(--night) 60%); color: #fff; }
+.slide.dark .lead { color: #CFC7E4; }
+.slide.dark .top { color: #A79BBF; }
+.slide.dark .top .time { background: rgba(255,255,255,.1); color: #fff; }
+
+/* Separador de rol */
+.divider { justify-content: center; }
+.divider .num { font-size: 22px; font-weight: 700; color: var(--sun); letter-spacing: .1em; text-transform: uppercase; }
+.divider h1 { font-size: 92px; margin-top: 10px; }
+.divider .phones { position: absolute; right: 90px; top: 110px; }
+
+/* Diagrama de arquitectura */
+.arch { display: flex; align-items: stretch; gap: 0; margin-top: 34px; }
+.node { background: #fff; border: 2px solid var(--lilac); border-radius: 22px; padding: 20px 22px; width: 300px; }
+.node h4 { font-size: 22px; font-weight: 700; } .node .who { font-size: 16px; color: var(--violet); font-weight: 600; margin-bottom: 8px; }
+.node p { font-size: 16.5px; line-height: 1.5; color: #4a4061; }
+.node.hl { border-color: var(--violet); box-shadow: 0 12px 30px -16px rgba(108,75,246,.6); }
+.arrow { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: var(--dusk); min-width: 80px; }
+.arrow::after { content: "⟶"; font-size: 40px; color: var(--violet); line-height: 1; }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.stack .node { width: 300px; }
+
+/* Flujo de la asistente */
+.flow { display: flex; gap: 14px; margin-top: 30px; }
+.step { flex: 1; background: #fff; border: 1.5px solid var(--lilac); border-radius: 20px; padding: 20px 18px; position: relative; }
+.step .n { width: 36px; height: 36px; border-radius: 50%; background: var(--violet); color: #fff; font-weight: 700; display: grid; place-items: center; font-size: 17px; margin-bottom: 10px; }
+.step h4 { font-size: 20px; font-weight: 700; margin-bottom: 6px; } .step p { font-size: 16px; line-height: 1.45; color: #4a4061; }
+
+/* Números grandes */
+.stats { display: flex; gap: 22px; margin-top: 26px; }
+.stat { flex: 1; background: var(--lavender); border-radius: 22px; padding: 22px 24px; }
+.stat .v { font-size: 56px; font-weight: 800; color: var(--violet-deep); line-height: 1; }
+.stat .l { font-size: 17px; color: #4a4061; margin-top: 8px; line-height: 1.4; }
+.stat.teal { background: var(--teal-wash); } .stat.teal .v { color: #0F7A6C; }
+.stat.coral { background: var(--coral-wash); } .stat.coral .v { color: var(--coral); }
+.stat.sun { background: #FFF4D6; } .stat.sun .v { color: #a87400; }
+
+/* Barra de avance de requisitos */
+.bar { display: flex; height: 22px; border-radius: 999px; overflow: hidden; margin-top: 14px; }
+.bar span { display: block; height: 100%; }
+
+/* Notas del presentador */
+#notes { position: fixed; left: 0; right: 0; bottom: 0; max-height: 34vh; overflow: auto; background: rgba(20,16,31,.96); color: #E9E4F5; font-size: 17px; line-height: 1.55; padding: 18px 28px 22px; display: none; border-top: 3px solid var(--violet); z-index: 10; }
+#notes.on { display: block; }
+#notes h5 { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--sun); margin-bottom: 6px; }
+aside.notes { display: none; }
+
+/* Pie: número de diapositiva y avance */
+#progress { position: fixed; left: 0; bottom: 0; height: 4px; background: var(--violet); transition: width .3s; z-index: 11; }
+#counter { position: fixed; right: 18px; bottom: 12px; font-size: 13px; color: #8C7FA8; z-index: 11; font-family: Poppins, sans-serif; }
+#help { position: fixed; left: 18px; bottom: 12px; font-size: 13px; color: #6d6385; z-index: 11; font-family: Poppins, sans-serif; }
+
+@media print {
+  html, body { overflow: visible; background: #fff; }
+  #stage { position: static; transform: none !important; width: auto; height: auto; }
+  .slide { display: flex !important; flex-direction: column; position: relative; width: 1600px; height: 900px; page-break-after: always; animation: none; }
+  #notes, #progress, #counter, #help { display: none !important; }
+  @page { size: 1600px 900px; margin: 0; }
+}
+</style>
+</head>
+<body>
+<div id="stage">
+
+<!-- ============ 1. PORTADA ============ -->
+<section class="slide dark" style="justify-content:center">
+  <div style="display:flex; align-items:center; gap:70px">
+    <div style="flex:1">
+      <img src="img/logo.jpeg" alt="" style="width:120px; height:120px; border-radius:30px; display:block; margin-bottom:34px">
+      <h1 style="font-size:110px">Codea</h1>
+      <p class="lead" style="font-size:32px; max-width:820px; color:#fff; margin-top:10px">El día de cada niño, de la sala a la casa.</p>
+      <p class="lead" style="margin-top:34px">App Android para la estancia infantil <b style="color:#fff">La Oruga</b>: la dirección organiza, la asistente registra y la familia lo ve.</p>
+      <p class="small" style="margin-top:46px; color:#A79BBF">TC2007B · Entrega final · 22 de octubre de 2026<br>
+        <!-- Completar con los nombres de todo el equipo -->
+        Equipo: Oscar Olivares · Isabel Vaca · Carlos Arias</p>
+    </div>
+    <div class="phones" style="gap:22px; align-items:center">
+      <figure class="phone sm" style="transform:rotate(-5deg) translateY(30px)"><img src="img/31-admin-docentes.jpg" alt=""></figure>
+      <figure class="phone" style="z-index:2"><img src="img/20-padre-hoy.jpg" alt=""></figure>
+      <figure class="phone sm" style="transform:rotate(5deg) translateY(30px)"><img src="img/13-docente-misala.jpg" alt=""></figure>
+    </div>
+  </div>
+  <aside class="notes">Presentarse. Una frase: Codea junta en una app lo que hoy pasa en libretas, hojas y WhatsApp en una estancia infantil. A lo largo de la presentación cada pantalla trae un recuadro oscuro, «Bajo el capó», con lo técnico de esa parte: quien no es técnico puede seguir la historia y quien sí, ve cómo está hecho.</aside>
+</section>
+
+<!-- ============ 2. EL PROBLEMA ============ -->
+<section class="slide">
+  <div class="top"><span class="sec"><i></i>Problema y alcance</span><span class="time">2 min</span></div>
+  <h2>Hoy el día de un niño se reparte entre libretas, hojas y WhatsApp</h2>
+  <p class="lead">En una estancia infantil pasan muchas cosas en un día: quién llegó, qué comió, cuánto durmió, si se cayó en el patio, quién lo recogió. Casi nada de eso llega completo a la familia.</p>
+  <div class="cards c3">
+    <div class="card violet-bg"><div class="ico">👩‍👧</div><h3>La familia</h3><p>No sabe si su hijo comió o durmió hasta que lo recoge. Pregunta por WhatsApp a un número personal de la asistente.</p></div>
+    <div class="card teal-bg"><div class="ico">🧑‍🏫</div><h3>La asistente</h3><p>Pasa lista a mano, anota en papel y contesta a cada familia por separado mientras cuida a 10 niños.</p></div>
+    <div class="card coral-bg"><div class="ico">🏫</div><h3>La dirección</h3><p>Lleva horarios, salas, cupos, menú y quién puede recoger a cada niño en hojas que nadie más ve.</p></div>
+  </div>
+  <div class="card" style="margin-top:22px; display:flex; gap:20px; align-items:center"><div class="ico" style="margin:0">🔒</div><p style="font-size:20px">Además son <b>datos de menores</b>: fotos, alergias, quién vive con quién. No pueden andar en chats personales ni en hojas sueltas.</p></div>
+  <aside class="notes">Contar el problema desde las tres personas. Recalcar el último punto: son datos sensibles de niños, y eso explica por qué después hablamos tanto de seguridad y de ética.</aside>
+</section>
+
+<!-- ============ 3. LA SOLUCIÓN Y ALCANCE ============ -->
+<section class="slide">
+  <div class="top"><span class="sec"><i></i>Problema y alcance</span><span class="time">2 min</span></div>
+  <div class="row">
+    <div class="col">
+      <h2>Una sola app, tres maneras de usarla</h2>
+      <p class="lead">Cada persona entra con su cuenta y ve solo su parte: la <b>dirección</b> organiza el centro, la <b>asistente</b> registra el día de su sala y la <b>familia</b> ve el día de su hijo.</p>
+      <p class="small" style="margin-top:26px; font-weight:600; color:var(--ink); font-size:20px">Requisitos del tablero: 32</p>
+      <div class="bar"><span style="width:59.4%; background:var(--teal)"></span><span style="width:25%; background:var(--sun)"></span><span style="width:15.6%; background:var(--coral)"></span></div>
+      <div style="display:flex; gap:26px; margin-top:12px; font-size:17px; color:#4a4061">
+        <span><span class="tag ok">19 completos</span></span><span><span class="tag mid">8 parciales</span></span><span><span class="tag no">5 sin hacer</span></span><span style="font-weight:700">≈ 72 %</span>
+      </div>
+      <div class="capo">
+        <ul>
+          <li>Un solo APK. Después del login, la app pregunta <code>GET /me</code> quién eres y <b>dibuja la app de tu rol</b>; si tienes dos roles, eliges.</li>
+          <li>Al cambiar de rol o cerrar sesión se borra todo lo de la sesión anterior (cada sesión tiene su propio almacén de ViewModels y la navegación se reinicia).</li>
+          <li>Un requisito cuenta como completo solo si tiene <b>evidencia</b>: una prueba automática o una prueba en un teléfono.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phones" style="gap:22px; margin-top:20px">
+      <figure class="phone xs"><img src="img/31-admin-docentes.jpg" alt=""><figcaption>Dirección</figcaption></figure>
+      <figure class="phone xs"><img src="img/13-docente-misala.jpg" alt=""><figcaption>Asistente</figcaption></figure>
+      <figure class="phone xs"><img src="img/20-padre-hoy.jpg" alt=""><figcaption>Familia</figcaption></figure>
+    </div>
+  </div>
+  <aside class="notes">Lo que no se hizo se dice desde el principio: la bitácora de pagos se decidió no hacerla; tampoco hay huella, impresión de reportes, aviso de llegada de los padres ni medición de disponibilidad. Lo retomamos al final.</aside>
+</section>
+
+<!-- ============ 4. CÓMO ESTÁ HECHA ============ -->
+<section class="slide">
+  <div class="top"><span class="sec"><i></i>Problema y alcance</span><span class="time">2 min</span></div>
+  <h2>Cómo está hecha, en un dibujo</h2>
+  <p class="lead" style="max-width:1300px">El teléfono es la <b>ventanilla</b>; la API es quien <b>atiende y revisa que tengas permiso</b>; la base de datos es el <b>archivo</b> y el almacén es el <b>álbum de fotos</b>. Todo viaja cifrado.</p>
+  <div class="arch">
+    <div class="node hl"><div class="who">El teléfono</div><h4>App Android</h4><p>Kotlin + Jetpack Compose + Material 3.<br>Capas: pantallas → ViewModels → repositorios → dominio (reglas en Kotlin puro, con pruebas).<br>Room guarda lo último que cargó.</p></div>
+    <div class="arrow">HTTPS</div>
+    <div class="node"><div class="who">La entrada</div><h4>Túnel de Cloudflare</h4><p><code>api.codeaapp.site</code><br>Certificado HTTPS y HSTS. Expone el servidor sin abrir puertos.</p></div>
+    <div class="arrow">&nbsp;</div>
+    <div class="node hl"><div class="who">El que atiende</div><h4>API propia (FastAPI)</h4><p>16 módulos, 84 rutas.<br>Login con JWT, permisos por rol y por registro, bitácora de quién hizo qué.<br>Corre en Docker.</p></div>
+    <div class="arrow">&nbsp;</div>
+    <div class="stack">
+      <div class="node"><div class="who">El archivo</div><h4>PostgreSQL (Aiven)</h4><p>34 tablas, 13 migraciones.</p></div>
+      <div class="node"><div class="who">El álbum</div><h4>Almacén S3 (SeaweedFS)</h4><p>Fotos con enlaces firmados que caducan.</p></div>
+    </div>
+  </div>
+  <p class="small" style="margin-top:26px">Regla del proyecto: nada fuera del marco técnico del curso (startdroid). La única excepción, el túnel de Cloudflare, se aprobó y quedó registrada. Respaldo diario de la base y de las fotos.</p>
+  <aside class="notes">Para el público no técnico basta la analogía de la ventanilla. Para el técnico: MVVM con dependencias en un solo sentido, dominio sin Android, repositorios que llaman a la API con Retrofit/OkHttp. Del lado del servidor, FastAPI asíncrono con SQLAlchemy, Postgres administrado en Aiven y un almacén compatible con S3.</aside>
+</section>
+
+<!-- ============ 5. ENTRAR ============ -->
+<section class="slide">
+  <div class="top"><span class="sec"><i></i>Demo · Entrar a la app</span><span class="time">5 min de demo</span></div>
+  <div class="row">
+    <div class="col">
+      <h2>Cada quien entra con su cuenta</h2>
+      <p class="lead">La dirección da de alta a la persona y le manda por WhatsApp un código para <b>activar su cuenta</b>. Ella pone su contraseña y desde ahí entra con su correo.</p>
+      <p class="lead" style="font-size:22px">Como la pulsera de un evento: sirve un rato, se cambia sola sin que te des cuenta, y si la dirección te da de baja deja de servir al momento.</p>
+      <div class="capo">
+        <ul>
+          <li><b>JWT de 5 minutos</b> + token de renovación que <b>se rota en cada uso</b>; si alguien reutiliza uno viejo, se cierran todas las sesiones de esa cuenta.</li>
+          <li>En el teléfono los tokens se guardan <b>cifrados con Android Keystore</b> (AES-GCM) en DataStore; un <code>TokenAuthenticator</code> los renueva solo.</li>
+          <li>Contraseñas con <b>Argon2id</b>, mínimo 9 caracteres. Códigos y tokens de renovación solo como hash SHA-256.</li>
+          <li>Freno a la fuerza bruta: 5 fallos por correo o 30 por IP en 15 min → <code>429</code>.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phones"><figure class="phone"><img src="img/00-login.jpg" alt="Pantalla de inicio de sesión"></figure></div>
+  </div>
+  <aside class="notes">En la demo: entrar con la cuenta de la dirección. Mencionar que «dar de baja» sube un contador (token_version) y la siguiente petición de esa persona ya se rechaza, sin esperar a que caduque el token.</aside>
+</section>
+
+<!-- ============ 6. SEPARADOR DIRECCIÓN ============ -->
+<section class="slide dark divider">
+  <div class="top"><span class="sec"><i></i>Demo</span><span class="time">5 min de demo</span></div>
+  <div class="num">Rol 1 de 3</div>
+  <h1>La dirección</h1>
+  <p class="lead" style="max-width:700px">Organiza el centro: su equipo, sus salas, sus familias y las reglas del día.</p>
+  <div class="phones">
+    <figure class="phone sm" style="transform:rotate(-4deg)"><img src="img/32-admin-salas.jpg" alt=""></figure>
+    <figure class="phone sm" style="transform:rotate(4deg) translateY(40px)"><img src="img/35-admin-ajustes.jpg" alt=""></figure>
+  </div>
+  <aside class="notes">Transición: empezamos por quien prepara todo para que los demás puedan usar la app.</aside>
+</section>
+
+<!-- ============ 7. DIRECCIÓN: EQUIPO Y SALAS ============ -->
+<section class="slide">
+  <div class="top"><span class="sec"><i></i>Demo · Dirección</span><span class="time">5 min de demo</span></div>
+  <div class="row">
+    <div class="col">
+      <h2>Su equipo y sus salas, de un vistazo</h2>
+      <p class="lead">Ve quién ya checó hoy y a qué hora, da de alta a una asistente y arma las salas con su cupo. Cada sala muestra cuántos niños tiene y quién es la asistente principal.</p>
+      <div class="capo">
+        <ul>
+          <li><b>Permisos por rol (RBAC):</b> cada ruta de la API dice qué rol la puede usar. Sin sesión responde <code>401</code>, con el rol equivocado <code>403</code>.</li>
+          <li>Las <b>77 rutas protegidas</b> están en una matriz de roles generada del código, y una prueba automática comprueba cada celda.</li>
+          <li>La lista aparece al instante con lo último guardado en el teléfono (Room) y luego se actualiza con lo nuevo del servidor.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phones">
+      <figure class="phone sm"><img src="img/31-admin-docentes.jpg" alt=""><figcaption>Docentes: quién checó</figcaption></figure>
+      <figure class="phone sm"><img src="img/32-admin-salas.jpg" alt=""><figcaption>Salas y cupo</figcaption></figure>
+    </div>
+  </div>
+  <aside class="notes">Señalar «Checó 8:31» en la lista: la hora la puso el servidor cuando la asistente registró su entrada. Las barras de color de las salas son la ocupación contra el cupo.</aside>
+</section>
+
+<!-- ============ 8. DIRECCIÓN: FAMILIAS ============ -->
+<section class="slide">
+  <div class="top"><span class="sec"><i></i>Demo · Dirección</span><span class="time">5 min de demo</span></div>
+  <div class="row">
+    <div class="col">
+      <h2>Inscribe niños y une a cada familia</h2>
+      <p class="lead">Inscribe al niño, lo pone en una sala y le vincula a sus tutores. Una mamá puede tener dos hijos en salas distintas, y un niño puede tener a mamá, papá y abuela. Con un botón le manda a cada quien su invitación por WhatsApp.</p>
+      <div class="capo">
+        <ul>
+          <li>Padre ↔ hijo es una relación <b>muchos a muchos</b> (<code>parent_child_rel</code>) con parentesco y tutor principal.</li>
+          <li>La invitación es un código de un solo uso que caduca. El enlace <code>codea://invitar</code> (o https verificado) abre «Activar mi cuenta» con el correo y el código ya puestos.</li>
+          <li>Altas, bajas, activaciones y logins quedan en una <b>bitácora de auditoría</b> a la que solo se le agrega; nunca guarda contraseñas ni tokens.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phones">
+      <figure class="phone sm"><img src="img/33-admin-familias.jpg" alt=""><figcaption>Infantes</figcaption></figure>
+      <figure class="phone sm"><img src="img/41-admin-padre-detalle.jpg" alt=""><figcaption>Ficha de una mamá</figcaption></figure>
+    </div>
+  </div>
+  <aside class="notes">En la ficha de Ana López se ve «Mamá de Mateo López, Santiago López»: dos hijos en salas diferentes. Más adelante entramos con su cuenta y se ve la tira para cambiar de hijo.</aside>
+</section>
+
+<!-- ============ 9. DIRECCIÓN: REGLAS ============ -->
+<section class="slide">
+  <div class="top"><span class="sec"><i></i>Demo · Dirección</span><span class="time">5 min de demo</span></div>
+  <div class="row">
+    <div class="col" style="max-width:640px">
+      <h2>Pone las reglas del día</h2>
+      <p class="lead">El horario del centro, el menú de cada día de la semana, las rutinas de cada sala (desayuno, siesta, patio…) y quién puede recoger a cada niño.</p>
+      <div class="capo">
+        <ul>
+          <li>Las reglas las aplica <b>el servidor</b>, no el teléfono: retardo contra la hora de entrada, cierre automático a las 21:00 de las entradas abiertas y sin checar en días no laborales.</li>
+          <li>La rutina del día <b>se copia de la plantilla</b> la primera vez que alguien la abre; cambiar la plantilla no altera los días pasados.</li>
+          <li>El menú lo leen la familia (en Hoy) y la asistente con la misma ruta.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phones" style="gap:20px">
+      <figure class="phone xs"><img src="img/38-admin-horario.jpg" alt=""><figcaption>Horario</figcaption></figure>
+      <figure class="phone xs"><img src="img/37-admin-menu.jpg" alt=""><figcaption>Menú del día</figcaption></figure>
+      <figure class="phone xs"><img src="img/39-admin-autorizadas.jpg" alt=""><figcaption>Quién recoge</figcaption></figure>
+    </div>
+  </div>
+  <aside class="notes">Las personas autorizadas no tienen cuenta: son nombre y teléfono. Aparecen en el pase de salida de la asistente junto con los tutores.</aside>
+</section>
+
+<!-- ============ 10. SEPARADOR ASISTENTE ============ -->
+<section class="slide dark divider">
+  <div class="top"><span class="sec"><i></i>Demo</span><span class="time">5 min de demo</span></div>
+  <div class="num">Rol 2 de 3</div>
+  <h1>La asistente</h1>
+  <p class="lead" style="max-width:700px">Registra el día de su sala sin soltar a los niños: checar, pasar lista, contar lo que pasó y entregar a cada niño.</p>
+  <div class="phones">
+    <figure class="phone sm" style="transform:rotate(-4deg)"><img src="img/10-docente-inicio.jpg" alt=""></figure>
+    <figure class="phone sm" style="transform:rotate(4deg) translateY(40px)"><img src="img/13-docente-misala.jpg" alt=""></figure>
+  </div>
+  <aside class="notes">Esta es la parte más larga de la demo en vivo.</aside>
+</section>
+
+<!-- ============ 11. ASISTENTE: CHECADOR ============ -->
+<section class="slide">
+  <div class="top"><span class="sec"><i></i>Demo · Asistente</span><span class="time">5 min de demo</span></div>
+  <div class="row">
+    <div class="col">
+      <h2>El día empieza al checar</h2>
+      <p class="lead">Un toque y queda su hora de entrada. Si llegó tarde se registra igual, marcado como retardo, y puede escribir el motivo. Al terminar el día checa su salida.</p>
+      <div class="capo">
+        <ul>
+          <li>La hora <b>la pone el servidor</b>: cambiar el reloj del teléfono no sirve para adelantarse.</li>
+          <li>El retardo se calcula contra el horario que configuró la dirección. Si nadie registra la salida, el servidor la cierra a las 21:00 y la marca como automática.</li>
+          <li><b>Decisión ética:</b> el checador <b>no pide ubicación</b>. Verificar con GPS implicaba vigilar a la trabajadora; preferimos no guardar ese dato (dilema 2).</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phones">
+      <figure class="phone sm"><img src="img/10-docente-inicio.jpg" alt=""><figcaption>Mi día, antes de checar</figcaption></figure>
+      <figure class="phone sm"><img src="img/11-docente-checador.jpg" alt=""><figcaption>Checador con retardo</figcaption></figure>
+    </div>
+  </div>
+  <aside class="notes">La captura del checador se tomó a las 12:08 con entrada a las 8:00: por eso dice «4 h 8 min de retardo». Contar que la primera versión usaba GPS y mapa, y que el equipo la quitó tras discutir el dilema.</aside>
+</section>
+
+<!-- ============ 12. ASISTENTE: MI SALA ============ -->
+<section class="slide">
+  <div class="top"><span class="sec"><i></i>Demo · Asistente</span><span class="time">5 min de demo</span></div>
+  <div class="row">
+    <div class="col">
+      <h2>Mi sala: lista, avisos de casa y chat</h2>
+      <p class="lead">Pasa lista con un toque por niño. En la ficha de cada uno ve sus alergias, a quién llamar y quién puede recogerlo. Lo que la familia escribe desde casa le aparece arriba, y chatea con cada familia desde la app, no desde su WhatsApp.</p>
+      <div class="capo">
+        <ul>
+          <li>Una sola regla en toda la API: <b>sin registro = ausente</b>.</li>
+          <li><b>El pase de lista funciona sin internet:</b> la marca se guarda en una cola en Room y WorkManager la manda sola al volver la red (reintenta con espera creciente y junta marcas repetidas).</li>
+          <li>El chat pregunta cada 10 s solo por mensajes nuevos (<code>?after=</code>). Falta pasarlo a tiempo real con WebSocket o SSE.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phones">
+      <figure class="phone sm"><img src="img/13-docente-misala.jpg" alt=""><figcaption>Mi sala</figcaption></figure>
+      <figure class="phone sm"><img src="img/15-docente-chats.jpg" alt=""><figcaption>Chats con las familias</figcaption></figure>
+    </div>
+  </div>
+  <aside class="notes">En la demo: ir al pase de lista, marcar a un niño presente y abrir su ficha. Si da tiempo, apagar el wifi, marcar a otro niño y prenderlo: la marca llega sola.</aside>
+</section>
+
+<!-- ============ 13. ASISTENTE: DURANTE EL DÍA ============ -->
+<section class="slide">
+  <div class="top"><span class="sec"><i></i>Demo · Asistente</span><span class="time">5 min de demo · en vivo</span></div>
+  <h2>Durante el día: un solo recorrido guiado</h2>
+  <p class="lead" style="max-width:1300px">Esta parte la mostramos en vivo en el teléfono. La app lleva a la asistente de un paso al siguiente: cuando termina uno, le dice qué sigue.</p>
+  <div class="flow">
+    <div class="step"><div class="n">1</div><h4>Rutina</h4><p>Confirma cada momento: recepción, desayuno, actividad, siesta…</p></div>
+    <div class="step"><div class="n">2</div><h4>Reporte</h4><p>Cuenta lo que pasó: por escrito, <b>dictando con la voz</b> o con una <b>foto</b>. Para uno o varios niños.</p></div>
+    <div class="step"><div class="n">3</div><h4>Resumen</h4><p>Por niño: ánimo, cuánto comió, pañales y siesta.</p></div>
+    <div class="step"><div class="n">4</div><h4>Pase de salida</h4><p>Quién lo recogió (un tutor o una persona autorizada) y a qué hora.</p></div>
+    <div class="step"><div class="n">5</div><h4>Finalizar día</h4><p>Cierra la sala; la familia ya vio todo en su teléfono.</p></div>
+  </div>
+  <div class="capo" style="margin-top:28px">
+    <ul style="grid-template-columns:1fr 1fr; column-gap:36px">
+      <li>Un reporte para varios niños es <b>muchos a muchos</b> (<code>report_child</code>): cada familia lo ve y la API no deja incluir a un niño de otra sala.</li>
+      <li><b>Dictado</b> con el reconocedor del propio Android (<code>RecognizerIntent</code>), sin librerías extra.</li>
+      <li><b>Foto:</b> cámara (FileProvider) o galería (Photo Picker). Se <b>comprime</b> respetando EXIF antes de subirla en multipart.</li>
+      <li>La foto va al almacén S3 y solo se entrega con un <b>enlace firmado que caduca</b>, a las familias de los niños etiquetados.</li>
+    </ul>
+  </div>
+  <aside class="notes">Demo en vivo con una cuenta de asistente: confirmar un momento de la rutina, hacer un reporte con dictado y foto para dos niños, y registrar una salida. Luego cambiar a la cuenta de la mamá para que se vea llegar.</aside>
+</section>
+
+<!-- ============ 14. SEPARADOR FAMILIA ============ -->
+<section class="slide dark divider">
+  <div class="top"><span class="sec"><i></i>Demo</span><span class="time">5 min de demo</span></div>
+  <div class="num">Rol 3 de 3</div>
+  <h1>La familia</h1>
+  <p class="lead" style="max-width:700px">Abre la app y ve el día de su hijo, sin tener que preguntar.</p>
+  <div class="phones">
+    <figure class="phone sm" style="transform:rotate(-4deg)"><img src="img/20-padre-hoy.jpg" alt=""></figure>
+    <figure class="phone sm" style="transform:rotate(4deg) translateY(40px)"><img src="img/22-padre-calendario.jpg" alt=""></figure>
+  </div>
+  <aside class="notes">Entramos con la cuenta de Ana López, la mamá con dos hijos.</aside>
+</section>
+
+<!-- ============ 15. FAMILIA: HOY ============ -->
+<section class="slide">
+  <div class="top"><span class="sec"><i></i>Demo · Familia</span><span class="time">5 min de demo</span></div>
+  <div class="row">
+    <div class="col">
+      <h2>Hoy: el día de su hijo en una pantalla</h2>
+      <p class="lead">Hora de entrada, lo que hizo, lo que comió y quién lo recogió. Con dos hijos, cambia con la tira de arriba. Puede dejarle un aviso a la asistente («hoy durmió mal»). Se ve bien también en modo oscuro.</p>
+      <div class="capo">
+        <ul>
+          <li>Una sola llamada, <code>GET /children/{id}/day</code>, arma toda la pantalla.</li>
+          <li><b>Anti-IDOR:</b> si una mamá pide el día de un niño que no es suyo, la API responde <code>404</code>; ni siquiera confirma que existe. Hay pruebas automáticas para familia, asistente, chat y fotos.</li>
+          <li>Colores del tema de Material 3: el modo oscuro sale del mismo diseño, sin pantallas duplicadas.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phones">
+      <figure class="phone sm"><img src="img/20-padre-hoy.jpg" alt=""><figcaption>Hoy</figcaption></figure>
+      <figure class="phone sm"><img src="img/26-padre-hoy-oscuro.jpg" alt=""><figcaption>Modo oscuro</figcaption></figure>
+    </div>
+  </div>
+  <aside class="notes">Si ya hicimos la demo de la asistente, aquí aparecen la entrada, el reporte con la foto y la salida que acabamos de registrar.</aside>
+</section>
+
+<!-- ============ 16. FAMILIA: CALENDARIO Y MI HIJO ============ -->
+<section class="slide">
+  <div class="top"><span class="sec"><i></i>Demo · Familia</span><span class="time">5 min de demo</span></div>
+  <div class="row">
+    <div class="col">
+      <h2>El mes, la semana y lo que la escuela debe saber</h2>
+      <p class="lead">El calendario marca qué días fue y cuáles tienen nota; abajo viene el resumen de la semana. En «Mi hijo», la familia escribe alergias y cuidados, y la asistente los ve en la ficha del niño.</p>
+      <div class="capo">
+        <ul>
+          <li><code>GET /children/{id}/weekly-summary</code> junta en el servidor la asistencia, el ánimo, la comida, la siesta y los logros de la semana (6 pruebas).</li>
+          <li>La salud la edita la familia con <code>PATCH /children/{id}/health</code> y la lee la asistente: <b>una sola fuente de verdad</b>, sin copiar datos.</li>
+          <li>Chat con la sala por niño: la familia escribe y manda fotos desde la cámara o la galería.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phones" style="gap:20px">
+      <figure class="phone xs"><img src="img/22-padre-calendario.jpg" alt=""><figcaption>Calendario</figcaption></figure>
+      <figure class="phone xs"><img src="img/25-padre-mihijo.jpg" alt=""><figcaption>Mi hijo</figcaption></figure>
+      <figure class="phone xs"><img src="img/24-padre-chat.jpg" alt=""><figcaption>Chat con la sala</figcaption></figure>
+    </div>
+  </div>
+  <aside class="notes">Fotos: si sale su hijo, la familia puede borrar la foto al momento, sin pedir permiso. Lo explicamos en los dilemas éticos.</aside>
+</section>
+
+<!-- ============ 17. SIN INTERNET ============ -->
+<section class="slide">
+  <div class="top"><span class="sec"><i></i>Demo · Los tres roles</span><span class="time">5 min de demo</span></div>
+  <div class="row">
+    <div class="col">
+      <h2>Sin señal, la app no se queda en blanco</h2>
+      <p class="lead">En una estancia el wifi falla. Sin internet, la app muestra lo último que cargó y avisa que no pudo conectarse. El pase de lista se guarda y se manda solo cuando vuelve la red.</p>
+      <div class="capo">
+        <ul>
+          <li><b>Caché de lectura:</b> la tabla <code>cached_response</code> en Room guarda la última respuesta de cada pantalla de los tres roles. Se muestra primero y se reemplaza al llegar lo nuevo. Se borra al cerrar sesión.</li>
+          <li><b>Cola de escritura</b> (solo asistencia): Room + WorkManager, que corre únicamente con red y deja que Android decida cuándo, para no gastar batería.</li>
+          <li><b>Límite:</b> reportes, fotos, chat, checador y pase de salida todavía necesitan conexión. La base local del teléfono no está cifrada.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phones"><figure class="phone"><img src="img/27-padre-sin-red.jpg" alt=""><figcaption>Sin red: lo último guardado</figcaption></figure></div>
+  </div>
+  <aside class="notes">La captura se tomó con el wifi y los datos apagados: Hoy sigue mostrando a Mateo y su menú, y abajo aparece el aviso de que no se pudo conectar.</aside>
+</section>
+
+<!-- ============ 18. PRUEBAS ============ -->
+<section class="slide">
+  <div class="top"><span class="sec"><i></i>Pruebas y matriz</span><span class="time">2 min</span></div>
+  <h2>¿Cómo sabemos que funciona?</h2>
+  <p class="lead" style="max-width:1300px">Con pruebas automáticas que se corren antes de cada cambio, y recorriendo la app en teléfonos reales para buscar fallas.</p>
+  <div class="stats">
+    <div class="stat"><div class="v">343</div><div class="l">pruebas de la API (pytest) contra un Postgres real, todas en verde</div></div>
+    <div class="stat teal"><div class="v">140</div><div class="l">pruebas de la app (JUnit) de las reglas del día, la sesión y los textos</div></div>
+    <div class="stat sun"><div class="v">77</div><div class="l">rutas en la matriz de roles; cada celda se comprueba con una prueba</div></div>
+    <div class="stat coral"><div class="v">17</div><div class="l">fallas encontradas en recorridos en teléfono y corregidas</div></div>
+  </div>
+  <div class="cards c2" style="margin-top:24px">
+    <div class="card"><h3>Pruebas que prueban a las pruebas</h3><p><b>Mutación:</b> rompimos a propósito la regla que decide qué niños ve cada familia (<code>can_see_child</code>) y 5 pruebas fallaron. Si nadie hubiera fallado, las pruebas no servían.</p></div>
+    <div class="card"><h3>Matriz de trazabilidad</h3><p>Cada requisito tiene ID, criterio de aceptación, evidencia (prueba o recorrido), resultado y estado. Un requisito no se marca hecho solo porque el código exista.</p></div>
+  </div>
+  <div class="capo" style="margin-top:22px"><ul style="grid-template-columns:1fr 1fr; column-gap:36px">
+    <li>Sesión de la app probada con un <b>servidor falso</b> (<code>mockwebserver3</code>): login, renovación y token vencido.</li>
+    <li>Falta: pruebas de interfaz con Compose UI Test (hoy solo hay una prueba instrumentada).</li>
+  </ul></div>
+  <aside class="notes">Ejemplos de las 17 fallas: la pestaña de documentos cerraba la app, textos ilegibles en modo oscuro, el teclado tapaba los campos, el checador era un prototipo con hora fija. Todas están en RECORRIDO.md.</aside>
+</section>
+
+<!-- ============ 19. SEGURIDAD ============ -->
+<section class="slide">
+  <div class="top"><span class="sec"><i></i>Seguridad</span><span class="time">2 min</span></div>
+  <h2>Son datos de niños: la seguridad va en cada capa</h2>
+  <div class="cards c3" style="margin-top:28px">
+    <div class="card"><h3>🔑 Sesiones</h3><p>JWT de 5 min, renovación rotada con detección de reuso, tokens cifrados con Keystore. Dar de baja corta el acceso en la siguiente petición.</p></div>
+    <div class="card"><h3>🚪 Permisos</h3><p>Por rol (401 / 403) y por registro: lo que no es tuyo responde 404. Matriz de 77 rutas comprobada.</p></div>
+    <div class="card"><h3>💉 Inyección</h3><p>Todas las consultas con el ORM (SQLAlchemy), parametrizadas. Pruebas de inyección en login, filtros y texto guardado.</p></div>
+    <div class="card"><h3>🧱 Fuerza bruta</h3><p>Límite de intentos por correo y por IP en login y activación, con <code>429</code> y tiempo de espera.</p></div>
+    <div class="card"><h3>🔒 Transporte</h3><p>HTTPS con HSTS, cabeceras de seguridad (CSP, nosniff, X-Frame-Options), CORS cerrado. HTTP sin cifrar solo en desarrollo.</p></div>
+    <div class="card"><h3>🗝️ Secretos</h3><p>Llaves de la base, del almacén, del túnel y de JWT solo en el servidor (<code>.env.prod</code>), fuera del repositorio.</p></div>
+  </div>
+  <div class="card coral-bg" style="margin-top:22px"><p style="font-size:19px"><b>Pendiente y lo decimos:</b> el escaneo dinámico con OWASP ZAP, cifrar la base local del teléfono y cambiar los valores de ejemplo de <code>.env.example</code>.</p></div>
+  <aside class="notes">Si preguntan por el chat: el administrador no puede leer las conversaciones (la API le devuelve lista vacía y 404), pero no es cifrado de extremo a extremo: quien tenga acceso a la base o a los respaldos podría leerlos. Eso está en el aviso de privacidad.</aside>
+</section>
+
+<!-- ============ 20. DIFERENCIADOR ============ -->
+<section class="slide">
+  <div class="top"><span class="sec"><i></i>Capacidad diferenciadora</span><span class="time">1 min</span></div>
+  <h2>Lo que nos hace distintos</h2>
+  <div class="cards c3" style="margin-top:36px">
+    <div class="card violet-bg"><div class="ico">🧭</div><h3>El día guiado de la asistente</h3><p>De checar a «Finalizar día» en un solo recorrido: la app dice qué sigue. Pensado para alguien con 10 niños alrededor y una mano libre, con dictado por voz.</p></div>
+    <div class="card teal-bg"><div class="ico">📶</div><h3>Sigue sirviendo sin señal</h3><p>Pase de lista sin internet que se manda solo y pantallas que muestran lo último guardado en los tres roles.</p></div>
+    <div class="card coral-bg"><div class="ico">🖐️</div><h3>La familia controla las fotos</h3><p>Si sale su hijo, puede borrar la foto al momento, del almacén y de todas las galerías, sin pedir permiso a nadie.</p></div>
+  </div>
+  <div class="capo" style="margin-top:30px"><ul>
+    <li>Todo con lo que enseña el curso (Compose, Room, WorkManager, Retrofit, FastAPI, Postgres): sin Firebase ni servicios de Google para el funcionamiento central.</li>
+  </ul></div>
+  <aside class="notes">Un minuto: elegir uno de los tres según el público. Para la estancia, el más fuerte es el día guiado; para el jurado técnico, la operación sin conexión.</aside>
+</section>
+
+<!-- ============ 21. IMPLANTACIÓN ============ -->
+<section class="slide">
+  <div class="top"><span class="sec"><i></i>Documentación, implantación y ética</span><span class="time">3 min</span></div>
+  <h2>Cómo se pone en marcha (y cómo se regresa)</h2>
+  <div class="row" style="margin-top:20px; gap:28px">
+    <div class="col">
+      <div class="cards c2" style="margin-top:0">
+        <div class="card"><h3>Hoy en producción</h3><p>API, almacén y túnel en Docker Compose; base en Aiven (Postgres 18). Pública en <code>api.codeaapp.site</code> desde el 19/oct.</p></div>
+        <div class="card"><h3>Respaldos</h3><p>Diarios a las 3:00 de la base y de las fotos, se guardan 14 días. <b>Restauración probada.</b></p></div>
+        <div class="card"><h3>Orden de despliegue</h3><p>Primero la API, después el APK. Antes de migrar, respaldo manual. Rollback: imagen anterior + <code>alembic downgrade</code> o restaurar el respaldo.</p></div>
+        <div class="card coral-bg"><h3>Lo que aprendimos</h3><p>El 19/oct un script de datos de prueba se corrió contra producción y borró cuentas y fotos. No había respaldo. Por eso existen hoy.</p></div>
+      </div>
+    </div>
+    <div class="col" style="max-width:480px">
+      <div class="card" style="height:100%"><h3>Documentación entregada</h3>
+        <ul style="margin-top:6px">
+          <li>Manual de usuario y de instalación</li>
+          <li>Plan de implantación (canal, versión, configuración, migración, rollback)</li>
+          <li>Matriz de trazabilidad</li>
+          <li>Aviso de privacidad</li>
+          <li>Clasificación de datos de las 33 tablas</li>
+          <li>Ética y legal, con 4 dilemas</li>
+          <li>Administración: hitos, desviaciones, riesgos, retrospectiva</li>
+          <li>README técnico en cada carpeta</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="capo" style="margin-top:22px"><ul><li><b>Riesgo abierto:</b> todo corre en una sola Mac (si se duerme, nadie entra) y no hay monitoreo, así que no podemos medir el 99 % de disponibilidad. Falta también el APK de release firmado.</li></ul></div>
+  <aside class="notes">El incidente del 19/oct está documentado en INCIDENTE-2026-10-19.md: se mezclaron el servidor local y el compartido y el seed con --borrar-todo vació la base de producción. Contarlo como lección aprendida, sin culpas.</aside>
+</section>
+
+<!-- ============ 22. DILEMAS ÉTICOS ============ -->
+<section class="slide">
+  <div class="top"><span class="sec"><i></i>Documentación, implantación y ética</span><span class="time">3 min</span></div>
+  <h2>Decisiones éticas que tomamos</h2>
+  <div class="cards c2" style="margin-top:26px">
+    <div class="card"><h3>📍 ¿Ubicación de la asistente al checar?</h3><p>Probaría que está en la estancia, pero es vigilar a una trabajadora. <b>Decidimos no guardar ubicación:</b> el registro prueba la hora, no el lugar.</p></div>
+    <div class="card"><h3>📷 ¿Quién decide sobre una foto?</h3><p>La familia que sale en ella la puede borrar al momento. Si salen otros niños, <b>también se borra para sus familias</b>: pesa más quien no quiere aparecer.</p></div>
+    <div class="card"><h3>💬 ¿Puede la dirección leer los chats?</h3><p>Hoy no: la API se lo impide. Si un día hace falta por una queja grave: motivo por escrito, dos personas que autorizan, registro y aviso a los involucrados.</p></div>
+    <div class="card"><h3>👥 Reportes de grupo</h3><p>Un reporte de varios niños lo leen todas sus familias. «Mateo mordió a Sofía» expone a dos niños. Proponemos <b>no nombrar a otros niños</b> (falta un aviso en la pantalla del reporte).</p></div>
+  </div>
+  <div class="capo" style="margin-top:24px"><ul><li>Cada criterio ético se escribió como requisito verificable (consentimiento, minimización, acceso, retención) y la clasificación de datos dice, por campo, nivel de sensibilidad, dónde vive, cómo se protege y cuánto se guarda.</li></ul></div>
+  <aside class="notes">El de las fotos es el más discutible: elegimos que la familia que aparece decida, aunque otra familia pierda una foto que quería. Está explicado en etica-legal.md, dilema 1.</aside>
+</section>
+
+<!-- ============ 23. LO QUE FALTA ============ -->
+<section class="slide">
+  <div class="top"><span class="sec"><i></i>Cierre</span><span class="time"></span></div>
+  <h2>Lo que falta, dicho sin rodeos</h2>
+  <div class="cards c2" style="margin-top:30px">
+    <div class="card"><h3><span class="tag no">Sin hacer</span></h3><ul>
+      <li>Bitácora de pagos (decidimos no hacerla)</li>
+      <li>Desbloqueo con huella</li>
+      <li>Imprimir reportes para coordinación</li>
+      <li>Aviso de llegada de los padres</li>
+      <li>Medir el 99 % de disponibilidad (monitoreo)</li>
+    </ul></div>
+    <div class="card"><h3><span class="tag mid">Para cerrar</span></h3><ul>
+      <li>APK de release firmado</li>
+      <li>Escaneo OWASP ZAP</li>
+      <li>Chat en tiempo real (WebSocket o SSE)</li>
+      <li>Escribir reportes y fotos sin conexión</li>
+      <li>Migrar el estado a StateFlow e inyección con Hilt</li>
+    </ul></div>
+  </div>
+  <aside class="notes">Cerrar con honestidad: lo que no está, no se vende como hecho. Todo esto está en REQUISITOS.md y FALTANTES.md.</aside>
+</section>
+
+<!-- ============ 24. GRACIAS ============ -->
+<section class="slide dark" style="justify-content:center; align-items:center; text-align:center">
+  <img src="img/logo.jpeg" alt="" style="width:110px; height:110px; border-radius:28px; margin-bottom:30px">
+  <h1 style="font-size:96px">Gracias</h1>
+  <p class="lead" style="font-size:30px; max-width:none; margin-top:14px">¿Preguntas?</p>
+  <p class="small" style="margin-top:40px; color:#A79BBF; font-size:20px">API pública: <b style="color:#fff">api.codeaapp.site</b> · Repositorio: <b style="color:#fff">github.com/IsabelVaca/Codea_app</b></p>
+  <aside class="notes">Tener abierta la app en el teléfono con la cuenta de la dirección por si piden ver algo más.</aside>
+</section>
+
+</div>
+
+<div id="notes"><h5>Notas del presentador</h5><div id="notes-body"></div></div>
+<div id="progress"></div>
+<div id="counter"></div>
+<div id="help">← → para avanzar · N notas · F pantalla completa</div>
+
+<script>
+const slides = [...document.querySelectorAll('.slide')];
+const stage = document.getElementById('stage');
+let i = Math.max(0, Math.min(slides.length - 1, (parseInt(location.hash.slice(1)) || 1) - 1));
+
+function fit() {
+  const s = Math.min(innerWidth / 1600, innerHeight / 900);
+  stage.style.transform = `translate(-50%, -50%) scale(${s})`;
+}
+function show(n) {
+  i = Math.max(0, Math.min(slides.length - 1, n));
+  slides.forEach((el, k) => el.classList.toggle('active', k === i));
+  const note = slides[i].querySelector('aside.notes');
+  document.getElementById('notes-body').textContent = note ? note.textContent.trim() : '';
+  document.getElementById('progress').style.width = ((i + 1) / slides.length * 100) + '%';
+  document.getElementById('counter').textContent = `${i + 1} / ${slides.length}`;
+  history.replaceState(null, '', '#' + (i + 1));
+}
+addEventListener('resize', fit);
+addEventListener('keydown', e => {
+  if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); show(i + 1); }
+  else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); show(i - 1); }
+  else if (e.key === 'Home') show(0);
+  else if (e.key === 'End') show(slides.length - 1);
+  else if (e.key.toLowerCase() === 'n') document.getElementById('notes').classList.toggle('on');
+  else if (e.key.toLowerCase() === 'f') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
+});
+addEventListener('click', e => { if (e.target.closest('#notes')) return; show(e.clientX > innerWidth / 3 ? i + 1 : i - 1); });
+fit(); show(i);
+setTimeout(() => document.getElementById('help').style.opacity = 0, 6000);
+</script>
+</body>
+</html>
