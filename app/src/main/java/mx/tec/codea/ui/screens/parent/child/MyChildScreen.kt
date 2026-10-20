@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -139,6 +140,13 @@ private fun HealthCard(saved: ChildHealth, saving: Boolean, onSave: (ChildHealth
             colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.Violeta, contentColor = Color.White),
             elevation = ButtonDefaults.buttonElevation(0.dp),
         ) {
+            if (saving) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp).padding(end = 10.dp),
+                    color = CodeaColores.Gris,
+                    strokeWidth = 2.dp,
+                )
+            }
             Text(stringResource(if (saving) R.string.mychild_saving else R.string.mychild_save), fontFamily = Poppins, fontWeight = FontWeight.Bold)
         }
     }

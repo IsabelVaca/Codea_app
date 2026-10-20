@@ -211,6 +211,14 @@ private fun RoleApp(
     onLogout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // antes de que la docente tenga algo real que ver (sin nada guardado de otra visita), se ve una
+    // pantalla de carga simple en vez de "Mi día"/"Mi sala" con sus valores en blanco.
+    // por ahora solo para la docente; los otros roles siguen como estaban.
+    if (role == Role.TEACHER && viewModel.cargandoInicial) {
+        SplashScreen(modifier)
+        return
+    }
+
     // "remember" keeps the same nav controller alive when the ui draws again.
     val navController = rememberNavController()
 

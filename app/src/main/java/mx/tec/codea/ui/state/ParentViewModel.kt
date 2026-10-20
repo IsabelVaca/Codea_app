@@ -103,6 +103,10 @@ class ParentViewModel : ViewModel() {
     var savingHealth by mutableStateOf(false)
         private set
 
+    // true mientras se manda la nota de "Aviso desde casa".
+    var sendingNote by mutableStateOf(false)
+        private set
+
     var photos by mutableStateOf<List<Foto>>(emptyList())
         private set
 
@@ -214,8 +218,15 @@ class ParentViewModel : ViewModel() {
 
     fun sendNote(text: String, onSuccess: () -> Unit = {}) {
         val id = childId ?: return
-        if (text.isBlank()) return
-        launchAction(onSuccess) { repository.sendNote(id, text) }
+        if (text.isBlank() || sendingNote) return
+        sendingNote = true
+        launchAction(onSuccess) {
+            try {
+                repository.sendNote(id, text)
+            } finally {
+                sendingNote = false
+            }
+        }
     }
 
     // ---------------- calendario ----------------

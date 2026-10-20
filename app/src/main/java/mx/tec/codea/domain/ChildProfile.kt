@@ -11,6 +11,9 @@ data class Contact(
 // lo que la ficha del niño pide al abrirse: alergias, edad, tutores y personas autorizadas.
 data class ChildProfile(
     val allergies: String?,
+    // "20 de enero de 2022"; null si no se conoce. igual que en "Mi hijo" del padre, para que la
+    // docente vea el dato completo y no solo la edad calculada.
+    val birthDateText: String?,
     // "2 años 4 meses"; null si la fecha de nacimiento no se conoce.
     val ageText: String?,
     val guardians: List<Contact>,

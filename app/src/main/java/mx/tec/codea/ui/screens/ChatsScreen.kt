@@ -28,6 +28,7 @@ import mx.tec.codea.data.ImageCompressor
 import mx.tec.codea.ui.components.rememberCapturePhoto
 import mx.tec.codea.ui.components.rememberPickPhoto
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -174,13 +175,15 @@ private fun ConversationRow(
     onClick: () -> Unit,
 ) {
     // tarjeta blanca con las iniciales en lila, como las listas del admin.
+    val forma = RoundedCornerShape(18.dp)
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 2.dp, vertical = 2.dp)
-            .shadow(6.dp, RoundedCornerShape(18.dp), ambientColor = Color(0x1A2A2140), spotColor = Color(0x1A2A2140))
-            .clip(RoundedCornerShape(18.dp))
+            .shadow(6.dp, forma, ambientColor = Color(0x1A2A2140), spotColor = Color(0x1A2A2140))
+            .clip(forma)
             .background(Color.White)
+            .border(1.dp, CodeaColores.Borde, forma)
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,

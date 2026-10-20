@@ -249,7 +249,7 @@ private fun CheckerCard(
             .shadow(6.dp, RoundedCornerShape(22.dp), ambientColor = Color(0x1A2A2140), spotColor = Color(0x1A2A2140)),
         shape = RoundedCornerShape(22.dp),
         color = Color.White,
-        border = if (checkIn == null) BorderStroke(2.dp, CodeaColores.Morado) else null,
+        border = if (checkIn == null) BorderStroke(2.dp, CodeaColores.Morado) else BorderStroke(1.dp, CodeaColores.Borde),
         interactionSource = interactionSource,
     ) {
         Row(

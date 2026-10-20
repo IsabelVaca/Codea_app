@@ -127,7 +127,9 @@ fun rememberDictation(onTextHeard: (String) -> Unit): () -> Unit {
     fun startListening() {
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            // la app es en español siempre: con el idioma del teléfono (Locale.getDefault()), si el
+            // sistema está en inglés, el reconocimiento de voz escuchaba en inglés.
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale("es", "MX"))
             putExtra(RecognizerIntent.EXTRA_PROMPT, prompt)
         }
         // some phones (and many emulators) have no voice service.

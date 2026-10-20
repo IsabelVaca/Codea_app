@@ -1,6 +1,8 @@
 package mx.tec.codea.data
 
 import android.graphics.Bitmap
+import java.text.SimpleDateFormat
+import java.util.Locale
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import mx.tec.codea.data.api.ChildDetailDto
@@ -93,8 +95,10 @@ class TeacherApiRepository {
     }
 
     private fun ficha(detail: ChildDetailDto, pickups: List<PickupDto>): ChildProfile {
+        val fecha = detail.birthDate?.let { runCatching { SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(it) }.getOrNull() }
         return ChildProfile(
             allergies = detail.allergies?.trim()?.ifBlank { null },
+            birthDateText = fecha?.let { SimpleDateFormat("d 'de' MMMM 'de' yyyy", Locale("es", "MX")).format(it) },
             ageText = ChildProfileRules.ageText(detail.birthDate, hoyLocal()),
             guardians = detail.guardians.sortedByDescending { it.isPrimary }.map { it.toContact() },
             pickups = pickups.map { it.toContact() },

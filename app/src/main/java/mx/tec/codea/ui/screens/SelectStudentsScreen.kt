@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -58,6 +59,7 @@ fun SelectStudentsScreen(
     onSaveClick: () -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
+    saving: Boolean = false,
 ) {
     val selectedChildren = children.filter { it.id in uiState.selectedChildIds }
     val selectedCount = selectedChildren.size
@@ -119,7 +121,7 @@ fun SelectStudentsScreen(
 
         Button(
             onClick = onSaveClick,
-            enabled = uiState.canSave,
+            enabled = uiState.canSave && !saving,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(54.dp),
@@ -127,6 +129,13 @@ fun SelectStudentsScreen(
             colors = BotonVioleta(),
             elevation = ButtonDefaults.buttonElevation(0.dp),
         ) {
+            if (saving) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp).padding(end = 10.dp),
+                    color = CodeaColores.Gris,
+                    strokeWidth = 2.dp,
+                )
+            }
             Text(
                 text = pluralStringResource(R.plurals.students_save, selectedCount, selectedCount),
                 fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold,

@@ -86,6 +86,15 @@ class CodeaViewModel : ViewModel() {
     var pendingChanges by mutableIntStateOf(0)
         private set
 
+    // true mientras se guarda un reporte (puede llevar foto, así que tarda).
+    var savingReport by mutableStateOf(false)
+        private set
+
+    // true hasta que hay algo real que mostrar (de la caché o de la API): mientras tanto no se ve
+    // "Mi día"/"Mi sala" con sus valores en blanco, se ve una pantalla de carga simple.
+    var cargandoInicial by mutableStateOf(true)
+        private set
+
     // los avisos de casa que la docente ya marcó con "Ya lo vi" (solo se guarda en este teléfono).
     var seenNoteIds by mutableStateOf<Set<Int>>(emptySet())
         private set
@@ -113,7 +122,11 @@ class CodeaViewModel : ViewModel() {
         if (!ApiConfig.isTeacher) return
         viewModelScope.launch {
             // 1. lo guardado (al abrir la app): la miss ve al instante su día y su sala; la API lo reemplaza al llegar.
-            if (children.isEmpty()) mostrarGuardado()
+            if (children.isEmpty()) {
+                mostrarGuardado()
+                // ya hay algo real que mostrar (de otra visita): no hace falta la pantalla de carga.
+                if (children.isNotEmpty()) cargandoInicial = false
+            }
             try {
                 if (!aplicarPerfil(repository.me())) return@launch
                 checkIn = repository.checkInToday()
@@ -149,6 +162,9 @@ class CodeaViewModel : ViewModel() {
                 } else {
                     DataEvents.notice("No se pudo cargar tu día: ${e.toUserMessage()}")
                 }
+            } finally {
+                // con la API respondida (bien o mal) ya hay algo que mostrar; la pantalla de carga no se queda para siempre.
+                cargandoInicial = false
             }
         }
     }
@@ -261,9 +277,16 @@ class CodeaViewModel : ViewModel() {
     }
 
     fun addReport(report: Report, photo: Bitmap? = null, onSuccess: () -> Unit = {}) {
-        if (!ReportValidator.isValid(report.description, report.childIds)) return
+        if (!ReportValidator.isValid(report.description, report.childIds) || savingReport) return
         val momentId = momentIds[report.subprocessNumber] ?: return
-        launchAction(onSuccess) { repository.createReport(momentId, report, photo) }
+        savingReport = true
+        launchAction(onSuccess) {
+            try {
+                repository.createReport(momentId, report, photo)
+            } finally {
+                savingReport = false
+            }
+        }
     }
 
     // se pinta de inmediato. sin conexión la marca espera en la cola y se manda sola al volver la red;

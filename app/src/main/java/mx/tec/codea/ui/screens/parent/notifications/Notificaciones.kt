@@ -244,6 +244,7 @@ private fun NotifItem(n: NotifUi) {
             )
             .clip(shape)
             .background(if (n.nueva) Color.White else AvisoColores.Fondo)
+            .border(1.dp, AvisoColores.Borde, shape)
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {

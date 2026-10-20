@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -149,6 +150,13 @@ fun ResumenDelDiaScreen(
             elevation = ButtonDefaults.buttonElevation(0.dp),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
         ) {
+            if (viewModel.guardando) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp).padding(end = 10.dp),
+                    color = CodeaColores.Gris,
+                    strokeWidth = 2.dp,
+                )
+            }
             Text(
                 text = when {
                     viewModel.guardando -> "Guardando…"

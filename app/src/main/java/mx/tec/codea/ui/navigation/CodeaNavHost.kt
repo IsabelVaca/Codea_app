@@ -329,6 +329,7 @@ fun CodeaNavHost(
                 SelectStudentsScreen(
                     uiState = form.uiState,
                     children = viewModel.children,
+                    saving = viewModel.savingReport,
                     onChildToggle = form::onChildToggle,
                     onSaveClick = {
                         // the shared view model receives the report...
@@ -908,6 +909,7 @@ fun CodeaNavHost(
                 menu = parentViewModel.menu,
                 pendientes = pendientes,
                 notifs = notifs,
+                sendingNote = parentViewModel.sendingNote,
                 onAbrirNotif = avisosViewModel::alAbrir,
                 onCuentaClick = { navController.navigate(AccountRoute) },
                 onNavigateToCalendar = {

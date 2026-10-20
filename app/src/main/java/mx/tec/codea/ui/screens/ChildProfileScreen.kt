@@ -107,12 +107,15 @@ fun ChildProfileScreen(
             horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             InitialsAvatar(initials = child.initials, color = avatarColorAt(avatarIndex), size = 56.dp)
-            // la edad y la sala, una abajo de la otra (sin "·"); la sala en pastilla como en el admin.
+            // la edad, la fecha de nacimiento y la sala, una abajo de la otra (sin "·"); la sala en pastilla como en el admin.
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 profile?.ageText?.let {
                     Text(it, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Ink)
                 }
-                if (roomName.isNotBlank()) Pastilla(roomName)
+                profile?.birthDateText?.let {
+                    Text(it, fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto)
+                }
+                if (roomName.isNotBlank()) Pastilla(roomName, modifier = Modifier.padding(top = 2.dp))
             }
         }
 
@@ -478,6 +481,7 @@ private fun ChildProfileScreenPreview() {
             avatarIndex = 0,
             profile = ChildProfile(
                 allergies = "Nuez y lácteos",
+                birthDateText = "20 de enero de 2024",
                 ageText = "2 años 4 meses",
                 guardians = listOf(Contact("Laura Márquez", "Mamá", "81 1234 5678")),
                 pickups = listOf(Contact("Rosa Pérez", "Abuela", null)),

@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -56,6 +57,7 @@ fun ParentTodayScreen(
     menu: MenuDelDia? = null,
     onNavigateToCalendar: () -> Unit = {},
     onSendNote: (String) -> Unit = {},
+    sendingNote: Boolean = false,
     // la campana: cuántas notificaciones no ha visto y la lista del panel.
     pendientes: Int = 0,
     notifs: List<NotifUi> = emptyList(),
@@ -120,6 +122,7 @@ fun ParentTodayScreen(
             AvisoDesdeCasa(
                 nombre = summary.childFirstName,
                 onEnviar = onSendNote,
+                enviando = sendingNote,
                 modifier = Modifier.padding(top = 4.dp, bottom = 16.dp),
             )
         }
@@ -216,7 +219,7 @@ private fun EventoCard(event: TimelineEvent) {
 
 // la nota de la familia para la asistente, con el mismo campo y botón que el formulario de Avisos.
 @Composable
-private fun AvisoDesdeCasa(nombre: String, onEnviar: (String) -> Unit, modifier: Modifier = Modifier) {
+private fun AvisoDesdeCasa(nombre: String, onEnviar: (String) -> Unit, enviando: Boolean, modifier: Modifier = Modifier) {
     var texto by remember { mutableStateOf("") }
     TarjetaBlanca(modifier = modifier, espacio = 10.dp) {
         Text("Aviso desde casa", fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.Ink)
@@ -250,12 +253,19 @@ private fun AvisoDesdeCasa(nombre: String, onEnviar: (String) -> Unit, modifier:
                 onEnviar(texto)
                 texto = ""
             },
-            enabled = texto.isNotBlank(),
+            enabled = texto.isNotBlank() && !enviando,
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.Violeta, contentColor = Color.White),
             shape = RoundedCornerShape(14.dp),
             elevation = ButtonDefaults.buttonElevation(0.dp),
         ) {
+            if (enviando) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp).padding(end = 8.dp),
+                    color = CodeaColores.Gris,
+                    strokeWidth = 2.dp,
+                )
+            }
             Text("Enviar nota de hoy", fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.Bold)
         }
     }

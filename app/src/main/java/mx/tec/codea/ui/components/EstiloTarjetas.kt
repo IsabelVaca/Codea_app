@@ -1,6 +1,7 @@
 package mx.tec.codea.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -33,6 +34,9 @@ object CodeaColores {
     val Verde = Color(0xFF0F7A6C)
     val Rojo = Color(0xFFC4432A)
     val RojoSuave = Color(0xFFFFEDE7)
+    // línea delgada para que la tarjeta blanca no se pierda en el fondo crema: el mismo tono que
+    // "outlineVariant" del tema claro (Lilac), sin agregar un color nuevo ni subir el contraste.
+    val Borde = Color(0xFFE6E0F2)
 }
 
 // la tarjeta blanca de siempre (como InfoTarjeta en el detalle del admin).
@@ -43,12 +47,14 @@ fun TarjetaBlanca(
     espacio: Dp = 10.dp,
     contenido: @Composable ColumnScope.() -> Unit,
 ) {
+    val forma = RoundedCornerShape(22.dp)
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .shadow(6.dp, RoundedCornerShape(22.dp), ambientColor = Color(0x1A2A2140), spotColor = Color(0x1A2A2140))
-            .clip(RoundedCornerShape(22.dp))
+            .shadow(6.dp, forma, ambientColor = Color(0x1A2A2140), spotColor = Color(0x1A2A2140))
+            .clip(forma)
             .background(Color.White)
+            .border(1.dp, CodeaColores.Borde, forma)
             .padding(padding),
         verticalArrangement = Arrangement.spacedBy(espacio),
         content = contenido,

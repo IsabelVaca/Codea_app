@@ -55,7 +55,10 @@ fun NoticeCard(
             .shadow(6.dp, forma, ambientColor = Color(0x1A2A2140), spotColor = Color(0x1A2A2140))
             .clip(forma)
             .background(Color.White)
-            .then(if (seen) Modifier else Modifier.border(2.dp, MaterialTheme.colorScheme.secondary, forma))
+            .then(
+                if (seen) Modifier.border(1.dp, CodeaColores.Borde, forma)
+                else Modifier.border(2.dp, MaterialTheme.colorScheme.secondary, forma),
+            )
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {

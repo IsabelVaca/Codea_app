@@ -1,6 +1,7 @@
 package mx.tec.codea.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,25 +50,11 @@ fun RutinaDeHoyScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             item(key = "header") {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 6.dp)
-                        .clip(RoundedCornerShape(24.dp))
-                        .background(CodeaColores.Lila)
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    Text(
-                        routine.name,
-                        fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.Morado,
-                    )
-                    Text(
-                        "Esta es la rutina que coordinación asignó a tu sala para hoy. " +
-                            "Sin horarios: tú solo confirmas cada momento cuando termina.",
-                        fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, fontWeight = FontWeight.Medium, color = CodeaColores.Morado,
-                    )
-                }
+                Text(
+                    routine.name,
+                    fontFamily = Poppins, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.Ink,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
+                )
             }
 
             if (momentos.isEmpty()) {
@@ -83,12 +70,14 @@ fun RutinaDeHoyScreen(
             }
 
             itemsIndexed(momentos, key = { _, momento -> momento.number }) { i, momento ->
+                val forma = RoundedCornerShape(22.dp)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .shadow(6.dp, RoundedCornerShape(22.dp), ambientColor = Color(0x1F2A2140), spotColor = Color(0x1F2A2140))
-                        .clip(RoundedCornerShape(22.dp))
+                        .shadow(6.dp, forma, ambientColor = Color(0x1F2A2140), spotColor = Color(0x1F2A2140))
+                        .clip(forma)
                         .background(Color.White)
+                        .border(1.dp, CodeaColores.Borde, forma)
                         .padding(13.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp),

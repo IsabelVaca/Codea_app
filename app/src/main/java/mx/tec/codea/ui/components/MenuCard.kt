@@ -1,6 +1,7 @@
 package mx.tec.codea.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,12 +23,14 @@ import mx.tec.codea.ui.theme.Poppins
 // con el estilo del admin: tarjeta blanca, el nombre de cada comida en morado y el título en negritas.
 @Composable
 fun MenuCard(menu: MenuDelDia, modifier: Modifier = Modifier, titulo: String = "MENÚ DEL DÍA") {
+    val forma = RoundedCornerShape(22.dp)
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .shadow(6.dp, RoundedCornerShape(22.dp), ambientColor = Color(0x1A2A2140), spotColor = Color(0x1A2A2140))
-            .clip(RoundedCornerShape(22.dp))
+            .shadow(6.dp, forma, ambientColor = Color(0x1A2A2140), spotColor = Color(0x1A2A2140))
+            .clip(forma)
             .background(Color.White)
+            .border(1.dp, CodeaColores.Borde, forma)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {

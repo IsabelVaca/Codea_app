@@ -1,6 +1,7 @@
 package mx.tec.codea.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -87,6 +88,7 @@ private fun AvisoItem(aviso: AvisoFundacionUi) {
             .shadow(6.dp, shape, ambientColor = Color(0x1A2A2140), spotColor = Color(0x1A2A2140))
             .clip(shape)
             .background(Color.White)
+            .border(1.dp, CodeaColores.Borde, shape)
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
