@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import mx.tec.codea.ui.components.CodeaColores
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -73,7 +74,7 @@ fun SalaAdminDetalleScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFFFDFA))
+            .background(CodeaColores.Fondo)
             .padding(horizontal = 22.dp)
     ) {
         BackHeader(
@@ -96,20 +97,20 @@ fun SalaAdminDetalleScreen(
                         spotColor = Color.Black.copy(alpha = 0.15f)
                     )
                     .clip(RoundedCornerShape(26.dp))
-                    .background(Color(0xFFE8FBF6))
+                    .background(CodeaColores.VerdeSuave)
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(9.dp)
             ) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(sala.nombre, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
-                    Text("${ninos.size}/${sala.cupoMaximo} niños", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F7A6C))
+                    Text(sala.nombre, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Ink)
+                    Text("${ninos.size}/${sala.cupoMaximo} niños", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Verde)
                 }
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(9.dp)
                         .clip(RoundedCornerShape(999.dp))
-                        .background(Color.White)
+                        .background(CodeaColores.Tarjeta)
                 ) {
                     Box(
                         modifier = Modifier
@@ -140,8 +141,8 @@ fun SalaAdminDetalleScreen(
                         if (cupoError != null) Text("El cupo debe ser un número mayor a 0")
                     },
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFFF4F1FB),
-                        unfocusedContainerColor = Color(0xFFF4F1FB),
+                        focusedContainerColor = CodeaColores.Campo,
+                        unfocusedContainerColor = CodeaColores.Campo,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
                     ),
@@ -173,8 +174,8 @@ fun SalaAdminDetalleScreen(
                                 spotColor = Color.Black.copy(alpha = 0.10f)
                             )
                             .clip(formaNino)
-                            .background(Color.White)
-                            .border(1.dp, Color(0xFFE6E0F2), formaNino)
+                            .background(CodeaColores.Tarjeta)
+                            .border(1.dp, CodeaColores.Borde, formaNino)
                             .padding(14.dp)
                     ) {
                         Box(
@@ -187,11 +188,11 @@ fun SalaAdminDetalleScreen(
                             Text(n.iniciales, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AvatarFg)
                         }
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(n.nombre, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
-                            Text("${n.edad} años", fontSize = 12.sp, color = Color(0xFF8C7FA8))
+                            Text(n.nombre, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Ink)
+                            Text("${n.edad} años", fontSize = 12.sp, color = CodeaColores.GrisMedio)
                         }
                         IconButton(onClick = { onQuitarInfante(n) }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Sacar de la sala", tint = Color(0xFFC4432A))
+                            Icon(Icons.Default.Delete, contentDescription = "Sacar de la sala", tint = CodeaColores.Rojo)
                         }
                     }
                 }
@@ -202,7 +203,7 @@ fun SalaAdminDetalleScreen(
                 Text(
                     "No hay infantes en otras salas para agregar.",
                     fontSize = 12.sp,
-                    color = Color(0xFF8C7FA8)
+                    color = CodeaColores.GrisMedio
                 )
             } else {
                 PersonaDropdown(
@@ -224,7 +225,7 @@ fun SalaAdminDetalleScreen(
             )
 
             SeccionLabel("Acciones")
-            AccionButton("Eliminar esta sala", Color(0xFFFFEDE7), Color(0xFFC4432A), onEliminar)
+            AccionButton("Eliminar esta sala", CodeaColores.RojoSuave, CodeaColores.Rojo, onEliminar)
 
             Spacer(modifier = Modifier.height(24.dp))
         }

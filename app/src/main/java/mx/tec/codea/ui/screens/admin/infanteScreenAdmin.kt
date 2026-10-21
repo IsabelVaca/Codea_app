@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import mx.tec.codea.ui.components.CodeaColores
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.material3.Text
@@ -45,8 +46,8 @@ fun InfanteCard(infante: Infante, onClick: () -> Unit = {}) {
         ambientColor = Color.Black.copy(alpha = 0.70f),
         spotColor = Color.Black.copy(alpha = 0.30f)
     ).clickable(onClick = onClick),
-        color = Color(red = 255, green = 255, blue = 255),
-        border = BorderStroke(1.dp, Color(0xFFE6E0F2)),
+        color = CodeaColores.Tarjeta,
+        border = BorderStroke(1.dp, CodeaColores.Borde),
         shape = RoundedCornerShape(18.dp))
     {
         Row(
@@ -58,13 +59,13 @@ fun InfanteCard(infante: Infante, onClick: () -> Unit = {}) {
                 modifier = Modifier.padding(18.dp)
                     .size(50.dp)
                     .clip(RoundedCornerShape(20.dp))
-                    .background(Color(0xFFEDE9FE))
+                    .background(CodeaColores.Lila)
                     ,
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = infante.iniciales,
-                    color = Color(0xFF6D28D9),
+                    color = CodeaColores.Morado,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp
                 )
@@ -78,7 +79,7 @@ fun InfanteCard(infante: Infante, onClick: () -> Unit = {}) {
                 Text(
                     text = infante.nombre,
                     modifier = Modifier.padding(top = 10.dp),
-                    color = Color(red = 1, green = 1, blue = 1),
+                    color = CodeaColores.Titulo,
                     fontSize = 17.sp,
                     fontFamily = Poppins,
                     fontWeight = FontWeight.ExtraBold
@@ -91,7 +92,7 @@ fun InfanteCard(infante: Infante, onClick: () -> Unit = {}) {
                     Text(
                         text = "${infante.edad} años",
                         modifier = Modifier,
-                        color = Color(red = 138, green = 128, blue = 165),
+                        color = CodeaColores.GrisTexto,
                         fontSize = 13.sp,
                         lineHeight = 13.sp,
                         fontFamily = Poppins,
@@ -105,13 +106,13 @@ fun InfanteCard(infante: Infante, onClick: () -> Unit = {}) {
             // dado de baja: «De baja» en gris en lugar de la sala.
             Surface(
                 modifier = Modifier.padding(end = 9.dp),
-                color = if (infante.baja) Color(0xFFF4F1FB) else Color(0xFFEDE9FE),
+                color = if (infante.baja) CodeaColores.Campo else CodeaColores.Lila,
                 shape = RoundedCornerShape(percent = 50)
             ) {
                 Text(
                     text = if (infante.baja) "De baja" else infante.sala,
                     modifier = Modifier.padding(horizontal = 9.dp, vertical = 3.dp),
-                    color = if (infante.baja) Color(0xFFA79BBF) else Color(0xFF6D28D9),
+                    color = if (infante.baja) CodeaColores.Gris else CodeaColores.Morado,
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 12.sp
                 )
@@ -133,10 +134,10 @@ fun InscribirInfanteButton(
             .fillMaxWidth()
             .height(52.dp),
         shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(2.dp, Color(0xFFEDE9FE)),
+        border = BorderStroke(2.dp, CodeaColores.Lila),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFFEDE9FE),
-            contentColor = Color(0xFF6D28D9)
+            containerColor = CodeaColores.Lila,
+            contentColor = CodeaColores.Morado
         ),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
     ) {

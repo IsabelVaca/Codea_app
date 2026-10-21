@@ -62,7 +62,7 @@ fun RutinaDeHoyScreen(
                     Text(
                         "Todavía no se carga la rutina de tu sala. Si no aparece en unos segundos, " +
                             "tu sala no tiene una rutina asignada: avisa a coordinación.",
-                        fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, color = Color(0xFF8C7FA8),
+                        fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, color = CodeaColores.GrisMedio,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
                     )
@@ -76,31 +76,31 @@ fun RutinaDeHoyScreen(
                         .fillMaxWidth()
                         .shadow(6.dp, forma, ambientColor = Color(0x1F2A2140), spotColor = Color(0x1F2A2140))
                         .clip(forma)
-                        .background(Color.White)
+                        .background(CodeaColores.Tarjeta)
                         .border(1.dp, CodeaColores.Borde, forma)
                         .padding(13.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Box(
-                        Modifier.size(26.dp).clip(CircleShape).background(Color(0xFFEFE9FF)),
+                        Modifier.size(26.dp).clip(CircleShape).background(CodeaColores.Lavanda),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
                             "${i + 1}",
-                            fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF5B3FE0),
+                            fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.VioletaTexto,
                         )
                     }
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
                         Text(
                             momento.name,
-                            fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140),
+                            fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Ink,
                             maxLines = 1, overflow = TextOverflow.Ellipsis,
                         )
                         categoriaDeMomento(momento.category)?.let { categoria ->
                             Text(
                                 categoria,
-                                fontFamily = Poppins, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFFA79BBF),
+                                fontFamily = Poppins, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.Gris,
                                 maxLines = 1, overflow = TextOverflow.Ellipsis,
                             )
                         }
@@ -112,7 +112,7 @@ fun RutinaDeHoyScreen(
                 item(key = "resumen") {
                     Text(
                         "${momentos.size} momentos, en este orden",
-                        fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C7FA8),
+                        fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = CodeaColores.GrisMedio,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
                     )

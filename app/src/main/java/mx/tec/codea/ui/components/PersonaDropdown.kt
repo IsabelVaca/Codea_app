@@ -27,12 +27,12 @@ import mx.tec.codea.ui.theme.Poppins
 
 private val dropdownColors
     @Composable get() = TextFieldDefaults.colors(
-        focusedContainerColor = Color(0xFFF4F1FB),
-        unfocusedContainerColor = Color(0xFFF4F1FB),
+        focusedContainerColor = CodeaColores.Campo,
+        unfocusedContainerColor = CodeaColores.Campo,
         focusedIndicatorColor = Color.Transparent,
         unfocusedIndicatorColor = Color.Transparent,
-        focusedTextColor = Color(0xFF2A2140),
-        unfocusedTextColor = Color(0xFF2A2140)
+        focusedTextColor = CodeaColores.Ink,
+        unfocusedTextColor = CodeaColores.Ink
     )
 
 private val dropdownTextStyle

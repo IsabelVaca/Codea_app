@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import mx.tec.codea.ui.components.CodeaColores
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -119,15 +120,15 @@ private fun AjustesGrupo(contenido: @Composable ColumnScope.() -> Unit) {
             .fillMaxWidth()
             .shadow(6.dp, forma, ambientColor = Color.Black.copy(alpha = 0.10f), spotColor = Color.Black.copy(alpha = 0.10f))
             .clip(forma)
-            .background(Color.White)
-            .border(1.dp, Color(0xFFE6E0F2), forma),
+            .background(CodeaColores.Tarjeta)
+            .border(1.dp, CodeaColores.Borde, forma),
         content = contenido,
     )
 }
 
 @Composable
 private fun AjusteSeparador() {
-    HorizontalDivider(modifier = Modifier.padding(start = 70.dp), color = Color(0xFFF1EEF8))
+    HorizontalDivider(modifier = Modifier.padding(start = 70.dp), color = CodeaColores.Divisor)
 }
 
 @Composable
@@ -144,15 +145,15 @@ private fun AjusteFila(icono: ImageVector, titulo: String, detalle: String, onCl
             modifier = Modifier
                 .size(40.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFFEDE9FE)),
+                .background(CodeaColores.Lila),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(icono, contentDescription = null, tint = Color(0xFF6D28D9), modifier = Modifier.size(22.dp))
+            Icon(icono, contentDescription = null, tint = CodeaColores.Morado, modifier = Modifier.size(22.dp))
         }
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
-            Text(titulo, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
-            Text(detalle, fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF8A80A5), maxLines = 1)
+            Text(titulo, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Ink)
+            Text(detalle, fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto, maxLines = 1)
         }
-        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color(0xFFB9B0D0))
+        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = CodeaColores.Flecha)
     }
 }

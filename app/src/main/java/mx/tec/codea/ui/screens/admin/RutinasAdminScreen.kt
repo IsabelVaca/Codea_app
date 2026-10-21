@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import mx.tec.codea.ui.components.CodeaColores
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -55,7 +56,7 @@ fun RutinasAdminScreen(
             onClick = onNuevaRutina,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6C4BF6)),
+            colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.VioletaMarca),
             contentPadding = PaddingValues(vertical = 18.dp)
         ) {
             Text("+ Nueva rutina", fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
@@ -69,12 +70,12 @@ private fun RutinaTarjeta(r: RutinaItem, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(26.dp))
-            .background(Color(0xFFEFE9FF))
+            .background(CodeaColores.Lavanda)
             .clickable(onClick = onClick)
             .padding(18.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Text(r.nombre, fontFamily = Poppins, fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
-        Text("${r.cantidadMomentos} momentos", fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF8C7FA8))
+        Text(r.nombre, fontFamily = Poppins, fontSize = 17.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Ink)
+        Text("${r.cantidadMomentos} momentos", fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisMedio)
     }
 }

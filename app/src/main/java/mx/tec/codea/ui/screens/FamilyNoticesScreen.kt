@@ -39,7 +39,7 @@ fun FamilyNoticesScreen(
 ) {
     val unseen = RoomRules.notices(children, seenNoteIds, onlyUnseen = true)
     val seen = RoomRules.notices(children, seenNoteIds, onlyUnseen = false).filter { it.note.id in seenNoteIds }
-    fun colorOf(child: Child) = avatarColorAt(children.indexOfFirst { it.id == child.id }.coerceAtLeast(0))
+    @Composable fun colorOf(child: Child) = avatarColorAt(children.indexOfFirst { it.id == child.id }.coerceAtLeast(0))
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),

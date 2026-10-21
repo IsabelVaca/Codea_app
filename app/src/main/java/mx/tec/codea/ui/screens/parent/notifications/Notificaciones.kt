@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.parent.notifications
 
+import mx.tec.codea.ui.components.CodeaColores
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,7 +59,7 @@ private val IconoCampana: ImageVector by lazy {
         ).forEach { d ->
             addPath(
                 pathData = addPathNodes(d),
-                stroke = SolidColor(AvisoColores.Violeta), strokeLineWidth = 2f,
+                stroke = SolidColor(Color(0xFF5B3FE0)), strokeLineWidth = 2f,
                 strokeLineCap = StrokeCap.Round, strokeLineJoin = StrokeJoin.Round
             )
         }
@@ -66,11 +68,29 @@ private val IconoCampana: ImageVector by lazy {
 
 // hoy solo hay avisos; foto, momento y documento quedan listos para cuando
 // la API tenga notificaciones de esos tipos.
-enum class TipoNotif(val etiqueta: String, val bg: Color, val fg: Color) {
-    AVISO("Aviso", Color(0xFFEFE9FF), Color(0xFF5B3FE0)),
-    FOTO("Foto", Color(0xFFFFF4D6), Color(0xFFB37F09)),
-    MOMENTO("Momento", Color(0xFFE8FBF6), Color(0xFF0F7A6C)),
-    DOCUMENTO("Documento", Color(0xFFF4F1FB), Color(0xFF5B4B8A))
+enum class TipoNotif(val etiqueta: String) {
+    AVISO("Aviso"),
+    FOTO("Foto"),
+    MOMENTO("Momento"),
+    DOCUMENTO("Documento");
+
+    // los colores dependen del tema (claro u oscuro), por eso se leen al dibujar y no van en el constructor.
+    val bg: Color
+        @Composable @ReadOnlyComposable
+        get() = when (this) {
+            AVISO -> CodeaColores.Lavanda
+            FOTO -> CodeaColores.AmbarSuave
+            MOMENTO -> CodeaColores.VerdeSuave
+            DOCUMENTO -> CodeaColores.Campo
+        }
+    val fg: Color
+        @Composable @ReadOnlyComposable
+        get() = when (this) {
+            AVISO -> CodeaColores.VioletaTexto
+            FOTO -> CodeaColores.Ambar
+            MOMENTO -> CodeaColores.Verde
+            DOCUMENTO -> CodeaColores.MoradoGris
+        }
 }
 
 data class NotifUi(
@@ -145,7 +165,7 @@ private fun BotonCampana(pendientes: Int, onClick: () -> Unit) {
                     .align(Alignment.TopEnd)
                     .offset(x = 4.dp, y = (-4).dp)
                     .defaultMinSize(minWidth = 20.dp, minHeight = 20.dp)
-                    .border(2.dp, Color(0xFFFFFDFA), RoundedCornerShape(50))
+                    .border(2.dp, CodeaColores.Fondo, RoundedCornerShape(50))
                     .clip(RoundedCornerShape(50))
                     .background(AvisoColores.Coral)
                     .padding(horizontal = 5.dp),
@@ -169,7 +189,7 @@ fun PanelNotificaciones(
         Box(
             Modifier
                 .fillMaxSize()
-                .background(AvisoColores.Ink.copy(alpha = .35f))
+                .background(Color(0xFF2A2140).copy(alpha = .35f))  // el velo oscurece en los dos temas
                 .clickable(onClick = onCerrar)
                 .padding(horizontal = 12.dp, vertical = 12.dp),
             contentAlignment = Alignment.TopCenter
@@ -180,7 +200,7 @@ fun PanelNotificaciones(
                     .fillMaxHeight(.88f)
                     .shadow(24.dp, RoundedCornerShape(26.dp))
                     .clip(RoundedCornerShape(26.dp))
-                    .background(Color(0xFFFFFDFA))
+                    .background(CodeaColores.Fondo)
                     .clickable(enabled = false) {}   // evita cerrar al tocar dentro
             ) {
                 Row(
@@ -204,7 +224,7 @@ fun PanelNotificaciones(
                     ) {
                         Text(
                             "✕", fontFamily = Poppins, fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp, color = Color(0xFF6B6183)
+                            fontSize = 16.sp, color = CodeaColores.GrisOscuro
                         )
                     }
                 }
@@ -243,7 +263,7 @@ private fun NotifItem(n: NotifUi) {
                 else Modifier
             )
             .clip(shape)
-            .background(if (n.nueva) Color.White else AvisoColores.Fondo)
+            .background(if (n.nueva) CodeaColores.Tarjeta else AvisoColores.Fondo)
             .border(1.dp, AvisoColores.Borde, shape)
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)

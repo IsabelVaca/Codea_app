@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import mx.tec.codea.ui.components.CodeaColores
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -93,7 +94,7 @@ fun AvisosAdminScreen(
         modifier = Modifier
             .padding(paddingValues)
             .fillMaxSize()
-            .background(Color(0xFFFFFDFA))
+            .background(CodeaColores.Fondo)
             .padding(horizontal = 22.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
@@ -138,13 +139,13 @@ fun AvisosAdminScreen(
 }
 
 private object AvisosColores {
-    val Ink = Color(0xFF2A2140)
-    val Violeta = Color(0xFF5B3FE0)
-    val VioletaSuave = Color(0xFFEFE9FF)
-    val Campo = Color(0xFFF4F1FB)
-    val Gris = Color(0xFFA79BBF)
-    val Verde = Color(0xFF0F7A6C)
-    val VerdeSuave = Color(0xFFE8FBF6)
+    val Ink: Color @Composable get() = CodeaColores.Ink
+    val Violeta: Color @Composable get() = CodeaColores.Violeta
+    val VioletaSuave: Color @Composable get() = CodeaColores.Lavanda
+    val Campo: Color @Composable get() = CodeaColores.Campo
+    val Gris: Color @Composable get() = CodeaColores.Gris
+    val Verde: Color @Composable get() = CodeaColores.Verde
+    val VerdeSuave: Color @Composable get() = CodeaColores.VerdeSuave
 }
 
 // el botón grande de arriba; al tocarlo aparece el formulario. mismo estilo que «+ Crear sala».
@@ -156,7 +157,7 @@ private fun NuevoAvisoButton(onClick: () -> Unit) {
             .fillMaxWidth()
             .height(52.dp),
         shape = RoundedCornerShape(20.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEDE9FE), contentColor = Color(0xFF6D28D9)),
+        colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.Lila, contentColor = CodeaColores.Morado),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
     ) {
         Text("+ Nuevo aviso", fontSize = 15.sp, fontFamily = Poppins, fontWeight = FontWeight.Bold)
@@ -187,8 +188,8 @@ private fun NuevoAvisoCard(
             .fillMaxWidth()
             .shadow(6.dp, formaFormulario, ambientColor = Color.Black.copy(alpha = 0.12f), spotColor = Color.Black.copy(alpha = 0.12f))
             .clip(formaFormulario)
-            .background(Color.White)
-            .border(1.dp, Color(0xFFE6E0F2), formaFormulario)
+            .background(CodeaColores.Tarjeta)
+            .border(1.dp, CodeaColores.Borde, formaFormulario)
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
@@ -221,11 +222,11 @@ private fun NuevoAvisoCard(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             TextButton(onClick = onElegirFoto, enabled = !publicando) {
-                Icon(Icons.Outlined.Image, contentDescription = null, tint = AvisosColores.Violeta, modifier = Modifier.size(20.dp))
+                Icon(Icons.Outlined.Image, contentDescription = null, tint = CodeaColores.VioletaTexto, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(
                     if (foto == null) "Imagen" else "Cambiar",
-                    fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AvisosColores.Violeta
+                    fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = CodeaColores.VioletaTexto
                 )
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -266,13 +267,13 @@ private fun DestinoChip(
                 .padding(start = 12.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(etiqueta, fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AvisosColores.Violeta)
-            Icon(Icons.Filled.KeyboardArrowDown, contentDescription = null, tint = AvisosColores.Violeta, modifier = Modifier.size(20.dp))
+            Text(etiqueta, fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = CodeaColores.VioletaTexto)
+            Icon(Icons.Filled.KeyboardArrowDown, contentDescription = null, tint = CodeaColores.VioletaTexto, modifier = Modifier.size(20.dp))
         }
         ExposedDropdownMenu(
             expanded = abierto,
             onDismissRequest = { abierto = false },
-            modifier = Modifier.background(Color.White)
+            modifier = Modifier.background(CodeaColores.Tarjeta)
         ) {
             DropdownMenuItem(
                 text = { Text("Todas las salas", fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = AvisosColores.Ink) },
@@ -295,7 +296,7 @@ private fun CampoAviso(valor: String, onCambio: (String) -> Unit, placeholder: S
         value = valor,
         onValueChange = onCambio,
         textStyle = TextStyle(fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, lineHeight = 22.sp, color = AvisosColores.Ink),
-        cursorBrush = SolidColor(AvisosColores.Violeta),
+        cursorBrush = SolidColor(CodeaColores.VioletaTexto),
         modifier = Modifier.fillMaxWidth(),
         decorationBox = { interno ->
             Box(Modifier.fillMaxWidth().heightIn(min = 64.dp)) {
@@ -318,8 +319,8 @@ private fun AvisoCard(aviso: Aviso) {
             .fillMaxWidth()
             .shadow(6.dp, forma, ambientColor = Color.Black.copy(alpha = 0.12f), spotColor = Color.Black.copy(alpha = 0.12f))
             .clip(forma)
-            .background(Color.White)
-            .border(1.dp, Color(0xFFE6E0F2), forma)
+            .background(CodeaColores.Tarjeta)
+            .border(1.dp, CodeaColores.Borde, forma)
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -335,7 +336,7 @@ private fun AvisoCard(aviso: Aviso) {
                     .background(if (paraTodos) AvisosColores.VioletaSuave else AvisosColores.VerdeSuave)
                     .padding(horizontal = 11.dp, vertical = 5.dp),
                 fontFamily = Poppins, fontWeight = FontWeight.ExtraBold, fontSize = 11.sp,
-                color = if (paraTodos) AvisosColores.Violeta else AvisosColores.Verde
+                color = if (paraTodos) CodeaColores.VioletaTexto else AvisosColores.Verde
             )
             Text(aviso.fecha, fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 11.sp, color = AvisosColores.Gris)
         }

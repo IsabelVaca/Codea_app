@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import mx.tec.codea.ui.components.CodeaColores
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -50,8 +51,8 @@ internal fun PadreFila(p: Padre, onClick: () -> Unit) {
                 spotColor = Color.Black.copy(alpha = 0.30f)
             )
             .clickable(onClick = onClick),
-        color = Color.White,
-        border = BorderStroke(1.dp, Color(0xFFE6E0F2)),
+        color = CodeaColores.Tarjeta,
+        border = BorderStroke(1.dp, CodeaColores.Borde),
         shape = RoundedCornerShape(18.dp)
     ) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -60,16 +61,16 @@ internal fun PadreFila(p: Padre, onClick: () -> Unit) {
                     .padding(18.dp)
                     .size(50.dp)
                     .clip(RoundedCornerShape(20.dp))
-                    .background(Color(0xFFEDE9FE)),
+                    .background(CodeaColores.Lila),
                 contentAlignment = Alignment.Center
             ) {
-                Text(p.iniciales, color = Color(0xFF6D28D9), fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                Text(p.iniciales, color = CodeaColores.Morado, fontWeight = FontWeight.Bold, fontSize = 18.sp)
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     p.nombre,
                     modifier = Modifier.padding(top = 10.dp),
-                    color = Color(red = 1, green = 1, blue = 1),
+                    color = CodeaColores.Titulo,
                     fontSize = 17.sp, fontFamily = Poppins, fontWeight = FontWeight.ExtraBold,
                     maxLines = 1, overflow = TextOverflow.Ellipsis
                 )
@@ -77,7 +78,7 @@ internal fun PadreFila(p: Padre, onClick: () -> Unit) {
                 Text(
                     "${p.parentesco} · $hijosTexto",
                     modifier = Modifier.padding(top = 3.dp, bottom = 7.dp),
-                    color = Color(red = 138, green = 128, blue = 165),
+                    color = CodeaColores.GrisTexto,
                     fontSize = 13.sp, lineHeight = 13.sp, fontFamily = Poppins, fontWeight = FontWeight.SemiBold,
                     maxLines = 1, overflow = TextOverflow.Ellipsis
                 )
@@ -85,13 +86,13 @@ internal fun PadreFila(p: Padre, onClick: () -> Unit) {
             // con acceso, en morado como la sala del infante; sin acceso, en gris como «Sin checar».
             Surface(
                 modifier = Modifier.padding(end = 9.dp),
-                color = if (p.conAcceso) Color(0xFFEDE9FE) else Color(0xFFF4F1FB),
+                color = if (p.conAcceso) CodeaColores.Lila else CodeaColores.Campo,
                 shape = RoundedCornerShape(percent = 50)
             ) {
                 Text(
                     text = if (p.conAcceso) "Con acceso" else "Sin acceso",
                     modifier = Modifier.padding(horizontal = 9.dp, vertical = 3.dp),
-                    color = if (p.conAcceso) Color(0xFF6D28D9) else Color(0xFFA79BBF),
+                    color = if (p.conAcceso) CodeaColores.Morado else CodeaColores.Gris,
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 12.sp
                 )

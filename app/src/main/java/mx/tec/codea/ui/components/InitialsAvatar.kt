@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,6 +20,7 @@ import mx.tec.codea.ui.theme.Violet
 
 // every avatar looks like the admin ones: lavender background and violet initials.
 // avatarColorAt stays so the callers do not change, but it always returns the violet.
+@Composable @ReadOnlyComposable
 fun avatarColorAt(@Suppress("UNUSED_PARAMETER") index: Int): Color = CodeaColores.Morado
 
 // a rounded square with the initials of a person, like "KR" or "SM".

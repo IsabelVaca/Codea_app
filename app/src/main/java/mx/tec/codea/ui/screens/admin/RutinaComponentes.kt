@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import mx.tec.codea.ui.components.CodeaColores
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -41,8 +42,8 @@ fun ReorderableCollectionItemScope.FilaMomentoArrastrable(i: Int, m: MomentoRuti
             .fillMaxWidth()
             .shadow(elev, forma, ambientColor = Color(0x1F2A2140), spotColor = Color(0x1F2A2140))
             .clip(forma)
-            .background(Color.White)
-            .border(1.dp, Color(0xFFE6E0F2), forma)
+            .background(CodeaColores.Tarjeta)
+            .border(1.dp, CodeaColores.Borde, forma)
             .padding(13.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(9.dp)
@@ -51,19 +52,19 @@ fun ReorderableCollectionItemScope.FilaMomentoArrastrable(i: Int, m: MomentoRuti
             modifier = Modifier
                 .size(26.dp, 34.dp)
                 .clip(RoundedCornerShape(10.dp))
-                .background(if (arrastrando) Color(0xFFEFE9FF) else Color.Transparent)
+                .background(if (arrastrando) CodeaColores.Lavanda else Color.Transparent)
                 .draggableHandle(),
             verticalArrangement = Arrangement.spacedBy(3.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            repeat(3) { Box(Modifier.size(13.dp, 2.dp).clip(RoundedCornerShape(2.dp)).background(Color(0xFFC4BAD8))) }
+            repeat(3) { Box(Modifier.size(13.dp, 2.dp).clip(RoundedCornerShape(2.dp)).background(CodeaColores.Asa)) }
         }
-        Box(Modifier.size(24.dp).clip(CircleShape).background(Color(0xFFEFE9FF)), contentAlignment = Alignment.Center) {
-            Text("${i + 1}", fontFamily = Poppins, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF5B3FE0))
+        Box(Modifier.size(24.dp).clip(CircleShape).background(CodeaColores.Lavanda), contentAlignment = Alignment.Center) {
+            Text("${i + 1}", fontFamily = Poppins, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.VioletaTexto)
         }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
-            Text(m.nombre, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(m.registro, fontFamily = Poppins, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFFA79BBF), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(m.nombre, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(m.registro, fontFamily = Poppins, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.Gris, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
 }
@@ -87,11 +88,11 @@ fun BotonPunteado(texto: String, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .border(2.dp, Color(0xFFD8D0E8), RoundedCornerShape(20.dp))
+            .border(2.dp, CodeaColores.BordeFuerte, RoundedCornerShape(20.dp))
             .clickable(onClick = onClick)
             .padding(14.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(texto, fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF6B6183))
+        Text(texto, fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = CodeaColores.GrisOscuro)
     }
 }
