@@ -53,6 +53,16 @@
     </plurals>
     <string name="my_day_make_report">Realizar reporte</string>
     <string name="my_day_confirm_step">Confirmar subproceso</string>
+    <string name="my_day_confirming_step">Confirmando subproceso…</string>
+    <string name="my_day_view_reports">Ver reportes</string>
+
+    <!-- reports screen (button "Ver reportes" of the big card) -->
+    <string name="reports_title">Reportes</string>
+    <string name="reports_empty">Todavía no hay reportes de este momento.</string>
+    <string name="reports_children_label">Niños</string>
+    <string name="reports_photo_description">Foto del reporte</string>
+    <string name="reports_open_photo_hint">Tocar la foto para verla completa</string>
+    <string name="reports_close">Cerrar</string>
 
     <!-- day not started screen (inside mi día) -->
     <string name="day_not_started_greeting">Buen día, %1$s</string>

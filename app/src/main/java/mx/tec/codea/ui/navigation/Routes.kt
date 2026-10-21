@@ -34,6 +34,10 @@ data class ReportRoute(val subprocessNumber: Int)
 @Serializable
 data class SelectStudentsRoute(val subprocessNumber: Int)
 
+// el botón "Ver reportes" de la tarjeta grande: los reportes ya guardados de ese momento.
+@Serializable
+data class ReportsOfSubprocessRoute(val subprocessNumber: Int)
+
 // el pase de lista: el primer paso del día, dentro de "Mi día". se abre desde la tarjeta de arriba de la rutina.
 @Serializable
 data object RollCallRoute

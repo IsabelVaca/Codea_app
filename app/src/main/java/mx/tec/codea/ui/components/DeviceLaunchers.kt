@@ -129,7 +129,7 @@ fun rememberDictation(onTextHeard: (String) -> Unit): () -> Unit {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             // la app es en español siempre: con el idioma del teléfono (Locale.getDefault()), si el
             // sistema está en inglés, el reconocimiento de voz escuchaba en inglés.
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale("es", "MX"))
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale("es", "MX").toLanguageTag())
             putExtra(RecognizerIntent.EXTRA_PROMPT, prompt)
         }
         // some phones (and many emulators) have no voice service.

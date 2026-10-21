@@ -35,6 +35,7 @@ import mx.tec.codea.domain.Report
 import mx.tec.codea.domain.ReportValidator
 import mx.tec.codea.domain.RoomRules
 import mx.tec.codea.domain.Routine
+import mx.tec.codea.domain.SavedReport
 import mx.tec.codea.domain.Subprocess
 import mx.tec.codea.domain.Teacher
 
@@ -88,6 +89,16 @@ class CodeaViewModel : ViewModel() {
 
     // true mientras se guarda un reporte (puede llevar foto, así que tarda).
     var savingReport by mutableStateOf(false)
+        private set
+
+    // true mientras se confirma un subproceso, para que el botón avise que ya reaccionó al toque.
+    var confirmingSubprocess by mutableStateOf(false)
+        private set
+
+    // los reportes del momento que se está viendo completo ("Ver reportes" de la tarjeta).
+    var reportsForSubprocess by mutableStateOf<List<SavedReport>>(emptyList())
+        private set
+    var loadingReports by mutableStateOf(false)
         private set
 
     // true hasta que hay algo real que mostrar (de la caché o de la API): mientras tanto no se ve
@@ -271,9 +282,20 @@ class CodeaViewModel : ViewModel() {
     }
 
     fun confirmSubprocess(number: Int) {
+        if (confirmingSubprocess) return
         val momentId = momentIds[number] ?: return
         selectActiveAfterLoad = true
-        launchAction { repository.confirm(momentId) }
+        confirmingSubprocess = true
+        launchAction {
+            try {
+                // se aplica aquí mismo la rutina que regresa el servidor (ya trae el siguiente momento activo):
+                // así el botón pasa a "siguiente subproceso" en el mismo instante en que deja de decir "confirmando",
+                // sin el parpadeo de volver a "confirmar" mientras se espera la recarga aparte.
+                aplicarRutina(repository.confirm(momentId), desdeCache = false)
+            } finally {
+                confirmingSubprocess = false
+            }
+        }
     }
 
     fun addReport(report: Report, photo: Bitmap? = null, onSuccess: () -> Unit = {}) {
@@ -285,6 +307,24 @@ class CodeaViewModel : ViewModel() {
                 repository.createReport(momentId, report, photo)
             } finally {
                 savingReport = false
+            }
+        }
+    }
+
+    // los reportes de un momento, para el botón "Ver reportes" de la tarjeta.
+    fun loadReports(number: Int) {
+        val momentId = momentIds[number] ?: return
+        loadingReports = true
+        reportsForSubprocess = emptyList()
+        viewModelScope.launch {
+            try {
+                reportsForSubprocess = repository.reports(momentId)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                DataEvents.notice("No se pudieron cargar los reportes: ${e.toUserMessage()}")
+            } finally {
+                loadingReports = false
             }
         }
     }

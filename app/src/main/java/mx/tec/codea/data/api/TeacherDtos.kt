@@ -166,6 +166,20 @@ data class ReportBody(
     @SerialName("media_id") val mediaId: Int? = null,
 )
 
+// un reporte ya guardado, para poder verlo completo (botón "Ver reportes" de Mi día).
+@Serializable
+data class ReportDto(
+    val id: Int,
+    val type: String,
+    val method: String,
+    val description: String,
+    @SerialName("child_ids") val childIds: List<Int>,
+    @SerialName("has_photo") val hasPhoto: Boolean,
+    // URL firmada de 10 minutos; puede venir null aunque haya foto si ya expiró entre que se listó y se abrió.
+    @SerialName("photo_url") val photoUrl: String? = null,
+    @SerialName("created_at") val createdAt: String,
+)
+
 // ---------- checador ----------
 
 // la entrada no manda ubicación: solo el motivo del retardo, si lo hay.

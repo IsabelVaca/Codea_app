@@ -25,6 +25,7 @@ import mx.tec.codea.data.api.GuardianDto
 import mx.tec.codea.data.api.PickupDto
 import mx.tec.codea.data.api.MeDto
 import mx.tec.codea.data.api.ReportBody
+import mx.tec.codea.data.api.ReportDto
 import mx.tec.codea.data.api.RoomChildDto
 import mx.tec.codea.data.api.RoutineDto
 import mx.tec.codea.domain.AttendanceStatus
@@ -39,7 +40,10 @@ import mx.tec.codea.domain.PickupChoice
 import mx.tec.codea.domain.PickupKind
 import mx.tec.codea.domain.FamilyNote
 import mx.tec.codea.domain.Report
+import mx.tec.codea.domain.ReportMethod
+import mx.tec.codea.domain.ReportType
 import mx.tec.codea.domain.Routine
+import mx.tec.codea.domain.SavedReport
 import mx.tec.codea.domain.Subprocess
 import mx.tec.codea.domain.SubprocessStatus
 
@@ -172,7 +176,20 @@ class TeacherApiRepository {
             )
         )
     }
+
+    // los reportes de un momento, para el botón "Ver reportes" de la tarjeta.
+    suspend fun reports(momentId: Int): List<SavedReport> = api.reports(momentId).map { it.toSavedReport() }
 }
+
+private fun ReportDto.toSavedReport() = SavedReport(
+    id = id,
+    type = ReportType.valueOf(type),
+    method = ReportMethod.valueOf(method),
+    description = description,
+    childIds = childIds.map { it.toString() }.toSet(),
+    photoUrl = photoUrl,
+    time = clockOf(createdAt) ?: "",
+)
 
 private fun CheckInDto.toRecord() = CheckInRecord(
     arrivalMinutes = minutesOfDay(checkedInAt) ?: 0,

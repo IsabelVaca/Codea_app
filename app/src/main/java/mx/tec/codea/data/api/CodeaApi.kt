@@ -150,6 +150,10 @@ interface CodeaApi {
     @POST("reports")
     suspend fun createReport(@Body body: ReportBody)
 
+    // los reportes de un momento, para poder verlos completos (botón "Ver reportes" de la tarjeta).
+    @GET("reports")
+    suspend fun reports(@Query("moment_id") momentId: Int): List<ReportDto>
+
     // ----- pase de salida de la docente -----
     @GET("classrooms/{id}/departures")
     suspend fun departures(@Path("id") id: Int): DepartureSheetDto
