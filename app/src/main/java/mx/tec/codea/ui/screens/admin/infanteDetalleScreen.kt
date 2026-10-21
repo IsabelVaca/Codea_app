@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import mx.tec.codea.ui.components.CodeaColores
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -53,7 +54,7 @@ fun InfanteDetalleScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFFFDFA))
+            .background(CodeaColores.Fondo)
             .padding(horizontal = 22.dp)
     ) {
         BackHeader(
@@ -79,7 +80,7 @@ fun InfanteDetalleScreen(
                         spotColor = Color.Black.copy(alpha = 0.15f)
                     )
                     .clip(RoundedCornerShape(26.dp))
-                    .background(Color(0xFFF0F0F0))
+                    .background(CodeaColores.GrisClaro)
                     .padding(16.dp)
             ) {
                 Box(
@@ -92,20 +93,20 @@ fun InfanteDetalleScreen(
                     Text(infante.iniciales, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AvatarFg)
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(infante.nombre, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
-                    Text("${infante.edad} años · ${infante.sala}", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF5B4B8A))
+                    Text(infante.nombre, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Ink)
+                    Text("${infante.edad} años · ${infante.sala}", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.MoradoGris)
                 }
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(999.dp))
-                        .background(if (infante.baja) Color(0xFFFFEDE7) else Color(0xFFE8FBF6))
+                        .background(if (infante.baja) CodeaColores.RojoSuave else CodeaColores.VerdeSuave)
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
                         text = if (infante.baja) "Baja" else "Activo",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (infante.baja) Color(0xFFC4432A) else Color(0xFF0F7A6C)
+                        color = if (infante.baja) CodeaColores.Rojo else CodeaColores.Verde
                     )
                 }
             }
@@ -131,8 +132,8 @@ fun InfanteDetalleScreen(
                     Button(
                         onClick = { onSalaSeleccionada(nombre) },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (activo) Color(0xFF6C4BF6) else Color(0xFFF4F1FB),
-                            contentColor = if (activo) Color(0xFFFFFDFA) else Color(0xFF6B6183)
+                            containerColor = if (activo) CodeaColores.VioletaMarca else CodeaColores.Campo,
+                            contentColor = if (activo) Color(0xFFFFFDFA) else CodeaColores.GrisOscuro
                         ),
                         shape = RoundedCornerShape(999.dp),
                         elevation = ButtonDefaults.buttonElevation(0.dp)
@@ -146,8 +147,8 @@ fun InfanteDetalleScreen(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 AccionButton(
                     texto = if (infante.baja) "Reactivar su inscripción" else "Dar de baja su inscripción",
-                    bg = if (infante.baja) Color(0xFFE8FBF6) else Color(0xFFFFEDE7),
-                    fg = if (infante.baja) Color(0xFF0F7A6C) else Color(0xFFC4432A),
+                    bg = if (infante.baja) CodeaColores.VerdeSuave else CodeaColores.RojoSuave,
+                    fg = if (infante.baja) CodeaColores.Verde else CodeaColores.Rojo,
                     onClick = onDarBaja
                 )
 
@@ -166,7 +167,7 @@ fun SeccionLabel(texto: String) {
         fontSize = 12.sp,
         fontWeight = FontWeight.Bold,
         letterSpacing = 1.sp,
-        color = Color(0xFFA79BBF)
+        color = CodeaColores.Gris
     )
 }
 
@@ -184,17 +185,17 @@ fun PadreVinculadoRow(padre: Padre, onConsultar: () -> Unit) {
                 spotColor = Color.Black.copy(alpha = 0.12f)
             )
             .clip(forma)
-            .background(Color.White)
-            .border(1.dp, Color(0xFFE6E0F2), forma)
+            .background(CodeaColores.Tarjeta)
+            .border(1.dp, CodeaColores.Borde, forma)
             .padding(14.dp)
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(padre.nombre, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
-            Text(padre.parentesco, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF5B4B8A))
+            Text(padre.nombre, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Ink)
+            Text(padre.parentesco, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.MoradoGris)
         }
         Button(
             onClick = onConsultar,
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF4F1FB), contentColor = Color(0xFF4A4066)),
+            colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.Campo, contentColor = CodeaColores.InkSuave),
             shape = RoundedCornerShape(999.dp),
             elevation = ButtonDefaults.buttonElevation(0.dp)
         ) {
@@ -216,12 +217,12 @@ fun InfoCard(titulo: String, valor: String) {
                 spotColor = Color.Black.copy(alpha = 0.12f)
             )
             .clip(forma)
-            .background(Color.White)
-            .border(1.dp, Color(0xFFE6E0F2), forma)
+            .background(CodeaColores.Tarjeta)
+            .border(1.dp, CodeaColores.Borde, forma)
             .padding(14.dp)
     ) {
-        Text(titulo.uppercase(), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp, color = Color(0xFFA79BBF))
-        Text(valor, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
+        Text(titulo.uppercase(), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp, color = CodeaColores.Gris)
+        Text(valor, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Ink)
     }
 }
 

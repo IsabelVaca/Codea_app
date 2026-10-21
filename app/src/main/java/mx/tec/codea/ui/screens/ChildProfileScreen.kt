@@ -282,7 +282,7 @@ private fun TodayRow(
             onClick = onActionClick,
             enabled = actionEnabled,
             modifier = Modifier.heightIn(min = 48.dp),
-            colors = ButtonDefaults.textButtonColors(contentColor = CodeaColores.Violeta, disabledContentColor = CodeaColores.Gris),
+            colors = ButtonDefaults.textButtonColors(contentColor = CodeaColores.VioletaTexto, disabledContentColor = CodeaColores.Gris),
         ) {
             Text(actionText, fontFamily = Poppins, fontWeight = FontWeight.Bold)
             Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)

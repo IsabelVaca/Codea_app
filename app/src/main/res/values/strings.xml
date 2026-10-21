@@ -262,7 +262,7 @@
 
     <!-- menu screen -->
     <string name="menu_title">Menú</string>
-    <string name="menu_teacher_name">Miss %1$s</string>
+    <string name="menu_teacher_name">Docente %1$s</string>
     <string name="menu_teacher_shift">%1$s, de %2$s a %3$s</string>
     <string name="menu_no_check_in">Sin entrada hoy</string>
     <string name="menu_checked_in">Entró %1$s</string>

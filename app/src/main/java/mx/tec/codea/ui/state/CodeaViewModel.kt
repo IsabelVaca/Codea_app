@@ -187,7 +187,7 @@ class CodeaViewModel : ViewModel() {
         centerWorkDays = t.center.workDays.toSet()
         teacher = Teacher(
             fullName = me.fullName,
-            greetingName = "miss ${me.name}",
+            greetingName = "docente ${me.name}",
             roomName = t.classroom?.name ?: "Sin sala",
             // la entrada y la salida son las del centro, iguales para todas (las configura el admin).
             shiftStartMinutes = timeToMinutes(t.center.entryTime) ?: (8 * 60),

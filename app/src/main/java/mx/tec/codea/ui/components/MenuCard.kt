@@ -29,7 +29,7 @@ fun MenuCard(menu: MenuDelDia, modifier: Modifier = Modifier, titulo: String = "
             .fillMaxWidth()
             .shadow(6.dp, forma, ambientColor = Color(0x1A2A2140), spotColor = Color(0x1A2A2140))
             .clip(forma)
-            .background(Color.White)
+            .background(CodeaColores.Tarjeta)
             .border(1.dp, CodeaColores.Borde, forma)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -37,12 +37,12 @@ fun MenuCard(menu: MenuDelDia, modifier: Modifier = Modifier, titulo: String = "
         Text(
             // los que la llaman pasan el título en mayúsculas ("MENÚ DEL DÍA"): aquí va como título normal.
             text = titulo.lowercase().replaceFirstChar { it.uppercase() },
-            fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF2A2140),
+            fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.Ink,
         )
         menu.comidas.forEach { (nombre, texto) ->
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(nombre, fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF6D28D9))
-                Text(texto, fontFamily = Poppins, fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium, color = Color(0xFF2A2140))
+                Text(nombre, fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.Morado)
+                Text(texto, fontFamily = Poppins, fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium, color = CodeaColores.Ink)
             }
         }
     }

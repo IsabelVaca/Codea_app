@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import mx.tec.codea.ui.components.CodeaColores
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -44,7 +45,7 @@ fun SalasSeccion(
         if (salas.isEmpty()) {
             Text(
                 "Todavía no hay salas.",
-                fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFFA79BBF)
+                fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.Gris
             )
         }
         salas.forEach { sala ->
@@ -72,8 +73,8 @@ private fun SalaOcupacionCard(sala: Sala, ninosActuales: Int, onClick: () -> Uni
                 spotColor = Color.Black.copy(alpha = 0.12f)
             )
             .clip(forma)
-            .background(Color.White)
-            .border(1.dp, Color(0xFFE6E0F2), forma)
+            .background(CodeaColores.Tarjeta)
+            .border(1.dp, CodeaColores.Borde, forma)
             .clickable(onClick = onClick)
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(9.dp)
@@ -82,15 +83,15 @@ private fun SalaOcupacionCard(sala: Sala, ninosActuales: Int, onClick: () -> Uni
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(sala.nombre, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
-            Text("$ninosActuales/${sala.cupoMaximo} niños", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF5B3FE0))
+            Text(sala.nombre, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Ink)
+            Text("$ninosActuales/${sala.cupoMaximo} niños", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = CodeaColores.VioletaTexto)
         }
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(9.dp)
                 .clip(RoundedCornerShape(999.dp))
-                .background(Color(0xFFF4F1FB))
+                .background(CodeaColores.Campo)
         ) {
             Box(
                 modifier = Modifier
@@ -100,7 +101,7 @@ private fun SalaOcupacionCard(sala: Sala, ninosActuales: Int, onClick: () -> Uni
                     .background(salaColor(sala.id))
             )
         }
-        Text(sala.asistente, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFFA79BBF))
+        Text(sala.asistente, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.Gris)
     }
 }
 
@@ -115,10 +116,10 @@ fun CrearSalaButton(
             .fillMaxWidth()
             .height(52.dp),
         shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(2.dp, Color(0xFFEDE9FE)),
+        border = BorderStroke(2.dp, CodeaColores.Lila),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFFEDE9FE),
-            contentColor = Color(0xFF6D28D9)
+            containerColor = CodeaColores.Lila,
+            contentColor = CodeaColores.Morado
         ),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
     ) {

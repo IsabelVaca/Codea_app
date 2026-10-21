@@ -182,7 +182,7 @@ private fun ConversationRow(
             .padding(horizontal = 2.dp, vertical = 2.dp)
             .shadow(6.dp, forma, ambientColor = Color(0x1A2A2140), spotColor = Color(0x1A2A2140))
             .clip(forma)
-            .background(Color.White)
+            .background(CodeaColores.Tarjeta)
             .border(1.dp, CodeaColores.Borde, forma)
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 12.dp),
@@ -194,7 +194,7 @@ private fun ConversationRow(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(1.dp),
         ) {
-            Text(conversation.childName, fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
+            Text(conversation.childName, fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.Titulo)
             // de quién es el chat: la mamá o el papá del niño. el papá ya sabe que es su chat, así que solo lo ve la docente.
             if (showGuardians) {
                 ChatRules.guardiansLabel(conversation.guardians)?.let { label ->
@@ -467,7 +467,7 @@ private fun MessageBubble(
         if (message.isMine) {
             CodeaColores.Violeta
         } else {
-            Color.White
+            CodeaColores.Tarjeta
         }
 
     val contentColor =
@@ -686,8 +686,8 @@ private fun MessageComposer(
             shape = RoundedCornerShape(18.dp),
             maxLines = 3,
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
+                focusedContainerColor = CodeaColores.Tarjeta,
+                unfocusedContainerColor = CodeaColores.Tarjeta,
                 focusedBorderColor = CodeaColores.Morado,
                 unfocusedBorderColor = CodeaColores.Lila,
                 cursorColor = CodeaColores.Morado,
@@ -702,7 +702,7 @@ private fun MessageComposer(
                 }
             },
             modifier = Modifier.background(
-                color = CodeaColores.Violeta,
+                color = CodeaColores.VioletaTexto,
                 shape = RoundedCornerShape(14.dp),
             ),
         ) {

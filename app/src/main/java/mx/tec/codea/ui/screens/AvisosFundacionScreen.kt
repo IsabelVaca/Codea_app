@@ -87,7 +87,7 @@ private fun AvisoItem(aviso: AvisoFundacionUi) {
             .fillMaxWidth()
             .shadow(6.dp, shape, ambientColor = Color(0x1A2A2140), spotColor = Color(0x1A2A2140))
             .clip(shape)
-            .background(Color.White)
+            .background(CodeaColores.Tarjeta)
             .border(1.dp, CodeaColores.Borde, shape)
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -104,7 +104,7 @@ private fun AvisoItem(aviso: AvisoFundacionUi) {
                 AvisoChip(
                     aviso.destino ?: "Toda la fundación",
                     bg = if (paraTodos) AvisoColores.VioletaSuave else AvisoColores.VerdeSuave,
-                    fg = if (paraTodos) AvisoColores.Violeta else AvisoColores.Verde
+                    fg = if (paraTodos) CodeaColores.VioletaTexto else AvisoColores.Verde
                 )
                 if (aviso.nuevo) AvisoChip("Nuevo", bg = CodeaColores.Violeta, fg = Color.White)
             }

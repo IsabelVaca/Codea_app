@@ -5,10 +5,11 @@ from contextlib import asynccontextmanager
 from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .core import errors
+from .core import errors, rate_limit
 from .core.config import settings
 from .core.db import get_db
 from .core.errors import ApiError
@@ -55,6 +56,32 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(title="API Guardería", lifespan=lifespan)
 errors.install(app)
+
+_RATE_LIMIT_EXEMPT = ("/api/v1/health/live", "/api/v1/health/ready")
+
+
+@app.middleware("http")
+async def rate_limiting(request: Request, call_next):
+    """429 cuando una misma IP pasa el límite genérico (rúbrica: rate limiting / control de
+    concurrencia). Va antes que la ruta: nada de tocar la base si ya se excedió."""
+    path = request.url.path
+    if path.startswith("/api/") and path not in _RATE_LIMIT_EXEMPT:
+        wait = rate_limit.check(request.client.host if request.client else None)
+        if wait is not None:
+            return JSONResponse(
+                {
+                    "type": "about:blank",
+                    "title": "Demasiadas peticiones; espera unos segundos y vuelve a intentar",
+                    "status": 429,
+                    "code": "TOO_MANY_REQUESTS",
+                    "retry_after_s": wait,
+                },
+                status_code=429,
+                media_type=errors.PROBLEM_JSON,
+                headers={"Retry-After": str(wait)},
+            )
+    return await call_next(request)
+
 
 # la app Android no usa CORS; solo se abre para los orígenes web que se listen en CORS_ORIGINS (por omisión, ninguno).
 _cors_origins = [origin.strip() for origin in settings.cors_origins.split(",") if origin.strip()]

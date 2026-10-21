@@ -44,8 +44,8 @@ fun ChildSwitcher(
                 onClick = { onSelect(child.id) },
                 label = { Text(child.firstName, fontFamily = Poppins, fontWeight = FontWeight.Bold) },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = Color(0xFFEDE9FE),
-                    selectedLabelColor = Color(0xFF6D28D9),
+                    selectedContainerColor = CodeaColores.Lila,
+                    selectedLabelColor = CodeaColores.Morado,
                 ),
                 modifier = Modifier.semantics { contentDescription = "Ver a ${child.fullName}" },
             )

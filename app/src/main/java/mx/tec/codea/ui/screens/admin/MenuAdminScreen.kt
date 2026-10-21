@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import mx.tec.codea.ui.components.CodeaColores
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -114,10 +115,10 @@ fun MenuAdminScreen(
     }
 }
 
-private val Ink = Color(0xFF2A2140)
-private val Violeta = Color(0xFF5B3FE0)
-private val Gris = Color(0xFF6B6485)
-private val Campo = Color(0xFFEFE9FF)
+private val Ink: Color @Composable get() = CodeaColores.Ink
+private val Violeta: Color @Composable get() = CodeaColores.VioletaTexto
+private val Gris: Color @Composable get() = CodeaColores.GrisOscuro
+private val Campo: Color @Composable get() = CodeaColores.Lavanda
 
 @Composable
 private fun DiaMenuCard(fecha: String, menu: MenuDelDia?, onEditar: () -> Unit) {

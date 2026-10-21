@@ -83,7 +83,7 @@ fun ReportsScreen(
         Spacer(Modifier.height(14.dp))
         when {
             loading -> Box(Modifier.fillMaxWidth().padding(top = 24.dp), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = CodeaColores.Violeta)
+                CircularProgressIndicator(color = CodeaColores.VioletaTexto)
             }
             reports.isEmpty() -> Text(
                 text = stringResource(R.string.reports_empty),
@@ -234,7 +234,7 @@ private fun ReportDetailDialog(
                 Text(
                     stringResource(R.string.reports_open_photo_hint),
                     fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold,
-                    color = CodeaColores.Violeta,
+                    color = CodeaColores.VioletaTexto,
                 )
             }
         }

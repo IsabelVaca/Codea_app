@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import mx.tec.codea.ui.components.CodeaColores
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -56,7 +57,7 @@ fun PadreDetalleScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFFFDFA))
+            .background(CodeaColores.Fondo)
             .padding(horizontal = 22.dp)
     ) {
         BackHeader(
@@ -74,7 +75,7 @@ fun PadreDetalleScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(26.dp))
-                    .background(Color(0xFFEFE9FF))
+                    .background(CodeaColores.Lavanda)
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(14.dp)
@@ -89,16 +90,16 @@ fun PadreDetalleScreen(
                     Text(padre.iniciales, fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = AvatarFg)
                 }
                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(padre.nombre, fontFamily = Poppins, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
-                    Text("${padre.parentesco} de ${hijosNombres.joinToString(", ")}", fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF5B4B8A))
+                    Text(padre.nombre, fontFamily = Poppins, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Ink)
+                    Text("${padre.parentesco} de ${hijosNombres.joinToString(", ")}", fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.MoradoGris)
                 }
                 Text(
                     text = if (padre.conAcceso) "Con acceso" else "Sin acceso",
                     fontFamily = Poppins, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold,
-                    color = if (padre.conAcceso) Color(0xFF0F7A6C) else Color(0xFFC4432A),
+                    color = if (padre.conAcceso) CodeaColores.Verde else CodeaColores.Rojo,
                     modifier = Modifier
                         .clip(RoundedCornerShape(999.dp))
-                        .background(if (padre.conAcceso) Color(0xFFE8FBF6) else Color(0xFFFFEDE7))
+                        .background(if (padre.conAcceso) CodeaColores.VerdeSuave else CodeaColores.RojoSuave)
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 )
             }
@@ -123,8 +124,8 @@ fun PadreDetalleScreen(
                     )
                     BotonAccionPadre(
                         texto = if (elegidos.size > 1) "Vincular a ${elegidos.size} niños" else "Vincular",
-                        bg = Color(0xFFEDE9FE),
-                        fg = Color(0xFF6D28D9),
+                        bg = CodeaColores.Lila,
+                        fg = CodeaColores.Morado,
                         onClick = {
                             onVincularHijos(elegidos.toList())
                             elegidos.clear()
@@ -137,11 +138,11 @@ fun PadreDetalleScreen(
             SeccionLabel("ACCIONES")
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (padre.conAcceso) {
-                    BotonAccionPadre("Suspender su acceso a la app", Color(0xFFFFEDE7), Color(0xFFC4432A), onToggleAcceso)
+                    BotonAccionPadre("Suspender su acceso a la app", CodeaColores.RojoSuave, CodeaColores.Rojo, onToggleAcceso)
                 } else {
-                    BotonAccionPadre("Reactivar su acceso a la app", Color(0xFFE8FBF6), Color(0xFF0F7A6C), onToggleAcceso)
+                    BotonAccionPadre("Reactivar su acceso a la app", CodeaColores.VerdeSuave, CodeaColores.Verde, onToggleAcceso)
                 }
-                BotonAccionPadre("Reenviar invitación", Color(0xFFF4F1FB), Color(0xFF4A4066), onReenviarInvitacion)
+                BotonAccionPadre("Reenviar invitación", CodeaColores.Campo, CodeaColores.InkSuave, onReenviarInvitacion)
             }
 
             // el mismo espacio final que los demás detalles, para que el último botón no quede pegado a la barra.
@@ -158,13 +159,13 @@ private fun InfoTarjeta(etiqueta: String, valor: String) {
             .fillMaxWidth()
             .shadow(6.dp, forma, ambientColor = Color(0x0F2A2140), spotColor = Color(0x0F2A2140))
             .clip(forma)
-            .background(Color.White)
-            .border(1.dp, Color(0xFFE6E0F2), forma)
+            .background(CodeaColores.Tarjeta)
+            .border(1.dp, CodeaColores.Borde, forma)
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(3.dp)
     ) {
-        Text(etiqueta, fontFamily = Poppins, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.1.sp, color = Color(0xFFA79BBF))
-        Text(valor, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
+        Text(etiqueta, fontFamily = Poppins, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.1.sp, color = CodeaColores.Gris)
+        Text(valor, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Ink)
     }
 }
 

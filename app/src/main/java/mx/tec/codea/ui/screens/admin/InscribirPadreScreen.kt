@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import mx.tec.codea.ui.components.CodeaColores
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -56,7 +57,7 @@ fun InscribirPadreScreen(
     modifier: Modifier = Modifier
 ) {
     val textoGuardar = if (nombre.isNotBlank()) "Inscribir a ${nombre.trim().split(" ")[0]}" else "Inscribir al padre o tutor"
-    val morado = Color(0xFF6C4BF6)
+    val morado = CodeaColores.VioletaMarca
 
     Column(
         modifier = modifier
@@ -75,14 +76,14 @@ fun InscribirPadreScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(24.dp))
-                .background(Color(0xFFEFE9FF))
+                .background(CodeaColores.Lavanda)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Text("Nuevo padre o tutor", fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF4A3A80))
+            Text("Nuevo padre o tutor", fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = CodeaColores.InkMorado)
             Text(
                 "Registra sus datos y vincúlalo con sus hijos. Al guardar, recibe su acceso a la app.",
-                fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, color = Color(0xFF5B4B8A)
+                fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, color = CodeaColores.MoradoGris
             )
         }
 
@@ -122,7 +123,7 @@ fun InscribirPadreScreen(
         Text(
             "Recibe una invitación por SMS para entrar a la app.",
             fontFamily = Poppins, fontSize = 12.sp, lineHeight = 18.sp,
-            color = Color(0xFF8C7FA8), textAlign = TextAlign.Center,
+            color = CodeaColores.GrisMedio, textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
         )
     }
@@ -146,12 +147,12 @@ private fun CampoTexto(
             error?.let { Text(it.message()) }
         },
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color(0xFFF4F1FB),
-            unfocusedContainerColor = Color(0xFFF4F1FB),
+            focusedContainerColor = CodeaColores.Campo,
+            unfocusedContainerColor = CodeaColores.Campo,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
-            focusedTextColor = Color(0xFF2A2140),
-            unfocusedTextColor = Color(0xFF2A2140)
+            focusedTextColor = CodeaColores.Ink,
+            unfocusedTextColor = CodeaColores.Ink
         ),
         textStyle = LocalTextStyle.current.copy(fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.SemiBold),
         singleLine = true
@@ -166,8 +167,8 @@ private fun PadreError.message(): String = when (this) {
 
 @Composable
 private fun ChipBoton(nombre: String, activo: Boolean, colorActivo: Color, onClick: () -> Unit) {
-    val bg = if (activo) colorActivo else Color(0xFFF4F1FB)
-    val fg = if (activo) Color.White else Color(0xFF6B6183)
+    val bg = if (activo) colorActivo else CodeaColores.Campo
+    val fg = if (activo) Color.White else CodeaColores.GrisOscuro
     Button(
         onClick = onClick,
         colors = ButtonDefaults.buttonColors(containerColor = bg, contentColor = fg),
