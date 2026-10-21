@@ -4,7 +4,7 @@ package mx.tec.codea.domain
 // later it will come from the login.
 data class Teacher(
     val fullName: String,
-    // the short way the app greets her, like "miss Karla".
+    // the short way the app greets the teacher, like "docente Karla" (not "miss": there are men too).
     val greetingName: String,
     val roomName: String,
     // we save the hours as "minutes after midnight" (8:00 is 480).

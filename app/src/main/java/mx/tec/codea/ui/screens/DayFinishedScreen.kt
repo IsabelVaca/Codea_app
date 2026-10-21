@@ -97,7 +97,7 @@ private fun DayFinishedScreenPreview() {
     CodeaTheme {
         DayFinishedScreen(
             record = CheckInRecord(arrivalMinutes = 472, placeName = "La Oruga", minutesLate = 0, lateReason = "", departureMinutes = 16 * 60 + 5),
-            teacherName = "miss Karla",
+            teacherName = "docente Karla",
         )
     }
 }
