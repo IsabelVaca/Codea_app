@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -42,6 +43,7 @@ import mx.tec.codea.ui.theme.CodeaTheme
 import mx.tec.codea.ui.theme.Poppins
 
 // los colores de cada día: completo en morado, con nota en verde y ausente en rojo (los mismos del admin).
+@Composable @ReadOnlyComposable
 private fun colorDe(status: DayAttendanceStatus): Color? = when (status) {
     DayAttendanceStatus.FULL_DAY -> CodeaColores.Morado
     DayAttendanceStatus.WITH_NOTE -> CodeaColores.Verde
@@ -172,12 +174,12 @@ private fun DiaCelda(day: CalendarDay, elegido: Boolean, onClick: () -> Unit, mo
             fontFamily = Poppins, fontSize = 14.sp,
             fontWeight = if (conRegistro || elegido) FontWeight.ExtraBold else FontWeight.SemiBold,
             color = when {
-                elegido -> Color.White
+                elegido -> CodeaColores.SobreMorado
                 conRegistro -> CodeaColores.Ink
                 else -> CodeaColores.Gris
             },
         )
-        val punto = if (elegido && conRegistro) Color.White else colorDe(day.status)
+        val punto = if (elegido && conRegistro) CodeaColores.SobreMorado else colorDe(day.status)
         Spacer(Modifier.height(3.dp))
         Box(Modifier.size(6.dp).clip(CircleShape).background(punto ?: Color.Transparent))
     }

@@ -183,7 +183,7 @@ fun ParentPhotosScreen(
                     Text("Cancelar", fontFamily = Poppins, fontWeight = FontWeight.Bold, color = CodeaColores.GrisTexto)
                 }
             },
-            containerColor = Color.White,
+            containerColor = CodeaColores.Tarjeta,
         )
     }
 }
@@ -237,7 +237,7 @@ private fun Miniatura(foto: Foto, onClick: () -> Unit) {
                 .align(Alignment.BottomStart)
                 .padding(6.dp)
                 .clip(RoundedCornerShape(50))
-                .background(Color.White.copy(alpha = 0.9f))
+                .background(CodeaColores.Tarjeta.copy(alpha = 0.9f))
                 .padding(horizontal = 7.dp, vertical = 2.dp),
             fontFamily = Poppins, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Morado,
         )
@@ -307,7 +307,7 @@ private fun VisorFoto(
             Column(
                 Modifier.fillMaxWidth()
                     .clip(RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp))
-                    .background(Color.White)
+                    .background(CodeaColores.Tarjeta)
                     .padding(start = 22.dp, end = 22.dp, top = 20.dp, bottom = 30.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {

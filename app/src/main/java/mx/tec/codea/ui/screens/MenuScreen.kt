@@ -143,7 +143,7 @@ fun MenuScreen(
         TarjetaBlanca(padding = 0.dp, espacio = 0.dp) {
             MenuOption.entries.forEachIndexed { i, option ->
                 val esAvisos = option == MenuOption.NOTICES
-                if (i > 0) HorizontalDivider(modifier = Modifier.padding(start = 70.dp), color = Color(0xFFF1EEF8))
+                if (i > 0) HorizontalDivider(modifier = Modifier.padding(start = 70.dp), color = CodeaColores.Divisor)
                 MenuRow(
                     icono = if (esAvisos) Icons.Outlined.Campaign else Icons.Outlined.AccountCircle,
                     title = stringResource(option.titleRes),
@@ -171,7 +171,7 @@ fun MenuScreen(
             onDismissRequest = { showLogoutDialog = false },
             title = { Text(stringResource(R.string.menu_logout_dialog_title), fontFamily = Poppins, fontWeight = FontWeight.ExtraBold) },
             text = { Text(stringResource(R.string.menu_logout_dialog_body), fontFamily = Poppins) },
-            containerColor = Color.White,
+            containerColor = CodeaColores.Tarjeta,
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -203,7 +203,7 @@ private fun TeacherCard(teacher: Teacher, checkIn: CheckInRecord?) {
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Text(
                     stringResource(R.string.menu_teacher_name, teacher.fullName),
-                    fontFamily = Poppins, fontSize = 17.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black,
+                    fontFamily = Poppins, fontSize = 17.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.Titulo,
                 )
                 Text(
                     stringResource(
@@ -248,7 +248,7 @@ private fun CheckerCard(
             }
             .shadow(6.dp, RoundedCornerShape(22.dp), ambientColor = Color(0x1A2A2140), spotColor = Color(0x1A2A2140)),
         shape = RoundedCornerShape(22.dp),
-        color = Color.White,
+        color = CodeaColores.Tarjeta,
         border = if (checkIn == null) BorderStroke(2.dp, CodeaColores.Morado) else BorderStroke(1.dp, CodeaColores.Borde),
         interactionSource = interactionSource,
     ) {
@@ -324,7 +324,7 @@ private fun MenuRow(
                     .defaultMinSize(minWidth = 24.dp)
                     .background(CodeaColores.Morado, RoundedCornerShape(50))
                     .padding(horizontal = 8.dp, vertical = 3.dp),
-                fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, color = Color.White,
+                fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.SobreMorado,
                 textAlign = TextAlign.Center,
             )
         }

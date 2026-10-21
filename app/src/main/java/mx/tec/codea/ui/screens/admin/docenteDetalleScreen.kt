@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import mx.tec.codea.ui.components.CodeaColores
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,7 +51,7 @@ fun DocenteDetalleScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFFFDFA))
+            .background(CodeaColores.Fondo)
             .padding(horizontal = 22.dp)
     ) {
         BackHeader(
@@ -76,7 +77,7 @@ fun DocenteDetalleScreen(
                         spotColor = Color.Black.copy(alpha = 0.15f)
                     )
                     .clip(RoundedCornerShape(26.dp))
-                    .background(Color(0xFFF0F0F0))
+                    .background(CodeaColores.GrisClaro)
                     .padding(16.dp)
             ) {
                 Box(
@@ -89,20 +90,20 @@ fun DocenteDetalleScreen(
                     Text(docente.iniciales, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AvatarFg)
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(docente.nombre, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
-                    Text("${docente.sala} · ${docente.horaChecada?.let { "Checó $it" } ?: "Sin checar hoy"}", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF5B4B8A))
+                    Text(docente.nombre, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Ink)
+                    Text("${docente.sala} · ${docente.horaChecada?.let { "Checó $it" } ?: "Sin checar hoy"}", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.MoradoGris)
                 }
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(999.dp))
-                        .background(if (docente.baja) Color(0xFFFFEDE7) else Color(0xFFE8FBF6))
+                        .background(if (docente.baja) CodeaColores.RojoSuave else CodeaColores.VerdeSuave)
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
                         text = if (docente.baja) "Baja" else "Activa",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (docente.baja) Color(0xFFC4432A) else Color(0xFF0F7A6C)
+                        color = if (docente.baja) CodeaColores.Rojo else CodeaColores.Verde
                     )
                 }
             }
@@ -114,8 +115,8 @@ fun DocenteDetalleScreen(
                     Button(
                         onClick = { onSalaSeleccionada(nombre) },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (activo) Color(0xFF6C4BF6) else Color(0xFFF4F1FB),
-                            contentColor = if (activo) Color(0xFFFFFDFA) else Color(0xFF6B6183)
+                            containerColor = if (activo) CodeaColores.VioletaMarca else CodeaColores.Campo,
+                            contentColor = if (activo) Color(0xFFFFFDFA) else CodeaColores.GrisOscuro
                         ),
                         shape = RoundedCornerShape(999.dp),
                         elevation = ButtonDefaults.buttonElevation(0.dp)
@@ -130,8 +131,8 @@ fun DocenteDetalleScreen(
             if (!docente.baja) {
                 AccionButton(
                     texto = if (docente.tieneCuenta) "Mandar código para nueva contraseña" else "Reenviar invitación",
-                    bg = Color(0xFFEDE9FE),
-                    fg = Color(0xFF6D28D9),
+                    bg = CodeaColores.Lila,
+                    fg = CodeaColores.Morado,
                     onClick = onReenviarInvitacion
                 )
                 Text(
@@ -142,14 +143,14 @@ fun DocenteDetalleScreen(
                     },
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF8A80A5),
+                    color = CodeaColores.GrisTexto,
                     modifier = Modifier.padding(horizontal = 4.dp)
                 )
             }
             AccionButton(
                 texto = if (docente.baja) "Reactivar a la docente" else "Dar de baja a la docente",
-                bg = if (docente.baja) Color(0xFFE8FBF6) else Color(0xFFFFEDE7),
-                fg = if (docente.baja) Color(0xFF0F7A6C) else Color(0xFFC4432A),
+                bg = if (docente.baja) CodeaColores.VerdeSuave else CodeaColores.RojoSuave,
+                fg = if (docente.baja) CodeaColores.Verde else CodeaColores.Rojo,
                 onClick = onDarDeBaja
             )
 

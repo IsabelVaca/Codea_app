@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import mx.tec.codea.ui.components.CodeaColores
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -45,19 +46,19 @@ fun NuevaRutinaScreen(
             SeccionLabel("ETAPA")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf("Maternal", "Lactantes", "Preescolar").forEach { e ->
-                    ChipBoton(e, etapa == e, Color(0xFF6C4BF6)) { onElegirEtapa(e) }
+                    ChipBoton(e, etapa == e, CodeaColores.VioletaMarca) { onElegirEtapa(e) }
                 }
             }
         }
         Spacer(Modifier.height(14.dp))
-        BotonPrincipal("Elegir momentos", Color(0xFF6C4BF6), onElegirMomentos)
+        BotonPrincipal("Elegir momentos", CodeaColores.VioletaMarca, onElegirMomentos)
     }
 }
 
 @Composable
 private fun ChipBoton(nombre: String, activo: Boolean, colorActivo: Color, onClick: () -> Unit) {
-    val bg = if (activo) colorActivo else Color(0xFFF4F1FB)
-    val fg = if (activo) Color.White else Color(0xFF6B6183)
+    val bg = if (activo) colorActivo else CodeaColores.Campo
+    val fg = if (activo) Color.White else CodeaColores.GrisOscuro
     Button(
         onClick = onClick,
         colors = ButtonDefaults.buttonColors(containerColor = bg, contentColor = fg),
@@ -76,12 +77,12 @@ private fun CampoTexto(value: String, onChange: (String) -> Unit, placeholder: S
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color(0xFFF4F1FB),
-            unfocusedContainerColor = Color(0xFFF4F1FB),
+            focusedContainerColor = CodeaColores.Campo,
+            unfocusedContainerColor = CodeaColores.Campo,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
-            focusedTextColor = Color(0xFF2A2140),
-            unfocusedTextColor = Color(0xFF2A2140)
+            focusedTextColor = CodeaColores.Ink,
+            unfocusedTextColor = CodeaColores.Ink
         ),
         textStyle = LocalTextStyle.current.copy(fontFamily = Poppins, fontWeight = FontWeight.SemiBold),
         singleLine = true

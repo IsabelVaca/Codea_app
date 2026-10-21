@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import mx.tec.codea.ui.components.CodeaColores
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -66,16 +67,16 @@ fun AgregarMomentoScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(22.dp))
-                        .background(if (on) Color(0xFFEFE9FF) else Color(0xFFFBF8FF))
-                        .border(2.dp, if (on) Color(0xFFD9CEFF) else Color.Transparent, RoundedCornerShape(22.dp))
+                        .background(if (on) CodeaColores.Lavanda else CodeaColores.CampoSuave)
+                        .border(2.dp, if (on) CodeaColores.BordeLavanda else Color.Transparent, RoundedCornerShape(22.dp))
                         .clickable { onElegir(if (on) null else m.nombre) }
                         .padding(horizontal = 16.dp, vertical = 15.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Text(m.nombre, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
-                        Text(m.registro, fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF8C7FA8))
+                        Text(m.nombre, fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Ink)
+                        Text(m.registro, fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisMedio)
                     }
                     CheckCirculo(on)
                 }
@@ -92,7 +93,7 @@ fun AgregarMomentoScreen(
             onClick = onAgregar,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6C4BF6)),
+            colors = ButtonDefaults.buttonColors(containerColor = CodeaColores.VioletaMarca),
             contentPadding = PaddingValues(vertical = 18.dp)
         ) {
             Text(textoBoton, fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
@@ -107,8 +108,8 @@ private fun CheckCirculo(on: Boolean) {
             .size(26.dp)
             .clip(CircleShape)
             .then(
-                if (on) Modifier.background(Color(0xFF6C4BF6))
-                else Modifier.border(2.dp, Color(0xFFD8D0E8), CircleShape)
+                if (on) Modifier.background(CodeaColores.VioletaMarca)
+                else Modifier.border(2.dp, CodeaColores.BordeFuerte, CircleShape)
             ),
         contentAlignment = Alignment.Center
     ) {
@@ -127,12 +128,12 @@ private fun CampoTexto(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color(0xFFF4F1FB),
-            unfocusedContainerColor = Color(0xFFF4F1FB),
+            focusedContainerColor = CodeaColores.Campo,
+            unfocusedContainerColor = CodeaColores.Campo,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
-            focusedTextColor = Color(0xFF2A2140),
-            unfocusedTextColor = Color(0xFF2A2140)
+            focusedTextColor = CodeaColores.Ink,
+            unfocusedTextColor = CodeaColores.Ink
         ),
         textStyle = LocalTextStyle.current.copy(fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.SemiBold),
         singleLine = true

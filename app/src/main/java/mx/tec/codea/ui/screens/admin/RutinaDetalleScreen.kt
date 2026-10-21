@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import mx.tec.codea.ui.components.CodeaColores
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -66,13 +67,13 @@ fun RutinaDetalleScreen(
                     .fillMaxWidth()
                     .padding(bottom = 6.dp)
                     .clip(RoundedCornerShape(24.dp))
-                    .background(Color(0xFFEFE9FF))
+                    .background(CodeaColores.Lavanda)
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
                     "Arrastra de las rayitas para dejar los momentos en el orden deseado.",
-                    fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, color = Color(0xFF5B4B8A)
+                    fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, color = CodeaColores.MoradoGris
                 )
             }
             }
@@ -94,12 +95,12 @@ fun RutinaDetalleScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(20.dp))
-                        .border(2.dp, Color(0xFFD8D0E8), RoundedCornerShape(20.dp))
+                        .border(2.dp, CodeaColores.BordeFuerte, RoundedCornerShape(20.dp))
                         .clickable(onClick = onAgregarMomento)
                         .padding(14.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("+ Agregar un momento", fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF6B6183))
+                    Text("+ Agregar un momento", fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = CodeaColores.GrisOscuro)
                 }
                 BotonPrincipal("Guardar rutina", Color(0xFF12A594), onGuardar)
             }
@@ -120,16 +121,16 @@ private fun SeccionSalas(
             .fillMaxWidth()
             .padding(top = 6.dp)
             .clip(RoundedCornerShape(22.dp))
-            .background(Color.White)
-            .border(2.dp, Color(0xFFEFE9FF), RoundedCornerShape(22.dp))
+            .background(CodeaColores.Tarjeta)
+            .border(2.dp, CodeaColores.Lavanda, RoundedCornerShape(22.dp))
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Text("Salas que usan esta rutina", fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
+        Text("Salas que usan esta rutina", fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Ink)
         Text(
             if (esPredeterminada) "Es la rutina predeterminada: la usan las salas que no tienen una asignada."
             else "Las salas sin rutina asignada usan la predeterminada. Se guarda al marcar.",
-            fontFamily = Poppins, fontSize = 12.sp, lineHeight = 17.sp, color = Color(0xFF8C7FA8)
+            fontFamily = Poppins, fontSize = 12.sp, lineHeight = 17.sp, color = CodeaColores.GrisMedio
         )
         salas.forEach { sala ->
             val marcada = sala.id in asignadas
@@ -143,13 +144,13 @@ private fun SeccionSalas(
                 Checkbox(
                     checked = marcada,
                     onCheckedChange = { onAlternar(sala.id, it) },
-                    colors = CheckboxDefaults.colors(checkedColor = Color(0xFF6C4BF6))
+                    colors = CheckboxDefaults.colors(checkedColor = CodeaColores.VioletaMarca)
                 )
-                Text(sala.nombre, fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF2A2140))
+                Text(sala.nombre, fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.Ink)
             }
         }
         if (salas.isEmpty()) {
-            Text("Todavía no hay salas.", fontFamily = Poppins, fontSize = 13.sp, color = Color(0xFF8C7FA8))
+            Text("Todavía no hay salas.", fontFamily = Poppins, fontSize = 13.sp, color = CodeaColores.GrisMedio)
         }
     }
 }

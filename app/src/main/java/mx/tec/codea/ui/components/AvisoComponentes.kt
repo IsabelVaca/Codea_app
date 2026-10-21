@@ -37,18 +37,18 @@ import mx.tec.codea.ui.theme.Poppins
 // los colores y la etiquetita que comparten las pantallas de avisos
 // (la lista de la asistente y el panel de notificaciones del papá).
 object AvisoColores {
-    val Ink = Color(0xFF2A2140)
-    val Violeta = Color(0xFF5B3FE0)
-    val VioletaSuave = Color(0xFFEFE9FF)
-    val Gris = Color(0xFFA79BBF)
-    val GrisTexto = Color(0xFF8C7FA8)
+    val Ink: Color @Composable get() = CodeaColores.Ink
+    val Violeta: Color @Composable get() = CodeaColores.Violeta
+    val VioletaSuave: Color @Composable get() = CodeaColores.Lavanda
+    val Gris: Color @Composable get() = CodeaColores.Gris
+    val GrisTexto: Color @Composable get() = CodeaColores.GrisMedio
     val Coral = Color(0xFFFF7A5A)
-    val Verde = Color(0xFF0F7A6C)
-    val VerdeSuave = Color(0xFFE8FBF6)
-    val Fondo = Color(0xFFF9F7FD)
-    val Campo = Color(0xFFF4F1FB)
+    val Verde: Color @Composable get() = CodeaColores.Verde
+    val VerdeSuave: Color @Composable get() = CodeaColores.VerdeSuave
+    val Fondo: Color @Composable get() = CodeaColores.FondoAviso
+    val Campo: Color @Composable get() = CodeaColores.Campo
     // línea delgada para que la tarjeta del aviso no se pierda en el fondo: mismo tono que CodeaColores.Borde.
-    val Borde = Color(0xFFE6E0F2)
+    val Borde: Color @Composable get() = CodeaColores.Borde
 }
 
 @Composable

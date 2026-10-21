@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import mx.tec.codea.ui.components.CodeaColores
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.FilterChip
@@ -35,8 +36,8 @@ private fun OpcionFiltro(texto: String, elegida: Boolean, onClick: () -> Unit) {
         onClick = onClick,
         label = { Text(texto, fontFamily = Poppins, fontWeight = FontWeight.Bold) },
         colors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = Color(0xFFEDE9FE),
-            selectedLabelColor = Color(0xFF6D28D9),
+            selectedContainerColor = CodeaColores.Lila,
+            selectedLabelColor = CodeaColores.Morado,
         ),
     )
 }

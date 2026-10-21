@@ -178,7 +178,7 @@ private fun PhotoCard(uiState: ReportFormUiState, subprocessName: String, onChan
                 text = stringResource(R.string.report_photo_taken_during, subprocessName),
                 fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto,
             )
-            TextButton(onClick = onChangePhotoClick, colors = ButtonDefaults.textButtonColors(contentColor = CodeaColores.Violeta)) {
+            TextButton(onClick = onChangePhotoClick, colors = ButtonDefaults.textButtonColors(contentColor = CodeaColores.VioletaTexto)) {
                 Text(stringResource(R.string.report_change_photo), fontFamily = Poppins, fontWeight = FontWeight.Bold)
             }
         }
@@ -232,7 +232,7 @@ private fun NoPhotoRow(onAttachPhotoClick: () -> Unit) {
             fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto,
             modifier = Modifier.weight(1f),
         )
-        TextButton(onClick = onAttachPhotoClick, colors = ButtonDefaults.textButtonColors(contentColor = CodeaColores.Violeta)) {
+        TextButton(onClick = onAttachPhotoClick, colors = ButtonDefaults.textButtonColors(contentColor = CodeaColores.VioletaTexto)) {
             Text(stringResource(R.string.report_attach_photo), fontFamily = Poppins, fontWeight = FontWeight.Bold)
         }
     }
@@ -290,8 +290,8 @@ private fun DescriptionField(
             textStyle = TextStyle(fontFamily = Poppins, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = CodeaColores.Ink),
             shape = RoundedCornerShape(14.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
+                focusedContainerColor = CodeaColores.Tarjeta,
+                unfocusedContainerColor = CodeaColores.Tarjeta,
                 focusedBorderColor = CodeaColores.Morado,
                 unfocusedBorderColor = CodeaColores.Lila,
                 cursorColor = CodeaColores.Morado,
@@ -312,7 +312,7 @@ private fun DescriptionField(
                 fontFamily = Poppins, fontSize = 12.sp, fontWeight = FontWeight.Bold,
                 color = if (isTooShort) CodeaColores.Rojo else CodeaColores.Gris,
             )
-            TextButton(onClick = onDictateClick, colors = ButtonDefaults.textButtonColors(contentColor = CodeaColores.Violeta)) {
+            TextButton(onClick = onDictateClick, colors = ButtonDefaults.textButtonColors(contentColor = CodeaColores.VioletaTexto)) {
                 Text(stringResource(R.string.report_dictate_instead), fontFamily = Poppins, fontWeight = FontWeight.Bold)
             }
         }

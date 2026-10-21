@@ -163,7 +163,7 @@ private fun RollCallRow(
     // tarjeta blanca como las del admin; presente, en lila con la palomita morada.
     Surface(
         shape = RoundedCornerShape(18.dp),
-        color = if (isPresent) CodeaColores.Lila else Color.White,
+        color = if (isPresent) CodeaColores.Lila else CodeaColores.Tarjeta,
         modifier = Modifier
             .fillMaxWidth()
             .shadow(6.dp, RoundedCornerShape(18.dp), ambientColor = Color(0x1A2A2140), spotColor = Color(0x1A2A2140))
@@ -181,10 +181,10 @@ private fun RollCallRow(
                 initials = child.initials,
                 color = avatarColor,
                 size = 48.dp,
-                background = if (isPresent) Color.White else CodeaColores.Lila,
+                background = if (isPresent) CodeaColores.Tarjeta else CodeaColores.Lila,
             )
             Column(modifier = Modifier.weight(1f)) {
-                Text(child.name, fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
+                Text(child.name, fontFamily = Poppins, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.Titulo)
                 // la hora a la que se le pasó lista (RF-03).
                 if (isPresent && child.arrivalTime != null) {
                     Text(
@@ -209,7 +209,7 @@ private fun RollCallRow(
                     contentAlignment = Alignment.Center,
                 ) {
                     if (isPresent) {
-                        Icon(Icons.Filled.Check, contentDescription = null, tint = Color.White)
+                        Icon(Icons.Filled.Check, contentDescription = null, tint = CodeaColores.SobreMorado)
                     }
                 }
                 Text(

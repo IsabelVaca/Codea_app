@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import mx.tec.codea.ui.components.CodeaColores
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -74,7 +75,7 @@ fun CrearSalaScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(24.dp))
-                .background(Color(0xFFE8FBF6))
+                .background(CodeaColores.VerdeSuave)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
@@ -83,14 +84,14 @@ fun CrearSalaScreen(
                 fontFamily = Poppins,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF0F7A6C)
+                color = CodeaColores.Verde
             )
             Text(
                 text = "Define su nombre, cupo y quién la atiende.",
                 fontFamily = Poppins,
                 fontSize = 13.sp,
                 lineHeight = 19.sp,
-                color = Color(0xFF3E7A70)
+                color = CodeaColores.VerdeGris
             )
         }
 
@@ -101,7 +102,7 @@ fun CrearSalaScreen(
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = 1.5.sp,
-            color = Color(0xFFA79BBF)
+            color = CodeaColores.Gris
         )
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             OutlinedTextField(
@@ -115,12 +116,12 @@ fun CrearSalaScreen(
                     nombreError?.let { Text(it.message()) }
                 },
                 colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFFF4F1FB),
-                    unfocusedContainerColor = Color(0xFFF4F1FB),
+                    focusedContainerColor = CodeaColores.Campo,
+                    unfocusedContainerColor = CodeaColores.Campo,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-                    focusedTextColor = Color(0xFF2A2140),
-                    unfocusedTextColor = Color(0xFF2A2140)
+                    focusedTextColor = CodeaColores.Ink,
+                    unfocusedTextColor = CodeaColores.Ink
                 ),
                 textStyle = LocalTextStyle.current.copy(fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.SemiBold),
                 singleLine = true
@@ -137,12 +138,12 @@ fun CrearSalaScreen(
                     cupoError?.let { Text(it.message()) }
                 },
                 colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFFF4F1FB),
-                    unfocusedContainerColor = Color(0xFFF4F1FB),
+                    focusedContainerColor = CodeaColores.Campo,
+                    unfocusedContainerColor = CodeaColores.Campo,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-                    focusedTextColor = Color(0xFF2A2140),
-                    unfocusedTextColor = Color(0xFF2A2140)
+                    focusedTextColor = CodeaColores.Ink,
+                    unfocusedTextColor = CodeaColores.Ink
                 ),
                 textStyle = LocalTextStyle.current.copy(fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.SemiBold),
                 singleLine = true
@@ -156,7 +157,7 @@ fun CrearSalaScreen(
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = 1.5.sp,
-            color = Color(0xFFA79BBF)
+            color = CodeaColores.Gris
         )
         PersonaDropdown(
             opciones = asistentes.map { it.nombre },
@@ -181,7 +182,7 @@ fun CrearSalaScreen(
             fontFamily = Poppins,
             fontSize = 12.sp,
             lineHeight = 18.sp,
-            color = Color(0xFF8C7FA8),
+            color = CodeaColores.GrisMedio,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
         )

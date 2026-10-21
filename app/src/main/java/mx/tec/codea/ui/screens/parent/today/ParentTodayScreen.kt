@@ -169,7 +169,7 @@ private fun NinoCard(summary: DaySummary) {
                 Text(summary.childInitials, color = CodeaColores.Morado, fontWeight = FontWeight.Bold, fontSize = 18.sp)
             }
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(summary.childFullName, fontFamily = Poppins, fontSize = 17.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
+                Text(summary.childFullName, fontFamily = Poppins, fontSize = 17.sp, fontWeight = FontWeight.ExtraBold, color = CodeaColores.Titulo)
                 if (summary.childGroup.isNotBlank()) {
                     Text(summary.childGroup, fontFamily = Poppins, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisTexto)
                 }

@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import mx.tec.codea.ui.components.CodeaColores
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -135,10 +136,10 @@ private fun BotonInscribirPadre(onClick: () -> Unit, modifier: Modifier = Modifi
             .fillMaxWidth()
             .height(52.dp),
         shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(2.dp, Color(0xFFEDE9FE)),
+        border = BorderStroke(2.dp, CodeaColores.Lila),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFFEDE9FE),
-            contentColor = Color(0xFF6D28D9),
+            containerColor = CodeaColores.Lila,
+            contentColor = CodeaColores.Morado,
         ),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
     ) {

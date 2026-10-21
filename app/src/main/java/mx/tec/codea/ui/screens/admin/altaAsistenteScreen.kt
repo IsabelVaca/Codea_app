@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import mx.tec.codea.ui.components.CodeaColores
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -73,14 +74,14 @@ fun AltaAsistenteScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(24.dp))
-                .background(Color(0xFFFFEDE7))
+                .background(CodeaColores.RojoSuave)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Text("Nueva asistente", fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF9A4A32))
+            Text("Nueva asistente", fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = CodeaColores.CafeRojo)
             Text(
                 "Da de alta su acceso a la app: sala.",
-                fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, color = Color(0xFF9A6A5C)
+                fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, color = CodeaColores.CafeSuave
             )
         }
 
@@ -115,8 +116,8 @@ fun AltaAsistenteScreen(
 
 @Composable
 private fun ChipBoton(nombre: String, activo: Boolean, colorActivo: Color, onClick: () -> Unit) {
-    val bg = if (activo) colorActivo else Color(0xFFF4F1FB)
-    val fg = if (activo) Color.White else Color(0xFF6B6183)
+    val bg = if (activo) colorActivo else CodeaColores.Campo
+    val fg = if (activo) Color.White else CodeaColores.GrisOscuro
     Button(
         onClick = onClick,
         colors = ButtonDefaults.buttonColors(containerColor = bg, contentColor = fg),
@@ -145,12 +146,12 @@ private fun CampoTexto(
             error?.let { Text(it.message()) }
         },
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color(0xFFF4F1FB),
-            unfocusedContainerColor = Color(0xFFF4F1FB),
+            focusedContainerColor = CodeaColores.Campo,
+            unfocusedContainerColor = CodeaColores.Campo,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
-            focusedTextColor = Color(0xFF2A2140),
-            unfocusedTextColor = Color(0xFF2A2140)
+            focusedTextColor = CodeaColores.Ink,
+            unfocusedTextColor = CodeaColores.Ink
         ),
         textStyle = LocalTextStyle.current.copy(fontFamily = Poppins, fontSize = 15.sp, fontWeight = FontWeight.SemiBold),
         singleLine = true

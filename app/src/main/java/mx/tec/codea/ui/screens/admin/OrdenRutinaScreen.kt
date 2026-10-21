@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import mx.tec.codea.ui.components.CodeaColores
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -46,7 +47,7 @@ fun OrdenRutinaScreen(
                     SeccionLabel("PASO 3 DE 3")
                     Text(
                         "Arrastra de las rayitas para dejar los momentos en orden.",
-                        fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, color = Color(0xFF8C7FA8)
+                        fontFamily = Poppins, fontSize = 13.sp, lineHeight = 19.sp, color = CodeaColores.GrisMedio
                     )
                 }
             }

@@ -1,5 +1,6 @@
 package mx.tec.codea.ui.screens.admin
 
+import mx.tec.codea.ui.components.CodeaColores
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -81,7 +82,7 @@ fun HorarioScreen(
                 return@Column
             }
             Tarjeta {
-                Text("Horas del día", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
+                Text("Horas del día", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Ink)
                 FilaHora("Entrada", "A esta hora empieza el día; después se marca retardo", horario.entradaMinutos, onEntrada)
                 FilaHora("Salida", "La hora en que termina el día", horario.salidaMinutos, onSalida)
                 FilaHora(
@@ -93,12 +94,12 @@ fun HorarioScreen(
             }
 
             Tarjeta {
-                Text("Días de trabajo", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
+                Text("Días de trabajo", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Ink)
                 Text(
                     "Los otros días no se puede registrar entrada.",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF6B6485),
+                    color = CodeaColores.GrisOscuro,
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     HorarioRules.DIAS.forEach { (dia, letra) ->
@@ -151,14 +152,14 @@ private fun FilaHora(titulo: String, detalle: String, minutos: Int, onCambio: (I
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(titulo, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2A2140))
-            Text(detalle, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF6B6485))
+            Text(titulo, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = CodeaColores.Ink)
+            Text(detalle, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = CodeaColores.GrisOscuro)
         }
         Text(
             formatTimeOfDay(minutos),
             fontSize = 20.sp,
             fontWeight = FontWeight.ExtraBold,
-            color = Color(0xFF5B3FE0),
+            color = CodeaColores.VioletaTexto,
         )
     }
 }
@@ -169,7 +170,7 @@ private fun Tarjeta(content: @Composable () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(22.dp))
-            .background(Color(0xFFF4F1FB))
+            .background(CodeaColores.Campo)
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) { content() }
