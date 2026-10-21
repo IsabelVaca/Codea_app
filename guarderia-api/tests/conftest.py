@@ -40,7 +40,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine  # no
 from sqlalchemy.pool import NullPool  # noqa: E402
 
 import app.core.registry  # noqa: E402,F401
-from app.core import clock  # noqa: E402
+from app.core import clock, rate_limit  # noqa: E402
 from app.core.db import Base, get_db  # noqa: E402
 from app.core.passwords import hash_password  # noqa: E402
 from app.core.tokens import create_access_token  # noqa: E402
@@ -116,6 +116,12 @@ async def engine():
 async def db(engine):
     async with async_sessionmaker(engine, expire_on_commit=False)() as session:
         yield session
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limit():
+    """El límite genérico por IP vive en memoria del proceso; sin esto se acumula entre pruebas."""
+    rate_limit.reset()
 
 
 @pytest.fixture(autouse=True)
