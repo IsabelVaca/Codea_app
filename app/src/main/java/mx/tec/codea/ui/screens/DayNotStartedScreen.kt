@@ -127,6 +127,6 @@ private fun CheckerRingIcon() {
 @Composable
 private fun DayNotStartedScreenPreview() {
     CodeaTheme {
-        DayNotStartedScreen(teacherName = "miss Karla", onCheckerClick = {})
+        DayNotStartedScreen(teacherName = "docente Karla", onCheckerClick = {})
     }
 }

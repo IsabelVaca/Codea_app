@@ -152,7 +152,7 @@ private fun CheckInDoneScreenPreview() {
     CodeaTheme {
         CheckInDoneScreen(
             record = CheckInRecord(arrivalMinutes = 472, placeName = "La Oruga", minutesLate = 0, lateReason = ""),
-            teacherName = "miss Karla",
+            teacherName = "docente Karla",
             onGoToMyDayClick = {},
         )
     }
