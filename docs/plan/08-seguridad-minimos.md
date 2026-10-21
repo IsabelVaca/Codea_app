@@ -14,7 +14,7 @@ Antes de tocar nada se revisó el código real de `guarderia-api/app` para no re
 | 2 | Autorización estricta por rol / anti-IDOR (BOLA) | ✅ hecho | `require_role()` + `can_see_child()` / `get_child_in_scope()` / `ensure_classroom_access()`, 404 fuera de alcance (`app/core/security.py:82-131`), usado en children/messaging/media/attendance/departures/reports. Sin huecos de IDOR encontrados | Ninguno |
 | 3 | Validaciones extra antes de modificar/eliminar | ✅ en su mayoría | No hay borrado físico (solo `deactivate`/`reactivate` tras `AdminUser`); `DELETE /media/{id}` valida que el recurso sea del propio usuario | Ninguno |
 | 4 | Consultas parametrizadas / sanitización de entrada | ✅ SQLi cubierto / ⚠️ falta lo de esquema | SQLAlchemy ORM en todo el código (el único `text()` con f-string es un script de seed de desarrollo con nombres de tabla fijos, no es endpoint) | Los esquemas Pydantic de entrada no usan `extra="forbid"` ni límites de longitud; la validación de negocio vive en `app/core/rules.py` pero no a nivel de esquema |
-| 5 | Rate limiting / bloqueo en endpoints críticos | 🟡 parcial | Throttling propio en Postgres para `/auth/login` y `/auth/activate` (`app/modules/auth/throttle.py`: 5 fallos/correo, 30/IP, ventana 15 min; pruebas en `tests/test_security.py`) | El propio equipo ya anotó "pendiente: límite en endpoints que no son de entrada"; `/auth/refresh` no tiene ningún límite y el resto de la API tampoco |
+| 5 | Rate limiting / bloqueo en endpoints críticos | ✅ hecho | Throttling fino para `/auth/login` y `/auth/activate` (`app/modules/auth/throttle.py`) **+ límite genérico por IP para toda la API** (`app/core/rate_limit.py`, middleware en `app/main.py`: 300 peticiones/60s por IP, 429 con `retry_after_s`, exento `/health/*`), cubre explícitamente `/auth/refresh`. Pruebas en `tests/test_security.py` (4 nuevas); suite completa 347/347 en verde | Ninguno |
 | 6 | Tráfico cifrado + cabeceras de seguridad | ✅ hecho y confirmado en producción | HSTS, CSP, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Cache-Control: no-store`, CORS cerrado por omisión — middleware en `app/main.py:74-97`, verificado contra `api.codeaapp.site` el 20/oct | Ninguno |
 
 ### Infraestructura y despliegue seguro
@@ -33,7 +33,7 @@ Antes de tocar nada se revisó el código real de `guarderia-api/app` para no re
 
 ## Orden de trabajo
 
-- [ ] 1. Rate limiting ampliado: extender `app/modules/auth/throttle.py` o agregar un límite genérico por IP para toda la API (middleware en `app/main.py`), cubriendo explícitamente `/auth/refresh`. Nuevas settings en `app/core/config.py`. Pruebas nuevas en `tests/test_security.py`.
+- [x] 1. Rate limiting ampliado: límite genérico por IP para toda la API (`app/core/rate_limit.py`, middleware en `app/main.py`, settings en `app/core/config.py`), cubre explícitamente `/auth/refresh`. 4 pruebas nuevas en `tests/test_security.py`; suite completa (347) en verde.
 - [ ] 2. Validación estricta de entrada: esquema base con `extra="forbid"` en `app/core/schemas.py`, aplicado primero a `auth`, `children` y `messaging` (los más sensibles), con límites de longitud. Ampliable a los demás módulos después. Pruebas de "campo extra rechazado" y "texto demasiado largo rechazado".
 - [ ] 3. `Dockerfile` sin root: agregar `USER` no privilegiado, revisar si conviene multi-stage, reforzar `.dockerignore`.
 - [ ] 4. Revisar `.env.example` / `.env.prod.example`: placeholders claros, nada real.

@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     auth_max_failures: int = 5
     auth_max_failures_ip: int = 30
     auth_window_s: int = 15 * 60
+    # límite genérico por IP para toda la API (piso contra abuso/DoS; login y activate tienen
+    # además su propio límite, más fino, en auth_max_failures*).
+    rate_limit_window_s: int = 60
+    rate_limit_max_requests: int = 300
     # orígenes web que pueden llamar a la API desde un navegador, separados por coma. Vacío: ninguno.
     # la app Android no lo necesita; solo sirve si algún día hay una página web.
     cors_origins: str = ""

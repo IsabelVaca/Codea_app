@@ -97,6 +97,48 @@ async def test_login_and_activation_limits_are_independent(client, world):
     assert response.status_code == 403  # el código se revisa: no lo bloquea el límite del login
 
 
+# ---------------------------------------------------------------- límite genérico por IP
+
+
+async def test_generic_rate_limit_returns_429(client, monkeypatch):
+    monkeypatch.setattr(settings, "rate_limit_max_requests", 3)
+    for _ in range(3):
+        assert (await client.get("/me")).status_code == 401
+    blocked = await client.get("/me")
+    assert blocked.status_code == 429
+    body = blocked.json()
+    assert body["code"] == "TOO_MANY_REQUESTS"
+    assert 0 < body["retry_after_s"] <= settings.rate_limit_window_s
+    assert blocked.headers["retry-after"] == str(body["retry_after_s"])
+
+
+async def test_generic_rate_limit_covers_refresh(client, monkeypatch):
+    """/auth/refresh no tiene su propio límite de intentos (throttle.py es solo login/activate);
+    el genérico por IP lo cubre."""
+    monkeypatch.setattr(settings, "rate_limit_max_requests", 3)
+    for _ in range(3):
+        response = await client.post("/auth/refresh", json={"refresh_token": "no-existe"})
+        assert response.status_code == 401
+    blocked = await client.post("/auth/refresh", json={"refresh_token": "no-existe"})
+    assert blocked.status_code == 429
+
+
+async def test_generic_rate_limit_response_has_security_headers(client, monkeypatch):
+    monkeypatch.setattr(settings, "rate_limit_max_requests", 1)
+    await client.get("/me")
+    blocked = await client.get("/me")
+    assert blocked.status_code == 429
+    assert blocked.headers["x-content-type-options"] == "nosniff"
+    assert blocked.headers["cache-control"] == "no-store"
+
+
+async def test_health_checks_are_exempt_from_the_generic_rate_limit(client, monkeypatch):
+    monkeypatch.setattr(settings, "rate_limit_max_requests", 1)
+    for _ in range(5):
+        assert (await client.get("/health/live")).status_code == 200
+        assert (await client.get("/health/ready")).status_code == 200
+
+
 # ---------------------------------------------------------------- cabeceras y CORS
 
 
