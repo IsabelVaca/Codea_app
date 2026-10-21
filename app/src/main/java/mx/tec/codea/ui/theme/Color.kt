@@ -42,7 +42,9 @@ val Frost = Color(0xFFF4F1FB)
 // dark mode versions. the prototype only has a light design,
 // so these are our own guess that keeps the same feeling.
 val Night = Color(0xFF1A1528)
-val NightRaised = Color(0xFF2A2140)
+// antes casi igual al fondo (#2A2140 contra #1A1528): cualquier chip o fila que lo usara para
+// destacarse se perdía. ahora comparte el tono violeta de VioletNight, que sí se distingue.
+val NightRaised = Color(0xFF3A2C73)
 val VioletLight = Color(0xFFB9A6FF)
 val VioletNight = Color(0xFF3A2C73)
 val TealLight = Color(0xFF7FE0CF)

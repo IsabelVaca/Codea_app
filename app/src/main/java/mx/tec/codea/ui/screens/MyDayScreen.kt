@@ -47,6 +47,8 @@ import mx.tec.codea.domain.Subprocess
 import mx.tec.codea.domain.SubprocessStatus
 import mx.tec.codea.ui.components.ScreenHeader
 import mx.tec.codea.ui.theme.CodeaTheme
+import mx.tec.codea.ui.theme.SubprocessPendingBg
+import mx.tec.codea.ui.theme.SubprocessPendingFg
 
 // the "mi día" screen: the routine of today. the teacher taps any moment to pick it,
 // and the picked one opens as a big card with its actions.
@@ -296,7 +298,7 @@ private fun SubprocessRow(
     val (containerColor, contentColor) = when (subprocess.status) {
         SubprocessStatus.DONE -> colors.surfaceContainer to colors.onSurface
         SubprocessStatus.ACTIVE -> colors.primaryContainer to colors.onPrimaryContainer
-        SubprocessStatus.PENDING -> colors.surfaceVariant to colors.onSurfaceVariant
+        SubprocessStatus.PENDING -> SubprocessPendingBg to SubprocessPendingFg
     }
 
     // a surface with onClick is a card that can be tapped, with the ripple included.
@@ -347,7 +349,9 @@ private fun StepBadge(subprocess: Subprocess) {
     val badgeColor = when (subprocess.status) {
         SubprocessStatus.DONE -> colors.primary.copy(alpha = 0.16f)
         SubprocessStatus.ACTIVE -> colors.primary
-        SubprocessStatus.PENDING -> colors.outlineVariant
+        // un cuadrito translúcido, no colors.outlineVariant: ese tono ahora es igual al fondo de la
+        // fila pendiente y el número se perdía dentro de la tarjeta.
+        SubprocessStatus.PENDING -> SubprocessPendingFg.copy(alpha = 0.18f)
     }
     Box(
         modifier = Modifier
@@ -367,7 +371,7 @@ private fun StepBadge(subprocess: Subprocess) {
                 text = subprocess.number.toString(),
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.ExtraBold,
-                color = if (subprocess.status == SubprocessStatus.ACTIVE) colors.onPrimary else colors.onSurfaceVariant,
+                color = if (subprocess.status == SubprocessStatus.ACTIVE) colors.onPrimary else SubprocessPendingFg,
             )
         }
     }

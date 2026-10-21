@@ -16,6 +16,15 @@ val AvatarFg: Color
     @Composable @ReadOnlyComposable
     get() = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) VioletLight else Color(0xFF6D28D9)
 
+// las filas de "mi día" que todavía no empiezan: en oscuro, surfaceVariant casi se pierde contra
+// el fondo (ambos muy oscuros). con fondo violeta y texto blanco sí se distinguen.
+val SubprocessPendingBg: Color
+    @Composable @ReadOnlyComposable
+    get() = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) VioletNight else MaterialTheme.colorScheme.surfaceVariant
+val SubprocessPendingFg: Color
+    @Composable @ReadOnlyComposable
+    get() = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+
 private val salaPalette = listOf(
     Color(0xFF5B3FE0),
     Color(0xFF0F9D8A),
