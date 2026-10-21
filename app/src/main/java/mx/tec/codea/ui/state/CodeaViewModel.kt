@@ -1,6 +1,5 @@
 package mx.tec.codea.ui.state
 
-import android.graphics.Bitmap
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -298,13 +297,13 @@ class CodeaViewModel : ViewModel() {
         }
     }
 
-    fun addReport(report: Report, photo: Bitmap? = null, onSuccess: () -> Unit = {}) {
+    fun addReport(report: Report, photoBytes: ByteArray? = null, onSuccess: () -> Unit = {}) {
         if (!ReportValidator.isValid(report.description, report.childIds) || savingReport) return
         val momentId = momentIds[report.subprocessNumber] ?: return
         savingReport = true
         launchAction(onSuccess) {
             try {
-                repository.createReport(momentId, report, photo)
+                repository.createReport(momentId, report, photoBytes)
             } finally {
                 savingReport = false
             }

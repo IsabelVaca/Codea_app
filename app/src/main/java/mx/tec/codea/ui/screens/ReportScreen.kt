@@ -2,7 +2,6 @@ package mx.tec.codea.ui.screens
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -44,6 +42,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import mx.tec.codea.R
 import mx.tec.codea.domain.ReportMethod
 import mx.tec.codea.domain.ReportType
@@ -157,10 +156,10 @@ private fun PhotoCard(uiState: ReportFormUiState, subprocessName: String, onChan
                 .background(CodeaColores.Lila),
             contentAlignment = Alignment.Center,
         ) {
-            val photo = uiState.photo
-            if (photo != null) {
-                Image(
-                    bitmap = photo.asImageBitmap(),
+            val photoUri = uiState.photoUri
+            if (photoUri != null) {
+                AsyncImage(
+                    model = photoUri,
                     contentDescription = stringResource(R.string.report_photo_description),
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,

@@ -111,6 +111,7 @@
         <item quantity="one">Reporte guardado para %1$d niño</item>
         <item quantity="other">Reporte guardado para %1$d niños</item>
     </plurals>
+    <string name="report_photo_failed">No se pudo preparar la foto</string>
         <string name="students_title">¿A quién le pasó?</string>
     <plurals name="students_selected">
         <item quantity="one">%1$d niño seleccionado</item>

@@ -1,6 +1,6 @@
 package mx.tec.codea.ui.state
 
-import android.graphics.Bitmap
+import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -17,7 +17,7 @@ import java.util.Locale
 // with one object the screen never sees half an update.
 data class ReportFormUiState(
     val method: ReportMethod = ReportMethod.WRITTEN,
-    val photo: Bitmap? = null,
+    val photoUri: Uri? = null,
     val photoTime: String = "",
     val type: ReportType = ReportType.INCIDENT,
     val description: String = "",
@@ -43,8 +43,8 @@ class ReportFormViewModel : ViewModel() {
         uiState = uiState.copy(method = method)
     }
 
-    fun onPhotoTaken(photo: Bitmap) {
-        uiState = uiState.copy(method = ReportMethod.PHOTO, photo = photo, photoTime = now())
+    fun onPhotoTaken(uri: Uri) {
+        uiState = uiState.copy(method = ReportMethod.PHOTO, photoUri = uri, photoTime = now())
     }
 
     fun onTypeChange(type: ReportType) {
@@ -77,7 +77,7 @@ class ReportFormViewModel : ViewModel() {
         method = uiState.method,
         description = uiState.description.trim(),
         childIds = uiState.selectedChildIds,
-        hasPhoto = uiState.photo != null,
+        hasPhoto = uiState.photoUri != null,
         time = now(),
     )
 

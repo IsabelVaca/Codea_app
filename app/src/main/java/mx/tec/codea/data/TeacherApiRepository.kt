@@ -1,6 +1,5 @@
 package mx.tec.codea.data
 
-import android.graphics.Bitmap
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlinx.serialization.Serializable
@@ -163,8 +162,8 @@ class TeacherApiRepository {
     private fun llaveRutina(classroomId: Int) = "routine:$classroomId:${hoyIso()}"
 
     // si hay foto, primero se sube a /media y el reporte lleva su media_id.
-    suspend fun createReport(momentId: Int, report: Report, photo: Bitmap? = null) {
-        val mediaId = photo?.let { MediaUploader.uploadPhoto(it) }
+    suspend fun createReport(momentId: Int, report: Report, photoBytes: ByteArray? = null) {
+        val mediaId = photoBytes?.let { MediaUploader.upload(it, "image/jpeg", "PHOTO") }
         api.createReport(
             ReportBody(
                 routineMomentId = momentId,

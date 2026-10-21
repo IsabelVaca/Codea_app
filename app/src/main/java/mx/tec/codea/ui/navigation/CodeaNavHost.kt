@@ -33,10 +33,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
@@ -55,7 +57,8 @@ import mx.tec.codea.domain.AttendanceStatus
 import mx.tec.codea.domain.RoomRules
 import mx.tec.codea.domain.ReportMethod
 import mx.tec.codea.ui.components.rememberDictation
-import mx.tec.codea.ui.components.rememberTakePhoto
+import mx.tec.codea.ui.components.rememberCapturePhoto
+import mx.tec.codea.data.ImageCompressor
 import mx.tec.codea.ui.screens.ChatsScreen
 import mx.tec.codea.ui.screens.CheckInDoneScreen
 import mx.tec.codea.ui.screens.CheckerScreen
@@ -287,8 +290,8 @@ fun CodeaNavHost(
                 val subprocess = viewModel.subprocessByNumber(route.subprocessNumber) ?: return@composable
                 val form: ReportFormViewModel = viewModel(backStackEntry)
                 val openReport = { navController.navigate(ReportRoute(route.subprocessNumber)) }
-                val takePhoto = rememberTakePhoto { photo ->
-                    form.onPhotoTaken(photo)
+                val takePhoto = rememberCapturePhoto { uri ->
+                    form.onPhotoTaken(uri)
                     openReport()
                 }
 
@@ -310,7 +313,7 @@ fun CodeaNavHost(
                 val route = backStackEntry.toRoute<ReportRoute>()
                 val subprocess = viewModel.subprocessByNumber(route.subprocessNumber) ?: return@composable
                 val form = reportForm(navController, backStackEntry)
-                val takePhoto = rememberTakePhoto(onPhotoTaken = form::onPhotoTaken)
+                val takePhoto = rememberCapturePhoto(onCaptured = form::onPhotoTaken)
                 val dictate = rememberDictation(onTextHeard = form::onDictationHeard)
 
                 ReportScreen(
@@ -328,21 +331,45 @@ fun CodeaNavHost(
                 val route = backStackEntry.toRoute<SelectStudentsRoute>()
                 val form = reportForm(navController, backStackEntry)
                 val context = LocalContext.current
+                val scope = rememberCoroutineScope()
                 val count = form.uiState.selectedChildIds.size
                 val savedMessage = pluralStringResource(R.plurals.report_saved, count, count)
+                val photoFailed = stringResource(R.string.report_photo_failed)
+                // true while the photo is being compressed, before addReport sets its own savingReport.
+                // without it, a slow compression leaves a window where the save button taps twice.
+                var compressing by remember { mutableStateOf(false) }
 
                 SelectStudentsScreen(
                     uiState = form.uiState,
                     children = viewModel.children,
-                    saving = viewModel.savingReport,
+                    saving = viewModel.savingReport || compressing,
                     onChildToggle = form::onChildToggle,
                     onSaveClick = {
-                        // the shared view model receives the report...
-                        viewModel.addReport(form.toReport(route.subprocessNumber), photo = form.uiState.photo, onSuccess = {
+                        val photoUri = form.uiState.photoUri
+                        val report = form.toReport(route.subprocessNumber)
+                        val onSaved: () -> Unit = {
                             Toast.makeText(context, savedMessage, Toast.LENGTH_LONG).show()
                             // ...and the navigation is decided here, by the ui.
                             navController.popBackStack(MyDayRoute, inclusive = false)
-                        })
+                        }
+                        if (photoUri != null) {
+                            compressing = true
+                            scope.launch {
+                                try {
+                                    val photoBytes = ImageCompressor.compress(context.contentResolver, photoUri)
+                                    viewModel.addReport(report, photoBytes = photoBytes, onSuccess = onSaved)
+                                } catch (e: CancellationException) {
+                                    throw e
+                                } catch (e: Exception) {
+                                    Toast.makeText(context, photoFailed, Toast.LENGTH_SHORT).show()
+                                } finally {
+                                    compressing = false
+                                }
+                            }
+                        } else {
+                            // the shared view model receives the report...
+                            viewModel.addReport(report, onSuccess = onSaved)
+                        }
                     },
                     onBackClick = { navController.popBackStack() },
                 )

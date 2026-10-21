@@ -6,7 +6,6 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.net.Uri
 import android.speech.RecognizerIntent
 import android.widget.Toast
@@ -30,37 +29,6 @@ import java.util.Locale
 // these two functions hide the permission and the launcher, and give back a
 // simple "start" function, so the screens only receive a () -> Unit.
 
-// asks for the camera permission if needed, takes a photo and gives it back.
-@Composable
-fun rememberTakePhoto(onPhotoTaken: (Bitmap) -> Unit): () -> Unit {
-    val context = LocalContext.current
-    val permissionMessage = stringResource(R.string.camera_permission_needed)
-
-    val takePicture = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicturePreview(),
-    ) { bitmap ->
-        // the bitmap is null when the teacher closes the camera without a photo.
-        if (bitmap != null) onPhotoTaken(bitmap)
-    }
-    val askPermission = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-    ) { isGranted ->
-        if (isGranted) {
-            takePicture.launch(null)
-        } else {
-            Toast.makeText(context, permissionMessage, Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    return {
-        if (hasPermission(context, Manifest.permission.CAMERA)) {
-            takePicture.launch(null)
-        } else {
-            askPermission.launch(Manifest.permission.CAMERA)
-        }
-    }
-}
-
 // the Photo Picker of the system: no permission needed. gives back the Uri of the chosen photo.
 @Composable
 fun rememberPickPhoto(onPicked: (Uri) -> Unit): () -> Unit {
@@ -70,8 +38,8 @@ fun rememberPickPhoto(onPicked: (Uri) -> Unit): () -> Unit {
     return { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
 }
 
-// like rememberTakePhoto, but the camera writes the full photo to a file (through FileProvider)
-// instead of returning a thumbnail. gives back the Uri of that file.
+// opens the camera app and has it write the full photo to a file (through FileProvider),
+// instead of the low-resolution thumbnail TakePicturePreview gives back. gives back the Uri of that file.
 @Composable
 fun rememberCapturePhoto(onCaptured: (Uri) -> Unit): () -> Unit {
     val context = LocalContext.current

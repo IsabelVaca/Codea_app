@@ -1,6 +1,5 @@
 package mx.tec.codea.data
 
-import android.graphics.Bitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mx.tec.codea.data.api.ApiClient
@@ -10,7 +9,6 @@ import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.io.ByteArrayOutputStream
 import java.io.IOException
 
 // subir un archivo son tres pasos:
@@ -40,12 +38,5 @@ object MediaUploader {
 
         ApiClient.api.completeMedia(permiso.mediaId)
         return permiso.mediaId
-    }
-
-    suspend fun uploadPhoto(bitmap: Bitmap): Int {
-        val bytes = withContext(Dispatchers.Default) {
-            ByteArrayOutputStream().also { bitmap.compress(Bitmap.CompressFormat.JPEG, 85, it) }.toByteArray()
-        }
-        return upload(bytes, "image/jpeg", "PHOTO")
     }
 }
