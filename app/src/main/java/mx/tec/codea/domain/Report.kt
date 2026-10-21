@@ -18,3 +18,15 @@ data class Report(
     val hasPhoto: Boolean,
     val time: String,
 )
+
+// a report as it comes back from the server, to show it full: "ver reportes" en la tarjeta del subproceso.
+// photoUrl is a signed url that lasts 10 minutes; null if there is no photo, or if it already expired.
+data class SavedReport(
+    val id: Int,
+    val type: ReportType,
+    val method: ReportMethod,
+    val description: String,
+    val childIds: Set<String>,
+    val photoUrl: String?,
+    val time: String,
+)

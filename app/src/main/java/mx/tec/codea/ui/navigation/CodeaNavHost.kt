@@ -73,6 +73,7 @@ import mx.tec.codea.ui.screens.FamilyNoticesScreen
 import mx.tec.codea.ui.screens.MyRoomScreen
 import mx.tec.codea.ui.screens.RollCallScreen
 import mx.tec.codea.ui.screens.ReportScreen
+import mx.tec.codea.ui.screens.ReportsScreen
 import mx.tec.codea.ui.screens.SelectReportMethodScreen
 import mx.tec.codea.ui.screens.SelectStudentsScreen
 import mx.tec.codea.ui.screens.admin.AltaAsistenteScreen
@@ -211,6 +212,10 @@ fun CodeaNavHost(
                             navController.navigate(SelectReportMethodRoute(subprocessNumber = number))
                         },
                         onConfirmSubprocessClick = viewModel::confirmSubprocess,
+                        confirmingSubprocess = viewModel.confirmingSubprocess,
+                        onViewReportsClick = { number ->
+                            navController.navigate(ReportsOfSubprocessRoute(subprocessNumber = number))
+                        },
                         rollCallPresent = viewModel.presentCount,
                         rollCallTotal = viewModel.children.size,
                         onRollCallClick = { navController.navigate(RollCallRoute) },
@@ -339,6 +344,19 @@ fun CodeaNavHost(
                             navController.popBackStack(MyDayRoute, inclusive = false)
                         })
                     },
+                    onBackClick = { navController.popBackStack() },
+                )
+            }
+            composable<ReportsOfSubprocessRoute> { backStackEntry ->
+                val route = backStackEntry.toRoute<ReportsOfSubprocessRoute>()
+                val subprocess = viewModel.subprocessByNumber(route.subprocessNumber) ?: return@composable
+                LaunchedEffect(route.subprocessNumber) { viewModel.loadReports(route.subprocessNumber) }
+
+                ReportsScreen(
+                    subprocessName = subprocess.name,
+                    reports = viewModel.reportsForSubprocess,
+                    loading = viewModel.loadingReports,
+                    childNameOf = { id -> viewModel.childById(id)?.name },
                     onBackClick = { navController.popBackStack() },
                 )
             }

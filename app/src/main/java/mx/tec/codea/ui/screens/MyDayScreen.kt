@@ -1,6 +1,7 @@
 package mx.tec.codea.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -59,7 +60,10 @@ fun MyDayScreen(
     onSubprocessClick: (Int) -> Unit,
     onMakeReportClick: (Int) -> Unit,
     onConfirmSubprocessClick: (Int) -> Unit,
+    onViewReportsClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    // true mientras se confirma el momento elegido: el botón avisa que ya reaccionó al toque.
+    confirmingSubprocess: Boolean = false,
     // el pase de lista es el primer paso del día: cuántos niños están marcados presentes y cuántos hay en la sala.
     // con 0 niños en la sala no hay a quién pasar lista y la tarjeta no se muestra.
     rollCallPresent: Int = 0,
@@ -104,8 +108,10 @@ fun MyDayScreen(
                 SelectedSubprocessCard(
                     subprocess = subprocess,
                     reportCount = reportCount,
+                    confirming = confirmingSubprocess,
                     onMakeReportClick = { onMakeReportClick(subprocess.number) },
                     onConfirmClick = { onConfirmSubprocessClick(subprocess.number) },
+                    onViewReportsClick = { onViewReportsClick(subprocess.number) },
                     // the prototype leaves more space around the big card, so it stands out.
                     modifier = Modifier
                         .padding(vertical = 8.dp)
@@ -375,6 +381,8 @@ private fun SelectedSubprocessCard(
     reportCount: Int,
     onMakeReportClick: () -> Unit,
     onConfirmClick: () -> Unit,
+    onViewReportsClick: () -> Unit,
+    confirming: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     // sobre el violeta pleno el texto es "onPrimary" (blanco en claro; tinta en oscuro) y los botones usan los mismos dos colores al revés.
@@ -421,15 +429,26 @@ private fun SelectedSubprocessCard(
                     color = contentColor.copy(alpha = 0.8f),
                 )
             }
-            Text(
-                text = when {
-                    !canReport -> stringResource(R.string.my_day_not_started_yet)
-                    reportCount == 0 -> stringResource(R.string.my_day_no_reports)
-                    else -> pluralStringResource(R.plurals.my_day_reports_here, reportCount, reportCount)
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = contentColor.copy(alpha = 0.8f),
-            )
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = when {
+                        !canReport -> stringResource(R.string.my_day_not_started_yet)
+                        reportCount == 0 -> stringResource(R.string.my_day_no_reports)
+                        else -> pluralStringResource(R.plurals.my_day_reports_here, reportCount, reportCount)
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = contentColor.copy(alpha = 0.8f),
+                )
+                if (reportCount > 0) {
+                    Text(
+                        text = stringResource(R.string.my_day_view_reports),
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = contentColor,
+                        modifier = Modifier.clickable(onClick = onViewReportsClick),
+                    )
+                }
+            }
 
             if (canReport) {
                 // la acción principal es grande y va en el color contrario al de la tarjeta.
@@ -461,16 +480,25 @@ private fun SelectedSubprocessCard(
                 // la segunda acción es casi transparente, para que no compita.
                 Button(
                     onClick = onConfirmClick,
+                    enabled = !confirming,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = contentColor.copy(alpha = 0.14f),
                         contentColor = contentColor,
+                        // sin esto, al deshabilitarse mientras confirma, Material3 pone sus propios
+                        // colores "disabled" (muy tenues) y el texto se pierde contra la tarjeta.
+                        disabledContainerColor = contentColor.copy(alpha = 0.14f),
+                        disabledContentColor = contentColor,
                     ),
                     contentPadding = PaddingValues(13.dp),
                 ) {
                     Text(
-                        text = stringResource(R.string.my_day_confirm_step),
+                        text = if (confirming) {
+                            stringResource(R.string.my_day_confirming_step)
+                        } else {
+                            stringResource(R.string.my_day_confirm_step)
+                        },
                         fontWeight = FontWeight.ExtraBold,
                     )
                 }

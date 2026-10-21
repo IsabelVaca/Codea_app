@@ -4,6 +4,7 @@ from fastapi import APIRouter, status
 
 from app.core.db import Db
 from app.core.security import AnyUser, StaffUser, TeacherUser
+from app.core.storage import StorageDep
 
 from . import service
 from .schemas import DailyEntryIn, DailyEntryOut, DayOut, ReportIn, ReportOut, WeeklySummaryOut
@@ -18,9 +19,9 @@ async def create_report(db: Db, current: TeacherUser, data: ReportIn) -> ReportO
 
 
 @router.get("/reports", response_model=list[ReportOut])
-async def list_reports(db: Db, current: StaffUser, moment_id: int) -> list[ReportOut]:
-    """Los reportes de un momento: el contador que aparece en Mi día."""
-    return await service.list_reports(db, current, moment_id)
+async def list_reports(db: Db, current: StaffUser, storage: StorageDep, moment_id: int) -> list[ReportOut]:
+    """Los reportes de un momento: el contador que aparece en Mi día, y ahora también para verlos completos."""
+    return await service.list_reports(db, current, storage, moment_id)
 
 
 @router.post("/children/{child_id}/daily-entries", response_model=DailyEntryOut)

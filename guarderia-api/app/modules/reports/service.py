@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.errors import ApiError
 from app.core.schemas import ClassroomRef
 from app.core.security import CurrentUser, get_child_in_scope
+from app.core.storage import Storage
 from app.modules.attendance.models import Attendance, AttendanceStatus
 from app.modules.attendance.queries import present_child_ids
 from app.modules.children.models import Child, ChildStatus
@@ -39,7 +40,7 @@ from .schemas import (
 DESCRIPTION_MIN = 10
 
 
-def _to_out(report: Report, child_ids: list[int]) -> ReportOut:
+def _to_out(report: Report, child_ids: list[int], photo_url: str | None = None) -> ReportOut:
     return ReportOut(
         id=report.id,
         routine_moment_id=report.routine_moment_id,
@@ -49,6 +50,7 @@ def _to_out(report: Report, child_ids: list[int]) -> ReportOut:
         child_ids=child_ids,
         media_id=report.media_id,
         has_photo=report.media_id is not None,
+        photo_url=photo_url,
         created_by=report.created_by,
         created_at=report.created_at,
     )
@@ -118,7 +120,7 @@ async def create_report(db: AsyncSession, current: CurrentUser, data: ReportIn) 
     return _to_out(report, child_ids)
 
 
-async def list_reports(db: AsyncSession, current: CurrentUser, moment_id: int) -> list[ReportOut]:
+async def list_reports(db: AsyncSession, current: CurrentUser, storage: Storage, moment_id: int) -> list[ReportOut]:
     moment = await routines.get_moment_in_scope(db, current, moment_id)
     reports = (
         await db.scalars(select(Report).where(Report.routine_moment_id == moment.id).order_by(Report.id))
@@ -132,7 +134,23 @@ async def list_reports(db: AsyncSession, current: CurrentUser, moment_id: int) -
         )
     ).all():
         children.setdefault(report_id, []).append(child_id)
-    return [_to_out(report, children.get(report.id, [])) for report in reports]
+    # las fotos viven en el bucket: cada una necesita su propia URL firmada para poder verse completa.
+    media_ids = [report.media_id for report in reports if report.media_id is not None]
+    storage_keys: dict[int, str] = {}
+    if media_ids:
+        storage_keys = dict(
+            (await db.execute(select(Media.id, Media.storage_key).where(Media.id.in_(media_ids)))).all()
+        )
+    return [
+        _to_out(
+            report,
+            children.get(report.id, []),
+            photo_url=storage.presign_get(storage_keys[report.media_id])
+            if report.media_id is not None and report.media_id in storage_keys
+            else None,
+        )
+        for report in reports
+    ]
 
 
 def _summary_out(summary: DailySummary) -> DailyEntryOut:

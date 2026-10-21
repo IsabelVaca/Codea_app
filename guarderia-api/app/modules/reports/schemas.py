@@ -34,6 +34,8 @@ class ReportOut(BaseModel):
     child_ids: list[int]
     media_id: int | None
     has_photo: bool
+    # URL firmada de 10 minutos para ver la foto completa; null si no tiene foto.
+    photo_url: str | None = None
     created_by: uuid.UUID
     created_at: datetime
 
