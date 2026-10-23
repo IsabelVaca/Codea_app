@@ -8,3 +8,4 @@ PyJWT==2.10.1
 pwdlib[argon2]==0.2.1
 boto3==1.35.81
 tzdata==2024.2
+prometheus-fastapi-instrumentator

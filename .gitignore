@@ -40,3 +40,4 @@ guarderia-api/.env.prod
 __pycache__/
 guarderia-api/.venv/
 .pytest_cache/
+guarderia-api/monitoring/secrets

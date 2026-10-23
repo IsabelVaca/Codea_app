@@ -1,6 +1,8 @@
 import asyncio
 import logging
 from contextlib import asynccontextmanager
+import secrets
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.concurrency import run_in_threadpool
@@ -8,6 +10,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from fastapi import Depends, Header, HTTPException
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from .core import errors, rate_limit
 from .core.config import settings
@@ -162,6 +167,37 @@ for router in (
     messaging,
 ):
     api.include_router(router)
+
+def require_metrics_token(
+    authorization: str | None = Header(default=None),
+) -> None:
+    token_file = Path("/run/secrets/metrics_token")
+
+    if not token_file.is_file():
+        raise HTTPException(
+            status_code=503,
+            detail="Metrics authentication is not configured",
+        )
+
+    expected_token = token_file.read_text().strip()
+
+    if not expected_token or authorization is None:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    if not secrets.compare_digest(
+        authorization,
+        f"Bearer {expected_token}",
+    ):
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+Instrumentator(
+    excluded_handlers=["/metrics"],
+).instrument(app).expose(
+    app,
+    endpoint="/metrics",
+    include_in_schema=False,
+    dependencies=[Depends(require_metrics_token)],
+)
 
 app.include_router(api)
 # fuera de /api/v1: son direcciones que abre una persona o Android, no la app con su token.
